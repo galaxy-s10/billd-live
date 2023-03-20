@@ -1,0 +1,79 @@
+// 请尽量不要全局引入这个文件，该文件有两个@keyframes是一定并且只会被编译一次的
+// 虽然@keyframes会被编译，但是如果有css模块化的话，其实也不会受影响
+
+@keyframes big {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0);
+  }
+}
+
+@keyframes small {
+  0%,
+  100% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1);
+  }
+}
+
+%loadingSizeChangeMixin {
+  position: relative;
+  overflow: hidden;
+  margin: 0 auto;
+  border-radius: 50%;
+  opacity: 0.6;
+
+  &::before {
+    position: absolute;
+    z-index: 1;
+    border-radius: 50%;
+    content: '';
+    animation: small 2s infinite ease;
+  }
+  &::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: auto;
+    border-radius: 50%;
+    content: '';
+    animation: big 2s infinite ease;
+  }
+}
+
+// 加载中，大小变化
+@mixin loadingSizeChange($px: 30px, $color: gray) {
+  width: $px;
+  height: $px;
+
+  @extend %loadingSizeChangeMixin;
+
+  &::before {
+    width: $px;
+    height: $px;
+    background-color: $color;
+    opacity: 0.5;
+  }
+  &::after {
+    width: $px;
+    height: $px;
+    background-color: $color;
+  }
+}
+
+// .aaa {
+//   @include loadingSizeChange();
+// }
+// .bbb {
+//   @include loadingSizeChange();
+// }
+// .ccc {
+//   @include loadingSizeChange();
+// }

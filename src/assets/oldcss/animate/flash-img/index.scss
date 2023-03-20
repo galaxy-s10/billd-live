@@ -1,0 +1,40 @@
+// 请尽量不要全局引入这个文件，该文件有一个@keyframes是一定并且只会被编译一次的
+// 虽然@keyframes会被编译，但是如果有css模块化的话，其实也不会受影响
+
+@keyframes flashImgMove {
+  0% {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+  100% {
+    transform: translate(50%, 80%) rotate(45deg);
+  }
+}
+
+%flashImgMixin {
+  position: relative;
+  display: inline-flex;
+  overflow: hidden;
+  &::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: auto;
+    width: 20%;
+    background: white;
+    content: '';
+    opacity: 0.6;
+    filter: blur(6px);
+    transform: translate(0%, -25%) rotate(45deg);
+  }
+}
+
+// 图片闪光
+@mixin flashImg($duration: 1.5s, $height: 200%) {
+  @extend %flashImgMixin;
+  &::after {
+    height: $height;
+    animation: flashImgMove $duration infinite ease-out;
+  }
+}

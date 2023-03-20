@@ -1,0 +1,79 @@
+// flex的水平垂直居中
+%flexCenter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// 解决图片缩小模糊问题
+%imgBlur {
+  -ms-interpolation-mode: nearest-neighbor;
+
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -o-crisp-edges;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+// 单行省略号
+%singleEllipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// 多行省略号在mixin里面
+
+// ltr
+%ltr {
+  direction: ltr;
+}
+
+// rtl
+%rtl {
+  direction: rtl;
+}
+
+// 置灰
+%grayscale {
+  filter: grayscale(100%);
+}
+
+// 隐藏滚动条:https://developer.mozilla.org/zh-CN/docs/Web/CSS/::-webkit-scrollbar
+%hideScrollbar {
+  // 整个滚动条
+  &::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+    border-radius: 0px;
+    background: rgba(0, 0, 0, 0);
+  }
+
+  // 滚动条轨道
+  &::-webkit-scrollbar-track {
+    border-radius: 0px;
+    background: rgba(0, 0, 0, 0);
+    box-shadow: rgba(0, 0, 0, 0);
+  }
+
+  // 滚动条上的滚动滑块
+  &::-webkit-scrollbar-thumb {
+    border-radius: 0px;
+    background: transparent;
+  }
+}
+
+// 长文本折行
+%long-text {
+  white-space: pre-line;
+  word-wrap: break-word;
+}
+
+// float清除浮动，在浮动的元素的父元素添加这个class：https://developer.mozilla.org/zh-CN/docs/Web/CSS/clear
+%clearfix {
+  &:after {
+    display: block;
+    clear: both;
+    content: '';
+  }
+}
