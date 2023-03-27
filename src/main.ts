@@ -1,3 +1,4 @@
+import 'webrtc-adapter';
 import './main.scss';
 import './showBilldVersion';
 

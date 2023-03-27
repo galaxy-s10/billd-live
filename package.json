@@ -34,11 +34,13 @@
     "billd-html-webpack-plugin": "^1.0.0",
     "billd-scss": "^0.0.6",
     "billd-utils": "^0.0.9",
+    "flv.js": "^1.6.2",
     "pinia": "^2.0.11",
     "socket.io-client": "^4.6.1",
     "vue": "^3.2.31",
     "vue-demi": "^0.13.11",
-    "vue-router": "^4.0.13"
+    "vue-router": "^4.0.13",
+    "webrtc-adapter": "^8.2.2"
   },
   "devDependencies": {
     "@babel/core": "^7.14.0",
