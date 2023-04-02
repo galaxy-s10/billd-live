@@ -42,6 +42,7 @@ async function handleWebRtc() {
 
 // Handles start button action: creates local MediaStream.
 function startAction() {
+  // WARN navigator.mediaDevices在localhost和https才能用，http://192.168.1.103:8000局域网用不了
   navigator.mediaDevices
     .getUserMedia({ video: true, audio: true })
     .then((event) => {

@@ -34,6 +34,7 @@
     "billd-html-webpack-plugin": "^1.0.0",
     "billd-scss": "^0.0.6",
     "billd-utils": "^0.0.9",
+    "browser-tool": "^1.0.5",
     "flv.js": "^1.6.2",
     "pinia": "^2.0.11",
     "socket.io-client": "^4.6.1",
