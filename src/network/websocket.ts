@@ -18,45 +18,69 @@ export const wsConnectStatus = {
   connect: 'connect',
 };
 
-export class WebSocketClass {
-  wsInstance: Socket | null = null;
-  wsUrl = 'ws://localhost:3300';
+// websocket消息类型
+export const wsMsgType = {
+  /** 用户进入聊天 */
+  join: 'join',
+  /** 用户退出聊天 */
+  leave: 'leave',
+  /** 用户发送消息 */
+  message: 'message',
+};
 
-  constructor({ url }) {
+enum statusEnum {
+  connect = 'connect',
+  disconnect = 'disconnect',
+}
+
+export class WebSocketClass {
+  socketIo: Socket | null = null;
+  url = 'ws://localhost:3300';
+  status: statusEnum = statusEnum.connect;
+  roomId: string;
+
+  constructor({ roomId, url }) {
     if (!window.WebSocket) {
       console.error('当前环境不支持WebSocket！');
       alert('当前环境不支持WebSocket！');
       return;
     }
-    this.wsUrl = url;
-    this.wsInstance = io(url, { transports: ['websocket'] });
-    // 连接websocket成功
-    this.wsInstance.on(wsConnectStatus.connect, (socket: Socket) => {
-      console.log('连接websocket成功', socket);
+    this.roomId = roomId;
+    this.url = url;
+    this.socketIo = io(url, { transports: ['websocket'] });
+    // websocket连接成功
+    this.socketIo.on(wsConnectStatus.connect, () => {
+      console.log('websocket连接成功');
+      this.status = statusEnum.connect;
     });
+    // websocket连接断开
+    this.socketIo.on(wsConnectStatus.disconnect, () => {
+      console.log('websocket连接断开', this);
+      this.status = statusEnum.disconnect;
+      const networkStore = useNetworkStore();
+      networkStore.updateWsMap(this.roomId, this);
+    });
+
     // 用户加入房间
-    this.wsInstance.on('join', (data) => {
+    this.socketIo.on(wsMsgType.join, (data) => {
       console.log('用户加入房间', data);
     });
     // 用户离开房间
-    this.wsInstance.on('leave', (data) => {
+    this.socketIo.on(wsMsgType.leave, (data) => {
       console.log('用户离开房间', data);
     });
-    // 监听连接断开
-    this.wsInstance.on('disconnect', () => {
-      console.log('监听连接断开');
+    // 用户发送消息
+    this.socketIo.on(wsMsgType.message, (data) => {
+      console.log('用户发送消息', data);
     });
+
     // 用户发送 offer
-    this.wsInstance.on('offer', (data) => {
+    this.socketIo.on('offer', (data) => {
       console.log('用户发送 offer', data);
     });
     // 用户发送 answer
-    this.wsInstance.on('answer', (data) => {
+    this.socketIo.on('answer', (data) => {
       console.log('用户发送 answer', data);
-    });
-    // 用户发送消息
-    this.wsInstance.on('message', (data) => {
-      console.log('用户发送消息', data);
     });
   }
 
@@ -64,7 +88,10 @@ export class WebSocketClass {
   send = () => {};
 
   // 手动关闭websocket连接
-  close = () => {};
+  close = () => {
+    console.warn('手动关闭websocket连接');
+    this.socketIo?.close();
+  };
 
   // 连接websocket
   connect = () => {};

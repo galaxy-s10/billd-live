@@ -15,7 +15,7 @@
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue';
 
-import { WebSocketClass, wsConnectStatus } from '@/network/websocket';
+import { WebSocketClass, wsConnectStatus } from '@/network/webSocket';
 
 const muted = ref(true);
 const videoRef = ref<HTMLVideoElement>();

@@ -99,6 +99,10 @@ export class WebRTCClass {
   constructor() {
     this.browser = browserTool();
     this.createPeerConnection();
+    // this.handleWebRtcError();
+  }
+
+  handleWebRtcError = () => {
     this.getStatsSetIntervalTimer = setInterval(() => {
       this.peerConnection
         ?.getStats()
@@ -201,7 +205,7 @@ export class WebRTCClass {
           // networkStore.setShowErrorModal(true);
         });
     }, this.getStatsSetIntervalDelay);
-  }
+  };
 
   /** rtcStatus是否都是true了 */
   rtcStatusIsOk = () => {

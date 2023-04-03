@@ -18,19 +18,21 @@
 import { onMounted, ref } from 'vue';
 
 import { WebRTCClass } from '@/network/webRtc';
-import { WebSocketClass, wsConnectStatus } from '@/network/websocket';
+import { useNetworkStore } from '@/store//network';
 
 const muted = ref(true);
 const localVideoRef = ref<HTMLVideoElement>();
 
+const networkStore = useNetworkStore();
 let stream: MediaStream;
 
 onMounted(() => {
-  const instance = new WebSocketClass({ url: 'ws://localhost:4300' });
-  instance.wsInstance?.on(wsConnectStatus.connect, () => {
-    console.log('连接websocket成功！');
-    handleWebRtc();
-  });
+  // const instance = new WebSocketClass({ url: 'ws://localhost:4300' });
+  // networkStore.updateWsMap(roomId.value, instance);
+  // instance.wsInstance?.on(wsConnectStatus.connect, () => {
+  //   console.log('连接websocket成功！');
+  //   handleWebRtc();
+  // });
 });
 
 async function handleWebRtc() {
