@@ -17,7 +17,7 @@
     >
       退出
     </button>
-    <div>状态：{{ networkStore.wsMap.get(roomId)?.status }}</div>
+    <div>状态：{{ networkStore.wsMap.get(roomId!)?.status }}</div>
   </div>
 </template>
 
@@ -42,7 +42,7 @@ function join() {
     roomId: roomId.value,
     url: 'ws://localhost:4300',
   });
-  networkStore.updateWsMap(roomId.value, instance);
+  // networkStore.updateWsMap(roomId.value, instance);
 
   // instance.socketIo?.on(wsConnectStatus.connect, () => {
   //   console.log(new Date().toLocaleString(), '连接websocket成功！');

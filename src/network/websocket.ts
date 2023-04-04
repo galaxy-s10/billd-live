@@ -1,5 +1,7 @@
 import { Socket, io } from 'socket.io-client';
 
+import { useNetworkStore } from '@/store/network';
+
 // websocket连接状态
 export const wsConnectStatus = {
   /** 已连接 */
@@ -35,9 +37,10 @@ enum statusEnum {
 
 export class WebSocketClass {
   socketIo: Socket | null = null;
-  url = 'ws://localhost:3300';
   status: statusEnum = statusEnum.connect;
-  roomId: string;
+
+  url = 'ws://localhost:3300';
+  roomId = '-1';
 
   constructor({ roomId, url }) {
     if (!window.WebSocket) {
@@ -49,16 +52,18 @@ export class WebSocketClass {
     this.url = url;
     this.socketIo = io(url, { transports: ['websocket'] });
     // websocket连接成功
-    this.socketIo.on(wsConnectStatus.connect, () => {
-      console.log('websocket连接成功');
+    this.socketIo.on(wsConnectStatus.connect, (socket) => {
+      console.log('websocket连接成功', socket);
       this.status = statusEnum.connect;
+      this.update();
+      // socket.join(this.roomId);
     });
+
     // websocket连接断开
     this.socketIo.on(wsConnectStatus.disconnect, () => {
       console.log('websocket连接断开', this);
       this.status = statusEnum.disconnect;
-      const networkStore = useNetworkStore();
-      networkStore.updateWsMap(this.roomId, this);
+      this.update();
     });
 
     // 用户加入房间
@@ -86,6 +91,12 @@ export class WebSocketClass {
 
   // 发送websocket消息
   send = () => {};
+
+  // 更新store
+  update = () => {
+    const networkStore = useNetworkStore();
+    networkStore.updateWsMap(this.roomId, this);
+  };
 
   // 手动关闭websocket连接
   close = () => {
