@@ -17,7 +17,7 @@ export const useNetworkStore = defineStore('network', {
   },
   actions: {
     updateWsMap(roomId: string, arg) {
-      console.log('updateWsMap', roomId, arg);
+      // console.log('updateWsMap', roomId, arg);
       const val = this.wsMap.get(roomId);
       if (val) {
         this.wsMap.set(roomId, { ...val, ...arg });
