@@ -1,16 +1,6 @@
 <template>
   <div>
     <router-view></router-view>
-    <video
-      id="localVideo"
-      ref="localVideoRef"
-      autoplay
-      playsinline
-      :muted="muted"
-    ></video>
-    <div>
-      <button @click="startAction">start</button>
-    </div>
   </div>
 </template>
 

@@ -1,25 +1,8 @@
 # 简介
 
-> 主要实现了 vuecli5 的大部分功能
-
-- [x] 基于 vue3 + webpack5
-- [x] 路由管理：vue-router4.x
-- [x] 状态管理：pinia2.x
-- [x] css 处理：scss + windicss（可选）
-- [x] 代码规范：eslint + prettier
-- [x] 项目规范：husky + commitizen + commitlint + lintstaged
-
-- [x] 支持热更新、typescript、路由懒加载
-
-> 一些相关的配置（如 eslint、windicss、outputStaticUrl 等）暴露在 script/constant.ts 了
+billd 直播间
 
 # 安装依赖
-
-更新 billd 依赖：
-
-```bash
-pnpm i billd-utils@latest billd-scss@latest billd-html-webpack-plugin@latest billd-deploy@latest
-```
 
 ```bash
 pnpm install
@@ -42,14 +25,19 @@ script/constant.ts 里的 outputStaticUrl 如果是'/aaa/'的话，默认就运�
 pnpm run build
 ```
 
-# git 提交
+# billd 依赖
+
+更新 billd：
 
 ```bash
-pnpm run cz
+pnpm i billd-utils@latest billd-scss@latest billd-html-webpack-plugin@latest billd-deploy@latest
 ```
 
-# 内置第三方包
+| 包名                                                                                 | 版本                                                                                                                      |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| [billd-utils](https://github.com/galaxy-s10/billd-utils)                             | [![npm](https://img.shields.io/npm/v/billd-utils)](https://www.npmjs.com/package/billd-utils)                             |
+| [billd-scss](https://github.com/galaxy-s10/billd-scss)                               | [![npm](https://img.shields.io/npm/v/billd-scss)](https://www.npmjs.com/package/billd-scss)                               |
+| [billd-html-webpack-plugin](https://github.com/galaxy-s10/billd-html-webpack-plugin) | [![npm](https://img.shields.io/npm/v/billd-html-webpack-plugin)](https://www.npmjs.com/package/billd-html-webpack-plugin) |
 
-- [billd-utils](https://github.com/galaxy-s10/billd-utils)
-- [billd-scss](https://github.com/galaxy-s10/billd-scss)，已在 sass-loader 里配置了 additionalData: `@use 'billd-scss/src/index.scss' as *;`
-- [billd-html-webpack-plugin](https://github.com/galaxy-s10/billd-html-webpack-plugin)，已在 webpack 配置里使用了该插件
+- billd-scss，已在 sass-loader 里配置了 additionalData: `@use 'billd-scss/src/index.scss' as *;`
+- billd-html-webpack-plugin，已在 webpack 配置里使用了该插件

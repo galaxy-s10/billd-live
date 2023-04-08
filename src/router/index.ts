@@ -1,4 +1,3 @@
-import { outputStaticUrl } from 'script/constant';
 import { createRouter, createWebHistory } from 'vue-router';
 
 import type { RouteRecordRaw } from 'vue-router';
@@ -13,9 +12,7 @@ export const defaultRoutes: RouteRecordRaw[] = [
 ];
 const router = createRouter({
   routes: defaultRoutes,
-  history: createWebHistory(
-    outputStaticUrl(process.env.NODE_ENV === 'production')
-  ),
+  history: createWebHistory(),
 });
 
 export default router;

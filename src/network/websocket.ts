@@ -36,6 +36,9 @@ export const wsMsgType = {
   full: 'full',
   /** 用户发送消息 */
   message: 'message',
+  offer: 'offer',
+  answer: 'answer',
+  candidate: 'candidate',
 };
 
 export enum statusEnum {
@@ -52,7 +55,7 @@ export enum statusEnum {
 
 export class WebSocketClass {
   socketIo: Socket | null = null;
-  status: statusEnum = statusEnum.connect;
+  status: statusEnum = statusEnum.disconnect;
 
   url = 'ws://localhost:3300';
   roomId = '-1';
@@ -97,19 +100,20 @@ export class WebSocketClass {
     //   console.log('用户离开房间', data);
     // });
 
-    // 用户发送消息
-    this.socketIo.on(wsMsgType.message, (data) => {
-      console.log('用户发送消息', data);
-    });
+    // // 用户发送消息
+    // this.socketIo.on(wsMsgType.message, (data) => {
+    //   console.log('用户发送消息', data);
+    // });
 
-    // 用户发送 offer
-    this.socketIo.on('offer', (data) => {
-      console.log('用户发送 offer', data);
-    });
-    // 用户发送 answer
-    this.socketIo.on('answer', (data) => {
-      console.log('用户发送 answer', data);
-    });
+    // // 用户发送 offer
+    // this.socketIo.on(wsMsgType.offer, (data) => {
+    //   console.log('用户发送 offer', data);
+    // });
+
+    // // 用户发送 answer
+    // this.socketIo.on(wsMsgType.answer, (data) => {
+    //   console.log('用户发送 answer', data);
+    // });
   }
 
   // 发送websocket消息
