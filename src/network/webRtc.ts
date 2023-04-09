@@ -91,7 +91,7 @@ export class WebRTCClass {
   };
 
   rtcStatus = {
-    joinRes: false, // true代表成功，false代表失败
+    joined: false, // true代表成功，false代表失败
     icecandidate: false, // true代表成功，false代表失败
     createOffer: false, // true代表成功，false代表失败
     setLocalDescription: false, // true代表成功，false代表失败
@@ -311,7 +311,7 @@ export class WebRTCClass {
   createOffer = async () => {
     console.log('开始createOffer');
     if (!this.peerConnection) return;
-    if (this.rtcStatus.createOffer) return;
+    if (this.rtcStatus.createOffer) return this.localDescription;
     try {
       const description = await this.peerConnection.createOffer({
         offerToReceiveAudio: false,
@@ -460,17 +460,8 @@ export class WebRTCClass {
     console.warn('开始监听track');
     this.peerConnection.addEventListener('track', (event: any) => {
       console.log('pc收到track事件', event);
-      // setTimeout(() => {
-      // const video = document.createElement('video');
-      // video.srcObject = event.streams[0];
-      // video.autoplay = true;
-      // video.controls = true;
-      // video.playsInline = true;
-      // document.body.appendChild(video);
-      // this.addStream(event.streams[0]);
       document.querySelector<HTMLVideoElement>('#localVideo')!.srcObject =
         event.streams[0];
-      // }, 1000);
     });
 
     // connectionstatechange
