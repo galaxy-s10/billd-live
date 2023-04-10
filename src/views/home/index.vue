@@ -1,435 +1,315 @@
 <template>
   <div class="home-wrap">
-    <div>
-      <div class="content">
-        <div class="left">
-          房间号：<input
-            ref="roomIdRef"
-            v-model="roomId"
-            type="text"
-            placeholder="输入房间号"
-          />
-          <button
-            ref="joinRef"
-            class="join-btn"
-            @click="join"
-          >
-            进入
-          </button>
-          <button
-            ref="leaveRef"
-            class="join-btn"
-            disabled
-            @click="leave"
-          >
-            退出
-          </button>
-          <div>socketId：{{ getSocketId() }}</div>
-          <div>ws状态：{{ networkStore.wsMap.get(roomId!)?.status }}</div>
-          <div>
-            rtcStatus：{{ networkStore.rtcMap.get(roomId!)?.rtcStatus }}
-          </div>
-          <div v-if="id === '1234'">
-            选择类型：
-            <button
-              :style="{
-                'margin-right': '10px',
-                background: currType === 1 ? 'skyblue' : 'inherit',
-              }"
-              @click="currType = 1"
-            >
-              摄像头
-            </button>
-            <button
-              :style="{
-                background: currType === 2 ? 'skyblue' : 'inherit',
-              }"
-              @click="currType = 2"
-            >
-              录屏
-            </button>
-          </div>
-
-          <div>
-            <video
-              id="localVideo"
-              ref="localVideoRef"
-              autoplay
-              webkit-playsinline="true"
-              playsinline
-              x-webkit-airplay="allow"
-              x5-video-player-type="h5"
-              x5-video-player-fullscreen="true"
-              x5-video-orientation="portraint"
-              :muted="muted"
-            ></video>
+    <div class="left">
+      <div class="head">
+        <div class="info">
+          <div class="avatar"></div>
+          <div class="detail">
+            <div class="top">
+              <span class="tag">未开播</span>
+              房东的猫livehouse/音乐节
+            </div>
+            <div class="bottom">
+              <span class="tag">UP 3</span>
+              up名字
+            </div>
           </div>
         </div>
-
-        <div class="right">
-          <div>当前在线用户：</div>
-          <ul>
-            <li
-              v-for="(item, index) in userList"
-              :key="index"
-            >
-              {{ item.id }}
-              <!-- <button
-              v-if="item !== getSocketId()"
-              @click="sendOffer"
-            >
-              开始视频
-            </button> -->
-            </li>
-          </ul>
+        <div class="other">
+          <div class="top">
+            <span class="item">
+              <i class="ico"></i>
+              <span>直播间管理</span>
+            </span>
+            <span class="item">
+              <i class="ico"></i>
+              <span>1人看过</span>
+            </span>
+            <span class="item">
+              <i class="ico"></i>
+              <span>分享</span>
+            </span>
+          </div>
+          <div class="bottom">关注量：5</div>
         </div>
+      </div>
+      <div class="video"></div>
+      <div class="gift">
+        <div
+          v-for="(item, index) in giftList"
+          :key="index"
+          class="item"
+        >
+          <div class="ico"></div>
+          <div class="name">{{ item.name }}</div>
+          <div class="price">{{ item.price }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="right">
+      <div class="tab">
+        <span>在线用户</span>
+        <span> | </span>
+        <span>大航海</span>
+      </div>
+      <div class="user-list">
+        <div
+          v-for="(item, index) in userList"
+          :key="index"
+          class="item"
+        >
+          <div class="info">
+            <div class="avatar"></div>
+            <div class="nickname">{{ item.nickname }}</div>
+          </div>
+          <div class="expr">{{ item.expr }}</div>
+        </div>
+      </div>
+      <div class="msg-list">
+        <div
+          v-for="(item, index) in msgList"
+          :key="index"
+          class="item"
+        >
+          <span class="name">{{ item.nickname }}：</span>
+          <span class="msg">{{ item.msg }}</span>
+        </div>
+      </div>
+      <div class="send-msg">
+        <textarea class="ipt"></textarea>
+        <div class="btn">发送</div>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref } from 'vue';
 
-import { WebRTCClass } from '@/network/webRtc';
-import {
-  WebSocketClass,
-  statusEnum,
-  wsConnectStatus,
-  wsMsgType,
-} from '@/network/webSocket';
-import { useNetworkStore } from '@/store/network';
+const giftList = ref([
+  { name: '鲜花', ico: '', price: '免费' },
+  { name: '肥宅水', ico: '', price: '2元' },
+  { name: '小鸡腿', ico: '', price: '3元' },
+  { name: '大鸡腿', ico: '', price: '5元' },
+  { name: '一杯咖啡', ico: '', price: '10元' },
+]);
+const msgList = ref([
+  { nickname: '鲜花', msg: '423425' },
+  { nickname: '肥宅水', msg: 'sdgdsgsg' },
+  { nickname: '小鸡腿', msg: '63463gsd' },
+  { nickname: '大鸡腿', msg: '46326fb26' },
+  { nickname: '一杯咖啡', msg: 'shgd544' },
+  { nickname: 'sdsg', msg: 'shgd544' },
+  { nickname: 'gdsg', msg: 'we' },
+  { nickname: 'sgdx', msg: 'shgd544' },
+  { nickname: 'gsdx', msg: 'ew' },
+  { nickname: 'gs', msg: 'etew' },
+  { nickname: 'gwe', msg: 'shgd544' },
+  { nickname: 'tewtwe', msg: 'shgd544' },
+  { nickname: 'hdfh', msg: 'ew' },
+  { nickname: '534', msg: 'etew' },
+  { nickname: '234232', msg: 'shgd544' },
+]);
 
-const networkStore = useNetworkStore();
-
-const roomIdRef = ref<HTMLInputElement>();
-const joinRef = ref<HTMLButtonElement>();
-const leaveRef = ref<HTMLButtonElement>();
-const roomId = ref<string>('19990507');
-const websocketInstant = ref<WebSocketClass>();
-const userList = ref<{ id: string; rooms: string[] }[]>([]);
-const muted = ref(true);
-const localVideoRef = ref<HTMLVideoElement>();
-const localStream = ref();
-const currType = ref(1); // 1:摄像头，2:录屏
-function getSocketId() {
-  return networkStore.wsMap.get(roomId.value!)?.socketIo?.id;
-}
-const id = ref('');
-const route = useRoute();
-interface IOffer {
-  socketId: string;
-  roomId: string;
-  sdp: any;
-}
-interface ICandidate {
-  socketId: string;
-  roomId: string;
-  candidate: string;
-  sdpMid: string | null;
-  sdpMLineIndex: number | null;
-}
-
-onMounted(() => {
-  console.log(route.query, '----');
-  id.value = route.query.id as string;
-  websocketInstant.value = new WebSocketClass({
-    roomId: roomId.value,
-    url:
-      process.env.NODE_ENV === 'development'
-        ? 'ws://localhost:4300'
-        : 'wss://live.hsslive.cn',
-  });
-  websocketInstant.value.update();
-  initReceive();
-
-  localVideoRef.value?.addEventListener('loadstart', () => {
-    console.warn('视频流-loadstart');
-    const rtc = networkStore.rtcMap.get(roomId.value);
-    if (!rtc) return;
-    rtc.rtcStatus.loadstart = true;
-    rtc.update();
-  });
-  localVideoRef.value?.addEventListener('loadedmetadata', () => {
-    console.warn('视频流-loadedmetadata');
-    const rtc = networkStore.rtcMap.get(roomId.value);
-    if (!rtc) return;
-    rtc.rtcStatus.loadedmetadata = true;
-    rtc.update();
-  });
-});
-
-function join() {
-  console.log('join的房间号', roomId.value);
-  if (!roomId.value) {
-    console.error('房间号不能为空！');
-    alert('房间号不能为空！');
-    return;
-  }
-  if (joinRef.value && leaveRef.value && roomIdRef.value) {
-    roomIdRef.value.disabled = true;
-    joinRef.value.disabled = true;
-    leaveRef.value.disabled = false;
-  }
-  const instance = networkStore.wsMap.get(roomId.value);
-  if (!instance?.socketIo) return;
-  instance.socketIo.emit(wsMsgType.join, {
-    roomId: instance.roomId,
-  });
-  if (id.value === '1234') {
-    if (currType.value === 1) {
-      startMediaDevices();
-    } else if (currType.value === 2) {
-      startGetDisplayMedia();
-    }
-  }
-}
-
-function initReceive() {
-  const instance = websocketInstant.value;
-  if (!instance?.socketIo) return;
-  // websocket连接成功
-  instance.socketIo.on(wsConnectStatus.connect, () => {
-    console.log('【websocket】websocket连接成功', instance.socketIo?.id);
-    if (!instance) return;
-    instance.status = statusEnum.connect;
-    instance.update();
-  });
-
-  // 当前所有在线用户
-  instance.socketIo.on(wsMsgType.liveUser, (data) => {
-    console.log('【websocket】当前所有在线用户');
-    if (!instance) return;
-    userList.value = data;
-  });
-
-  // websocket连接断开
-  instance.socketIo.on(wsConnectStatus.disconnect, () => {
-    console.log('【websocket】websocket连接断开', instance);
-    if (!instance) return;
-    instance.status = statusEnum.disconnect;
-    instance.update();
-  });
-
-  // 收到offer
-  instance.socketIo.on(wsMsgType.offer, async (data: IOffer) => {
-    console.warn('【websocket】收到offer', data);
-    if (!instance) return;
-    const rtc = networkStore.rtcMap.get(roomId.value);
-    if (data.socketId !== getSocketId()) {
-      console.log('收到offer，并且这个offer不是我发的', data);
-
-      setTimeout(async () => {
-        await rtc?.setRemoteDescription(data.sdp);
-        const sdp = await rtc?.createAnswer();
-        instance.socketIo?.emit(wsMsgType.answer, {
-          socketId: getSocketId(),
-          roomId: roomId.value,
-          sdp,
-        });
-      }, 500);
-    } else {
-      console.log('收到offer，并且这个offer是我发的');
-    }
-  });
-
-  // 收到answer
-  instance.socketIo.on(wsMsgType.answer, async (data: IOffer) => {
-    console.warn('【websocket】收到answer', data);
-    if (!instance) return;
-    if (!networkStore.rtcMap.get(roomId.value)?.rtcStatus.createOffer) return;
-    if (data.socketId !== getSocketId()) {
-      console.log('不是我发的answer');
-      await networkStore.rtcMap
-        .get(roomId.value)
-        ?.setRemoteDescription(data.sdp);
-      // sendAnswer(networkStore.rtcMap.get(roomId.value)?.localDescription);
-    } else {
-      console.log('是我发的answer');
-      // sendAnswer(data.sdp);
-    }
-  });
-
-  // 收到candidate
-  instance.socketIo.on(wsMsgType.candidate, (data: ICandidate) => {
-    console.warn('【websocket】收到candidate', data);
-    if (!instance) return;
-    const rtc = networkStore.rtcMap.get(roomId.value);
-    if (!rtc) return;
-    if (data.socketId !== getSocketId()) {
-      console.log('不是我发的candidate');
-      setTimeout(() => {
-        console.log(data.sdpMid, data.sdpMLineIndex, 888888);
-        const candidate = new RTCIceCandidate({
-          sdpMLineIndex: data.sdpMLineIndex,
-          candidate: data.candidate,
-        });
-        rtc.peerConnection
-          ?.addIceCandidate(candidate)
-          .then(() => {
-            console.log('candidate成功');
-            rtc.rtcStatus.icecandidate = true;
-            rtc.update();
-          })
-          .catch((err) => {
-            console.error('candidate失败', err);
-          });
-      }, 1000);
-    } else {
-      console.log('是我发的candidate');
-    }
-  });
-
-  // 用户加入房间
-  instance.socketIo.on(wsMsgType.join, (data) => {
-    console.log('【websocket】用户加入房间', data);
-    if (!instance) return;
-  });
-
-  // 用户加入房间
-  instance.socketIo.on(wsMsgType.joined, (data) => {
-    console.log('【websocket】用户加入房间完成', data);
-    if (!instance) return;
-    console.warn('开始new WebRTCClass');
-    const rtc = new WebRTCClass({ roomId: roomId.value });
-    rtc.rtcStatus.joined = true;
-    rtc.update();
-    // if (userList.value.length > 1) {
-    //   sendOffer();
-    // }
-  });
-
-  // 其他用户加入房间
-  instance.socketIo.on(wsMsgType.otherJoin, (data) => {
-    console.log('【websocket】其他用户加入房间', data);
-    if (!instance) return;
-    console.log('加轨');
-    // sendAnswer(networkStore.rtcMap.get(roomId.value)?.localDescription);
-    // localStream.value.getTracks().forEach((track) => {
-    //   networkStore.rtcMap
-    //     .get(roomId.value)
-    //     ?.myAddTrack(track, localStream.value);
-    // });
-    sendOffer();
-  });
-
-  // 用户离开房间
-  instance.socketIo.on(wsMsgType.leave, (data) => {
-    console.log('【websocket】用户离开房间', data);
-    if (!instance) return;
-    instance.socketIo?.emit(wsMsgType.leave, {
-      roomId: instance.roomId,
-    });
-  });
-
-  // 用户离开房间完成
-  instance.socketIo.on(wsMsgType.leaved, (data) => {
-    console.log('【websocket】用户离开房间完成', data);
-    if (!instance) return;
-    instance.close();
-  });
-}
-
-function startMediaDevices() {
-  currType.value = 1;
-  // WARN navigator.mediaDevices在localhost和https才能用，http://192.168.1.103:8000局域网用不了
-  navigator.mediaDevices
-    .getUserMedia({ video: true, audio: true })
-    .then((event) => {
-      console.log('getUserMedia成功', event);
-      if (!localVideoRef.value) return;
-      localVideoRef.value.srcObject = event;
-      localStream.value = event;
-      localStream.value.getTracks().forEach((track) => {
-        networkStore.rtcMap
-          .get(roomId.value)
-          ?.myAddTrack(track, localStream.value);
-      });
-    })
-    .catch((err) => {
-      console.log('getUserMedia失败', err);
-    });
-}
-
-function startGetDisplayMedia() {
-  currType.value = 2;
-  // WARN navigator.mediaDevices.getDisplayMedia在localhost和https才能用，http://192.168.1.103:8000局域网用不了
-  navigator.mediaDevices
-    .getDisplayMedia({ video: true, audio: true })
-    .then((event) => {
-      console.log('getDisplayMedia成功', event);
-      if (!localVideoRef.value) return;
-      localVideoRef.value.srcObject = event;
-      localStream.value = event;
-      localStream.value.getTracks().forEach((track) => {
-        networkStore.rtcMap
-          .get(roomId.value)
-          ?.myAddTrack(track, localStream.value);
-      });
-    })
-    .catch((err) => {
-      console.log('getDisplayMedia失败', err);
-    });
-}
-
-async function sendOffer() {
-  if (!websocketInstant.value) return;
-  const localDesc = await networkStore.rtcMap.get(roomId.value)?.createOffer();
-  console.log('sendOffer', localDesc);
-
-  const data = {
-    socketId: getSocketId(),
-    roomId: roomId.value,
-    sdp: localDesc,
-  };
-  console.warn('【websocket】发送offer', data);
-  websocketInstant.value.socketIo?.emit(wsMsgType.offer, data);
-}
-// async function sendAnswer(sdp) {
-//   if (!websocketInstant.value) return;
-//   console.warn('发送answer');
-//   const createOffer = await networkStore.rtcMap.get(roomId.value)?.rtcStatus
-//     .createOffer;
-//   if (!createOffer) {
-//     await networkStore.rtcMap.get(roomId.value)?.createOffer();
-//   }
-//   websocketInstant.value.socketIo?.emit(wsMsgType.answer, {
-//     socketId: getSocketId(),
-//     roomId: roomId.value,
-//     sdp,
-//   });
-// }
-
-function leave() {
-  if (joinRef.value && leaveRef.value && roomIdRef.value) {
-    roomIdRef.value.disabled = false;
-    joinRef.value.disabled = false;
-    leaveRef.value.disabled = true;
-  }
-  if (!websocketInstant.value) return;
-  websocketInstant.value.socketIo?.emit(wsMsgType.leave, {
-    roomId: websocketInstant.value.roomId,
-  });
-}
+const userList = ref([
+  { nickname: '鲜花', avatar: '423425', expr: 100 },
+  { nickname: '肥宅水', avatar: 'sdgdsgsg', expr: 100 },
+  { nickname: '小鸡腿', avatar: '63463gsd', expr: 100 },
+  { nickname: '大鸡腿', avatar: '46326fb26', expr: 100 },
+  { nickname: '一杯咖啡', avatar: 'shgd544', expr: 100 },
+]);
 </script>
 
 <style lang="scss" scoped>
 .home-wrap {
-  padding: 10px;
-  video {
-    width: 800px;
-    background-color: skyblue;
-  }
-  .content {
-    display: flex;
-    .left {
-      margin-right: 50px;
-      .join-btn {
-        margin-left: 10px;
+  display: flex;
+  justify-content: space-between;
+  margin: 20px auto 0;
+  min-width: 1200px;
+  width: 80%;
+  .left {
+    min-width: 1000px;
+    border-radius: 10px;
+    background-color: white;
+    color: #9499a0;
+    .head {
+      display: flex;
+      justify-content: space-between;
+      padding: 20px;
+      .tag {
+        display: inline-block;
+        margin-right: 5px;
+        padding: 1px 4px;
+        border: 1px solid;
+        border-radius: 2px;
+        color: #9499a0;
+        font-size: 12px;
+      }
+
+      .info {
+        display: flex;
+        align-items: center;
+        .avatar {
+          margin-right: 20px;
+          width: 64px;
+          height: 64px;
+          border-radius: 50%;
+          background-color: yellow;
+        }
+        .detail {
+          .top {
+            margin-bottom: 10px;
+            color: #18191c;
+          }
+          .bottom {
+            font-size: 14px;
+          }
+        }
+      }
+      .other {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        font-size: 12px;
+        .top {
+          display: flex;
+          align-items: center;
+          .item {
+            display: flex;
+            align-items: center;
+            margin-right: 20px;
+            .ico {
+              display: inline-block;
+              margin-right: 4px;
+              width: 10px;
+              height: 10px;
+              border-radius: 50%;
+              background-color: skyblue;
+            }
+          }
+        }
+        .bottom {
+          margin-top: 10px;
+        }
       }
     }
-    .right {
+    .video {
+      height: 500px;
+      background-color: #18191c;
+    }
+    .gift {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      background-color: white;
+      .item {
+        margin-right: 10px;
+        text-align: center;
+
+        .ico {
+          width: 50px;
+          height: 50px;
+          background-color: skyblue;
+        }
+        .name {
+          color: #18191c;
+          font-size: 12px;
+        }
+        .price {
+          color: #9499a0;
+          font-size: 12px;
+        }
+      }
+    }
+  }
+  .right {
+    position: relative;
+    box-sizing: border-box;
+    min-width: 300px;
+    border-radius: 10px;
+    background-color: white;
+    color: #9499a0;
+    .tab {
+      display: flex;
+      align-items: center;
+      justify-content: space-evenly;
+      padding: 5px 0;
+      font-size: 12px;
+    }
+    .user-list {
+      overflow-y: scroll;
+      padding: 0 15px;
+      height: 100px;
+      .item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 12px;
+        .info {
+          display: flex;
+          align-items: center;
+
+          .avatar {
+            margin-right: 5px;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background-color: skyblue;
+          }
+          .nickname {
+            color: black;
+          }
+        }
+      }
+    }
+    .msg-list {
+      overflow-y: scroll;
+      padding: 0 15px;
+      height: 350px;
+      .item {
+        margin-bottom: 10px;
+        font-size: 12px;
+        .name {
+          color: #9499a0;
+        }
+        .msg {
+          color: #61666d;
+        }
+      }
+    }
+    .send-msg {
+      position: absolute;
+      bottom: 15px;
+      box-sizing: border-box;
+      padding: 0 10px;
+      width: 100%;
+      .ipt {
+        display: block;
+        box-sizing: border-box;
+        margin: 0 auto;
+        padding: 10px;
+        width: 100%;
+        height: 60px;
+        outline: none;
+        border: 1px solid hsla(0, 0%, 60%, 0.2);
+        border-radius: 4px;
+        background-color: #f1f2f3;
+        font-size: 14px;
+      }
+      .btn {
+        box-sizing: border-box;
+        margin-top: 10px;
+        margin-left: auto;
+        padding: 5px;
+        width: 80px;
+        border-radius: 4px;
+        background-color: #23ade5;
+        color: white;
+        text-align: center;
+        font-size: 12px;
+      }
     }
   }
 }

@@ -12,6 +12,7 @@
     "skipLibCheck": true, // 跳过d.ts声明文件的类型检查。
     "resolveJsonModule": true, //解析json模块
     "allowJs": true,
+    "checkJs": true,
     "baseUrl": "./",
     /**
      * 当 TypeScript 编译文件时，它在输出目录中保持与输入目录中相同的目录结构。

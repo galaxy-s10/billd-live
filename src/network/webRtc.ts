@@ -314,7 +314,8 @@ export class WebRTCClass {
     if (this.rtcStatus.createOffer) return this.localDescription;
     try {
       const description = await this.peerConnection.createOffer({
-        offerToReceiveAudio: false,
+        iceRestart: true,
+        offerToReceiveAudio: true,
         offerToReceiveVideo: true,
       });
       this.rtcStatus.createOffer = true;
@@ -422,7 +423,7 @@ export class WebRTCClass {
         'warn'
       );
       if (event.candidate) {
-        if (this.candidateFlag) return;
+        // if (this.candidateFlag) return;
         const networkStore = useNetworkStore();
         this.candidateFlag = true;
         console.log('准备发送candidate', event.candidate.candidate);
@@ -498,7 +499,18 @@ export class WebRTCClass {
       return;
     }
     if (!this.peerConnection) {
-      this.peerConnection = new RTCPeerConnection();
+      this.peerConnection = new RTCPeerConnection({
+        iceServers: [
+          // {
+          //   urls: 'stun:stun.l.google.com:19302',
+          // },
+          {
+            urls: 'turn:hsslive.cn:3478',
+            username: 'hss',
+            credential: '123456',
+          },
+        ],
+      });
       // this.dataChannel =
       //   this.peerConnection.createDataChannel('MessageChannel');
 

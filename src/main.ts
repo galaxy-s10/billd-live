@@ -1,15 +1,16 @@
-import 'webrtc-adapter';
 import './main.scss';
 import './showBilldVersion';
+// import 'windi.css'; // windicss-webpack-plugin会解析windi.css这个MODULE_ID
 
 import { createApp } from 'vue';
+import adapter from 'webrtc-adapter';
 
 import router from '@/router/index';
 import store from '@/store/index';
 
 import App from './App.vue';
 
-// import 'windi.css'; // windicss-webpack-plugin会解析windi.css这个MODULE_ID
+console.log(adapter.browserDetails.browser, adapter.browserDetails.version);
 
 const app = createApp(App);
 
