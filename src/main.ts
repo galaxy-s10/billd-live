@@ -10,7 +10,7 @@ import store from '@/store/index';
 
 import App from './App.vue';
 
-console.log(adapter.browserDetails.browser, adapter.browserDetails.version);
+console.log('webrtc-adapter', adapter.browserDetails);
 
 const app = createApp(App);
 

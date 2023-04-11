@@ -20,17 +20,33 @@
       />
     </div>
     <div class="right">
-      <div class="avatar"></div>
+      <div class="avatar">{{ !userStore.detail && '登录' }}</div>
       <div class="item">动态</div>
       <div class="item">签到</div>
       <div class="item">饭贩</div>
-      <div class="start">我要开播</div>
+      <div
+        v-if="id === '1234'"
+        class="start"
+        @click="appStore.setLiveStatus(true)"
+      >
+        我要开播
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { ref } from 'vue';
+import { useRoute } from 'vue-router';
+
+import { useAppStore } from '@/store/app';
+import { useUserStore } from '@/store/user';
+
+const route = useRoute();
+
+const id = route.query.id;
+const userStore = useUserStore();
+const appStore = useAppStore();
 
 const list = ref([
   { ico: '', title: '首页' },
@@ -92,11 +108,16 @@ const list = ref([
     align-items: center;
     padding-right: 20px;
     .avatar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       margin-right: 20px;
       width: 36px;
       height: 36px;
       border-radius: 50%;
-      background-color: yellow;
+      background-color: skyblue;
+      color: white;
+      font-size: 14px;
     }
     .item {
       margin-right: 20px;

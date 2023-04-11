@@ -96,9 +96,9 @@ import { useRoute } from 'vue-router';
 import { WebRTCClass } from '@/network/webRtc';
 import {
   WebSocketClass,
-  statusEnum,
-  wsConnectStatus,
-  wsMsgType,
+  WsConnectStatusEnum,
+  WsMsgTypeEnum,
+  WsStatusEnum,
 } from '@/network/webSocket';
 import { useNetworkStore } from '@/store/network';
 
@@ -114,16 +114,15 @@ const muted = ref(true);
 const localVideoRef = ref<HTMLVideoElement>();
 const localStream = ref();
 const currType = ref(1); // 1:摄像头，2:录屏
-function getSocketId() {
-  return networkStore.wsMap.get(roomId.value!)?.socketIo?.id;
-}
 const id = ref('');
 const route = useRoute();
+
 interface IOffer {
   socketId: string;
   roomId: string;
   sdp: any;
 }
+
 interface ICandidate {
   socketId: string;
   roomId: string;
@@ -159,7 +158,9 @@ onMounted(() => {
     rtc.update();
   });
 });
-
+function getSocketId() {
+  return networkStore.wsMap.get(roomId.value!)?.socketIo?.id;
+}
 function join() {
   console.log('join的房间号', roomId.value);
   if (!roomId.value) {
@@ -174,7 +175,7 @@ function join() {
   }
   const instance = networkStore.wsMap.get(roomId.value);
   if (!instance?.socketIo) return;
-  instance.socketIo.emit(wsMsgType.join, {
+  instance.socketIo.emit(WsMsgTypeEnum.join, {
     roomId: instance.roomId,
   });
   if (id.value === '1234') {
@@ -190,30 +191,30 @@ function initReceive() {
   const instance = websocketInstant.value;
   if (!instance?.socketIo) return;
   // websocket连接成功
-  instance.socketIo.on(wsConnectStatus.connect, () => {
+  instance.socketIo.on(WsConnectStatusEnum.connect, () => {
     console.log('【websocket】websocket连接成功', instance.socketIo?.id);
     if (!instance) return;
-    instance.status = statusEnum.connect;
+    instance.status = WsStatusEnum.connect;
     instance.update();
   });
 
   // 当前所有在线用户
-  instance.socketIo.on(wsMsgType.liveUser, (data) => {
+  instance.socketIo.on(WsMsgTypeEnum.liveUser, (data) => {
     console.log('【websocket】当前所有在线用户');
     if (!instance) return;
     userList.value = data;
   });
 
   // websocket连接断开
-  instance.socketIo.on(wsConnectStatus.disconnect, () => {
+  instance.socketIo.on(WsConnectStatusEnum.disconnect, () => {
     console.log('【websocket】websocket连接断开', instance);
     if (!instance) return;
-    instance.status = statusEnum.disconnect;
+    instance.status = WsStatusEnum.disconnect;
     instance.update();
   });
 
   // 收到offer
-  instance.socketIo.on(wsMsgType.offer, async (data: IOffer) => {
+  instance.socketIo.on(WsMsgTypeEnum.offer, async (data: IOffer) => {
     console.warn('【websocket】收到offer', data);
     if (!instance) return;
     const rtc = networkStore.rtcMap.get(roomId.value);
@@ -223,7 +224,7 @@ function initReceive() {
       setTimeout(async () => {
         await rtc?.setRemoteDescription(data.sdp);
         const sdp = await rtc?.createAnswer();
-        instance.socketIo?.emit(wsMsgType.answer, {
+        instance.socketIo?.emit(WsMsgTypeEnum.answer, {
           socketId: getSocketId(),
           roomId: roomId.value,
           sdp,
@@ -235,7 +236,7 @@ function initReceive() {
   });
 
   // 收到answer
-  instance.socketIo.on(wsMsgType.answer, async (data: IOffer) => {
+  instance.socketIo.on(WsMsgTypeEnum.answer, async (data: IOffer) => {
     console.warn('【websocket】收到answer', data);
     if (!instance) return;
     if (!networkStore.rtcMap.get(roomId.value)?.rtcStatus.createOffer) return;
@@ -252,7 +253,7 @@ function initReceive() {
   });
 
   // 收到candidate
-  instance.socketIo.on(wsMsgType.candidate, (data: ICandidate) => {
+  instance.socketIo.on(WsMsgTypeEnum.candidate, (data: ICandidate) => {
     console.warn('【websocket】收到candidate', data);
     if (!instance) return;
     const rtc = networkStore.rtcMap.get(roomId.value);
@@ -282,13 +283,13 @@ function initReceive() {
   });
 
   // 用户加入房间
-  instance.socketIo.on(wsMsgType.join, (data) => {
+  instance.socketIo.on(WsMsgTypeEnum.join, (data) => {
     console.log('【websocket】用户加入房间', data);
     if (!instance) return;
   });
 
   // 用户加入房间
-  instance.socketIo.on(wsMsgType.joined, (data) => {
+  instance.socketIo.on(WsMsgTypeEnum.joined, (data) => {
     console.log('【websocket】用户加入房间完成', data);
     if (!instance) return;
     console.warn('开始new WebRTCClass');
@@ -301,7 +302,7 @@ function initReceive() {
   });
 
   // 其他用户加入房间
-  instance.socketIo.on(wsMsgType.otherJoin, (data) => {
+  instance.socketIo.on(WsMsgTypeEnum.otherJoin, (data) => {
     console.log('【websocket】其他用户加入房间', data);
     if (!instance) return;
     console.log('加轨');
@@ -315,16 +316,16 @@ function initReceive() {
   });
 
   // 用户离开房间
-  instance.socketIo.on(wsMsgType.leave, (data) => {
+  instance.socketIo.on(WsMsgTypeEnum.leave, (data) => {
     console.log('【websocket】用户离开房间', data);
     if (!instance) return;
-    instance.socketIo?.emit(wsMsgType.leave, {
+    instance.socketIo?.emit(WsMsgTypeEnum.leave, {
       roomId: instance.roomId,
     });
   });
 
   // 用户离开房间完成
-  instance.socketIo.on(wsMsgType.leaved, (data) => {
+  instance.socketIo.on(WsMsgTypeEnum.leaved, (data) => {
     console.log('【websocket】用户离开房间完成', data);
     if (!instance) return;
     instance.close();
@@ -384,7 +385,7 @@ async function sendOffer() {
     sdp: localDesc,
   };
   console.warn('【websocket】发送offer', data);
-  websocketInstant.value.socketIo?.emit(wsMsgType.offer, data);
+  websocketInstant.value.socketIo?.emit(WsMsgTypeEnum.offer, data);
 }
 // async function sendAnswer(sdp) {
 //   if (!websocketInstant.value) return;
@@ -394,7 +395,7 @@ async function sendOffer() {
 //   if (!createOffer) {
 //     await networkStore.rtcMap.get(roomId.value)?.createOffer();
 //   }
-//   websocketInstant.value.socketIo?.emit(wsMsgType.answer, {
+//   websocketInstant.value.socketIo?.emit(WsMsgTypeEnum.answer, {
 //     socketId: getSocketId(),
 //     roomId: roomId.value,
 //     sdp,
@@ -408,7 +409,7 @@ function leave() {
     leaveRef.value.disabled = true;
   }
   if (!websocketInstant.value) return;
-  websocketInstant.value.socketIo?.emit(wsMsgType.leave, {
+  websocketInstant.value.socketIo?.emit(WsMsgTypeEnum.leave, {
     roomId: websocketInstant.value.roomId,
   });
 }

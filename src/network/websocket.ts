@@ -3,116 +3,123 @@ import { Socket, io } from 'socket.io-client';
 import { useNetworkStore } from '@/store/network';
 
 // websocket连接状态
-export const wsConnectStatus = {
+export enum WsConnectStatusEnum {
   /** 已连接 */
-  connection: 'connection',
+  connection = 'connection',
   /** 连接中 */
-  connecting: 'connecting',
+  connecting = 'connecting',
   /** 已连接 */
-  connected: 'connected',
+  connected = 'connected',
   /** 断开连接中 */
-  disconnecting: 'disconnecting',
+  disconnecting = 'disconnecting',
   /** 已断开连接 */
-  disconnect: 'disconnect',
+  disconnect = 'disconnect',
   /** 重新连接 */
-  reconnect: 'reconnect',
+  reconnect = 'reconnect',
   /** 客户端的已连接 */
-  connect: 'connect',
-};
+  connect = 'connect',
+}
 
 // websocket消息类型
-export const wsMsgType = {
+export enum WsMsgTypeEnum {
   /** 用户进入聊天 */
-  join: 'join',
+  join = 'join',
   /** 用户进入聊天完成 */
-  joined: 'joined',
+  joined = 'joined',
   /** 用户进入聊天 */
-  otherJoin: 'otherJoin',
+  otherJoin = 'otherJoin',
   /** 用户退出聊天 */
-  leave: 'leave',
+  leave = 'leave',
   /** 用户退出聊天完成 */
-  leaved: 'leaved',
+  leaved = 'leaved',
   /** 当前所有在线用户 */
-  liveUser: 'liveUser',
+  liveUser = 'liveUser',
   /** 人满了 */
-  full: 'full',
+  full = 'full',
   /** 用户发送消息 */
-  message: 'message',
-  offer: 'offer',
-  answer: 'answer',
-  candidate: 'candidate',
-};
-
-export enum statusEnum {
-  connect = 'connect',
-  disconnect = 'disconnect',
+  message = 'message',
+  /** 管理员在线 */
+  adminIn = 'adminIn',
+  offer = 'offer',
+  answer = 'answer',
+  candidate = 'candidate',
 }
 
 export class WebSocketClass {
   socketIo: Socket | null = null;
-  status: statusEnum = statusEnum.disconnect;
+  status: WsConnectStatusEnum = WsConnectStatusEnum.disconnect;
+  url = '';
 
-  url = 'ws://localhost:3300';
   roomId = '-1';
+  isAdmin = false;
 
-  constructor({ roomId, url }) {
+  constructor({ roomId, url, isAdmin }) {
     if (!window.WebSocket) {
       alert('当前环境不支持WebSocket！');
       return;
     }
     this.roomId = roomId;
+    this.isAdmin = isAdmin;
+
     this.url = url;
     this.socketIo = io(url, { transports: ['websocket'] });
     this.update();
 
     // // websocket连接成功
-    // this.socketIo.on(wsConnectStatus.connect, (socket) => {
+    // this.socketIo.on(WsConnectStatusEnum.connect, (socket) => {
     //   console.log('websocket连接成功', socket);
-    //   this.status = statusEnum.connect;
+    //   this.status = WsStatusEnum.connect;
     //   this.update();
-    //   this.socketIo?.emit(wsMsgType.join, { roomId: this.roomId });
+    //   this.socketIo?.emit(WsMsgTypeEnum.join, { roomId: this.roomId });
     // });
 
     // // websocket连接断开
-    // this.socketIo.on(wsConnectStatus.disconnect, () => {
+    // this.socketIo.on(WsConnectStatusEnum.disconnect, () => {
     //   console.log('websocket连接断开', this);
-    //   this.status = statusEnum.disconnect;
+    //   this.status = WsStatusEnum.disconnect;
     //   this.update();
     // });
 
     // // 用户加入房间
-    // this.socketIo.on(wsMsgType.join, (data) => {
+    // this.socketIo.on(WsMsgTypeEnum.join, (data) => {
     //   console.log('用户加入房间', data);
     // });
 
     // // 其他用户加入房间
-    // this.socketIo.on(wsMsgType.otherJoin, (data) => {
+    // this.socketIo.on(WsMsgTypeEnum.otherJoin, (data) => {
     //   console.log('其他用户加入房间', data);
     // });
 
     // // 用户离开房间
-    // this.socketIo.on(wsMsgType.leave, (data) => {
+    // this.socketIo.on(WsMsgTypeEnum.leave, (data) => {
     //   console.log('用户离开房间', data);
     // });
 
     // // 用户发送消息
-    // this.socketIo.on(wsMsgType.message, (data) => {
+    // this.socketIo.on(WsMsgTypeEnum.message, (data) => {
     //   console.log('用户发送消息', data);
     // });
 
     // // 用户发送 offer
-    // this.socketIo.on(wsMsgType.offer, (data) => {
+    // this.socketIo.on(WsMsgTypeEnum.offer, (data) => {
     //   console.log('用户发送 offer', data);
     // });
 
     // // 用户发送 answer
-    // this.socketIo.on(wsMsgType.answer, (data) => {
+    // this.socketIo.on(WsMsgTypeEnum.answer, (data) => {
     //   console.log('用户发送 answer', data);
     // });
   }
 
   // 发送websocket消息
-  send = () => {};
+  send = ({ msgType, data }: { msgType: WsMsgTypeEnum; data?: any }) => {
+    this.socketIo?.emit(msgType, {
+      roomId: this.roomId,
+      socketId: this.socketIo.id,
+      data,
+      isAdmin: this.isAdmin,
+    });
+  };
 
   // 更新store
   update = () => {

@@ -26,6 +26,7 @@ export const useNetworkStore = defineStore('network', {
       }
     },
     updateRtcMap(roomId: string, arg) {
+      // console.log('updateRtcMap', roomId, arg);
       const val = this.rtcMap.get(roomId);
       if (val) {
         this.rtcMap.set(roomId, { ...val, ...arg });

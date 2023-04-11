@@ -8,7 +8,7 @@ type RootState = {
 export const useUserStore = defineStore('user', {
   state: () => {
     return {
-      detail: { id: -1 },
+      detail: null,
     } as RootState;
   },
   actions: {
