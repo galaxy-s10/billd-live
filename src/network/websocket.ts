@@ -113,6 +113,7 @@ export class WebSocketClass {
 
   // 发送websocket消息
   send = ({ msgType, data }: { msgType: WsMsgTypeEnum; data?: any }) => {
+    console.log('【websocket】发送websocket消息', msgType, data);
     this.socketIo?.emit(msgType, {
       roomId: this.roomId,
       socketId: this.socketIo.id,

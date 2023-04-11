@@ -123,7 +123,7 @@ const websocketInstant = ref<WebSocketClass>();
 const muted = ref(true);
 const localVideoRef = ref<HTMLVideoElement>();
 const localStream = ref();
-const currType = ref(liveTypeEnum.camera); // 1:摄像头，2:录屏
+const currType = ref(liveTypeEnum.screen); // 1:摄像头，2:录屏
 const id = ref('');
 
 const route = useRoute();
@@ -203,22 +203,19 @@ onMounted(() => {
     rtc.update();
   });
 
-  localVideoRef.value?.addEventListener('loadedmetadata', () => {
+  localVideoRef.value?.addEventListener('loadedmetadata', async () => {
     console.warn('视频流-loadedmetadata');
     const rtc = networkStore.rtcMap.get(roomId.value);
     if (!rtc) return;
     rtc.rtcStatus.loadedmetadata = true;
     rtc.update();
-    setTimeout(async () => {
-      if (isAdmin.value) {
-        console.warn('发送管理员正在直播消息');
-        websocketInstant.value?.send({
-          msgType: WsMsgTypeEnum.adminIn,
-          data: { socketId: getSocketId(), roomId: roomId.value },
-        });
-        await sendOffer();
-      }
-    }, 100);
+    if (isAdmin.value) {
+      websocketInstant.value?.send({
+        msgType: WsMsgTypeEnum.adminIn,
+        data: {},
+      });
+      await sendOffer();
+    }
   });
 });
 
@@ -305,7 +302,7 @@ function initReceive() {
       console.log('收到offer，并且这个offer不是我发的', data);
       await rtc.setRemoteDescription(data.data.sdp);
       const sdp = await rtc.createAnswer();
-      console.warn('【websocket】发送answer', sdp);
+      await rtc.setLocalDescription(sdp);
       websocketInstant.value?.send({
         msgType: WsMsgTypeEnum.answer,
         data: { sdp },
@@ -319,18 +316,13 @@ function initReceive() {
   instance.socketIo.on(WsMsgTypeEnum.answer, async (data: IOffer) => {
     console.warn('【websocket】收到answer', data);
     if (!instance) return;
-    // if (!networkStore.rtcMap.get(roomId.value)?.rtcStatus.createOffer) return;
+    const rtc = networkStore.rtcMap.get(roomId.value);
+    if (!rtc) return;
+    rtc.rtcStatus.answer = true;
+    rtc.update();
     if (data.socketId !== getSocketId()) {
       console.log('不是我发的answer');
-      const rtc = networkStore.rtcMap.get(roomId.value);
-      if (!rtc) return;
-      // await rtc.setRemoteDescription(data.data.sdp);
-      // const sdp = await rtc.createAnswer();
-      // console.warn('【websocket】发送answer', sdp);
-      // websocketInstant.value?.send({
-      //   msgType: WsMsgTypeEnum.answer,
-      //   data: { sdp },
-      // });
+      await rtc.setRemoteDescription(data.data.sdp);
     } else {
       console.log('是我发的answer');
     }
@@ -353,8 +345,6 @@ function initReceive() {
         ?.addIceCandidate(candidate)
         .then(() => {
           console.log('candidate成功');
-          rtc.rtcStatus.icecandidate = true;
-          rtc.update();
         })
         .catch((err) => {
           console.error('candidate失败', err);
@@ -384,6 +374,9 @@ function initReceive() {
   instance.socketIo.on(WsMsgTypeEnum.otherJoin, (data) => {
     console.log('【websocket】其他用户加入房间', data);
     if (!instance) return;
+    if (isAdmin.value) {
+      sendOffer();
+    }
   });
 
   // 用户离开房间
@@ -414,6 +407,7 @@ async function startMediaDevices() {
   if (!localVideoRef.value) return;
   localVideoRef.value.srcObject = event;
   localStream.value = event;
+  console.log('加轨1');
   localStream.value.getTracks().forEach((track) => {
     networkStore.rtcMap.get(roomId.value)?.addTrack(track, localStream.value);
   });
@@ -430,6 +424,7 @@ async function startGetDisplayMedia() {
   if (!localVideoRef.value) return;
   localVideoRef.value.srcObject = event;
   localStream.value = event;
+  console.log('加轨2');
   localStream.value.getTracks().forEach((track) => {
     console.log(track, networkStore.rtcMap.get(roomId.value));
     networkStore.rtcMap.get(roomId.value)?.addTrack(track, localStream.value);
@@ -440,13 +435,14 @@ async function sendOffer() {
   if (!websocketInstant.value) return;
   const rtc = networkStore.rtcMap.get(roomId.value);
   if (!rtc) return;
-  const sdp = await rtc.createOffer();
-  await rtc.setLocalDescription(sdp);
-  console.warn('【websocket】发送offer', sdp);
-  websocketInstant.value.send({
-    msgType: WsMsgTypeEnum.offer,
-    data: { sdp },
-  });
+  if (isAdmin.value) {
+    const sdp = await rtc.createOffer();
+    await rtc.setLocalDescription(sdp);
+    websocketInstant.value.send({
+      msgType: WsMsgTypeEnum.offer,
+      data: { sdp },
+    });
+  }
 }
 
 function leave() {

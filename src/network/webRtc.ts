@@ -103,7 +103,6 @@ export class WebRTCClass {
   };
 
   localDescription: any;
-  answerDescription: any;
   stream: any;
 
   constructor({ roomId }) {
@@ -326,6 +325,7 @@ export class WebRTCClass {
         { browser: this.browser.browser },
         'warn'
       );
+      console.log('createOffer', description);
       return description;
     } catch (error) {
       prettierInfo(
@@ -345,7 +345,6 @@ export class WebRTCClass {
       { browser: this.browser.browser },
       'warn'
     );
-    console.log(description);
     try {
       await this.peerConnection.setLocalDescription(description);
       this.rtcStatus.setLocalDescription = true;
@@ -355,6 +354,7 @@ export class WebRTCClass {
         { browser: this.browser.browser },
         'warn'
       );
+      console.log(description);
     } catch (error) {
       prettierInfo(
         'setLocalDescription失败',
@@ -372,23 +372,14 @@ export class WebRTCClass {
     prettierInfo('createAnswer开始', { browser: this.browser.browser }, 'warn');
     try {
       const description = await this.peerConnection.createAnswer();
-      this.answerDescription = description;
       this.update();
       prettierInfo(
         'createAnswer成功',
         { browser: this.browser.browser },
         'warn'
       );
+      console.log(description);
       return description;
-      // console.log('开始设置本地描述', description);
-      // await this.peerConnection.setLocalDescription(description);
-      // this.localDescription = description;
-      // this.rtcStatus.setLocalDescription = true;
-      // prettierInfo(
-      //   'setLocalDescription成功',
-      //   { browser: this.browser.browser },
-      //   'warn'
-      // );
     } catch (error) {
       prettierInfo(
         'createAnswer失败',
@@ -400,14 +391,13 @@ export class WebRTCClass {
   };
 
   // 设置远端描述
-  setRemoteDescription = async (description: any) => {
+  setRemoteDescription = async (description) => {
     if (!this.peerConnection) return;
     prettierInfo(
       `setRemoteDescription开始`,
       { browser: this.browser.browser },
       'warn'
     );
-    console.log(description);
     try {
       await this.peerConnection.setRemoteDescription(
         new RTCSessionDescription(description)
@@ -419,6 +409,7 @@ export class WebRTCClass {
         { browser: this.browser.browser },
         'warn'
       );
+      console.log(description);
     } catch (error) {
       prettierInfo(
         'setRemoteDescription失败',
@@ -441,17 +432,17 @@ export class WebRTCClass {
   };
 
   // 创建连接
-  createConnect = () => {
+  startConnect = () => {
     if (!this.peerConnection) return;
     console.warn('开始监听pc的icecandidate');
     this.peerConnection.addEventListener('icecandidate', (event) => {
-      this.rtcStatus.icecandidate = true;
-      this.update();
       prettierInfo(
         'pc收到icecandidate',
         { browser: this.browser.browser },
         'warn'
       );
+      this.rtcStatus.icecandidate = true;
+      this.update();
       if (event.candidate) {
         const networkStore = useNetworkStore();
         this.candidateFlag = true;
@@ -465,6 +456,8 @@ export class WebRTCClass {
         networkStore.wsMap
           .get(this.roomId)
           ?.send({ msgType: WsMsgTypeEnum.candidate, data });
+      } else {
+        console.log('没有候选者了');
       }
     });
 
@@ -476,10 +469,11 @@ export class WebRTCClass {
       this.addStream(event.stream);
     });
 
-    console.warn('开始监听pc的ontrack');
-    this.peerConnection.addEventListener('ontrack', (event: any) => {
-      console.log('pc收到ontrack事件', event.stream);
-    });
+    // console.warn('开始监听pc的ontrack');
+    // this.peerConnection.addEventListener('ontrack', (event: any) => {
+    //   console.log('pc收到ontrack事件', event.stream);
+    //   this.addStream(event.streams[0]);
+    // });
 
     console.warn('开始监听pc的addtrack');
     this.peerConnection.addEventListener('addtrack', (event: any) => {
@@ -529,16 +523,16 @@ export class WebRTCClass {
     }
     if (!this.peerConnection) {
       this.peerConnection = new RTCPeerConnection({
-        // iceServers: [
-        //   // {
-        //   //   urls: 'stun:stun.l.google.com:19302',
-        //   // },
-        //   {
-        //     urls: 'turn:hsslive.cn:3478',
-        //     username: 'hss',
-        //     credential: '123456',
-        //   },
-        // ],
+        iceServers: [
+          // {
+          //   urls: 'stun:stun.l.google.com:19302',
+          // },
+          {
+            urls: 'turn:hsslive.cn:3478',
+            username: 'hss',
+            credential: '123456',
+          },
+        ],
       });
       // this.dataChannel =
       //   this.peerConnection.createDataChannel('MessageChannel');
@@ -554,7 +548,7 @@ export class WebRTCClass {
       // };
       // this.peerConnection.addTransceiver('video', { direction: 'recvonly' });
       // this.peerConnection.addTransceiver('audio', { direction: 'recvonly' });
-      this.createConnect();
+      this.startConnect();
       this.update();
     }
   }
