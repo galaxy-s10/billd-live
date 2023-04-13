@@ -103,9 +103,8 @@ export class WebRTCClass {
   };
 
   localDescription: any;
-  stream: any;
 
-  constructor({ roomId }) {
+  constructor({ roomId }: { roomId: string }) {
     this.roomId = roomId;
     this.browser = browserTool();
     this.createPeerConnection();
@@ -115,7 +114,8 @@ export class WebRTCClass {
 
   addTrack = (track, stream) => {
     console.warn('addTrackaddTrack', track, stream);
-    this.peerConnection?.addTrack(track, stream);
+    this.peerConnection?.addTransceiver(track, { streams: [stream] });
+    // this.peerConnection?.addTrack(track, stream);
   };
 
   handleWebRtcError = () => {
@@ -431,10 +431,37 @@ export class WebRTCClass {
     prettierInfo('addStream成功', { browser: this.browser.browser }, 'warn');
   };
 
+  handleStream = () => {
+    console.warn(`${this.roomId}，开始监听pc的addstream`);
+    this.peerConnection?.addEventListener('addstream', (event: any) => {
+      console.warn(`${this.roomId}，pc收到addstream事件`, event, event.stream);
+      this.addStream(event.stream);
+    });
+
+    console.warn(`${this.roomId}，开始监听pc的ontrack`);
+    this.peerConnection?.addEventListener('ontrack', (event: any) => {
+      console.warn(`${this.roomId}，pc收到ontrack事件`, event);
+      this.addStream(event.streams[0]);
+    });
+
+    console.warn(`${this.roomId}，开始监听pc的addtrack`);
+    this.peerConnection?.addEventListener('addtrack', (event: any) => {
+      console.warn(`${this.roomId}，pc收到addtrack事件`, event);
+    });
+
+    console.warn(`${this.roomId}，开始监听pc的track`);
+    this.peerConnection?.addEventListener('track', (event: any) => {
+      console.warn(`${this.roomId}，pc收到track事件`, event);
+      this.addStream(event.streams[0]);
+      // document.querySelector<HTMLVideoElement>('#localVideo')!.srcObject =
+      //   event.streams[0];
+    });
+  };
+
   // 创建连接
   startConnect = () => {
     if (!this.peerConnection) return;
-    console.warn('开始监听pc的icecandidate');
+    console.warn(`${this.roomId}，开始监听pc的icecandidate`);
     this.peerConnection.addEventListener('icecandidate', (event) => {
       prettierInfo(
         'pc收到icecandidate',
@@ -452,47 +479,28 @@ export class WebRTCClass {
           candidate: event.candidate.candidate,
           sdpMid: event.candidate.sdpMid,
           sdpMLineIndex: event.candidate.sdpMLineIndex,
+          // sender: networkStore.wsMap.get(this.roomId)?.socketIo?.id,
         };
+        const roomId = this.roomId.split('___')[0];
         networkStore.wsMap
-          .get(this.roomId)
+          .get(roomId)
           ?.send({ msgType: WsMsgTypeEnum.candidate, data });
       } else {
         console.log('没有候选者了');
       }
     });
 
-    console.warn('开始监听pc的addstream');
-    this.peerConnection.addEventListener('addstream', (event: any) => {
-      console.log('pc收到addstream事件', event.stream);
-      // document.querySelector<HTMLVideoElement>('#localVideo')!.srcObject =
-      //   event.stream;
-      this.addStream(event.stream);
-    });
-
-    // console.warn('开始监听pc的ontrack');
-    // this.peerConnection.addEventListener('ontrack', (event: any) => {
-    //   console.log('pc收到ontrack事件', event.stream);
-    //   this.addStream(event.streams[0]);
-    // });
-
-    console.warn('开始监听pc的addtrack');
-    this.peerConnection.addEventListener('addtrack', (event: any) => {
-      console.log('pc收到addtrack事件', event.stream);
-    });
-
-    console.warn('开始监听pc的track');
-    this.peerConnection.addEventListener('track', (event: any) => {
-      console.log('pc收到track事件', event);
-      this.addStream(event.streams[0]);
-      // document.querySelector<HTMLVideoElement>('#localVideo')!.srcObject =
-      //   event.streams[0];
-    });
+    this.handleStream();
 
     // connectionstatechange
     this.peerConnection.addEventListener(
       'connectionstatechange',
       (event: any) => {
-        console.log('connectionstatechange', event);
+        prettierInfo(
+          'pc收到connectionstatechange',
+          { browser: this.browser.browser },
+          'warn'
+        );
         const connectionState = event.currentTarget.connectionState;
         const iceConnectionState = event.currentTarget.iceConnectionState;
         console.log(

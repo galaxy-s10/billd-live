@@ -38,6 +38,7 @@
     "flv.js": "^1.6.2",
     "pinia": "^2.0.11",
     "socket.io-client": "^4.6.1",
+    "vconsole": "^3.15.0",
     "vue": "^3.2.31",
     "vue-demi": "^0.13.11",
     "vue-router": "^4.0.13",

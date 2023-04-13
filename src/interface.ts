@@ -3,3 +3,10 @@ export enum liveTypeEnum {
   camera,
   screen,
 }
+
+export interface IAdminIn {
+  roomId: string;
+  socketId: string;
+  isAdmin: boolean;
+  data: any;
+}

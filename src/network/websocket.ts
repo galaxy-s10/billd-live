@@ -130,7 +130,7 @@ export class WebSocketClass {
 
   // 手动关闭websocket连接
   close = () => {
-    console.warn('手动关闭websocket连接');
+    console.warn('手动关闭websocket连接', this.socketIo?.id);
     this.socketIo?.close();
   };
 
