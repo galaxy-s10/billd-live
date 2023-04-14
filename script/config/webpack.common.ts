@@ -64,7 +64,7 @@ const sassRules = (isProduction: boolean, module?: boolean) => {
       options: {
         sourceMap: false,
         // 根据sass-loader9.x以后使用additionalData，9.x以前使用prependData
-        additionalData: `@use 'billd-scss/src/index.scss' as *;`,
+        additionalData: `@use 'billd-scss/src/index.scss' as *;@import '@/assets/constant.scss';`,
       },
     },
   ].filter(Boolean);

@@ -1,7 +1,12 @@
 <template>
   <div class="head-wrap">
     <div class="left">
-      <div class="logo">Billd直播</div>
+      <div
+        class="logo"
+        @click="router.push('/')"
+      >
+        Billd直播
+      </div>
       <div class="nav">
         <div
           v-for="(item, index) in list"
@@ -21,9 +26,9 @@
     </div>
     <div class="right">
       <div class="avatar">{{ !userStore.detail && '登录' }}</div>
-      <div class="item">动态</div>
+      <!-- <div class="item">动态</div>
       <div class="item">签到</div>
-      <div class="item">饭贩</div>
+      <div class="item">饭贩</div> -->
       <div
         v-if="id === '1234'"
         class="start"
@@ -37,24 +42,29 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import { useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
 
 const route = useRoute();
+const router = useRouter();
 
 const id = route.query.id;
 const userStore = useUserStore();
 const appStore = useAppStore();
 
 const list = ref([
-  { ico: '', title: '首页' },
-  { title: '直播' },
-  { title: '全部' },
-  { title: '网游' },
-  { title: '手游' },
-  { title: '单机游戏' },
+  { ico: '', title: '一对一直播' },
+  { title: '一对多直播' },
+  // { title: '多对多直播' },
+  { title: '拉流展示' },
+  // { ico: '', title: '首页' },
+  // { title: '直播' },
+  // { title: '全部' },
+  // { title: '网游' },
+  // { title: '手游' },
+  // { title: '单机游戏' },
 ]);
 </script>
 
@@ -77,6 +87,7 @@ const list = ref([
       color: white;
       text-align: center;
       line-height: 40px;
+      cursor: pointer;
     }
     .nav {
       display: flex;

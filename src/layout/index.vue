@@ -14,6 +14,5 @@ import HeadCpt from './head/index.vue';
 <style lang="scss" scoped>
 .layout {
   min-height: 100vh;
-  background-color: skyblue;
 }
 </style>

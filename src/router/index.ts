@@ -15,6 +15,16 @@ export const defaultRoutes: RouteRecordRaw[] = [
         path: '/',
         component: () => import('@/views/home/index.vue'),
       },
+      {
+        name: 'push',
+        path: '/push',
+        component: () => import('@/views/push/index.vue'),
+      },
+      {
+        name: 'pull',
+        path: '/:roomId',
+        component: () => import('@/views/pull/index.vue'),
+      },
     ],
   },
 ];

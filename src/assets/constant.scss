@@ -1,0 +1,17 @@
+// constant.scss放的是一些sass变量
+// 用法：.header{color: $theme-color1;}
+// 编译结果：.header{color: #0984e3;}
+
+// :root 这个 CSS 伪类匹配文档树的根元素。对于 HTML 来说，:root 表示 <html> 元素，除了优先级更高之外，与 html 选择器相同。
+:root {
+  --dark-primary-color: 'red'; //CSS 自定义属性（变量）
+  --light-primary-color: blue; //CSS 自定义属性（变量）
+}
+
+$large-width: 1400px;
+$medium-width: 1100px;
+$small-width: 800px;
+
+$large-left-width: 1100px;
+$medium-left-width: 900px;
+$small-left-width: 600px;
