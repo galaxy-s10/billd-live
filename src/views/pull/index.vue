@@ -6,20 +6,19 @@
           <div class="avatar"></div>
           <div class="detail">
             <div class="top">
-              <span class="tag">未开播</span>
-              <button @click="addTrack">addTrack</button>
+              <!-- <span class="tag">未开播</span> -->
+              <!-- <button @click="addTrack">addTrack</button>
               <button @click="handleMedia">handleMedia</button>
-              <button @click="batchSendOffer">batchSendOffer</button>
+              <button @click="batchSendOffer">batchSendOffer</button> -->
               <!-- 房东的猫livehouse/音乐节 -->
-              {{ networkStore.getRtcMap(roomId)?.rtcStatus }}
             </div>
             <div class="bottom">
               <span class="tag">UP 3</span>
-              {{ getSocketId() }}
+              <span>socketId：{{ getSocketId() }}</span>
             </div>
           </div>
         </div>
-        <div class="other">
+        <!-- <div class="other">
           <div class="top">
             <span class="item">
               <i class="ico"></i>
@@ -35,7 +34,7 @@
             </span>
           </div>
           <div class="bottom">关注量：5</div>
-        </div>
+        </div> -->
       </div>
       <div class="video-wrap">
         <video
@@ -121,15 +120,13 @@ const appStore = useAppStore();
 const roomIdRef = ref<HTMLInputElement>();
 const joinRef = ref<HTMLButtonElement>();
 const leaveRef = ref<HTMLButtonElement>();
-const defaultRoomId = '19990507';
-const roomId = ref<string>(defaultRoomId);
+const roomId = ref('');
 const websocketInstant = ref<WebSocketClass>();
 const isDone = ref(false);
 const muted = ref(true);
 const localVideoRef = ref<HTMLVideoElement>();
 const localStream = ref();
 const currType = ref(liveTypeEnum.camera); // 1:摄像头，2:录屏
-const id = ref('');
 const joined = ref(false);
 const isAdmin = ref(route.query.id === '1234');
 const offerSended = ref(new Set());
@@ -143,20 +140,20 @@ const giftList = ref([
 ]);
 const msgList = ref([
   { nickname: '鲜花', msgType: 1, msg: '423425' },
-  { nickname: '肥宅水', msgType: 1, msg: 'sdgdsgsg' },
-  { nickname: '小鸡腿', msgType: 1, msg: '63463gsd' },
-  { nickname: '大鸡腿', msgType: 1, msg: '46326fb26' },
-  { nickname: '一杯咖啡', msgType: 1, msg: 'shgd544' },
-  { nickname: 'sdsg', msgType: 1, msg: 'shgd544' },
-  { nickname: 'gdsg', msgType: 1, msg: 'we' },
-  { nickname: 'sgdx', msgType: 1, msg: 'shgd544' },
-  { nickname: 'gsdx', msgType: 1, msg: 'ew' },
-  { nickname: 'gs', msgType: 1, msg: 'etew' },
-  { nickname: 'gwe', msgType: 1, msg: 'shgd544' },
-  { nickname: 'tewtwe', msgType: 1, msg: 'shgd544' },
-  { nickname: 'hdfh', msgType: 1, msg: 'ew' },
-  { nickname: '534', msgType: 1, msg: 'etew' },
-  { nickname: '234232', msgType: 1, msg: 'shgd544' },
+  // { nickname: '肥宅水', msgType: 1, msg: 'sdgdsgsg' },
+  // { nickname: '小鸡腿', msgType: 1, msg: '63463gsd' },
+  // { nickname: '大鸡腿', msgType: 1, msg: '46326fb26' },
+  // { nickname: '一杯咖啡', msgType: 1, msg: 'shgd544' },
+  // { nickname: 'sdsg', msgType: 1, msg: 'shgd544' },
+  // { nickname: 'gdsg', msgType: 1, msg: 'we' },
+  // { nickname: 'sgdx', msgType: 1, msg: 'shgd544' },
+  // { nickname: 'gsdx', msgType: 1, msg: 'ew' },
+  // { nickname: 'gs', msgType: 1, msg: 'etew' },
+  // { nickname: 'gwe', msgType: 1, msg: 'shgd544' },
+  // { nickname: 'tewtwe', msgType: 1, msg: 'shgd544' },
+  // { nickname: 'hdfh', msgType: 1, msg: 'ew' },
+  // { nickname: '534', msgType: 1, msg: 'etew' },
+  // { nickname: '234232', msgType: 1, msg: 'shgd544' },
 ]);
 
 const liveUserList = ref<
@@ -168,7 +165,7 @@ const liveUserList = ref<
 >([]);
 
 onMounted(() => {
-  id.value = route.query.id as string;
+  roomId.value = route.params.roomId as string;
   websocketInstant.value = new WebSocketClass({
     roomId: roomId.value,
     url:
@@ -291,9 +288,14 @@ function initReceive() {
   });
 
   // 当前所有在线用户
-  instance.socketIo.on(WsMsgTypeEnum.liveUser, () => {
-    console.log('【websocket】当前所有在线用户');
+  instance.socketIo.on(WsMsgTypeEnum.liveUser, (data) => {
+    console.log('【websocket】当前所有在线用户', data);
     if (!instance) return;
+    liveUserList.value = data.map((item) => ({
+      avatar: 'red',
+      socketId: item.id,
+      expr: 1,
+    }));
   });
 
   // 收到offer
@@ -373,22 +375,21 @@ function initReceive() {
   instance.socketIo.on(WsMsgTypeEnum.joined, (data) => {
     console.log('【websocket】用户加入房间完成', data);
     joined.value = true;
-    liveUserList.value.push({
-      avatar: 'red',
-      socketId: `${getSocketId()}`,
-      expr: 1,
-    });
+    // liveUserList.value.push({
+    //   avatar: 'red',
+    //   socketId: `${getSocketId()}`,
+    //   expr: 1,
+    // });
   });
 
   // 其他用户加入房间
   instance.socketIo.on(WsMsgTypeEnum.otherJoin, (data) => {
     console.log('【websocket】其他用户加入房间', data);
-    liveUserList.value.push({
-      avatar: 'red',
-      socketId: data.socketId,
-      expr: 1,
-    });
-    console.log('当前所有在线用户', JSON.stringify(liveUserList.value));
+    // liveUserList.value.push({
+    //   avatar: 'red',
+    //   socketId: data.socketId,
+    //   expr: 1,
+    // });
     if (isAdmin.value && joined.value) {
       batchSendOffer();
     }
@@ -585,8 +586,8 @@ function leave() {
       // height: 550px;
       background-color: #18191c;
       #localVideo {
-        width: 100%;
-        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
       }
     }
     .gift {

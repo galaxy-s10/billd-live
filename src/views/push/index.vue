@@ -118,6 +118,7 @@
 </template>
 
 <script lang="ts" setup>
+import { getRandomString } from 'billd-utils';
 import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -137,7 +138,7 @@ const appStore = useAppStore();
 const roomIdRef = ref<HTMLInputElement>();
 const joinRef = ref<HTMLButtonElement>();
 const leaveRef = ref<HTMLButtonElement>();
-const defaultRoomId = '19990507';
+const defaultRoomId = getRandomString(15);
 const roomId = ref<string>(defaultRoomId);
 const roomName = ref('');
 const roomNameRef = ref<HTMLInputElement>();
@@ -384,6 +385,7 @@ function initReceive() {
       expr: 1,
     });
     console.log('当前所有在线用户', JSON.stringify(liveUserList.value));
+    console.log(isAdmin.value, joined.value);
     if (isAdmin.value && joined.value) {
       batchSendOffer();
     }
