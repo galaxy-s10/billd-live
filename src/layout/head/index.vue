@@ -25,6 +25,13 @@
       />
     </div>
     <div class="right">
+      <a
+        href="https://github.com/galaxy-s10/billd-live"
+        target="_blank"
+        class="github"
+      >
+        github
+      </a>
       <div
         v-if="route.path === '/'"
         class="start"
@@ -108,19 +115,7 @@ function goPushPage() {
     display: flex;
     align-items: center;
     padding-right: 20px;
-    .avatar {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-right: 20px;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background-color: skyblue;
-      color: white;
-      font-size: 14px;
-    }
-    .item {
+    .github {
       margin-right: 20px;
     }
 
