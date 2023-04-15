@@ -14,7 +14,7 @@ billd 直播间（前端），目前实现了类似 bilibili 的直播功能，�
 
 <div>
   <video
-    src="https://project.hsslive.cn/billd_live.mp4"
+    src="https://user-images.githubusercontent.com/61055341/232222153-cbd0c7d9-ae1c-436f-9fa4-a3c4c9537a95.mp4"
     autoplay
     webkit-playsinline="true"
     playsinline
