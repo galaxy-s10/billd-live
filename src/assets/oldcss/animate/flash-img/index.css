@@ -1,8 +1,0 @@
-@keyframes flashImgMove {
-  0% {
-    transform: translate(-50%, -50%) rotate(45deg);
-  }
-  100% {
-    transform: translate(50%, 80%) rotate(45deg);
-  }
-}

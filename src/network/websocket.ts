@@ -34,12 +34,12 @@ export enum WsMsgTypeEnum {
   leaved = 'leaved',
   /** 当前所有在线用户 */
   liveUser = 'liveUser',
-  /** 人满了 */
-  full = 'full',
   /** 用户发送消息 */
   message = 'message',
-  /** 管理员在线 */
-  adminIn = 'adminIn',
+  /** 房间正在直播 */
+  roomLiveing = 'roomLiveing',
+  /** 房间不在直播 */
+  roomNoLive = 'roomNoLive',
   offer = 'offer',
   answer = 'answer',
   candidate = 'candidate',
@@ -64,51 +64,6 @@ export class WebSocketClass {
     this.url = url;
     this.socketIo = io(url, { transports: ['websocket'] });
     this.update();
-
-    // // websocket连接成功
-    // this.socketIo.on(WsConnectStatusEnum.connect, (socket) => {
-    //   console.log('websocket连接成功', socket);
-    //   this.status = WsStatusEnum.connect;
-    //   this.update();
-    //   this.socketIo?.emit(WsMsgTypeEnum.join, { roomId: this.roomId });
-    // });
-
-    // // websocket连接断开
-    // this.socketIo.on(WsConnectStatusEnum.disconnect, () => {
-    //   console.log('websocket连接断开', this);
-    //   this.status = WsStatusEnum.disconnect;
-    //   this.update();
-    // });
-
-    // // 用户加入房间
-    // this.socketIo.on(WsMsgTypeEnum.join, (data) => {
-    //   console.log('用户加入房间', data);
-    // });
-
-    // // 其他用户加入房间
-    // this.socketIo.on(WsMsgTypeEnum.otherJoin, (data) => {
-    //   console.log('其他用户加入房间', data);
-    // });
-
-    // // 用户离开房间
-    // this.socketIo.on(WsMsgTypeEnum.leave, (data) => {
-    //   console.log('用户离开房间', data);
-    // });
-
-    // // 用户发送消息
-    // this.socketIo.on(WsMsgTypeEnum.message, (data) => {
-    //   console.log('用户发送消息', data);
-    // });
-
-    // // 用户发送 offer
-    // this.socketIo.on(WsMsgTypeEnum.offer, (data) => {
-    //   console.log('用户发送 offer', data);
-    // });
-
-    // // 用户发送 answer
-    // this.socketIo.on(WsMsgTypeEnum.answer, (data) => {
-    //   console.log('用户发送 answer', data);
-    // });
   }
 
   // 发送websocket消息

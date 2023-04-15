@@ -1,107 +1,100 @@
 <template>
   <div class="pull-wrap">
-    <div class="left">
-      <div class="head">
-        <div class="info">
-          <div class="avatar"></div>
-          <div class="detail">
-            <div class="top">
-              <!-- <span class="tag">未开播</span> -->
-              <!-- <button @click="addTrack">addTrack</button>
-              <button @click="handleMedia">handleMedia</button>
-              <button @click="batchSendOffer">batchSendOffer</button> -->
-              <!-- 房东的猫livehouse/音乐节 -->
-            </div>
-            <div class="bottom">
-              <span class="tag">UP 3</span>
-              <span>socketId：{{ getSocketId() }}</span>
-            </div>
-          </div>
-        </div>
-        <!-- <div class="other">
-          <div class="top">
-            <span class="item">
-              <i class="ico"></i>
-              <span>直播间管理</span>
-            </span>
-            <span class="item">
-              <i class="ico"></i>
-              <span>1人看过</span>
-            </span>
-            <span class="item">
-              <i class="ico"></i>
-              <span>分享</span>
-            </span>
-          </div>
-          <div class="bottom">关注量：5</div>
-        </div> -->
-      </div>
-      <div class="video-wrap">
-        <video
-          id="localVideo"
-          ref="localVideoRef"
-          autoplay
-          webkit-playsinline="true"
-          playsinline
-          x-webkit-airplay="allow"
-          x5-video-player-type="h5"
-          x5-video-player-fullscreen="true"
-          x5-video-orientation="portraint"
-          :muted="muted"
-          controls
-        ></video>
-      </div>
-      <div class="gift">
+    <template v-if="roomNoLive">当前房间没在直播~</template>
+    <template v-else>
+      <div class="left">
         <div
-          v-for="(item, index) in giftList"
-          :key="index"
-          class="item"
-        >
-          <div class="ico"></div>
-          <div class="name">{{ item.name }}</div>
-          <div class="price">{{ item.price }}</div>
-        </div>
-      </div>
-    </div>
-    <div class="right">
-      <div class="tab">
-        <span>在线用户</span>
-        <span> | </span>
-        <span>大航海</span>
-      </div>
-      <div class="user-list">
-        <div
-          v-for="(item, index) in liveUserList"
-          :key="index"
-          class="item"
+          ref="topRef"
+          class="head"
         >
           <div class="info">
             <div class="avatar"></div>
-            <div class="nickname">{{ item.socketId }}</div>
+            <div class="detail">
+              <div class="top">房间号：{{ route.params.roomId }}</div>
+              <div class="bottom">
+                <span>你的socketId：{{ getSocketId() }}</span>
+              </div>
+            </div>
           </div>
-          <div class="expr">{{ item.expr }}</div>
         </div>
-      </div>
-      <div class="msg-list">
+        <div class="video-wrap">
+          <video
+            id="localVideo"
+            ref="localVideoRef"
+            autoplay
+            webkit-playsinline="true"
+            playsinline
+            x-webkit-airplay="allow"
+            x5-video-player-type="h5"
+            x5-video-player-fullscreen="true"
+            x5-video-orientation="portraint"
+            muted
+            controls
+          ></video>
+        </div>
         <div
-          v-for="(item, index) in msgList"
-          :key="index"
-          class="item"
+          ref="bottomRef"
+          class="gift"
         >
-          <span class="name">{{ item.nickname }}：</span>
-          <span class="msg">{{ item.msg }}</span>
+          <div
+            v-for="(item, index) in giftList"
+            :key="index"
+            class="item"
+          >
+            <div class="ico"></div>
+            <div class="name">{{ item.name }}</div>
+            <div class="price">{{ item.price }}</div>
+          </div>
         </div>
       </div>
-      <div class="send-msg">
-        <textarea class="ipt"></textarea>
-        <div class="btn">发送</div>
+      <div class="right">
+        <div class="tab">
+          <span>在线用户</span>
+          <span> | </span>
+          <span>大航海</span>
+        </div>
+        <div class="user-list">
+          <div
+            v-for="(item, index) in liveUserList"
+            :key="index"
+            class="item"
+          >
+            <div class="info">
+              <div class="avatar"></div>
+              <div class="nickname">{{ item.socketId }}</div>
+            </div>
+            <div class="expr">{{ item.expr }}</div>
+          </div>
+        </div>
+        <div class="danmu-list">
+          <div
+            v-for="(item, index) in damuList"
+            :key="index"
+            class="item"
+          >
+            <span class="name">{{ item.socketId }}：</span>
+            <span class="msg">{{ item.msg }}</span>
+          </div>
+        </div>
+        <div class="send-msg">
+          <textarea
+            v-model="danmuStr"
+            class="ipt"
+          ></textarea>
+          <div
+            class="btn"
+            @click="sendDanmu"
+          >
+            发送
+          </div>
+        </div>
       </div>
-    </div>
+    </template>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { IAdminIn, ICandidate, IOffer, liveTypeEnum } from '@/interface';
@@ -117,18 +110,21 @@ import { useNetworkStore } from '@/store/network';
 const networkStore = useNetworkStore();
 const route = useRoute();
 const appStore = useAppStore();
+const danmuStr = ref('');
+const topRef = ref<HTMLDivElement>();
+const bottomRef = ref<HTMLDivElement>();
+const roomNoLive = ref(false);
+const isAddTrack = ref(false);
 const roomIdRef = ref<HTMLInputElement>();
 const joinRef = ref<HTMLButtonElement>();
 const leaveRef = ref<HTMLButtonElement>();
 const roomId = ref('');
 const websocketInstant = ref<WebSocketClass>();
 const isDone = ref(false);
-const muted = ref(true);
 const localVideoRef = ref<HTMLVideoElement>();
 const localStream = ref();
 const currType = ref(liveTypeEnum.camera); // 1:摄像头，2:录屏
 const joined = ref(false);
-const isAdmin = ref(route.query.id === '1234');
 const offerSended = ref(new Set());
 
 const giftList = ref([
@@ -138,23 +134,14 @@ const giftList = ref([
   { name: '大鸡腿', ico: '', price: '5元' },
   { name: '一杯咖啡', ico: '', price: '10元' },
 ]);
-const msgList = ref([
-  { nickname: '鲜花', msgType: 1, msg: '423425' },
-  // { nickname: '肥宅水', msgType: 1, msg: 'sdgdsgsg' },
-  // { nickname: '小鸡腿', msgType: 1, msg: '63463gsd' },
-  // { nickname: '大鸡腿', msgType: 1, msg: '46326fb26' },
-  // { nickname: '一杯咖啡', msgType: 1, msg: 'shgd544' },
-  // { nickname: 'sdsg', msgType: 1, msg: 'shgd544' },
-  // { nickname: 'gdsg', msgType: 1, msg: 'we' },
-  // { nickname: 'sgdx', msgType: 1, msg: 'shgd544' },
-  // { nickname: 'gsdx', msgType: 1, msg: 'ew' },
-  // { nickname: 'gs', msgType: 1, msg: 'etew' },
-  // { nickname: 'gwe', msgType: 1, msg: 'shgd544' },
-  // { nickname: 'tewtwe', msgType: 1, msg: 'shgd544' },
-  // { nickname: 'hdfh', msgType: 1, msg: 'ew' },
-  // { nickname: '534', msgType: 1, msg: 'etew' },
-  // { nickname: '234232', msgType: 1, msg: 'shgd544' },
-]);
+
+const damuList = ref<
+  {
+    socketId: string;
+    msgType: number;
+    msg: string;
+  }[]
+>([]);
 
 const liveUserList = ref<
   {
@@ -164,19 +151,55 @@ const liveUserList = ref<
   }[]
 >([]);
 
+function closeWs() {
+  const instance = networkStore.wsMap.get(roomId.value);
+  if (!instance) return;
+  instance.close();
+}
+
+function sendDanmu() {
+  if (!danmuStr.value.length) {
+    alert('请输入弹幕内容！');
+  }
+  if (!websocketInstant.value) return;
+  websocketInstant.value.send({
+    msgType: WsMsgTypeEnum.message,
+    data: { msg: danmuStr.value },
+  });
+  damuList.value.push({
+    socketId: getSocketId(),
+    msgType: 1,
+    msg: danmuStr.value,
+  });
+  danmuStr.value = '';
+}
+
+onUnmounted(() => {
+  closeWs();
+});
+
 onMounted(() => {
+  if (topRef.value && bottomRef.value && localVideoRef.value) {
+    const res =
+      bottomRef.value.getBoundingClientRect().top -
+      (topRef.value.getBoundingClientRect().top +
+        topRef.value.getBoundingClientRect().height);
+    localVideoRef.value.style.height = `${res}px`;
+  }
   roomId.value = route.params.roomId as string;
+  console.warn('开始new WebSocketClass');
   websocketInstant.value = new WebSocketClass({
     roomId: roomId.value,
     url:
       process.env.NODE_ENV === 'development'
         ? 'ws://localhost:4300'
         : 'wss://live.hsslive.cn',
-    isAdmin: isAdmin.value,
+    isAdmin: false,
   });
   websocketInstant.value.update();
   initReceive();
   sendJoin();
+
   localVideoRef.value?.addEventListener('loadstart', () => {
     console.warn('视频流-loadstart');
     const rtc = networkStore.getRtcMap(roomId.value);
@@ -185,38 +208,15 @@ onMounted(() => {
     rtc.update();
   });
 
-  localVideoRef.value?.addEventListener('abort', () => {
-    console.warn('视频流-abort');
-  });
-
-  localVideoRef.value?.addEventListener('pause', () => {
-    console.warn('视频流-pause');
-  });
-  localVideoRef.value?.addEventListener('error', () => {
-    console.warn('视频流-error');
-  });
-
   localVideoRef.value?.addEventListener('loadedmetadata', () => {
     console.warn('视频流-loadedmetadata');
     const rtc = networkStore.getRtcMap(roomId.value);
     if (!rtc) return;
     rtc.rtcStatus.loadedmetadata = true;
     rtc.update();
-    if (isAdmin.value) {
-      batchSendOffer();
-    }
+    batchSendOffer();
   });
 });
-
-watch(
-  () => appStore.liveStatus,
-  (newVal) => {
-    if (newVal) {
-      console.log('开始直播');
-      handleMedia();
-    }
-  }
-);
 
 function getSocketId() {
   return networkStore.wsMap.get(roomId.value!)?.socketIo?.id || '-1';
@@ -247,18 +247,10 @@ function batchSendOffer() {
   });
 }
 
-async function handleMedia() {
-  if (isAdmin.value) {
-    try {
-      if (currType.value === liveTypeEnum.camera) {
-        await startMediaDevices();
-      } else if (currType.value === liveTypeEnum.screen) {
-        await startGetDisplayMedia();
-      }
-    } catch (error) {
-      console.log('用户拒绝', error);
-    }
-  }
+function closeRtc() {
+  networkStore.rtcMap.forEach((rtc) => {
+    rtc.close();
+  });
 }
 
 function initReceive() {
@@ -281,10 +273,15 @@ function initReceive() {
   });
 
   // 当前所有在线用户
-  instance.socketIo.on(WsMsgTypeEnum.adminIn, (data: IAdminIn) => {
+  instance.socketIo.on(WsMsgTypeEnum.roomLiveing, (data: IAdminIn) => {
     console.log('【websocket】收到管理员正在直播', data);
-    if (isDone.value) return;
-    // sendOffer({ sender: getSocketId(), receiver: data.socketId });
+  });
+
+  // 当前所有在线用户
+  instance.socketIo.on(WsMsgTypeEnum.roomNoLive, (data: IAdminIn) => {
+    console.log('【websocket】收到管理员不在直播', data);
+    roomNoLive.value = true;
+    closeRtc();
   });
 
   // 当前所有在线用户
@@ -365,6 +362,17 @@ function initReceive() {
     }
   });
 
+  // 收到用户发送消息
+  instance.socketIo.on(WsMsgTypeEnum.message, (data) => {
+    console.log('【websocket】收到用户发送消息', data);
+    if (!instance) return;
+    damuList.value.push({
+      socketId: data.socketId,
+      msgType: 1,
+      msg: data.data.msg,
+    });
+  });
+
   // 用户加入房间
   instance.socketIo.on(WsMsgTypeEnum.join, (data) => {
     console.log('【websocket】用户加入房间', data);
@@ -375,22 +383,12 @@ function initReceive() {
   instance.socketIo.on(WsMsgTypeEnum.joined, (data) => {
     console.log('【websocket】用户加入房间完成', data);
     joined.value = true;
-    // liveUserList.value.push({
-    //   avatar: 'red',
-    //   socketId: `${getSocketId()}`,
-    //   expr: 1,
-    // });
   });
 
   // 其他用户加入房间
   instance.socketIo.on(WsMsgTypeEnum.otherJoin, (data) => {
     console.log('【websocket】其他用户加入房间', data);
-    // liveUserList.value.push({
-    //   avatar: 'red',
-    //   socketId: data.socketId,
-    //   expr: 1,
-    // });
-    if (isAdmin.value && joined.value) {
+    if (joined.value) {
       batchSendOffer();
     }
   });
@@ -411,8 +409,8 @@ function initReceive() {
     const res = liveUserList.value.filter(
       (item) => item.socketId !== data.socketId
     );
-    console.log('当前所有在线用户', JSON.stringify(res));
     liveUserList.value = res;
+    console.log('当前所有在线用户', JSON.stringify(res));
   });
 }
 
@@ -430,10 +428,8 @@ async function startMediaDevices() {
     localStream.value = event;
   }
 }
-const isAddTrack = ref(false);
 function addTrack() {
   if (!localStream.value) return;
-  // if (isAddTrack.value || !localStream.value) return;
   liveUserList.value.forEach((item) => {
     if (item.socketId !== getSocketId()) {
       localStream.value.getTracks().forEach((track) => {
@@ -537,6 +533,8 @@ function leave() {
       .info {
         display: flex;
         align-items: center;
+        text-align: initial;
+
         .avatar {
           margin-right: 20px;
           width: 64px;
@@ -597,7 +595,7 @@ function leave() {
       left: 0;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: space-around;
       height: 100px;
       background-color: yellow;
       .item {
@@ -643,6 +641,7 @@ function leave() {
       overflow-y: scroll;
       padding: 0 15px;
       height: 100px;
+      background-color: pink;
       .item {
         display: flex;
         align-items: center;
@@ -652,7 +651,6 @@ function leave() {
         .info {
           display: flex;
           align-items: center;
-
           .avatar {
             margin-right: 5px;
             width: 25px;
@@ -666,10 +664,11 @@ function leave() {
         }
       }
     }
-    .msg-list {
+    .danmu-list {
       overflow-y: scroll;
       padding: 0 15px;
       height: 350px;
+      text-align: initial;
       .item {
         margin-bottom: 10px;
         font-size: 12px;

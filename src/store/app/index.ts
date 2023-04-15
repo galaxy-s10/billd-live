@@ -1,20 +1,17 @@
 import { defineStore } from 'pinia';
 
+type AppRootState = {
+  liveStatus: boolean;
+};
+
 export const useAppStore = defineStore('app', {
-  state: () => {
+  state: (): AppRootState => {
     return {
-      counter: 1,
       liveStatus: false,
-    } as {
-      counter: number;
-      liveStatus: boolean;
     };
   },
   actions: {
-    setCounter(res) {
-      this.counter = res;
-    },
-    setLiveStatus(res: boolean) {
+    setLiveStatus(res: AppRootState['liveStatus']) {
       this.liveStatus = res;
     },
   },

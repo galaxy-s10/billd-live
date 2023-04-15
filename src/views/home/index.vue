@@ -25,7 +25,12 @@
           <div class="txt">{{ item.roomName }}</div>
         </div>
       </div>
-      <div v-else>没有在线的直播间</div>
+      <div
+        v-else
+        class="none"
+      >
+        当前没有在线的直播间
+      </div>
     </div>
   </div>
 </template>
@@ -78,7 +83,6 @@ async function getLiveRoomList() {
         ? 'http://localhost:4300/live/list'
         : 'https://live.hsslive.cn/api/live/list'
     );
-    console.log(res.data);
     if (res.data.code === 200) {
       liveRoomList.value = res.data.data.rows.map((item) => {
         console.log(
@@ -123,8 +127,9 @@ function joinRoom() {
   .left {
     position: relative;
     display: inline-block;
+    box-sizing: border-box;
     width: $large-left-width;
-    height: 100%;
+    height: 610px;
     border-radius: 4px;
     background-color: papayawhip;
     vertical-align: top;
@@ -152,9 +157,10 @@ function joinRoom() {
   }
   .right {
     display: inline-block;
+    box-sizing: border-box;
     margin-left: 10px;
     padding: 10px;
-    padding-bottom: 0;
+    height: 610px;
     border-radius: 4px;
     background-color: rgba($color: #000000, $alpha: 0.3);
     vertical-align: top;
@@ -167,10 +173,13 @@ function joinRoom() {
         height: 110px;
         border-radius: 4px;
         background-color: rgba($color: #000000, $alpha: 0.3);
-        background-position: center;
-        background-size: cover;
-        background-repeat: no-repeat;
         cursor: pointer;
+
+        @extend %coverBg;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
         &.active {
           &::before {
             background-color: transparent;
@@ -200,6 +209,10 @@ function joinRoom() {
         }
       }
     }
+    .none {
+      color: white;
+      font-size: 14px;
+    }
   }
 }
 
@@ -209,8 +222,11 @@ function joinRoom() {
     height: 460px;
     .left {
       width: $medium-left-width;
+      height: 460px;
     }
     .right {
+      height: 460px;
+
       .list {
         .item {
           width: 150px;

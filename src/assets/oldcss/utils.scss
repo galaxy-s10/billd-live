@@ -1,9 +1,0 @@
-@use 'sass:math';
-
-// 用法：.header { width: px2vw(360) }
-// 编译结果：.header { width: 96vw; }
-
-@function px2vw($px) {
-  // 根据屏幕像素为375px进行适配
-  @return math.div($px, 375) * 100vw;
-}

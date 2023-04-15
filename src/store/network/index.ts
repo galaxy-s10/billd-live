@@ -3,14 +3,14 @@ import { defineStore } from 'pinia';
 import { WebRTCClass } from '@/network/webRtc';
 import { WebSocketClass } from '@/network/webSocket';
 
-type RootState = {
+type NetworkRootState = {
   wsMap: Map<string, WebSocketClass>;
   rtcMap: Map<string, WebRTCClass>;
   fromUserMap: Map<string, string>;
 };
 
 export const useNetworkStore = defineStore('network', {
-  state: (): RootState => {
+  state: (): NetworkRootState => {
     return {
       wsMap: new Map(),
       rtcMap: new Map(),
@@ -19,7 +19,6 @@ export const useNetworkStore = defineStore('network', {
   },
   actions: {
     updateWsMap(roomId: string, arg) {
-      // console.log('updateWsMap', roomId, arg);
       const val = this.wsMap.get(roomId);
       if (val) {
         this.wsMap.set(roomId, { ...val, ...arg });

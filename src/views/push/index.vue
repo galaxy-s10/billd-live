@@ -1,6 +1,9 @@
 <template>
   <div class="push-wrap">
-    <div class="left">
+    <div
+      ref="topRef"
+      class="left"
+    >
       <div class="video-wrap">
         <video
           id="localVideo"
@@ -12,7 +15,7 @@
           x5-video-player-type="h5"
           x5-video-player-fullscreen="true"
           x5-video-orientation="portraint"
-          :muted="muted"
+          muted
           controls
         ></video>
         <div
@@ -33,13 +36,14 @@
           </div>
         </div>
       </div>
-      <div class="control">
+      <div
+        ref="bottomRef"
+        class="control"
+      >
         <div class="info">
           <div class="avatar"></div>
           <div class="detail">
             <div class="top">
-              <!-- <button @click="addTrack">addTrack</button> -->
-              <!-- <button @click="handleMedia">handleMedia</button> -->
               <input
                 ref="roomNameRef"
                 v-model="roomName"
@@ -52,19 +56,10 @@
               >
                 确定
               </button>
-              <button
-                class="btn"
-                @click="cancelRoomName"
-              >
-                取消
-              </button>
               <!-- 房东的猫livehouse/音乐节 -->
             </div>
             <div class="bottom">
               <span>socketId：{{ getSocketId() }}</span>
-              <div>
-                rtcStatus：{{ networkStore.getRtcMap(roomId)?.rtcStatus }}
-              </div>
             </div>
           </div>
         </div>
@@ -72,12 +67,12 @@
           <div class="top">
             <span class="item">
               <i class="ico"></i>
-              <span>在线人数：10</span>
+              <span>正在观看人数：{{ liveUserList.length }}</span>
             </span>
           </div>
           <div class="bottom">
-            <!-- <button @click="batchSendOffer">batchSendOffer</button> -->
-            <button @click="startLive">startLive</button>
+            <button @click="startLive">开始直播</button>
+            <button @click="endLive">结束直播</button>
           </div>
         </div>
       </div>
@@ -103,14 +98,22 @@
             :key="index"
             class="item"
           >
-            <span class="name">{{ item.nickname }}：</span>
+            <span class="name">{{ item.socketId }}：</span>
             <span class="msg">{{ item.msg }}</span>
           </div>
         </div>
 
         <div class="send-msg">
-          <input class="ipt" />
-          <div class="btn">发送</div>
+          <input
+            v-model="danmuStr"
+            class="ipt"
+          />
+          <div
+            class="btn"
+            @click="sendDanmu"
+          >
+            发送
+          </div>
         </div>
       </div>
     </div>
@@ -119,8 +122,7 @@
 
 <script lang="ts" setup>
 import { getRandomString } from 'billd-utils';
-import { onMounted, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { onMounted, onUnmounted, ref } from 'vue';
 
 import { IAdminIn, ICandidate, IOffer, liveTypeEnum } from '@/interface';
 import { WebRTCClass } from '@/network/webRtc';
@@ -129,48 +131,37 @@ import {
   WsConnectStatusEnum,
   WsMsgTypeEnum,
 } from '@/network/webSocket';
-import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 
 const networkStore = useNetworkStore();
-const route = useRoute();
-const appStore = useAppStore();
+
+const topRef = ref<HTMLDivElement>();
+const bottomRef = ref<HTMLDivElement>();
 const roomIdRef = ref<HTMLInputElement>();
 const joinRef = ref<HTMLButtonElement>();
 const leaveRef = ref<HTMLButtonElement>();
 const defaultRoomId = getRandomString(15);
 const roomId = ref<string>(defaultRoomId);
+const danmuStr = ref('');
 const roomName = ref('');
 const roomNameRef = ref<HTMLInputElement>();
 const websocketInstant = ref<WebSocketClass>();
 const isDone = ref(false);
-const muted = ref(true);
 const localVideoRef = ref<HTMLVideoElement>();
 const localStream = ref();
 const currMediaTypeList = ref<liveTypeEnum[]>([]);
 const currMediaType = ref<liveTypeEnum>();
-const id = ref('');
 const joined = ref(false);
 const isAdmin = ref(true);
 const offerSended = ref(new Set());
 
-const damuList = ref([
-  { nickname: '鲜花', msgType: 1, msg: '423425' },
-  // { nickname: '肥宅水', msgType: 1, msg: 'sdgdsgsg' },
-  // { nickname: '小鸡腿', msgType: 1, msg: '63463gsd' },
-  // { nickname: '大鸡腿', msgType: 1, msg: '46326fb26' },
-  // { nickname: '一杯咖啡', msgType: 1, msg: 'shgd544' },
-  // { nickname: 'sdsg', msgType: 1, msg: 'shgd544' },
-  // { nickname: 'gdsg', msgType: 1, msg: 'we' },
-  // { nickname: 'sgdx', msgType: 1, msg: 'shgd544' },
-  // { nickname: 'gsdx', msgType: 1, msg: 'ew' },
-  // { nickname: 'gs', msgType: 1, msg: 'etew' },
-  // { nickname: 'gwe', msgType: 1, msg: 'shgd544' },
-  // { nickname: 'tewtwe', msgType: 1, msg: 'shgd544' },
-  // { nickname: 'hdfh', msgType: 1, msg: 'ew' },
-  // { nickname: '534', msgType: 1, msg: 'etew' },
-  // { nickname: '234232', msgType: 1, msg: 'shgd544' },
-]);
+const damuList = ref<
+  {
+    socketId: string;
+    msgType: number;
+    msg: string;
+  }[]
+>([]);
 
 const liveUserList = ref<
   {
@@ -180,7 +171,47 @@ const liveUserList = ref<
   }[]
 >([]);
 
+function closeWs() {
+  const instance = networkStore.wsMap.get(roomId.value);
+  if (!instance) return;
+  instance.close();
+}
+
+function closeRtc() {
+  networkStore.rtcMap.forEach((rtc) => {
+    rtc.close();
+  });
+}
+
+function sendDanmu() {
+  if (!danmuStr.value.length) {
+    alert('请输入弹幕内容！');
+  }
+  if (!websocketInstant.value) return;
+  websocketInstant.value.send({
+    msgType: WsMsgTypeEnum.message,
+    data: { msg: danmuStr.value },
+  });
+  damuList.value.push({
+    socketId: getSocketId(),
+    msgType: 1,
+    msg: danmuStr.value,
+  });
+  danmuStr.value = '';
+}
+
+onUnmounted(() => {
+  closeWs();
+  closeRtc();
+});
+
 onMounted(() => {
+  if (topRef.value && bottomRef.value && localVideoRef.value) {
+    const res =
+      bottomRef.value.getBoundingClientRect().top -
+      topRef.value.getBoundingClientRect().top;
+    localVideoRef.value.style.height = `${res}px`;
+  }
   localVideoRef.value?.addEventListener('loadstart', () => {
     console.warn('视频流-loadstart');
     const rtc = networkStore.getRtcMap(roomId.value);
@@ -200,16 +231,6 @@ onMounted(() => {
     }
   });
 });
-
-watch(
-  () => appStore.liveStatus,
-  (newVal) => {
-    if (newVal) {
-      console.log('开始直播');
-      handleMedia();
-    }
-  }
-);
 
 function getSocketId() {
   return networkStore.wsMap.get(roomId.value!)?.socketIo?.id || '-1';
@@ -245,20 +266,6 @@ function batchSendOffer() {
   });
 }
 
-async function handleMedia() {
-  if (isAdmin.value) {
-    try {
-      if (currMediaType.value === liveTypeEnum.camera) {
-        await startMediaDevices();
-      } else if (currMediaType.value === liveTypeEnum.screen) {
-        await startGetDisplayMedia();
-      }
-    } catch (error) {
-      console.log('用户拒绝', error);
-    }
-  }
-}
-
 function initReceive() {
   const instance = websocketInstant.value;
   if (!instance?.socketIo) return;
@@ -279,10 +286,8 @@ function initReceive() {
   });
 
   // 当前所有在线用户
-  instance.socketIo.on(WsMsgTypeEnum.adminIn, (data: IAdminIn) => {
+  instance.socketIo.on(WsMsgTypeEnum.roomLiveing, (data: IAdminIn) => {
     console.log('【websocket】收到管理员正在直播', data);
-    if (isDone.value) return;
-    // sendOffer({ sender: getSocketId(), receiver: data.socketId });
   });
 
   // 当前所有在线用户
@@ -358,6 +363,17 @@ function initReceive() {
     }
   });
 
+  // 收到用户发送消息
+  instance.socketIo.on(WsMsgTypeEnum.message, (data) => {
+    console.log('【websocket】收到用户发送消息', data);
+    if (!instance) return;
+    damuList.value.push({
+      socketId: data.socketId,
+      msgType: 1,
+      msg: data.data.msg,
+    });
+  });
+
   // 用户加入房间
   instance.socketIo.on(WsMsgTypeEnum.join, (data) => {
     console.log('【websocket】用户加入房间', data);
@@ -430,9 +446,18 @@ function confirmRoomName() {
   roomNameRef.value.disabled = true;
 }
 
-function cancelRoomName() {
-  if (!roomNameRef.value) return;
-  roomNameRef.value.disabled = false;
+function endLive() {
+  console.log('endLive');
+  closeRtc();
+  currMediaTypeList.value = [];
+  localStream.value = null;
+  if (localVideoRef.value) {
+    localVideoRef.value.srcObject = null;
+  }
+  if (!websocketInstant.value) return;
+  websocketInstant.value.send({
+    msgType: WsMsgTypeEnum.roomNoLive,
+  });
 }
 
 function startLive() {
@@ -441,7 +466,6 @@ function startLive() {
     alert('请选择一个素材！');
     return;
   }
-  id.value = route.query.id as string;
   websocketInstant.value = new WebSocketClass({
     roomId: roomId.value,
     url:
@@ -560,8 +584,7 @@ function leave() {
     vertical-align: top;
 
     .video-wrap {
-      // height: 100px;
-      // height: 550px;
+      position: relative;
       background-color: #18191c;
       #localVideo {
         max-width: 100%;
@@ -700,6 +723,14 @@ function leave() {
         margin-bottom: 10px;
         height: 300px;
         .item {
+          margin-bottom: 10px;
+          font-size: 12px;
+          .name {
+            color: #9499a0;
+          }
+          .msg {
+            color: #61666d;
+          }
         }
       }
 
@@ -746,8 +777,6 @@ function leave() {
     .right {
       .list {
         .item {
-          width: 150px;
-          height: 80px;
         }
       }
     }

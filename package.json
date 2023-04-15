@@ -1,6 +1,6 @@
 {
   "name": "billd-live",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/galaxy-s10/billd-live.git"
@@ -25,13 +25,16 @@
   },
   "config": {
     "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
+      "path": "./node_modules/cz-customizable"
+    },
+    "cz-customizable": {
+      "config": "./.cz-config.js"
     }
   },
   "dependencies": {
     "axios": "^1.2.1",
-    "billd-deploy": "^1.0.13",
-    "billd-html-webpack-plugin": "^1.0.0",
+    "billd-deploy": "^1.0.15",
+    "billd-html-webpack-plugin": "^1.0.1",
     "billd-scss": "^0.0.6",
     "billd-utils": "^0.0.9",
     "browser-tool": "^1.0.5",
@@ -67,6 +70,7 @@
     "css-loader": "^6.7.1",
     "css-minimizer-webpack-plugin": "^3.0.0",
     "cz-conventional-changelog": "^3.3.0",
+    "cz-customizable": "^7.0.0",
     "eslint": "^8.13.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-vue": "^8.5.0",

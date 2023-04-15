@@ -25,14 +25,10 @@
       />
     </div>
     <div class="right">
-      <div class="avatar">{{ !userStore.detail && '登录' }}</div>
-      <!-- <div class="item">动态</div>
-      <div class="item">签到</div>
-      <div class="item">饭贩</div> -->
       <div
-        v-if="id === '1234'"
+        v-if="route.path === '/'"
         class="start"
-        @click="appStore.setLiveStatus(true)"
+        @click="goPushPage"
       >
         我要开播
       </div>
@@ -41,31 +37,25 @@
 </template>
 
 <script lang="ts" setup>
+import { openToTarget } from 'billd-utils';
 import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import { useAppStore } from '@/store/app';
-import { useUserStore } from '@/store/user';
-
-const route = useRoute();
 const router = useRouter();
-
-const id = route.query.id;
-const userStore = useUserStore();
-const appStore = useAppStore();
+const route = useRoute();
 
 const list = ref([
   { ico: '', title: '一对一直播' },
   { title: '一对多直播' },
-  // { title: '多对多直播' },
-  { title: '拉流展示' },
-  // { ico: '', title: '首页' },
-  // { title: '直播' },
-  // { title: '全部' },
-  // { title: '网游' },
-  // { title: '手游' },
-  // { title: '单机游戏' },
+  { title: '直播拉流' },
+  { title: 'mesh模型' },
+  { title: 'sfu模型' },
 ]);
+
+function goPushPage() {
+  const url = router.resolve('/push');
+  openToTarget(url.href);
+}
 </script>
 
 <style lang="scss" scoped>
@@ -133,6 +123,17 @@ const list = ref([
     .item {
       margin-right: 20px;
     }
+
+    @keyframes big-small {
+      0%,
+      100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(0.9);
+      }
+    }
+
     .start {
       padding: 5px 10px;
       border-radius: 6px;
@@ -140,6 +141,7 @@ const list = ref([
       color: white;
       font-size: 14px;
       cursor: pointer;
+      animation: big-small 1s ease infinite;
     }
   }
 }

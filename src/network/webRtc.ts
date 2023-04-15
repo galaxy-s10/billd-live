@@ -68,6 +68,8 @@ export class WebRTCClass {
 
   candidateFlag = false;
 
+  sender?: RTCRtpTransceiver;
+
   getStatsSetIntervalDelay = 1000;
   getStatsSetIntervalTimer;
 
@@ -114,7 +116,9 @@ export class WebRTCClass {
 
   addTrack = (track, stream) => {
     console.warn('addTrackaddTrack', track, stream);
-    this.peerConnection?.addTransceiver(track, { streams: [stream] });
+    this.sender = this.peerConnection?.addTransceiver(track, {
+      streams: [stream],
+    });
     // this.peerConnection?.addTrack(track, stream);
   };
 
@@ -523,7 +527,7 @@ export class WebRTCClass {
   };
 
   // 创建对等连接
-  createPeerConnection() {
+  createPeerConnection = () => {
     if (!window.RTCPeerConnection) {
       console.error('当前环境不支持RTCPeerConnection！');
       alert('当前环境不支持RTCPeerConnection！');
@@ -559,17 +563,20 @@ export class WebRTCClass {
       this.startConnect();
       this.update();
     }
-  }
+  };
 
   // 手动关闭webrtc连接
-  close() {
+  close = () => {
     console.warn(`${new Date().toLocaleString()}，手动关闭webrtc连接`);
+    if (this.sender?.sender) {
+      this.peerConnection?.removeTrack(this.sender?.sender);
+    }
     this.peerConnection?.close();
     this.dataChannel?.close();
     this.peerConnection = null;
     this.dataChannel = null;
     this.update();
-  }
+  };
 
   // 更新store
   update = () => {

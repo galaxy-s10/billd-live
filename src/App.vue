@@ -6,6 +6,7 @@
 import { onMounted } from 'vue';
 
 onMounted(() => {
+  // 启用vconsole
   // import('vconsole')
   //   .then((VConsole) => {
   //     // eslint-disable-next-line

@@ -1,22 +1,20 @@
 import { mockAjax } from 'billd-utils';
 import { defineStore } from 'pinia';
 
-type RootState = {
+type UserRootState = {
   detail: any;
 };
 
 export const useUserStore = defineStore('user', {
-  state: () => {
+  state: (): UserRootState => {
     return {
       detail: null,
-    } as RootState;
+    };
   },
   actions: {
     async setDetail(payload: number) {
-      console.log('setDetail的payload', payload);
       try {
         const data = await mockAjax({ flag: payload === 1 });
-        console.log(data);
         this.detail = data;
       } catch (error) {
         console.log(error);
