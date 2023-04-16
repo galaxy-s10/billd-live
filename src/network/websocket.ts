@@ -40,6 +40,8 @@ export enum WsMsgTypeEnum {
   roomLiveing = 'roomLiveing',
   /** 房间不在直播 */
   roomNoLive = 'roomNoLive',
+  /** sendBlob */
+  sendBlob = 'sendBlob',
   offer = 'offer',
   answer = 'answer',
   candidate = 'candidate',

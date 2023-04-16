@@ -8,6 +8,7 @@
         id="blobVideo"
         style="width: 300px; background-color: red"
       ></video>
+      <button @click="startRtmp">startRtmp</button>
       <div class="video-wrap">
         <video
           id="localVideo"
@@ -126,6 +127,7 @@
 
 <script lang="ts" setup>
 import { getRandomString } from 'billd-utils';
+import flvJs from 'flv.js';
 import { onMounted, onUnmounted, ref } from 'vue';
 
 import { IAdminIn, ICandidate, IOffer, liveTypeEnum } from '@/interface';
@@ -207,8 +209,32 @@ onUnmounted(() => {
   closeWs();
   closeRtc();
 });
+let flvPlayer;
+
+function startRtmp() {
+  try {
+    flvPlayer.play();
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 onMounted(() => {
+  if (flvJs.isSupported()) {
+    flvPlayer = flvJs.createPlayer({
+      type: 'flv',
+      url: 'http://localhost:8080/live/show.flv',
+      // url: 'http://42.193.157.44:9000/live/fddm_2.flv',
+      // url: 'https://www.hsslive.cn/stream/live/fddm_2.flv',
+      // url: 'https://www.hsslive.cn/bilibilistream/live-bvc/173676/live_381307133_59434826.flv?expires=1680798150&len=0&oi=1900220676&pt=web&qn=0&trid=10002eb4d1a458684cc9a93d888d7b580cac&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha15&sign=1724a76684e5e1f8d68346613a32f8c0&sk=3e2a893893799632504afbdef4a9e3d7&p2p_type=1&sl=1&free_type=0&mid=381307133&sche=ban&score=1&pp=rtmp&freeze=1&source=onetier&trace=10&site=12e2a543d23e1c612a7145eb5a5cfac4&order=1',
+      // url: 'https://xy117x149x235x203xy.mcdn.bilivideo.cn/live-bvc/173676/live_381307133_59434826.flv?expires=1680798150&len=0&oi=1900220676&pt=web&qn=0&trid=10002eb4d1a458684cc9a93d888d7b580cac&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha15&sign=1724a76684e5e1f8d68346613a32f8c0&sk=3e2a893893799632504afbdef4a9e3d7&p2p_type=1&sl=1&free_type=0&mid=381307133&sche=ban&score=1&pp=rtmp&freeze=1&source=onetier&trace=10&site=12e2a543d23e1c612a7145eb5a5cfac4&order=1',
+    });
+    // @ts-ignore
+    flvPlayer.attachMediaElement(
+      document.querySelector<HTMLVideoElement>('#blobVideo')
+    );
+    flvPlayer.load();
+  }
   if (topRef.value && bottomRef.value && localVideoRef.value) {
     const res =
       bottomRef.value.getBoundingClientRect().top -
@@ -464,11 +490,6 @@ function endLive() {
 }
 
 function startLive() {
-  if (!roomNameIsOk()) return;
-  if (!currMediaTypeList.value.length) {
-    alert('请选择一个素材！');
-    return;
-  }
   websocketInstant.value = new WebSocketClass({
     roomId: roomId.value,
     url:
@@ -478,8 +499,14 @@ function startLive() {
     isAdmin: isAdmin.value,
   });
   websocketInstant.value.update();
-  initReceive();
-  sendJoin();
+  setTimeout(() => {
+    websocketInstant.value!.socketIo?.emit(WsMsgTypeEnum.message, {
+      data: { debug: 1 },
+    });
+  }, 1000);
+
+  // initReceive();
+  // sendJoin();
 }
 
 const blobArr = ref<Blob[]>([]);
