@@ -64,7 +64,7 @@ export class WebSocketClass {
     this.isAdmin = isAdmin;
 
     this.url = url;
-    this.socketIo = io(url, { transports: ['websocket'] });
+    this.socketIo = io(url, { transports: ['websocket'], forceBase64: false });
     this.update();
   }
 

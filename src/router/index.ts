@@ -26,6 +26,11 @@ export const defaultRoutes: RouteRecordRaw[] = [
         component: () => import('@/views/pull/index.vue'),
       },
       {
+        name: 'bilibiliPush',
+        path: '/bilibiliPush',
+        component: () => import('@/views/bilibiliPush/index.vue'),
+      },
+      {
         name: 'test1',
         path: '/test1',
         component: () => import('@/views/test1/index.vue'),

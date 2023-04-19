@@ -59,6 +59,7 @@ const list = ref([
   { title: 'mesh模型' },
   { title: 'sfu模型' },
   { title: 'test1', route: '/test1' },
+  { title: 'bilibiliPush', route: '/bilibiliPush' },
 ]);
 
 function goPushPage() {

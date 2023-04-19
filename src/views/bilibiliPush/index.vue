@@ -4,13 +4,6 @@
       ref="topRef"
       class="left"
     >
-      <div class="jsmpeg"></div>
-      <video
-        id="blobVideo"
-        style="width: 300px; background-color: red"
-      ></video>
-      <button @click="startRtmp">startRtmp</button>
-      <button @click="startmpeg">startmpeg</button>
       <div class="video-wrap">
         <video
           id="localVideo"
@@ -218,11 +211,6 @@ function startRtmp() {
   } catch (error) {
     console.log(error);
   }
-}
-function startmpeg() {
-  console.log(JSMpeg, JSMpeg.Player);
-  const res1 = new JSMpeg.Player('./out.ts', { autoplay: true });
-  console.log(res1);
 }
 
 onMounted(() => {
@@ -529,9 +517,11 @@ async function startMediaDevices() {
     currMediaTypeList.value.push(liveTypeEnum.camera);
     if (!localVideoRef.value) return;
     localVideoRef.value.srcObject = event;
-    const rec = new MediaRecorder(event, { mimeType: 'image/png' });
-    // const rec = new MediaRecorder(event, { mimeType: 'video/webm' });
-    console.log('rec', rec);
+    // const rec = new MediaRecorder(event, { mimeType: 'image/png' });
+    // const rec = new MediaRecorder(event);
+    const rec = new MediaRecorder(event, {
+      mimeType: 'video/webm;codecs=avc1.64001f,opus',
+    });
     rec.addEventListener('dataavailable', (e) => {
       console.log(new Date().toLocaleString(), 'dataavailable');
       if (e.data.size > 0) {
@@ -540,7 +530,8 @@ async function startMediaDevices() {
       console.log(e.data.stream());
       // document.querySelector<HTMLVideoElement>('#blobVideo')!.srcObject =
       //   e.data.stream();
-      const recordedBlob = new Blob(blobArr.value, { type: 'video/webm' });
+      // const recordedBlob = new Blob([e.data], { type: 'video/webm' });
+      const recordedBlob = new Blob([e.data]);
       console.log(recordedBlob);
       // const url = window.URL.createObjectURL(recordedBlob);
       // const a = document.createElement('a');
@@ -555,12 +546,13 @@ async function startMediaDevices() {
       // }, 100);
       if (!websocketInstant.value) return;
       // websocketInstant.value.socketIo?.emit(WsMsgTypeEnum.sendBlob, e.data);
+      // websocketInstant.value.socketIo?.emit('aaa', { aa: recordedBlob });
       websocketInstant.value.send({
         msgType: WsMsgTypeEnum.sendBlob,
         data: { blob: recordedBlob, timestamp: new Date().getTime() },
       });
     });
-    rec.start(1000);
+    rec.start(500);
 
     localStream.value = event;
   }
