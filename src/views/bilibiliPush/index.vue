@@ -122,6 +122,7 @@
 
 <script lang="ts" setup>
 import { getRandomString } from 'billd-utils';
+import MediaStreamRecorder from 'msr';
 import { onMounted, onUnmounted, ref } from 'vue';
 
 import { IAdminIn, ICandidate, IOffer, liveTypeEnum } from '@/interface';
@@ -233,7 +234,8 @@ onMounted(() => {
     const res =
       bottomRef.value.getBoundingClientRect().top -
       topRef.value.getBoundingClientRect().top;
-    localVideoRef.value.style.height = `${res}px`;
+    localVideoRef.value.style.height = `100px`;
+    // localVideoRef.value.style.height = `${res}px`;
   }
   localVideoRef.value?.addEventListener('loadstart', () => {
     console.warn('视频流-loadstart');
@@ -478,9 +480,10 @@ function endLive() {
     localVideoRef.value.srcObject = null;
   }
   if (!websocketInstant.value) return;
-  websocketInstant.value.send({
-    msgType: WsMsgTypeEnum.roomNoLive,
-  });
+  websocketInstant.value.close();
+  // websocketInstant.value.send({
+  //   msgType: WsMsgTypeEnum.roomNoLive,
+  // });
 }
 
 function startLive() {
@@ -520,7 +523,8 @@ async function startMediaDevices() {
     // const rec = new MediaRecorder(event, { mimeType: 'image/png' });
     // const rec = new MediaRecorder(event);
     const rec = new MediaRecorder(event, {
-      mimeType: 'video/webm;codecs=avc1.64001f,opus',
+      // mimeType: 'video/webm;codecs=avc1.64001f,opus',
+      mimeType: 'video/webm',
     });
     rec.addEventListener('dataavailable', (e) => {
       console.log(new Date().toLocaleString(), 'dataavailable');
@@ -571,6 +575,59 @@ async function startGetDisplayMedia() {
     if (!localVideoRef.value) return;
     localVideoRef.value.srcObject = event;
     localStream.value = event;
+    const rec = new MediaStreamRecorder(event);
+    // const rec = new MediaRecorder(event, {
+    //   mimeType: 'video/webm',
+    // });
+    rec.ondataavailable = (blob) => {
+      if (!websocketInstant.value) return;
+      // websocketInstant.value.socketIo?.emit(WsMsgTypeEnum.sendBlob, e.data);
+      // websocketInstant.value.socketIo?.emit('aaa', { aa: recordedBlob });
+      websocketInstant.value.send({
+        msgType: WsMsgTypeEnum.sendBlob,
+        data: { blob, timestamp: new Date().getTime() },
+      });
+    };
+    rec.start(500);
+
+    // rec.addEventListener('dataavailable', (e) => {
+    //   console.log(new Date().toLocaleString(), 'dataavailable');
+    //   if (e.data.size <= 0) {
+    //     return;
+    //   }
+    //   blobArr.value.push(e.data);
+
+    //   console.log(e.data.stream());
+    //   // document.querySelector<HTMLVideoElement>('#blobVideo')!.srcObject =
+    //   //   e.data.stream();
+    //   // const recordedBlob = new Blob([e.data], { type: 'video/webm' });
+    //   // const res1 = blobArr.value.pop();
+    //   // const res2 = res1 ? [res1] : [];
+    //   // const recordedBlob = new Blob(res2, { type: 'video/webm' });
+    //   const recordedBlob = new Blob(blobArr.value, { type: 'video/webm' });
+    //   // const recordedBlob = new Blob([e.data]);
+    //   console.log(recordedBlob, blobArr.value.length, 222);
+    //   // const url = window.URL.createObjectURL(recordedBlob);
+    //   // const a = document.createElement('a');
+    //   // a.style.display = 'none';
+    //   // a.href = url;
+    //   // a.download = 'test.webm';
+    //   // document.body.appendChild(a);
+    //   // a.click();
+    //   // setTimeout(() => {
+    //   //   document.body.removeChild(a);
+    //   //   window.URL.revokeObjectURL(url);
+    //   // }, 100);
+    //   if (!websocketInstant.value) return;
+    //   // websocketInstant.value.socketIo?.emit(WsMsgTypeEnum.sendBlob, e.data);
+    //   // websocketInstant.value.socketIo?.emit('aaa', { aa: recordedBlob });
+    //   websocketInstant.value.send({
+    //     msgType: WsMsgTypeEnum.sendBlob,
+    //     data: { blob: recordedBlob, timestamp: new Date().getTime() },
+    //   });
+    //   // blobArr.value = [];
+    // });
+    // rec.start(500);
   }
 }
 function addTrack() {
