@@ -8,7 +8,16 @@ billd 直播间（前端），目前实现了类似 bilibili 的直播功能，�
 - vue3
 - socket.io
 
-> 如果你对该项目有感兴趣或想法，欢迎一起加入开发（可能不久后就会将该仓库设置为私有）~
+# 贡献
+
+> 如果你对该项目有感兴趣或想法，欢迎一起加入开发
+
+<div>
+  <img
+    src="https://resource.hsslive.cn/image/8293fce7457e7188e1288fb044c7902d.webp" 
+    style="width:300px"
+    />
+</div>
 
 # 演示
 
