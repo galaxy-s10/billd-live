@@ -35,6 +35,11 @@ export const defaultRoutes: RouteRecordRaw[] = [
         path: '/test1',
         component: () => import('@/views/test1/index.vue'),
       },
+      {
+        name: 'srsDemoOne',
+        path: '/srs-demo1',
+        component: () => import('@/views/srs-demo1/index.vue'),
+      },
     ],
   },
 ];

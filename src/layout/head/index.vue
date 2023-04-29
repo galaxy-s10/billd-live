@@ -12,7 +12,7 @@
           v-for="(item, index) in list"
           :key="index"
           class="item"
-          @click="item.route && router.push(item.route)"
+          @click="item.routeName && router.push({ name: item.routeName })"
         >
           {{ item.title }}
         </div>
@@ -58,8 +58,9 @@ const list = ref([
   { title: '直播拉流' },
   { title: 'mesh模型' },
   { title: 'sfu模型' },
-  { title: 'test1', route: '/test1' },
-  { title: 'bilibiliPush', route: '/bilibiliPush' },
+  { title: 'test1', routeName: 'test1' },
+  { title: 'bilibiliPush', routeName: 'bilibiliPush' },
+  { title: 'srsDemoOne', routeName: 'srsDemoOne' },
 ]);
 
 function goPushPage() {

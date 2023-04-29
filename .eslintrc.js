@@ -118,7 +118,7 @@ module.exports = {
         // 根据导入路径以字母顺序排列每个组中的顺序
         alphabetize: {
           order: 'asc', // 使用asc按升序排序，使用desc按降序排序（默认值：ignore）。
-          caseInsensitive: false, // 使用true忽略大小写，而false考虑大小写（默认值：false）。
+          caseInsensitive: true, // 使用true忽略大小写，而false考虑大小写（默认值：false）。
           orderImportKind: 'asc', // 使用asc以升序对各种导入类型进行排序，例如以type或typeof为前缀的导入，具有相同的导入路径。使用desc按降序排序（默认值：忽略）
         },
       },
