@@ -9,10 +9,13 @@
       </div>
       <div class="nav">
         <div
-          v-for="(item, index) in list"
+          v-for="(item, index) in pushList"
           :key="index"
-          class="item"
-          @click="item.routeName && router.push({ name: item.routeName })"
+          :class="{
+            item: 1,
+            active: router.currentRoute.value.name === item.routerName,
+          }"
+          @click="goPushPage(item.routerName)"
         >
           {{ item.title }}
         </div>
@@ -36,7 +39,7 @@
       <div
         v-if="route.path === '/'"
         class="start"
-        @click="goPushPage"
+        @click="goPushPage(routerName.webrtcPush)"
       >
         我要开播
       </div>
@@ -49,22 +52,20 @@ import { openToTarget } from 'billd-utils';
 import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import { routerName } from '@/router';
+
 const router = useRouter();
 const route = useRoute();
 
-const list = ref([
-  { ico: '', title: '一对一直播' },
-  { title: '一对多直播' },
-  { title: '直播拉流' },
-  { title: 'mesh模型' },
-  { title: 'sfu模型' },
-  { title: 'test1', routeName: 'test1' },
-  { title: 'bilibiliPush', routeName: 'bilibiliPush' },
-  { title: 'srsDemoOne', routeName: 'srsDemoOne' },
+const pushList = ref([
+  // { title: 'Webrtc Pull', routerName: 'webrtcPull' },
+  // { title: 'SRS WebRTC Pull', routerName: 'srsWebRtcPull' },
+  { title: 'Webrtc Push', routerName: routerName.webrtcPush },
+  { title: 'SRS WebRTC Push', routerName: routerName.srsWebRtcPush },
 ]);
 
-function goPushPage() {
-  const url = router.resolve('/push');
+function goPushPage(routerName: string) {
+  const url = router.resolve({ name: routerName });
   openToTarget(url.href);
 }
 </script>
@@ -94,7 +95,38 @@ function goPushPage() {
       display: flex;
       align-items: center;
       .item {
-        margin-right: 20px;
+        padding: 0 10px;
+        cursor: pointer;
+        position: relative;
+        &.active {
+          &::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50%;
+            height: 2px;
+            background-color: red;
+            transition: all 0.1s ease;
+          }
+        }
+        &::after {
+          content: '';
+          position: absolute;
+          bottom: -6px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 0px;
+          height: 2px;
+          background-color: red;
+          transition: all 0.1s ease;
+        }
+        &:hover {
+          &::after {
+            width: 50%;
+          }
+        }
       }
     }
   }
@@ -118,7 +150,8 @@ function goPushPage() {
   .right {
     display: flex;
     align-items: center;
-    padding-right: 20px;
+    margin-right: 20px;
+
     .github {
       margin-right: 20px;
     }

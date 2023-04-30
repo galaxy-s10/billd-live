@@ -19,7 +19,7 @@
           controls
         ></video>
         <div
-          v-if="currMediaTypeList.length <= 0"
+          v-if="!currMediaTypeList || currMediaTypeList.length <= 0"
           class="add-wrap"
         >
           <div
@@ -71,8 +71,7 @@
             </span>
           </div>
           <div class="bottom">
-            <button @click="startLive">开始直播</button>
-            <button @click="startSrsRtcLive">srs-rtc直播</button>
+            <button @click="startLive">srs-webrtc直播</button>
             <button @click="endLive">结束直播</button>
           </div>
         </div>
@@ -121,24 +120,13 @@
   </div>
 </template>
 
-<script lang="ts">
-import '@/assets/js/aa';
-import '@/assets/js/srs.player';
-import '@/assets/js/srs.publisher';
-import '@/assets/js/srs.sdk';
-
-export default {
-  name: 'Devices',
-};
-</script>
-
 <script lang="ts" setup>
 import { getRandomString } from 'billd-utils';
-import MediaStreamRecorder from 'msr';
 import { onMounted, onUnmounted, ref } from 'vue';
 
-import { IAdminIn, ICandidate, IOffer, liveTypeEnum } from '@/interface';
-import { WebRTCClass } from '@/network/webRtc';
+import { fetchRtcV1Publish } from '@/api/srs';
+import { IAdminIn, liveTypeEnum } from '@/interface';
+import { SRSWebRTCClass } from '@/network/srsWebRtc';
 import {
   WebSocketClass,
   WsConnectStatusEnum,
@@ -155,18 +143,33 @@ const joinRef = ref<HTMLButtonElement>();
 const leaveRef = ref<HTMLButtonElement>();
 const defaultRoomId = getRandomString(15);
 const roomId = ref<string>(defaultRoomId);
+const streamurl = ref(`webrtc://localhost/live/livestream/${roomId.value}`);
 const danmuStr = ref('');
 const roomName = ref('');
 const roomNameRef = ref<HTMLInputElement>();
 const websocketInstant = ref<WebSocketClass>();
-const isDone = ref(false);
 const localVideoRef = ref<HTMLVideoElement>();
 const localStream = ref();
-const currMediaTypeList = ref<liveTypeEnum[]>([]);
-const currMediaType = ref<liveTypeEnum>();
-const joined = ref(false);
-const isAdmin = ref(true);
-const offerSended = ref(new Set());
+const allMediaTypeList = {
+  [liveTypeEnum.camera]: {
+    type: liveTypeEnum.camera,
+    txt: '摄像头',
+  },
+  [liveTypeEnum.screen]: {
+    type: liveTypeEnum.screen,
+    txt: '窗口',
+  },
+};
+const currMediaTypeList = ref<
+  {
+    type: liveTypeEnum;
+    txt: string;
+  }[]
+>([]);
+const currMediaType = ref<{
+  type: liveTypeEnum;
+  txt: string;
+}>();
 const damuList = ref<
   {
     socketId: string;
@@ -216,38 +219,14 @@ onUnmounted(() => {
   closeWs();
   closeRtc();
 });
-let flvPlayer;
-
-function startRtmp() {
-  try {
-    flvPlayer.play();
-  } catch (error) {
-    console.log(error);
-  }
-}
 
 onMounted(() => {
-  // if (flvJs.isSupported()) {
-  //   flvPlayer = flvJs.createPlayer({
-  //     type: 'flv',
-  //     url: 'http://localhost:8080/live/show.flv',
-  //     // url: 'http://42.193.157.44:9000/live/fddm_2.flv',
-  //     // url: 'https://www.hsslive.cn/stream/live/fddm_2.flv',
-  //     // url: 'https://www.hsslive.cn/bilibilistream/live-bvc/173676/live_381307133_59434826.flv?expires=1680798150&len=0&oi=1900220676&pt=web&qn=0&trid=10002eb4d1a458684cc9a93d888d7b580cac&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha15&sign=1724a76684e5e1f8d68346613a32f8c0&sk=3e2a893893799632504afbdef4a9e3d7&p2p_type=1&sl=1&free_type=0&mid=381307133&sche=ban&score=1&pp=rtmp&freeze=1&source=onetier&trace=10&site=12e2a543d23e1c612a7145eb5a5cfac4&order=1',
-  //     // url: 'https://xy117x149x235x203xy.mcdn.bilivideo.cn/live-bvc/173676/live_381307133_59434826.flv?expires=1680798150&len=0&oi=1900220676&pt=web&qn=0&trid=10002eb4d1a458684cc9a93d888d7b580cac&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha15&sign=1724a76684e5e1f8d68346613a32f8c0&sk=3e2a893893799632504afbdef4a9e3d7&p2p_type=1&sl=1&free_type=0&mid=381307133&sche=ban&score=1&pp=rtmp&freeze=1&source=onetier&trace=10&site=12e2a543d23e1c612a7145eb5a5cfac4&order=1',
-  //   });
-  //   // @ts-ignore
-  //   flvPlayer.attachMediaElement(
-  //     document.querySelector<HTMLVideoElement>('#blobVideo')
-  //   );
-  //   flvPlayer.load();
-  // }
   if (topRef.value && bottomRef.value && localVideoRef.value) {
     const res =
       bottomRef.value.getBoundingClientRect().top -
       topRef.value.getBoundingClientRect().top;
     localVideoRef.value.style.height = `100px`;
-    // localVideoRef.value.style.height = `${res}px`;
+    localVideoRef.value.style.height = `${res}px`;
   }
   localVideoRef.value?.addEventListener('loadstart', () => {
     console.warn('视频流-loadstart');
@@ -263,44 +242,11 @@ onMounted(() => {
     if (!rtc) return;
     rtc.rtcStatus.loadedmetadata = true;
     rtc.update();
-    if (isAdmin.value) {
-      batchSendOffer();
-    }
   });
 });
 
 function getSocketId() {
   return networkStore.wsMap.get(roomId.value!)?.socketIo?.id || '-1';
-}
-
-function sendJoin() {
-  const instance = networkStore.wsMap.get(roomId.value);
-  if (!instance) return;
-  instance.send({
-    msgType: WsMsgTypeEnum.join,
-    data: {
-      roomName: roomName.value,
-    },
-  });
-}
-
-function batchSendOffer() {
-  liveUserList.value.forEach(async (item) => {
-    if (
-      !offerSended.value.has(item.socketId) &&
-      item.socketId !== getSocketId()
-    ) {
-      await startNewWebRtc(item.socketId);
-      await addTrack();
-      console.warn('new WebRTCClass完成');
-      console.log('执行sendOffer', {
-        sender: getSocketId(),
-        receiver: item.socketId,
-      });
-      sendOffer({ sender: getSocketId(), receiver: item.socketId });
-      offerSended.value.add(item.socketId);
-    }
-  });
 }
 
 function initReceive() {
@@ -312,6 +258,7 @@ function initReceive() {
     if (!instance) return;
     instance.status = WsConnectStatusEnum.connect;
     instance.update();
+    sendJoin();
   });
 
   // websocket连接断开
@@ -333,73 +280,6 @@ function initReceive() {
     if (!instance) return;
   });
 
-  // 收到offer
-  instance.socketIo.on(WsMsgTypeEnum.offer, async (data: IOffer) => {
-    console.warn('【websocket】收到offer', data);
-    if (!instance) return;
-    if (data.data.receiver === getSocketId()) {
-      console.log('收到offer，这个offer是发给我的');
-      const rtc = startNewWebRtc(data.data.sender);
-      await rtc.setRemoteDescription(data.data.sdp);
-      const sdp = await rtc.createAnswer();
-      await rtc.setLocalDescription(sdp);
-      websocketInstant.value?.send({
-        msgType: WsMsgTypeEnum.answer,
-        data: { sdp, sender: getSocketId(), receiver: data.data.sender },
-      });
-    } else {
-      console.log('收到offer，但是这个offer不是发给我的');
-    }
-  });
-
-  // 收到answer
-  instance.socketIo.on(WsMsgTypeEnum.answer, async (data: IOffer) => {
-    console.warn('【websocket】收到answer', data);
-    if (isDone.value) return;
-    if (!instance) return;
-    const rtc = networkStore.getRtcMap(`${roomId.value}___${data.socketId}`);
-    console.log(rtc, '收到answer收到answer');
-    if (!rtc) return;
-    rtc.rtcStatus.answer = true;
-    rtc.update();
-    if (data.data.receiver === getSocketId()) {
-      console.log('收到answer，这个answer是发给我的');
-      await rtc.setRemoteDescription(data.data.sdp);
-    } else {
-      console.log('收到answer，但这个answer不是发给我的');
-    }
-  });
-
-  // 收到candidate
-  instance.socketIo.on(WsMsgTypeEnum.candidate, (data: ICandidate) => {
-    console.warn('【websocket】收到candidate', data);
-    if (isDone.value) return;
-    if (!instance) return;
-    const rtc =
-      networkStore.getRtcMap(`${roomId.value}___${data.socketId}`) ||
-      networkStore.getRtcMap(roomId.value);
-    if (!rtc) return;
-    if (data.socketId !== getSocketId()) {
-      console.log('不是我发的candidate');
-      const candidate = new RTCIceCandidate({
-        sdpMid: data.data.sdpMid,
-        sdpMLineIndex: data.data.sdpMLineIndex,
-        candidate: data.data.candidate,
-      });
-      rtc.peerConnection
-        ?.addIceCandidate(candidate)
-        .then(() => {
-          console.log('candidate成功');
-          // rtc.handleStream();
-        })
-        .catch((err) => {
-          console.error('candidate失败', err);
-        });
-    } else {
-      console.log('是我发的candidate');
-    }
-  });
-
   // 收到用户发送消息
   instance.socketIo.on(WsMsgTypeEnum.message, (data) => {
     console.log('【websocket】收到用户发送消息', data);
@@ -411,22 +291,15 @@ function initReceive() {
     });
   });
 
-  // 用户加入房间
-  instance.socketIo.on(WsMsgTypeEnum.join, (data) => {
-    console.log('【websocket】用户加入房间', data);
-    if (!instance) return;
-  });
-
-  // 用户加入房间
+  // 用户加入房间完成
   instance.socketIo.on(WsMsgTypeEnum.joined, (data) => {
     console.log('【websocket】用户加入房间完成', data);
-    joined.value = true;
     liveUserList.value.push({
       avatar: 'red',
       socketId: `${getSocketId()}`,
       expr: 1,
     });
-    batchSendOffer();
+    handleSrsPush();
   });
 
   // 其他用户加入房间
@@ -438,10 +311,6 @@ function initReceive() {
       expr: 1,
     });
     console.log('当前所有在线用户', JSON.stringify(liveUserList.value));
-    console.log(isAdmin.value, joined.value);
-    if (isAdmin.value && joined.value) {
-      batchSendOffer();
-    }
   });
 
   // 用户离开房间
@@ -493,91 +362,84 @@ function endLive() {
   }
   if (!websocketInstant.value) return;
   websocketInstant.value.close();
-  // websocketInstant.value.send({
-  //   msgType: WsMsgTypeEnum.roomNoLive,
-  // });
 }
 
-function startSrsRtcLive() {
-  const sdk = new SrsRtcPublisherAsync();
-  console.log(sdk);
+function sendJoin() {
+  const instance = networkStore.wsMap.get(roomId.value);
+  if (!instance) return;
+  instance.send({
+    msgType: WsMsgTypeEnum.join,
+    data: {
+      roomName: roomName.value,
+      srs: {
+        streamurl: streamurl.value,
+      },
+    },
+  });
 }
 
 function startLive() {
+  if (!roomNameIsOk()) return;
+  if (currMediaTypeList.value.length <= 0) {
+    alert('请选择一个素材！');
+    return;
+  }
   websocketInstant.value = new WebSocketClass({
     roomId: roomId.value,
     url:
       process.env.NODE_ENV === 'development'
         ? 'ws://localhost:4300'
         : 'wss://live.hsslive.cn',
-    isAdmin: isAdmin.value,
+    isAdmin: true,
   });
   websocketInstant.value.update();
-  setTimeout(() => {
-    websocketInstant.value!.socketIo?.emit(WsMsgTypeEnum.message, {
-      data: { debug: 1 },
-    });
-  }, 1000);
-
-  // initReceive();
-  // sendJoin();
+  initReceive();
 }
 
-const blobArr = ref<Blob[]>([]);
+async function handleSrsPush() {
+  const rtc = new SRSWebRTCClass({
+    roomId: `${roomId.value}___${getSocketId()}`,
+  });
+  if (!rtc) return;
+  localStream.value.getTracks().forEach((track) => {
+    rtc.addTrack({ track, stream: localStream.value, direction: 'sendonly' });
+  });
+  try {
+    const offer = await rtc.createOffer();
+    if (!offer) return;
+    await rtc.setLocalDescription(offer);
+    const res: any = await fetchRtcV1Publish({
+      api: 'http://localhost:1985/rtc/v1/publish/',
+      clientip: null,
+      sdp: offer.sdp!,
+      streamurl: streamurl.value,
+      tid: getRandomString(10),
+    });
+    await rtc.setRemoteDescription(
+      new RTCSessionDescription({ type: 'answer', sdp: res.sdp })
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 /** 摄像头 */
 async function startMediaDevices() {
   if (!localStream.value) {
     // WARN navigator.mediaDevices在localhost和https才能用，http://192.168.1.103:8000局域网用不了
     const event = await navigator.mediaDevices.getUserMedia({
       video: true,
-      audio: false,
+      audio: true,
     });
     console.log('getUserMedia成功', event);
-    currMediaType.value = liveTypeEnum.camera;
-    currMediaTypeList.value.push(liveTypeEnum.camera);
+    currMediaType.value = allMediaTypeList[liveTypeEnum.camera];
+    currMediaTypeList.value.push(allMediaTypeList[liveTypeEnum.camera]);
     if (!localVideoRef.value) return;
     localVideoRef.value.srcObject = event;
-    // const rec = new MediaRecorder(event, { mimeType: 'image/png' });
-    // const rec = new MediaRecorder(event);
-    const rec = new MediaRecorder(event, {
-      // mimeType: 'video/webm;codecs=avc1.64001f,opus',
-      mimeType: 'video/webm',
-    });
-    rec.addEventListener('dataavailable', (e) => {
-      console.log(new Date().toLocaleString(), 'dataavailable');
-      if (e.data.size > 0) {
-        blobArr.value.push(e.data);
-      }
-      console.log(e.data.stream());
-      // document.querySelector<HTMLVideoElement>('#blobVideo')!.srcObject =
-      //   e.data.stream();
-      // const recordedBlob = new Blob([e.data], { type: 'video/webm' });
-      const recordedBlob = new Blob([e.data]);
-      console.log(recordedBlob);
-      // const url = window.URL.createObjectURL(recordedBlob);
-      // const a = document.createElement('a');
-      // a.style.display = 'none';
-      // a.href = url;
-      // a.download = 'test.webm';
-      // document.body.appendChild(a);
-      // a.click();
-      // setTimeout(() => {
-      //   document.body.removeChild(a);
-      //   window.URL.revokeObjectURL(url);
-      // }, 100);
-      if (!websocketInstant.value) return;
-      // websocketInstant.value.socketIo?.emit(WsMsgTypeEnum.sendBlob, e.data);
-      // websocketInstant.value.socketIo?.emit('aaa', { aa: recordedBlob });
-      websocketInstant.value.send({
-        msgType: WsMsgTypeEnum.sendBlob,
-        data: { blob: recordedBlob, timestamp: new Date().getTime() },
-      });
-    });
-    rec.start(500);
-
     localStream.value = event;
   }
 }
+
 /** 窗口 */
 async function startGetDisplayMedia() {
   if (!localStream.value) {
@@ -587,105 +449,12 @@ async function startGetDisplayMedia() {
       audio: true,
     });
     console.log('getDisplayMedia成功', event);
-    currMediaType.value = liveTypeEnum.screen;
-    currMediaTypeList.value.push(liveTypeEnum.screen);
+    currMediaType.value = allMediaTypeList[liveTypeEnum.screen];
+    currMediaTypeList.value.push(allMediaTypeList[liveTypeEnum.screen]);
     if (!localVideoRef.value) return;
     localVideoRef.value.srcObject = event;
     localStream.value = event;
-    const rec = new MediaStreamRecorder(event);
-    // const rec = new MediaRecorder(event, {
-    //   mimeType: 'video/webm',
-    // });
-    rec.ondataavailable = (blob) => {
-      if (!websocketInstant.value) return;
-      // websocketInstant.value.socketIo?.emit(WsMsgTypeEnum.sendBlob, e.data);
-      // websocketInstant.value.socketIo?.emit('aaa', { aa: recordedBlob });
-      websocketInstant.value.send({
-        msgType: WsMsgTypeEnum.sendBlob,
-        data: { blob, timestamp: new Date().getTime() },
-      });
-    };
-    rec.start(500);
-
-    // rec.addEventListener('dataavailable', (e) => {
-    //   console.log(new Date().toLocaleString(), 'dataavailable');
-    //   if (e.data.size <= 0) {
-    //     return;
-    //   }
-    //   blobArr.value.push(e.data);
-
-    //   console.log(e.data.stream());
-    //   // document.querySelector<HTMLVideoElement>('#blobVideo')!.srcObject =
-    //   //   e.data.stream();
-    //   // const recordedBlob = new Blob([e.data], { type: 'video/webm' });
-    //   // const res1 = blobArr.value.pop();
-    //   // const res2 = res1 ? [res1] : [];
-    //   // const recordedBlob = new Blob(res2, { type: 'video/webm' });
-    //   const recordedBlob = new Blob(blobArr.value, { type: 'video/webm' });
-    //   // const recordedBlob = new Blob([e.data]);
-    //   console.log(recordedBlob, blobArr.value.length, 222);
-    //   // const url = window.URL.createObjectURL(recordedBlob);
-    //   // const a = document.createElement('a');
-    //   // a.style.display = 'none';
-    //   // a.href = url;
-    //   // a.download = 'test.webm';
-    //   // document.body.appendChild(a);
-    //   // a.click();
-    //   // setTimeout(() => {
-    //   //   document.body.removeChild(a);
-    //   //   window.URL.revokeObjectURL(url);
-    //   // }, 100);
-    //   if (!websocketInstant.value) return;
-    //   // websocketInstant.value.socketIo?.emit(WsMsgTypeEnum.sendBlob, e.data);
-    //   // websocketInstant.value.socketIo?.emit('aaa', { aa: recordedBlob });
-    //   websocketInstant.value.send({
-    //     msgType: WsMsgTypeEnum.sendBlob,
-    //     data: { blob: recordedBlob, timestamp: new Date().getTime() },
-    //   });
-    //   // blobArr.value = [];
-    // });
-    // rec.start(500);
   }
-}
-function addTrack() {
-  if (!localStream.value) return;
-  liveUserList.value.forEach((item) => {
-    if (item.socketId !== getSocketId()) {
-      localStream.value.getTracks().forEach((track) => {
-        const rtc = networkStore.getRtcMap(
-          `${roomId.value}___${item.socketId}`
-        );
-        rtc?.addTrack(track, localStream.value);
-      });
-    }
-  });
-}
-
-async function sendOffer({
-  sender,
-  receiver,
-}: {
-  sender: string;
-  receiver: string;
-}) {
-  if (isDone.value) return;
-  if (!websocketInstant.value) return;
-  const rtc = networkStore.getRtcMap(`${roomId.value}___${receiver}`);
-  if (!rtc) return;
-  const sdp = await rtc.createOffer();
-  await rtc.setLocalDescription(sdp);
-  websocketInstant.value.send({
-    msgType: WsMsgTypeEnum.offer,
-    data: { sdp, sender, receiver },
-  });
-}
-
-function startNewWebRtc(receiver: string) {
-  console.warn('开始new WebRTCClass', receiver);
-  const rtc = new WebRTCClass({ roomId: `${roomId.value}___${receiver}` });
-  rtc.rtcStatus.joined = true;
-  rtc.update();
-  return rtc;
 }
 
 function leave() {

@@ -97,19 +97,17 @@
 import { onMounted, onUnmounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
-import { IAdminIn, ICandidate, IOffer, liveTypeEnum } from '@/interface';
+import { IAdminIn, ICandidate, IOffer } from '@/interface';
 import { WebRTCClass } from '@/network/webRtc';
 import {
   WebSocketClass,
   WsConnectStatusEnum,
   WsMsgTypeEnum,
 } from '@/network/webSocket';
-import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 
 const networkStore = useNetworkStore();
 const route = useRoute();
-const appStore = useAppStore();
 const danmuStr = ref('');
 const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
@@ -123,7 +121,6 @@ const websocketInstant = ref<WebSocketClass>();
 const isDone = ref(false);
 const localVideoRef = ref<HTMLVideoElement>();
 const localStream = ref();
-const currType = ref(liveTypeEnum.camera); // 1:摄像头，2:录屏
 const joined = ref(false);
 const offerSended = ref(new Set());
 
@@ -352,7 +349,6 @@ function initReceive() {
         ?.addIceCandidate(candidate)
         .then(() => {
           console.log('candidate成功');
-          // rtc.handleStream();
         })
         .catch((err) => {
           console.error('candidate失败', err);
@@ -373,13 +369,7 @@ function initReceive() {
     });
   });
 
-  // 用户加入房间
-  instance.socketIo.on(WsMsgTypeEnum.join, (data) => {
-    console.log('【websocket】用户加入房间', data);
-    if (!instance) return;
-  });
-
-  // 用户加入房间
+  // 用户加入房间完成
   instance.socketIo.on(WsMsgTypeEnum.joined, (data) => {
     console.log('【websocket】用户加入房间完成', data);
     joined.value = true;
@@ -414,20 +404,6 @@ function initReceive() {
   });
 }
 
-async function startMediaDevices() {
-  currType.value = liveTypeEnum.camera;
-  if (!localStream.value) {
-    // WARN navigator.mediaDevices在localhost和https才能用，http://192.168.1.103:8000局域网用不了
-    const event = await navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: true,
-    });
-    console.log('getUserMedia成功', event);
-    if (!localVideoRef.value) return;
-    localVideoRef.value.srcObject = event;
-    localStream.value = event;
-  }
-}
 function addTrack() {
   if (!localStream.value) return;
   liveUserList.value.forEach((item) => {
@@ -441,21 +417,6 @@ function addTrack() {
     }
   });
   isAddTrack.value = true;
-}
-
-async function startGetDisplayMedia() {
-  currType.value = liveTypeEnum.screen;
-  if (!localStream.value) {
-    // WARN navigator.mediaDevices.getDisplayMedia在localhost和https才能用，http://192.168.1.103:8000局域网用不了
-    const event = await navigator.mediaDevices.getDisplayMedia({
-      video: true,
-      audio: true,
-    });
-    console.log('getDisplayMedia成功', event);
-    if (!localVideoRef.value) return;
-    localVideoRef.value.srcObject = event;
-    localStream.value = event;
-  }
 }
 
 async function sendOffer({
@@ -483,18 +444,6 @@ function startNewWebRtc(receiver: string) {
   rtc.rtcStatus.joined = true;
   rtc.update();
   return rtc;
-}
-
-function leave() {
-  if (joinRef.value && leaveRef.value && roomIdRef.value) {
-    roomIdRef.value.disabled = false;
-    joinRef.value.disabled = false;
-    leaveRef.value.disabled = true;
-  }
-  if (!websocketInstant.value) return;
-  websocketInstant.value.socketIo?.emit(WsMsgTypeEnum.leave, {
-    roomId: websocketInstant.value.roomId,
-  });
 }
 </script>
 

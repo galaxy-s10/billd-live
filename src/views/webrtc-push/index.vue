@@ -4,10 +4,6 @@
       ref="topRef"
       class="left"
     >
-      <video
-        id="blobVideo"
-        style="width: 300px; background-color: red"
-      ></video>
       <div class="video-wrap">
         <video
           id="localVideo"
@@ -482,7 +478,6 @@ function startLive() {
   sendJoin();
 }
 
-const blobArr = ref<Blob[]>([]);
 /** 摄像头 */
 async function startMediaDevices() {
   if (!localStream.value) {
@@ -496,38 +491,6 @@ async function startMediaDevices() {
     currMediaTypeList.value.push(liveTypeEnum.camera);
     if (!localVideoRef.value) return;
     localVideoRef.value.srcObject = event;
-    const rec = new MediaRecorder(event, { mimeType: 'video/webm' });
-    console.log('rec', rec);
-    rec.addEventListener('dataavailable', (e) => {
-      console.log(new Date().toLocaleString(), 'dataavailable');
-      if (e.data.size > 0) {
-        blobArr.value.push(e.data);
-      }
-      console.log(e.data.stream());
-      // document.querySelector<HTMLVideoElement>('#blobVideo')!.srcObject =
-      //   e.data.stream();
-      const recordedBlob = new Blob(blobArr.value, { type: 'video/webm' });
-      console.log(recordedBlob);
-      // const url = window.URL.createObjectURL(recordedBlob);
-      // const a = document.createElement('a');
-      // a.style.display = 'none';
-      // a.href = url;
-      // a.download = 'test.webm';
-      // document.body.appendChild(a);
-      // a.click();
-      // setTimeout(() => {
-      //   document.body.removeChild(a);
-      //   window.URL.revokeObjectURL(url);
-      // }, 100);
-      if (!websocketInstant.value) return;
-      // websocketInstant.value.socketIo?.emit(WsMsgTypeEnum.sendBlob, e.data);
-      websocketInstant.value.send({
-        msgType: WsMsgTypeEnum.sendBlob,
-        data: { blob: recordedBlob, timestamp: new Date().getTime() },
-      });
-    });
-    rec.start(1000);
-
     localStream.value = event;
   }
 }
@@ -547,6 +510,7 @@ async function startGetDisplayMedia() {
     localStream.value = event;
   }
 }
+
 function addTrack() {
   if (!localStream.value) return;
   liveUserList.value.forEach((item) => {
