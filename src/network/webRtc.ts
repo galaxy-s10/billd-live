@@ -539,16 +539,16 @@ export class WebRTCClass {
     }
     if (!this.peerConnection) {
       this.peerConnection = new RTCPeerConnection({
-        // iceServers: [
-        //   // {
-        //   //   urls: 'stun:stun.l.google.com:19302',
-        //   // },
-        //   {
-        //     urls: 'turn:hsslive.cn:3478',
-        //     username: 'hss',
-        //     credential: '123456',
-        //   },
-        // ],
+        iceServers: [
+          // {
+          //   urls: 'stun:stun.l.google.com:19302',
+          // },
+          {
+            urls: 'turn:hsslive.cn:3478',
+            username: 'hss',
+            credential: '123456',
+          },
+        ],
       });
       // this.dataChannel =
       //   this.peerConnection.createDataChannel('MessageChannel');

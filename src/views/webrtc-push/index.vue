@@ -248,14 +248,14 @@ function handleCoverImg() {
   const canvas = document.createElement('canvas');
   const { width, height } = localVideoRef.value!.getBoundingClientRect();
   const rate = width / height;
-  const coverWidth = width * 1;
+  const coverWidth = width * 0.5;
   const coverHeight = coverWidth / rate;
   canvas.width = coverWidth;
   canvas.height = coverHeight;
   canvas
     .getContext('2d')!
     .drawImage(localVideoRef.value!, 0, 0, coverWidth, coverHeight);
-  // webp比png的体积小非常多！因此coverWidth就可以不压缩大小了
+  // webp比png的体积小非常多！因此coverWidth就可以不用压缩太夸张
   const dataURL = canvas.toDataURL('image/webp');
   return dataURL;
 }
