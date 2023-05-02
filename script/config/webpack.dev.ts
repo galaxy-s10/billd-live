@@ -85,7 +85,7 @@ export default new Promise((resolve) => {
               },
             },
             '/api': {
-              target: 'http://localhost:3300',
+              target: 'http://localhost:4300',
               secure: false, // 默认情况下（secure: true），不接受在HTTPS上运行的带有无效证书的后端服务器。设置secure: false后，后端服务器的HTTPS有无效证书也可运行
               /**
                * changeOrigin，是否修改请求地址的源
@@ -94,8 +94,8 @@ export default new Promise((resolve) => {
                */
               changeOrigin: true,
               pathRewrite: {
-                // '^/api': '', // 效果：/api/link/list ==> http://localhost:3300/link/list
-                '^/api': '/admin/', // 效果：/api/link/list ==> http://localhost:3300/admin/link/list
+                '^/api': '', // 效果：/api/link/list ==> http://localhost:4300/link/list
+                // '^/api': '/admin/', // 效果：/api/link/list ==> http://localhost:4300/admin/link/list
               },
             },
             '/prodapi': {

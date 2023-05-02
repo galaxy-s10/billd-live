@@ -1,6 +1,9 @@
 <template>
   <div class="home-wrap">
-    <div class="left">
+    <div
+      class="left"
+      :style="{ backgroundImage: `url(${currentLiveRoom?.coverImg})` }"
+    >
       <video src=""></video>
       <div
         v-if="liveRoomList.length"
@@ -18,16 +21,18 @@
         <div
           v-for="(item, index) in liveRoomList"
           :key="index"
-          :class="{ item: 1, active: item.roomId === currentRoom?.roomId }"
-          :style="{ backgroundImage: `url(${item.roomId})` }"
-          @click="currentRoom = item"
+          :class="{ item: 1, active: item.roomId === currentLiveRoom?.roomId }"
+          :style="{ backgroundImage: `url(${item.coverImg})` }"
+          @click="currentLiveRoom = item"
         >
           <div
             class="border"
-            :style="{ opacity: item.roomId === currentRoom?.roomId ? 1 : 0 }"
+            :style="{
+              opacity: item.roomId === currentLiveRoom?.roomId ? 1 : 0,
+            }"
           ></div>
           <div
-            v-if="item.roomId === currentRoom?.roomId"
+            v-if="item.roomId === currentLiveRoom?.roomId"
             class="triangle"
           ></div>
           <div class="txt">{{ item.roomName }}</div>
@@ -50,70 +55,39 @@ import { useRouter } from 'vue-router';
 import { fetchLiveList } from '@/api/live';
 import { routerName } from '@/router';
 
-const router = useRouter();
-const liveRoomList = ref<{ roomId: string; roomName: string }[]>([
-  // {
-  //   roomId: '123456',
-  //   txt: '视频聊天',
-  //   // eslint-disable-next-line
-  //   img: require('@/assets/img/CoCo.webp'),
-  // },
-  // {
-  //   roomId: '2323',
-  //   txt: '游戏赛事',
-  //   // eslint-disable-next-line
-  //   img: require('@/assets/img/Hololo.webp'),
-  // },
-  // {
-  //   roomId: '4454',
-  //   txt: '户外直播',
-  //   // eslint-disable-next-line
-  //   img: require('@/assets/img/MoonTIT.webp'),
-  // },
-  // {
-  //   roomId: '43232',
-  //   txt: '鬼畜',
-  //   // eslint-disable-next-line
-  //   img: require('@/assets/img/Nill.webp'),
-  // },
-  // {
-  //   roomId: '4647457',
-  //   txt: '闲聊',
-  //   // eslint-disable-next-line
-  //   img: require('@/assets/img/Ojin.webp'),
-  // },
-]);
-
-const currentRoom = ref<{
+interface IRoom {
   roomId: string;
   roomName: string;
   srs?: { streamurl: string };
-}>();
+  coverImg: string;
+}
+
+const router = useRouter();
+const liveRoomList = ref<IRoom[]>([]);
+const currentLiveRoom = ref<IRoom>();
 
 async function getLiveRoomList() {
   try {
     const res = await fetchLiveList();
     if (res.code === 200) {
       liveRoomList.value = res.data.rows.map((item) => {
-        console.log(
-          JSON.parse(item.data).data.roomName,
-          JSON.parse(item.data).data
-        );
         return {
           roomId: item.roomId,
           roomName: JSON.parse(item.data).data.roomName,
+          coverImg: JSON.parse(item.data).data.coverImg,
           srs: JSON.parse(item.data).data.srs,
         };
       });
       if (res.data.count) {
-        currentRoom.value = {
+        const item = res.data.rows[0].data;
+        currentLiveRoom.value = {
           roomId: res.data.rows[0].roomId,
-          roomName: JSON.parse(res.data.rows[0].data).data.roomName,
-          srs: JSON.parse(res.data.rows[0].data).data.srs,
+          roomName: JSON.parse(item).data.roomName,
+          coverImg: JSON.parse(item).data.coverImg,
+          srs: JSON.parse(item).data.srs,
         };
       }
     }
-    console.log(liveRoomList.value);
   } catch (error) {
     console.log(error);
   }
@@ -124,15 +98,15 @@ onMounted(() => {
 });
 
 function joinRoom() {
-  if (currentRoom.value?.srs) {
+  if (currentLiveRoom.value?.srs) {
     router.push({
       name: routerName.srsWebRtcPull,
-      params: { roomId: currentRoom.value.roomId },
+      params: { roomId: currentLiveRoom.value.roomId },
     });
   } else {
     router.push({
       name: routerName.webrtcPull,
-      params: { roomId: currentRoom.value?.roomId },
+      params: { roomId: currentLiveRoom.value?.roomId },
     });
   }
 }
@@ -155,6 +129,9 @@ function joinRoom() {
     border-radius: 4px;
     background-color: papayawhip;
     vertical-align: top;
+
+    @extend %coverBg;
+
     &:hover {
       .btn {
         display: inline-block;
@@ -166,19 +143,20 @@ function joinRoom() {
       left: 50%;
       display: none;
       padding: 10px 20px;
-      border: 1px solid rgba($color: rebeccapurple, $alpha: 0.3);
+      border: 1px solid rgba($color: skyblue, $alpha: 0.3);
       border-radius: 4px;
-      color: rebeccapurple;
+      color: skyblue;
       font-size: 14px;
       cursor: pointer;
       transform: translate(-50%, -50%);
       &:hover {
-        background-color: rgba($color: rebeccapurple, $alpha: 0.3);
+        background-color: rgba($color: skyblue, $alpha: 0.3);
       }
     }
   }
   .right {
     display: inline-block;
+    overflow: scroll;
     box-sizing: border-box;
     margin-left: 10px;
     padding: 12px;
@@ -186,8 +164,6 @@ function joinRoom() {
     border-radius: 4px;
     background-color: rgba($color: #000000, $alpha: 0.3);
     vertical-align: top;
-
-    overflow: scroll;
 
     .list {
       .item {

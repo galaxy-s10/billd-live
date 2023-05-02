@@ -125,7 +125,7 @@ import { getRandomString } from 'billd-utils';
 import MediaStreamRecorder from 'msr';
 import { onMounted, onUnmounted, ref } from 'vue';
 
-import { IAdminIn, ICandidate, IOffer, liveTypeEnum } from '@/interface';
+import { IAdminIn, ICandidate, IOffer, LiveTypeEnum } from '@/interface';
 import { WebRTCClass } from '@/network/webRtc';
 import {
   WebSocketClass,
@@ -150,8 +150,8 @@ const websocketInstant = ref<WebSocketClass>();
 const isDone = ref(false);
 const localVideoRef = ref<HTMLVideoElement>();
 const localStream = ref();
-const currMediaTypeList = ref<liveTypeEnum[]>([]);
-const currMediaType = ref<liveTypeEnum>();
+const currMediaTypeList = ref<LiveTypeEnum[]>([]);
+const currMediaType = ref<LiveTypeEnum>();
 const joined = ref(false);
 const isAdmin = ref(true);
 const offerSended = ref(new Set());
@@ -516,8 +516,8 @@ async function startMediaDevices() {
       audio: false,
     });
     console.log('getUserMedia成功', event);
-    currMediaType.value = liveTypeEnum.camera;
-    currMediaTypeList.value.push(liveTypeEnum.camera);
+    currMediaType.value = LiveTypeEnum.camera;
+    currMediaTypeList.value.push(LiveTypeEnum.camera);
     if (!localVideoRef.value) return;
     localVideoRef.value.srcObject = event;
     // const rec = new MediaRecorder(event, { mimeType: 'image/png' });
@@ -570,8 +570,8 @@ async function startGetDisplayMedia() {
       audio: true,
     });
     console.log('getDisplayMedia成功', event);
-    currMediaType.value = liveTypeEnum.screen;
-    currMediaTypeList.value.push(liveTypeEnum.screen);
+    currMediaType.value = LiveTypeEnum.screen;
+    currMediaTypeList.value.push(LiveTypeEnum.screen);
     if (!localVideoRef.value) return;
     localVideoRef.value.srcObject = event;
     localStream.value = event;
@@ -696,7 +696,6 @@ function leave() {
     box-sizing: border-box;
     width: $large-left-width;
     height: 100%;
-    border: 1px solid red;
     border-radius: 10px;
     background-color: white;
     color: #9499a0;
@@ -740,7 +739,7 @@ function leave() {
       display: flex;
       justify-content: space-between;
       padding: 20px;
-      background-color: pink;
+      background-color: papayawhip;
 
       .info {
         display: flex;
@@ -814,7 +813,7 @@ function leave() {
       width: 100%;
       height: 290px;
       border-radius: 4px;
-      background-color: pink;
+      background-color: papayawhip;
       .title {
         padding: 10px;
         text-align: initial;
@@ -833,7 +832,7 @@ function leave() {
       width: 100%;
       height: 400px;
       border-radius: 4px;
-      background-color: pink;
+      background-color: papayawhip;
       text-align: initial;
       .title {
         margin-bottom: 10px;

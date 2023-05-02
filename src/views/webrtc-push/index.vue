@@ -24,7 +24,7 @@
         >
           <div
             class="item"
-            @click="startMediaDevices"
+            @click="startGetUserMedia"
           >
             摄像头
           </div>
@@ -51,12 +51,12 @@
                 placeholder="输入房间名"
               />
               <button
+                ref="roomNameBtnRef"
                 class="btn"
                 @click="confirmRoomName"
               >
                 确定
               </button>
-              <!-- 房东的猫livehouse/音乐节 -->
             </div>
             <div class="bottom">
               <span>socketId：{{ getSocketId() }}</span>
@@ -86,23 +86,36 @@
             :key="index"
             class="item"
           >
-            <span class="name">{{ item }}</span>
+            <span class="name">{{ item.txt }}</span>
           </div>
         </div>
       </div>
       <div class="danmu-card">
         <div class="title">弹幕互动</div>
-        <div class="list">
-          <div
-            v-for="(item, index) in damuList"
-            :key="index"
-            class="item"
-          >
-            <span class="name">{{ item.socketId }}：</span>
-            <span class="msg">{{ item.msg }}</span>
+        <div class="list-wrap">
+          <div class="list">
+            <div
+              v-for="(item, index) in damuList"
+              :key="index"
+              class="item"
+            >
+              <template v-if="item.msgType === DanmuMsgTypeEnum.danmu">
+                <span class="name">{{ item.socketId }}：</span>
+                <span class="msg">{{ item.msg }}</span>
+              </template>
+              <template v-else-if="item.msgType === DanmuMsgTypeEnum.otherJoin">
+                <span class="name system">系统通知：</span>
+                <span class="msg">{{ item.socketId }}进入直播！</span>
+              </template>
+              <template
+                v-else-if="item.msgType === DanmuMsgTypeEnum.userLeaved"
+              >
+                <span class="name system">系统通知：</span>
+                <span class="msg">{{ item.socketId }}离开直播！</span>
+              </template>
+            </div>
           </div>
         </div>
-
         <div class="send-msg">
           <input
             v-model="danmuStr"
@@ -124,7 +137,13 @@
 import { getRandomString } from 'billd-utils';
 import { onMounted, onUnmounted, ref } from 'vue';
 
-import { IAdminIn, ICandidate, IOffer, liveTypeEnum } from '@/interface';
+import {
+  DanmuMsgTypeEnum,
+  IAdminIn,
+  ICandidate,
+  IOffer,
+  LiveTypeEnum,
+} from '@/interface';
 import { WebRTCClass } from '@/network/webRtc';
 import {
   WebSocketClass,
@@ -145,19 +164,40 @@ const roomId = ref<string>(defaultRoomId);
 const danmuStr = ref('');
 const roomName = ref('');
 const roomNameRef = ref<HTMLInputElement>();
+const roomNameBtnRef = ref<HTMLButtonElement>();
 const websocketInstant = ref<WebSocketClass>();
 const isDone = ref(false);
 const localVideoRef = ref<HTMLVideoElement>();
 const localStream = ref();
-const currMediaTypeList = ref<liveTypeEnum[]>([]);
-const currMediaType = ref<liveTypeEnum>();
+
+const allMediaTypeList = {
+  [LiveTypeEnum.camera]: {
+    type: LiveTypeEnum.camera,
+    txt: '摄像头',
+  },
+  [LiveTypeEnum.screen]: {
+    type: LiveTypeEnum.screen,
+    txt: '窗口',
+  },
+};
+const currMediaTypeList = ref<
+  {
+    type: LiveTypeEnum;
+    txt: string;
+  }[]
+>([]);
+const currMediaType = ref<{
+  type: LiveTypeEnum;
+  txt: string;
+}>();
+
 const joined = ref(false);
-const isAdmin = ref(true);
 const offerSended = ref(new Set());
+
 const damuList = ref<
   {
     socketId: string;
-    msgType: number;
+    msgType: DanmuMsgTypeEnum;
     msg: string;
   }[]
 >([]);
@@ -193,7 +233,7 @@ function sendDanmu() {
   });
   damuList.value.push({
     socketId: getSocketId(),
-    msgType: 1,
+    msgType: DanmuMsgTypeEnum.danmu,
     msg: danmuStr.value,
   });
   danmuStr.value = '';
@@ -204,7 +244,28 @@ onUnmounted(() => {
   closeRtc();
 });
 
-onMounted(() => {
+function handleCoverImg() {
+  const canvas = document.createElement('canvas');
+  const { width, height } = localVideoRef.value!.getBoundingClientRect();
+  const rate = width / height;
+  const coverWidth = width * 1;
+  const coverHeight = coverWidth / rate;
+  canvas.width = coverWidth;
+  canvas.height = coverHeight;
+  canvas
+    .getContext('2d')!
+    .drawImage(localVideoRef.value!, 0, 0, coverWidth, coverHeight);
+  // webp比png的体积小非常多！因此coverWidth就可以不压缩大小了
+  const dataURL = canvas.toDataURL('image/webp');
+  return dataURL;
+}
+
+onMounted(async () => {
+  const all = await getAllMediaDevices();
+  allMediaTypeList[LiveTypeEnum.camera] = {
+    txt: all.find((item) => item.kind === 'videoinput')?.label || '摄像头',
+    type: LiveTypeEnum.camera,
+  };
   if (topRef.value && bottomRef.value && localVideoRef.value) {
     const res =
       bottomRef.value.getBoundingClientRect().top -
@@ -225,9 +286,7 @@ onMounted(() => {
     if (!rtc) return;
     rtc.rtcStatus.loadedmetadata = true;
     rtc.update();
-    if (isAdmin.value) {
-      batchSendOffer();
-    }
+    batchSendOffer();
   });
 });
 
@@ -242,6 +301,7 @@ function sendJoin() {
     msgType: WsMsgTypeEnum.join,
     data: {
       roomName: roomName.value,
+      coverImg: handleCoverImg(),
     },
   });
 }
@@ -365,10 +425,9 @@ function initReceive() {
   // 收到用户发送消息
   instance.socketIo.on(WsMsgTypeEnum.message, (data) => {
     console.log('【websocket】收到用户发送消息', data);
-    if (!instance) return;
     damuList.value.push({
       socketId: data.socketId,
-      msgType: 1,
+      msgType: DanmuMsgTypeEnum.danmu,
       msg: data.data.msg,
     });
   });
@@ -399,9 +458,13 @@ function initReceive() {
       socketId: data.socketId,
       expr: 1,
     });
+    damuList.value.push({
+      socketId: data.socketId,
+      msgType: DanmuMsgTypeEnum.otherJoin,
+      msg: '',
+    });
     console.log('当前所有在线用户', JSON.stringify(liveUserList.value));
-    console.log(isAdmin.value, joined.value);
-    if (isAdmin.value && joined.value) {
+    if (joined.value) {
       batchSendOffer();
     }
   });
@@ -424,6 +487,11 @@ function initReceive() {
     );
     console.log('当前所有在线用户', JSON.stringify(res));
     liveUserList.value = res;
+    damuList.value.push({
+      socketId: data.socketId,
+      msgType: DanmuMsgTypeEnum.userLeaved,
+      msg: '',
+    });
   });
 }
 
@@ -445,41 +513,58 @@ function confirmRoomName() {
   roomNameRef.value.disabled = true;
 }
 
-function endLive() {
-  console.log('endLive');
-  closeRtc();
-  currMediaTypeList.value = [];
-  localStream.value = null;
-  if (localVideoRef.value) {
-    localVideoRef.value.srcObject = null;
-  }
-  if (!websocketInstant.value) return;
-  websocketInstant.value.send({
-    msgType: WsMsgTypeEnum.roomNoLive,
-  });
-}
-
+/** 开始直播 */
 function startLive() {
   if (!roomNameIsOk()) return;
   if (!currMediaTypeList.value.length) {
     alert('请选择一个素材！');
     return;
   }
+  roomNameBtnRef.value!.disabled = true;
   websocketInstant.value = new WebSocketClass({
     roomId: roomId.value,
     url:
       process.env.NODE_ENV === 'development'
         ? 'ws://localhost:4300'
         : 'wss://live.hsslive.cn',
-    isAdmin: isAdmin.value,
+    isAdmin: true,
   });
   websocketInstant.value.update();
   initReceive();
   sendJoin();
+  setTimeout(() => {
+    handleCoverImg();
+  }, 0);
+}
+
+/** 结束直播 */
+function endLive() {
+  roomNameBtnRef.value!.disabled = false;
+  closeRtc();
+  currMediaTypeList.value = [];
+  localStream.value = null;
+  localVideoRef.value!.srcObject = null;
+  if (websocketInstant.value) {
+    websocketInstant.value.send({
+      msgType: WsMsgTypeEnum.roomNoLive,
+    });
+  }
+}
+
+async function getAllMediaDevices() {
+  const res = await navigator.mediaDevices.enumerateDevices();
+  const audioInput = res.filter(
+    (item) => item.kind === 'audioinput' && item.deviceId !== 'default'
+  );
+  const videoInput = res.filter(
+    (item) => item.kind === 'videoinput' && item.deviceId !== 'default'
+  );
+  console.log(audioInput, videoInput, res);
+  return res;
 }
 
 /** 摄像头 */
-async function startMediaDevices() {
+async function startGetUserMedia() {
   if (!localStream.value) {
     // WARN navigator.mediaDevices在localhost和https才能用，http://192.168.1.103:8000局域网用不了
     const event = await navigator.mediaDevices.getUserMedia({
@@ -487,8 +572,8 @@ async function startMediaDevices() {
       audio: true,
     });
     console.log('getUserMedia成功', event);
-    currMediaType.value = liveTypeEnum.camera;
-    currMediaTypeList.value.push(liveTypeEnum.camera);
+    currMediaType.value = allMediaTypeList[LiveTypeEnum.camera];
+    currMediaTypeList.value.push(allMediaTypeList[LiveTypeEnum.camera]);
     if (!localVideoRef.value) return;
     localVideoRef.value.srcObject = event;
     localStream.value = event;
@@ -503,8 +588,8 @@ async function startGetDisplayMedia() {
       audio: true,
     });
     console.log('getDisplayMedia成功', event);
-    currMediaType.value = liveTypeEnum.screen;
-    currMediaTypeList.value.push(liveTypeEnum.screen);
+    currMediaType.value = allMediaTypeList[LiveTypeEnum.screen];
+    currMediaTypeList.value.push(allMediaTypeList[LiveTypeEnum.screen]);
     if (!localVideoRef.value) return;
     localVideoRef.value.srcObject = event;
     localStream.value = event;
@@ -574,11 +659,11 @@ function leave() {
   .left {
     position: relative;
     display: inline-block;
+    overflow: hidden;
     box-sizing: border-box;
     width: $large-left-width;
     height: 100%;
-    border: 1px solid red;
-    border-radius: 10px;
+    border-radius: 6px;
     background-color: white;
     color: #9499a0;
     vertical-align: top;
@@ -604,8 +689,8 @@ function leave() {
         .item {
           width: 60px;
           height: 30px;
-          border-radius: 4px;
-          background-color: rebeccapurple;
+          border-radius: 6px;
+          background-color: skyblue;
           color: white;
           font-size: 14px;
           line-height: 30px;
@@ -621,7 +706,7 @@ function leave() {
       display: flex;
       justify-content: space-between;
       padding: 20px;
-      background-color: pink;
+      background-color: papayawhip;
 
       .info {
         display: flex;
@@ -632,7 +717,7 @@ function leave() {
           width: 64px;
           height: 64px;
           border-radius: 50%;
-          background-color: yellow;
+          background-color: skyblue;
         }
         .detail {
           display: flex;
@@ -685,26 +770,27 @@ function leave() {
     margin-left: 10px;
     width: 240px;
     height: 100%;
-    border-radius: 10px;
+    border-radius: 6px;
     background-color: white;
     color: #9499a0;
 
     .resource-card {
+      box-sizing: border-box;
       margin-bottom: 5%;
       margin-bottom: 10px;
+      padding: 10px;
       width: 100%;
       height: 290px;
-      border-radius: 4px;
-      background-color: pink;
+      border-radius: 6px;
+      background-color: papayawhip;
       .title {
-        padding: 10px;
         text-align: initial;
       }
       .item {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 10px;
+        margin: 5px 0;
         font-size: 12px;
       }
     }
@@ -713,23 +799,30 @@ function leave() {
       padding: 10px;
       width: 100%;
       height: 400px;
-      border-radius: 4px;
-      background-color: pink;
+      border-radius: 6px;
+      background-color: papayawhip;
       text-align: initial;
       .title {
         margin-bottom: 10px;
       }
-      .list {
-        margin-bottom: 10px;
-        height: 300px;
-        .item {
+      .list-wrap {
+        overflow: scroll;
+        height: 80%;
+        .list {
           margin-bottom: 10px;
-          font-size: 12px;
-          .name {
-            color: #9499a0;
-          }
-          .msg {
-            color: #61666d;
+          height: 300px;
+          .item {
+            margin-bottom: 10px;
+            font-size: 12px;
+            .name {
+              color: #9499a0;
+              &.system {
+                color: red;
+              }
+            }
+            .msg {
+              color: #61666d;
+            }
           }
         }
       }
@@ -748,7 +841,7 @@ function leave() {
           height: 30px;
           outline: none;
           border: 1px solid hsla(0, 0%, 60%, 0.2);
-          border-radius: 4px;
+          border-radius: 6px;
           background-color: #f1f2f3;
           font-size: 14px;
         }
@@ -756,8 +849,8 @@ function leave() {
           box-sizing: border-box;
           width: 80px;
           height: 30px;
-          border-radius: 4px;
-          background-color: #23ade5;
+          border-radius: 6px;
+          background-color: skyblue;
           color: white;
           text-align: center;
           font-size: 12px;

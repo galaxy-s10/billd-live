@@ -29,16 +29,31 @@
       />
     </div>
     <div class="right">
-      <a
-        href="https://github.com/galaxy-s10/billd-live"
-        target="_blank"
-        class="github"
-      >
-        github
-      </a>
+      <iframe
+        src="https://ghbtns.com/github-btn.html?user=galaxy-s10&repo=billd-live&type=star&count=true&v=2"
+        frameborder="0"
+        scrolling="0"
+        width="105px"
+        height="21px"
+      ></iframe>
+      <!-- <iframe
+        src="https://ghbtns.com/github-btn.html?user=galaxy-s10&repo=billd-live&type=fork&count=true&v=2"
+        frameborder="0"
+        scrolling="0"
+        width="105px"
+        height="21px"
+      ></iframe> -->
+
       <div
-        v-if="route.path === '/'"
+        v-if="router.currentRoute.value.name !== routerName.sponsors"
         class="start"
+        @click="router.push({ name: routerName.sponsors })"
+      >
+        赞助支持
+      </div>
+      <div
+        v-if="router.currentRoute.value.name !== routerName.webrtcPush"
+        class="start ani"
         @click="goPushPage(routerName.webrtcPush)"
       >
         我要开播
@@ -95,32 +110,32 @@ function goPushPage(routerName: string) {
       display: flex;
       align-items: center;
       .item {
+        position: relative;
         padding: 0 10px;
         cursor: pointer;
-        position: relative;
         &.active {
           &::after {
-            content: '';
             position: absolute;
             bottom: -6px;
             left: 50%;
-            transform: translateX(-50%);
             width: 50%;
             height: 2px;
             background-color: red;
+            content: '';
             transition: all 0.1s ease;
+            transform: translateX(-50%);
           }
         }
         &::after {
-          content: '';
           position: absolute;
           bottom: -6px;
           left: 50%;
-          transform: translateX(-50%);
           width: 0px;
           height: 2px;
           background-color: red;
+          content: '';
           transition: all 0.1s ease;
+          transform: translateX(-50%);
         }
         &:hover {
           &::after {
@@ -152,10 +167,6 @@ function goPushPage(routerName: string) {
     align-items: center;
     margin-right: 20px;
 
-    .github {
-      margin-right: 20px;
-    }
-
     @keyframes big-small {
       0%,
       100% {
@@ -167,13 +178,16 @@ function goPushPage(routerName: string) {
     }
 
     .start {
+      margin-right: 10px;
       padding: 5px 10px;
       border-radius: 6px;
-      background-color: #f69;
+      background-color: skyblue;
       color: white;
       font-size: 14px;
       cursor: pointer;
-      animation: big-small 1s ease infinite;
+      &.ani {
+        animation: big-small 1s ease infinite;
+      }
     }
   }
 }

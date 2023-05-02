@@ -1,7 +1,13 @@
 // 这里放项目里面的类型
-export enum liveTypeEnum {
+export enum LiveTypeEnum {
   camera,
   screen,
+}
+
+export enum DanmuMsgTypeEnum {
+  danmu,
+  otherJoin,
+  userLeaved,
 }
 
 export interface IAdminIn {

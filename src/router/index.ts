@@ -5,6 +5,8 @@ import Layout from '@/layout/index.vue';
 import type { RouteRecordRaw } from 'vue-router';
 
 export const routerName = {
+  aliPay: 'aliPay',
+  sponsors: 'sponsors',
   home: 'home',
   notFound: 'notFound',
   bilibiliPush: 'bilibiliPush',
@@ -25,6 +27,11 @@ export const defaultRoutes: RouteRecordRaw[] = [
         name: routerName.home,
         path: '/',
         component: () => import('@/views/home/index.vue'),
+      },
+      {
+        name: routerName.sponsors,
+        path: '/sponsors',
+        component: () => import('@/views/sponsors/index.vue'),
       },
       {
         name: routerName.bilibiliPush,
@@ -57,6 +64,11 @@ export const defaultRoutes: RouteRecordRaw[] = [
         component: () => import('@/views/srs-webrtc-pull/index.vue'),
       },
     ],
+  },
+  {
+    name: routerName.aliPay,
+    path: '/ali-pay',
+    component: () => import('@/views/aliPay/index.vue'),
   },
 ];
 const router = createRouter({

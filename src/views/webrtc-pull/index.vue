@@ -72,8 +72,18 @@
             :key="index"
             class="item"
           >
-            <span class="name">{{ item.socketId }}：</span>
-            <span class="msg">{{ item.msg }}</span>
+            <template v-if="item.msgType === DanmuMsgTypeEnum.danmu">
+              <span class="name">{{ item.socketId }}：</span>
+              <span class="msg">{{ item.msg }}</span>
+            </template>
+            <template v-else-if="item.msgType === DanmuMsgTypeEnum.otherJoin">
+              <span class="name system">系统通知：</span>
+              <span class="msg">{{ item.socketId }}进入直播！</span>
+            </template>
+            <template v-else-if="item.msgType === DanmuMsgTypeEnum.userLeaved">
+              <span class="name system">系统通知：</span>
+              <span class="msg">{{ item.socketId }}离开直播！</span>
+            </template>
           </div>
         </div>
         <div class="send-msg">
@@ -97,7 +107,7 @@
 import { onMounted, onUnmounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
-import { IAdminIn, ICandidate, IOffer } from '@/interface';
+import { DanmuMsgTypeEnum, IAdminIn, ICandidate, IOffer } from '@/interface';
 import { WebRTCClass } from '@/network/webRtc';
 import {
   WebSocketClass,
@@ -165,7 +175,7 @@ function sendDanmu() {
   });
   damuList.value.push({
     socketId: getSocketId(),
-    msgType: 1,
+    msgType: DanmuMsgTypeEnum.danmu,
     msg: danmuStr.value,
   });
   danmuStr.value = '';
@@ -364,7 +374,7 @@ function initReceive() {
     if (!instance) return;
     damuList.value.push({
       socketId: data.socketId,
-      msgType: 1,
+      msgType: DanmuMsgTypeEnum.danmu,
       msg: data.data.msg,
     });
   });
@@ -381,6 +391,11 @@ function initReceive() {
     if (joined.value) {
       batchSendOffer();
     }
+    damuList.value.push({
+      socketId: data.socketId,
+      msgType: DanmuMsgTypeEnum.otherJoin,
+      msg: '',
+    });
   });
 
   // 用户离开房间
@@ -401,6 +416,11 @@ function initReceive() {
     );
     liveUserList.value = res;
     console.log('当前所有在线用户', JSON.stringify(res));
+    damuList.value.push({
+      socketId: data.socketId,
+      msgType: DanmuMsgTypeEnum.userLeaved,
+      msg: '',
+    });
   });
 }
 
@@ -456,11 +476,11 @@ function startNewWebRtc(receiver: string) {
   .left {
     position: relative;
     display: inline-block;
+    overflow: hidden;
     box-sizing: border-box;
     width: $large-left-width;
     height: 100%;
-    border: 1px solid red;
-    border-radius: 10px;
+    border-radius: 6px;
     background-color: white;
     color: #9499a0;
     vertical-align: top;
@@ -468,16 +488,7 @@ function startNewWebRtc(receiver: string) {
       display: flex;
       justify-content: space-between;
       padding: 20px;
-      background-color: pink;
-      .tag {
-        display: inline-block;
-        margin-right: 5px;
-        padding: 1px 4px;
-        border: 1px solid;
-        border-radius: 2px;
-        color: #9499a0;
-        font-size: 12px;
-      }
+      background-color: papayawhip;
 
       .info {
         display: flex;
@@ -489,7 +500,7 @@ function startNewWebRtc(receiver: string) {
           width: 64px;
           height: 64px;
           border-radius: 50%;
-          background-color: yellow;
+          background-color: skyblue;
         }
         .detail {
           .top {
@@ -546,7 +557,7 @@ function startNewWebRtc(receiver: string) {
       align-items: center;
       justify-content: space-around;
       height: 100px;
-      background-color: yellow;
+      background-color: papayawhip;
       .item {
         margin-right: 10px;
         text-align: center;
@@ -571,13 +582,11 @@ function startNewWebRtc(receiver: string) {
     position: relative;
     display: inline-block;
     box-sizing: border-box;
-    box-sizing: border-box;
     margin-left: 10px;
     min-width: 300px;
     height: 100%;
-    border: 1px solid red;
-    border-radius: 10px;
-    background-color: white;
+    border-radius: 6px;
+    background-color: papayawhip;
     color: #9499a0;
     .tab {
       display: flex;
@@ -590,7 +599,7 @@ function startNewWebRtc(receiver: string) {
       overflow-y: scroll;
       padding: 0 15px;
       height: 100px;
-      background-color: pink;
+      background-color: papayawhip;
       .item {
         display: flex;
         align-items: center;
@@ -616,13 +625,16 @@ function startNewWebRtc(receiver: string) {
     .danmu-list {
       overflow-y: scroll;
       padding: 0 15px;
-      height: 350px;
+      height: 450px;
       text-align: initial;
       .item {
         margin-bottom: 10px;
         font-size: 12px;
         .name {
           color: #9499a0;
+          &.system {
+            color: red;
+          }
         }
         .msg {
           color: #61666d;
@@ -655,7 +667,7 @@ function startNewWebRtc(receiver: string) {
         padding: 5px;
         width: 80px;
         border-radius: 4px;
-        background-color: #23ade5;
+        background-color: skyblue;
         color: white;
         text-align: center;
         font-size: 12px;

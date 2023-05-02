@@ -99,7 +99,7 @@ import { onMounted, onUnmounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchRtcV1Play } from '@/api/srs';
-import { IAdminIn, liveTypeEnum } from '@/interface';
+import { IAdminIn, LiveTypeEnum } from '@/interface';
 import { SRSWebRTCClass } from '@/network/srsWebRtc';
 import { WebRTCClass } from '@/network/webRtc';
 import {
@@ -124,7 +124,7 @@ const websocketInstant = ref<WebSocketClass>();
 const isDone = ref(false);
 const localVideoRef = ref<HTMLVideoElement>();
 const localStream = ref();
-const currType = ref(liveTypeEnum.camera); // 1:摄像头，2:录屏
+const currType = ref(LiveTypeEnum.camera); // 1:摄像头，2:录屏
 const joined = ref(false);
 const offerSended = ref(new Set());
 
@@ -371,7 +371,7 @@ function initReceive() {
 }
 
 async function startMediaDevices() {
-  currType.value = liveTypeEnum.camera;
+  currType.value = LiveTypeEnum.camera;
   if (!localStream.value) {
     // WARN navigator.mediaDevices在localhost和https才能用，http://192.168.1.103:8000局域网用不了
     const event = await navigator.mediaDevices.getUserMedia({
@@ -400,7 +400,7 @@ function addTrack() {
 }
 
 async function startGetDisplayMedia() {
-  currType.value = liveTypeEnum.screen;
+  currType.value = LiveTypeEnum.screen;
   if (!localStream.value) {
     // WARN navigator.mediaDevices.getDisplayMedia在localhost和https才能用，http://192.168.1.103:8000局域网用不了
     const event = await navigator.mediaDevices.getDisplayMedia({
@@ -466,7 +466,6 @@ function leave() {
     box-sizing: border-box;
     width: $large-left-width;
     height: 100%;
-    border: 1px solid red;
     border-radius: 10px;
     background-color: white;
     color: #9499a0;
@@ -475,7 +474,7 @@ function leave() {
       display: flex;
       justify-content: space-between;
       padding: 20px;
-      background-color: pink;
+      background-color: papayawhip;
       .tag {
         display: inline-block;
         margin-right: 5px;
@@ -582,7 +581,6 @@ function leave() {
     margin-left: 10px;
     min-width: 300px;
     height: 100%;
-    border: 1px solid red;
     border-radius: 10px;
     background-color: white;
     color: #9499a0;
@@ -597,7 +595,7 @@ function leave() {
       overflow-y: scroll;
       padding: 0 15px;
       height: 100px;
-      background-color: pink;
+      background-color: papayawhip;
       .item {
         display: flex;
         align-items: center;
