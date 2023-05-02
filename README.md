@@ -22,10 +22,14 @@ billd 直播间（前端），目前实现了类似 bilibili 的直播功能，�
 
 <div>
   <img
-    src="https://resource.hsslive.cn/image/8293fce7457e7188e1288fb044c7902d.webp" 
+    src="https://resource.hsslive.cn/image/004ee8afb2e6e725df743d0623dfd801.webp" 
     style="width:300px"
     />
 </div>
+
+# 赞助
+
+[https://live.hsslive.cn/sponsors](https://live.hsslive.cn/sponsors)
 
 # 演示
 
