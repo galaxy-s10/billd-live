@@ -1,5 +1,5 @@
 <template>
-  <div class="push-wrap">
+  <div class="webrtc-push-wrap">
     <div
       ref="topRef"
       class="left"
@@ -141,6 +141,8 @@ import {
   DanmuMsgTypeEnum,
   IAdminIn,
   ICandidate,
+  IDanmu,
+  ILiveUser,
   IOffer,
   LiveTypeEnum,
 } from '@/interface';
@@ -150,25 +152,28 @@ import {
   WsConnectStatusEnum,
   WsMsgTypeEnum,
 } from '@/network/webSocket';
+import router from '@/router';
 import { useNetworkStore } from '@/store/network';
 
 const networkStore = useNetworkStore();
 
 const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
-const roomIdRef = ref<HTMLInputElement>();
-const joinRef = ref<HTMLButtonElement>();
-const leaveRef = ref<HTMLButtonElement>();
-const defaultRoomId = getRandomString(15);
-const roomId = ref<string>(defaultRoomId);
-const danmuStr = ref('');
-const roomName = ref('');
 const roomNameRef = ref<HTMLInputElement>();
 const roomNameBtnRef = ref<HTMLButtonElement>();
+const localVideoRef = ref<HTMLVideoElement>();
+
+const roomId = ref<string>(getRandomString(15));
+const danmuStr = ref('');
+const roomName = ref('');
+const localStream = ref();
+
 const websocketInstant = ref<WebSocketClass>();
 const isDone = ref(false);
-const localVideoRef = ref<HTMLVideoElement>();
-const localStream = ref();
+const joined = ref(false);
+const offerSended = ref(new Set());
+const damuList = ref<IDanmu[]>([]);
+const liveUserList = ref<ILiveUser[]>([]);
 
 const allMediaTypeList = {
   [LiveTypeEnum.camera]: {
@@ -190,25 +195,6 @@ const currMediaType = ref<{
   type: LiveTypeEnum;
   txt: string;
 }>();
-
-const joined = ref(false);
-const offerSended = ref(new Set());
-
-const damuList = ref<
-  {
-    socketId: string;
-    msgType: DanmuMsgTypeEnum;
-    msg: string;
-  }[]
->([]);
-
-const liveUserList = ref<
-  {
-    socketId: string;
-    avatar: string;
-    expr: number;
-  }[]
->([]);
 
 function closeWs() {
   const instance = networkStore.wsMap.get(roomId.value);
@@ -261,6 +247,7 @@ function handleCoverImg() {
 }
 
 onMounted(async () => {
+  router.push({ query: { roomId: roomId.value } });
   const all = await getAllMediaDevices();
   allMediaTypeList[LiveTypeEnum.camera] = {
     txt: all.find((item) => item.kind === 'videoinput')?.label || '摄像头',
@@ -412,7 +399,6 @@ function initReceive() {
         ?.addIceCandidate(candidate)
         .then(() => {
           console.log('candidate成功');
-          // rtc.handleStream();
         })
         .catch((err) => {
           console.error('candidate失败', err);
@@ -463,7 +449,6 @@ function initReceive() {
       msgType: DanmuMsgTypeEnum.otherJoin,
       msg: '',
     });
-    console.log('当前所有在线用户', JSON.stringify(liveUserList.value));
     if (joined.value) {
       batchSendOffer();
     }
@@ -481,7 +466,6 @@ function initReceive() {
   // 用户离开房间完成
   instance.socketIo.on(WsMsgTypeEnum.leaved, (data) => {
     console.log('【websocket】用户离开房间完成', data);
-    if (!instance) return;
     const res = liveUserList.value.filter(
       (item) => item.socketId !== data.socketId
     );
@@ -532,9 +516,6 @@ function startLive() {
   websocketInstant.value.update();
   initReceive();
   sendJoin();
-  setTimeout(() => {
-    handleCoverImg();
-  }, 0);
 }
 
 /** 结束直播 */
@@ -544,22 +525,19 @@ function endLive() {
   currMediaTypeList.value = [];
   localStream.value = null;
   localVideoRef.value!.srcObject = null;
-  if (websocketInstant.value) {
-    websocketInstant.value.send({
-      msgType: WsMsgTypeEnum.roomNoLive,
-    });
-  }
+  const instance = networkStore.wsMap.get(roomId.value);
+  if (!instance) return;
+  instance.close();
 }
 
 async function getAllMediaDevices() {
   const res = await navigator.mediaDevices.enumerateDevices();
-  const audioInput = res.filter(
-    (item) => item.kind === 'audioinput' && item.deviceId !== 'default'
-  );
-  const videoInput = res.filter(
-    (item) => item.kind === 'videoinput' && item.deviceId !== 'default'
-  );
-  console.log(audioInput, videoInput, res);
+  // const audioInput = res.filter(
+  //   (item) => item.kind === 'audioinput' && item.deviceId !== 'default'
+  // );
+  // const videoInput = res.filter(
+  //   (item) => item.kind === 'videoinput' && item.deviceId !== 'default'
+  // );
   return res;
 }
 
@@ -636,22 +614,10 @@ function startNewWebRtc(receiver: string) {
   rtc.update();
   return rtc;
 }
-
-function leave() {
-  if (joinRef.value && leaveRef.value && roomIdRef.value) {
-    roomIdRef.value.disabled = false;
-    joinRef.value.disabled = false;
-    leaveRef.value.disabled = true;
-  }
-  if (!websocketInstant.value) return;
-  websocketInstant.value.socketIo?.emit(WsMsgTypeEnum.leave, {
-    roomId: websocketInstant.value.roomId,
-  });
-}
 </script>
 
 <style lang="scss" scoped>
-.push-wrap {
+.webrtc-push-wrap {
   margin: 20px auto 0;
   min-width: $large-width;
   height: 700px;
@@ -863,7 +829,7 @@ function leave() {
 }
 // 屏幕宽度小于$large-width的时候
 @media screen and (max-width: $large-width) {
-  .push-wrap {
+  .webrtc-push-wrap {
     .left {
       width: $medium-left-width;
     }

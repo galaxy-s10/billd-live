@@ -9,10 +9,13 @@
         :key="index"
         class="item"
       >
-        <div class="info">
-          支付宝账号：{{ item.buyer_logon_id }}，赞助了：{{ item.subject }}（{{
-            item.total_amount
-          }}元），状态：{{
+        <div class="time">发起时间：{{ item.created_at }}，</div>
+        <div class="account">支付宝账号：{{ item.buyer_logon_id }}，</div>
+        <div class="gift">
+          赞助了：{{ item.subject }}（{{ item.total_amount }}元），
+        </div>
+        <div class="status">
+          状态：{{
             item.trade_status === PayStatusEnum.WAIT_BUYER_PAY
               ? '支付中'
               : '已支付'
@@ -279,21 +282,35 @@ function getPayStatus(outTradeNo: string) {
     height: 200px;
     background-color: papayawhip;
     .item {
-      display: flex;
+      display: inline-flex;
+      flex-wrap: wrap;
       justify-content: center;
       margin-bottom: 4px;
       width: 100%;
+      text-align: left;
+
+      .account {
+        width: 250px;
+      }
+      .gift {
+        width: 260px;
+      }
+      .status {
+        width: 120px;
+        text-align: left;
+      }
       .time {
-        width: 300px;
+        width: 280px;
       }
     }
   }
   .gift-list {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     justify-content: center;
     .item {
-      margin: 0 10px;
+      margin: 5px;
       padding: 5px 10px;
       border-radius: 4px;
       background-color: skyblue;
@@ -324,8 +341,8 @@ function getPayStatus(outTradeNo: string) {
     }
   }
   .bottom {
-    width: 100%;
     margin-top: 2px;
+    width: 100%;
     text-align: center;
     font-size: 14px;
   }

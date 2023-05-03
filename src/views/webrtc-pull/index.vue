@@ -1,5 +1,5 @@
 <template>
-  <div class="pull-wrap">
+  <div class="webrtc-pull-wrap">
     <template v-if="roomNoLive">当前房间没在直播~</template>
     <template v-else>
       <div class="left">
@@ -10,7 +10,7 @@
           <div class="info">
             <div class="avatar"></div>
             <div class="detail">
-              <div class="top">房间号：{{ route.params.roomId }}</div>
+              <div class="top">房间名：{{ roomName }}</div>
               <div class="bottom">
                 <span>你的socketId：{{ getSocketId() }}</span>
               </div>
@@ -107,7 +107,14 @@
 import { onMounted, onUnmounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
-import { DanmuMsgTypeEnum, IAdminIn, ICandidate, IOffer } from '@/interface';
+import {
+  DanmuMsgTypeEnum,
+  IAdminIn,
+  ICandidate,
+  IDanmu,
+  ILiveUser,
+  IOffer,
+} from '@/interface';
 import { WebRTCClass } from '@/network/webRtc';
 import {
   WebSocketClass,
@@ -118,22 +125,17 @@ import { useNetworkStore } from '@/store/network';
 
 const networkStore = useNetworkStore();
 const route = useRoute();
-const danmuStr = ref('');
+
 const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
-const roomNoLive = ref(false);
-const isAddTrack = ref(false);
-const roomIdRef = ref<HTMLInputElement>();
-const joinRef = ref<HTMLButtonElement>();
-const leaveRef = ref<HTMLButtonElement>();
-const roomId = ref('');
-const websocketInstant = ref<WebSocketClass>();
-const isDone = ref(false);
 const localVideoRef = ref<HTMLVideoElement>();
-const localStream = ref();
-const joined = ref(false);
-const offerSended = ref(new Set());
-
+const roomNoLive = ref(false);
+const roomId = ref('');
+const roomName = ref('');
+const danmuStr = ref('');
+const websocketInstant = ref<WebSocketClass>();
+const damuList = ref<IDanmu[]>([]);
+const liveUserList = ref<ILiveUser[]>([]);
 const giftList = ref([
   { name: '鲜花', ico: '', price: '免费' },
   { name: '肥宅水', ico: '', price: '2元' },
@@ -142,26 +144,26 @@ const giftList = ref([
   { name: '一杯咖啡', ico: '', price: '10元' },
 ]);
 
-const damuList = ref<
-  {
-    socketId: string;
-    msgType: number;
-    msg: string;
-  }[]
->([]);
-
-const liveUserList = ref<
-  {
-    socketId: string;
-    avatar: string;
-    expr: number;
-  }[]
->([]);
-
 function closeWs() {
   const instance = networkStore.wsMap.get(roomId.value);
   if (!instance) return;
   instance.close();
+}
+
+function closeRtc() {
+  networkStore.rtcMap.forEach((rtc) => {
+    rtc.close();
+  });
+}
+
+function getSocketId() {
+  return networkStore.wsMap.get(roomId.value!)?.socketIo?.id || '-1';
+}
+
+function sendJoin() {
+  const instance = networkStore.wsMap.get(roomId.value);
+  if (!instance) return;
+  instance.send({ msgType: WsMsgTypeEnum.join, data: {} });
 }
 
 function sendDanmu() {
@@ -181,83 +183,12 @@ function sendDanmu() {
   danmuStr.value = '';
 }
 
-onUnmounted(() => {
-  closeWs();
-});
-
-onMounted(() => {
-  if (topRef.value && bottomRef.value && localVideoRef.value) {
-    const res =
-      bottomRef.value.getBoundingClientRect().top -
-      (topRef.value.getBoundingClientRect().top +
-        topRef.value.getBoundingClientRect().height);
-    localVideoRef.value.style.height = `${res}px`;
-  }
-  roomId.value = route.params.roomId as string;
-  console.warn('开始new WebSocketClass');
-  websocketInstant.value = new WebSocketClass({
-    roomId: roomId.value,
-    url:
-      process.env.NODE_ENV === 'development'
-        ? 'ws://localhost:4300'
-        : 'wss://live.hsslive.cn',
-    isAdmin: false,
-  });
-  websocketInstant.value.update();
-  initReceive();
-  sendJoin();
-
-  localVideoRef.value?.addEventListener('loadstart', () => {
-    console.warn('视频流-loadstart');
-    const rtc = networkStore.getRtcMap(roomId.value);
-    if (!rtc) return;
-    rtc.rtcStatus.loadstart = true;
-    rtc.update();
-  });
-
-  localVideoRef.value?.addEventListener('loadedmetadata', () => {
-    console.warn('视频流-loadedmetadata');
-    const rtc = networkStore.getRtcMap(roomId.value);
-    if (!rtc) return;
-    rtc.rtcStatus.loadedmetadata = true;
-    rtc.update();
-    batchSendOffer();
-  });
-});
-
-function getSocketId() {
-  return networkStore.wsMap.get(roomId.value!)?.socketIo?.id || '-1';
-}
-
-function sendJoin() {
-  const instance = networkStore.wsMap.get(roomId.value);
-  if (!instance) return;
-  instance.send({ msgType: WsMsgTypeEnum.join, data: {} });
-}
-
-function batchSendOffer() {
-  liveUserList.value.forEach(async (item) => {
-    if (
-      !offerSended.value.has(item.socketId) &&
-      item.socketId !== getSocketId()
-    ) {
-      await startNewWebRtc(item.socketId);
-      await addTrack();
-      console.warn('new WebRTCClass完成');
-      console.log('执行sendOffer', {
-        sender: getSocketId(),
-        receiver: item.socketId,
-      });
-      sendOffer({ sender: getSocketId(), receiver: item.socketId });
-      offerSended.value.add(item.socketId);
-    }
-  });
-}
-
-function closeRtc() {
-  networkStore.rtcMap.forEach((rtc) => {
-    rtc.close();
-  });
+function startNewWebRtc(receiver: string) {
+  console.warn('开始new WebRTCClass', receiver);
+  const rtc = new WebRTCClass({ roomId: `${roomId.value}___${receiver}` });
+  rtc.rtcStatus.joined = true;
+  rtc.update();
+  return rtc;
 }
 
 function initReceive() {
@@ -324,7 +255,6 @@ function initReceive() {
   // 收到answer
   instance.socketIo.on(WsMsgTypeEnum.answer, async (data: IOffer) => {
     console.warn('【websocket】收到answer', data);
-    if (isDone.value) return;
     if (!instance) return;
     const rtc = networkStore.getRtcMap(`${roomId.value}___${data.socketId}`);
     console.log(rtc, '收到answer收到answer');
@@ -342,7 +272,6 @@ function initReceive() {
   // 收到candidate
   instance.socketIo.on(WsMsgTypeEnum.candidate, (data: ICandidate) => {
     console.warn('【websocket】收到candidate', data);
-    if (isDone.value) return;
     if (!instance) return;
     const rtc =
       networkStore.getRtcMap(`${roomId.value}___${data.socketId}`) ||
@@ -382,15 +311,12 @@ function initReceive() {
   // 用户加入房间完成
   instance.socketIo.on(WsMsgTypeEnum.joined, (data) => {
     console.log('【websocket】用户加入房间完成', data);
-    joined.value = true;
+    roomName.value = data.data.roomName;
   });
 
   // 其他用户加入房间
   instance.socketIo.on(WsMsgTypeEnum.otherJoin, (data) => {
     console.log('【websocket】其他用户加入房间', data);
-    if (joined.value) {
-      batchSendOffer();
-    }
     damuList.value.push({
       socketId: data.socketId,
       msgType: DanmuMsgTypeEnum.otherJoin,
@@ -415,7 +341,6 @@ function initReceive() {
       (item) => item.socketId !== data.socketId
     );
     liveUserList.value = res;
-    console.log('当前所有在线用户', JSON.stringify(res));
     damuList.value.push({
       socketId: data.socketId,
       msgType: DanmuMsgTypeEnum.userLeaved,
@@ -424,51 +349,52 @@ function initReceive() {
   });
 }
 
-function addTrack() {
-  if (!localStream.value) return;
-  liveUserList.value.forEach((item) => {
-    if (item.socketId !== getSocketId()) {
-      localStream.value.getTracks().forEach((track) => {
-        const rtc = networkStore.getRtcMap(
-          `${roomId.value}___${item.socketId}`
-        );
-        rtc?.addTrack(track, localStream.value);
-      });
-    }
-  });
-  isAddTrack.value = true;
-}
+onUnmounted(() => {
+  closeWs();
+});
 
-async function sendOffer({
-  sender,
-  receiver,
-}: {
-  sender: string;
-  receiver: string;
-}) {
-  if (isDone.value) return;
-  if (!websocketInstant.value) return;
-  const rtc = networkStore.getRtcMap(`${roomId.value}___${receiver}`);
-  if (!rtc) return;
-  const sdp = await rtc.createOffer();
-  await rtc.setLocalDescription(sdp);
-  websocketInstant.value.send({
-    msgType: WsMsgTypeEnum.offer,
-    data: { sdp, sender, receiver },
+onMounted(() => {
+  if (topRef.value && bottomRef.value && localVideoRef.value) {
+    const res =
+      bottomRef.value.getBoundingClientRect().top -
+      (topRef.value.getBoundingClientRect().top +
+        topRef.value.getBoundingClientRect().height);
+    localVideoRef.value.style.height = `${res}px`;
+  }
+  roomId.value = route.params.roomId as string;
+  console.warn('开始new WebSocketClass');
+  websocketInstant.value = new WebSocketClass({
+    roomId: roomId.value,
+    url:
+      process.env.NODE_ENV === 'development'
+        ? 'ws://localhost:4300'
+        : 'wss://live.hsslive.cn',
+    isAdmin: false,
   });
-}
+  websocketInstant.value.update();
+  initReceive();
+  sendJoin();
 
-function startNewWebRtc(receiver: string) {
-  console.warn('开始new WebRTCClass', receiver);
-  const rtc = new WebRTCClass({ roomId: `${roomId.value}___${receiver}` });
-  rtc.rtcStatus.joined = true;
-  rtc.update();
-  return rtc;
-}
+  localVideoRef.value?.addEventListener('loadstart', () => {
+    console.warn('视频流-loadstart');
+    const rtc = networkStore.getRtcMap(roomId.value);
+    if (!rtc) return;
+    rtc.rtcStatus.loadstart = true;
+    rtc.update();
+  });
+
+  localVideoRef.value?.addEventListener('loadedmetadata', () => {
+    console.warn('视频流-loadedmetadata');
+    const rtc = networkStore.getRtcMap(roomId.value);
+    if (!rtc) return;
+    rtc.rtcStatus.loadedmetadata = true;
+    rtc.update();
+  });
+});
 </script>
 
 <style lang="scss" scoped>
-.pull-wrap {
+.webrtc-pull-wrap {
   margin: 20px auto 0;
   min-width: $large-width;
   height: 700px;
@@ -671,6 +597,7 @@ function startNewWebRtc(receiver: string) {
         color: white;
         text-align: center;
         font-size: 12px;
+        cursor: pointer;
       }
     }
   }
@@ -678,7 +605,7 @@ function startNewWebRtc(receiver: string) {
 
 // 屏幕宽度小于$large-width的时候
 @media screen and (max-width: $large-width) {
-  .pull-wrap {
+  .webrtc-pull-wrap {
     .left {
       width: $medium-left-width;
     }

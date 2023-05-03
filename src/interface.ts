@@ -10,6 +10,18 @@ export enum DanmuMsgTypeEnum {
   userLeaved,
 }
 
+export interface ILiveUser {
+  socketId: string;
+  avatar: string;
+  expr: number;
+}
+
+export interface IDanmu {
+  socketId: string;
+  msgType: DanmuMsgTypeEnum;
+  msg: string;
+}
+
 export interface IAdminIn {
   roomId: string;
   socketId: string;

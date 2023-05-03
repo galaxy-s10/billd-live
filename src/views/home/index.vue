@@ -68,7 +68,10 @@ const currentLiveRoom = ref<IRoom>();
 
 async function getLiveRoomList() {
   try {
-    const res = await fetchLiveList();
+    const res = await fetchLiveList({
+      orderName: 'created_at',
+      orderBy: 'desc',
+    });
     if (res.code === 200) {
       liveRoomList.value = res.data.rows.map((item) => {
         return {
@@ -78,7 +81,7 @@ async function getLiveRoomList() {
           srs: JSON.parse(item.data).data.srs,
         };
       });
-      if (res.data.count) {
+      if (res.data.total) {
         const item = res.data.rows[0].data;
         currentLiveRoom.value = {
           roomId: res.data.rows[0].roomId,
@@ -142,11 +145,11 @@ function joinRoom() {
       top: 50%;
       left: 50%;
       display: none;
-      padding: 10px 20px;
+      padding: 14px 26px;
       border: 1px solid rgba($color: skyblue, $alpha: 0.3);
       border-radius: 4px;
       color: skyblue;
-      font-size: 14px;
+      font-size: 16px;
       cursor: pointer;
       transform: translate(-50%, -50%);
       &:hover {
@@ -172,6 +175,7 @@ function joinRoom() {
         margin-bottom: 10px;
         width: 200px;
         height: 110px;
+        border-radius: 4px;
         background-color: rgba($color: #000000, $alpha: 0.3);
         cursor: pointer;
 
@@ -186,7 +190,9 @@ function joinRoom() {
           right: 0;
           bottom: 0;
           left: 0;
+          z-index: 1;
           border: 2px solid skyblue;
+          border-radius: 4px;
         }
         .triangle {
           position: absolute;
@@ -219,10 +225,20 @@ function joinRoom() {
         }
         .txt {
           position: absolute;
-          bottom: 2px;
-          left: 4px;
+          bottom: 0;
+          left: 0;
+          box-sizing: border-box;
+          padding: 4px 8px;
+          width: 100%;
+          background-image: linear-gradient(
+            -180deg,
+            rgba(0, 0, 0, 0),
+            rgba(0, 0, 0, 0.6)
+          );
           color: white;
+          text-align: initial;
           font-size: 13px;
+          border-radius: 0 0 4px 4px;
         }
       }
     }

@@ -13,6 +13,14 @@ import HeadCpt from './head/index.vue';
 
 <style lang="scss" scoped>
 .layout {
+  min-width: $large-width;
   min-height: 100vh;
+}
+
+// 屏幕宽度小于$large-width的时候
+@media screen and (max-width: $large-width) {
+  .layout {
+    min-width: $medium-width;
+  }
 }
 </style>

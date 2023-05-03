@@ -9,7 +9,9 @@
       </div>
       <div class="nav">
         <div
-          v-for="(item, index) in pushList"
+          v-for="(item, index) in pushList.filter(
+            (item) => router.currentRoute.value.name === item.routerName
+          )"
           :key="index"
           :class="{
             item: 1,
@@ -19,23 +21,39 @@
         >
           {{ item.title }}
         </div>
+        <div
+          v-for="(item, index) in pullList.filter(
+            (item) => router.currentRoute.value.name === item.routerName
+          )"
+          :key="index"
+          :class="{
+            item: 1,
+            active: router.currentRoute.value.name === item.routerName,
+          }"
+        >
+          {{ item.title }}
+        </div>
       </div>
     </div>
-    <div class="search">
+    <!-- <div class="search">
       <input
         class="ipt"
         type="text"
         placeholder="搜索"
       />
-    </div>
+    </div> -->
     <div class="right">
-      <iframe
-        src="https://ghbtns.com/github-btn.html?user=galaxy-s10&repo=billd-live&type=star&count=true&v=2"
-        frameborder="0"
-        scrolling="0"
-        width="105px"
-        height="21px"
-      ></iframe>
+      <a
+        class="github-btn"
+        target="_blank"
+        href="https://github.com/galaxy-s10/billd-live"
+      >
+        <img
+          src="https://img.shields.io/github/stars/galaxy-s10/billd-live?label=Star&logo=GitHub&labelColor=white&logoColor=black&style=social&cacheSeconds=3600"
+          alt=""
+        />
+      </a>
+
       <!-- <iframe
         src="https://ghbtns.com/github-btn.html?user=galaxy-s10&repo=billd-live&type=fork&count=true&v=2"
         frameborder="0"
@@ -46,17 +64,24 @@
 
       <div
         v-if="router.currentRoute.value.name !== routerName.sponsors"
-        class="start"
+        class="sponsors"
         @click="router.push({ name: routerName.sponsors })"
       >
         赞助支持
       </div>
       <div
-        v-if="router.currentRoute.value.name !== routerName.webrtcPush"
+        v-if="![routerName.webrtcPush].includes(router.currentRoute.value.name as string)"
         class="start ani"
         @click="goPushPage(routerName.webrtcPush)"
       >
-        我要开播
+        webrtc开播
+      </div>
+      <div
+        v-if="![routerName.srsWebRtcPush].includes(router.currentRoute.value.name as string)"
+        class="start ani"
+        @click="goPushPage(routerName.srsWebRtcPush)"
+      >
+        srs-webrtc开播
       </div>
     </div>
   </div>
@@ -65,18 +90,20 @@
 <script lang="ts" setup>
 import { openToTarget } from 'billd-utils';
 import { ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 
 import { routerName } from '@/router';
 
 const router = useRouter();
-const route = useRoute();
 
 const pushList = ref([
-  // { title: 'Webrtc Pull', routerName: 'webrtcPull' },
-  // { title: 'SRS WebRTC Pull', routerName: 'srsWebRtcPull' },
   { title: 'Webrtc Push', routerName: routerName.webrtcPush },
   { title: 'SRS WebRTC Push', routerName: routerName.srsWebRtcPush },
+]);
+
+const pullList = ref([
+  { title: 'Webrtc Pull', routerName: routerName.webrtcPull },
+  { title: 'SRS WebRTC Pull', routerName: routerName.srsWebRtcPull },
 ]);
 
 function goPushPage(routerName: string) {
@@ -90,6 +117,7 @@ function goPushPage(routerName: string) {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  min-width: $medium-width;
   height: 64px;
   background-color: #fff;
   box-shadow: inset 0 -1px #f1f2f3 !important;
@@ -145,23 +173,23 @@ function goPushPage(routerName: string) {
       }
     }
   }
-  .search {
-    flex: 1;
+  // .search {
+  //   flex: 1;
 
-    .ipt {
-      display: block;
-      box-sizing: border-box;
-      margin: 0 auto;
-      padding: 10px 20px;
-      min-width: 200px;
-      outline: none;
-      border: 1px solid hsla(0, 0%, 60%, 0.2);
-      border-radius: 8px;
-      border-radius: 10px;
-      background-color: #f1f2f3;
-      font-size: 14px;
-    }
-  }
+  //   .ipt {
+  //     display: block;
+  //     box-sizing: border-box;
+  //     margin: 0 auto;
+  //     padding: 10px 20px;
+  //     min-width: 200px;
+  //     outline: none;
+  //     border: 1px solid hsla(0, 0%, 60%, 0.2);
+  //     border-radius: 8px;
+  //     border-radius: 10px;
+  //     background-color: #f1f2f3;
+  //     font-size: 14px;
+  //   }
+  // }
   .right {
     display: flex;
     align-items: center;
@@ -177,6 +205,20 @@ function goPushPage(routerName: string) {
       }
     }
 
+    .github-btn {
+      margin-right: 10px;
+      img {
+        display: block;
+      }
+    }
+
+    .sponsors {
+      margin-right: 10px;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+    }
     .start {
       margin-right: 10px;
       padding: 5px 10px;

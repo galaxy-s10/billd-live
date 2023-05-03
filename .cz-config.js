@@ -9,28 +9,28 @@ console.log(
 module.exports = {
   types: [
     {
-      value: 'build',
-      name: '🚀  build:     版本打包/Tag',
-    },
-    {
-      value: 'ci',
-      name: '👷  ci:        CI Build',
-    },
-    {
-      value: 'chore',
-      name: '📦️  chore:     构建工具调整',
-    },
-    {
-      value: 'docs',
-      name: '📝  docs:      文档新增/变更',
-    },
-    {
       value: 'feat',
       name: '✨  feat:      新功能',
     },
     {
       value: 'fix',
       name: '🐛  fix:       修补bug',
+    },
+    {
+      value: 'docs',
+      name: '📝  docs:      文档新增/变更',
+    },
+    {
+      value: 'ci',
+      name: '👷  ci:        CI Build',
+    },
+    {
+      value: 'build',
+      name: '🚀  build:     版本打包/Tag',
+    },
+    {
+      value: 'chore',
+      name: '📦️  chore:     构建工具调整',
     },
     {
       value: 'perf',

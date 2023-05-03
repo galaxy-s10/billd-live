@@ -1,5 +1,5 @@
 <template>
-  <div class="pull-wrap">
+  <div class="srt-webrtc-pull-wrap">
     <template v-if="roomNoLive">当前房间没在直播~</template>
     <template v-else>
       <div class="left">
@@ -10,7 +10,7 @@
           <div class="info">
             <div class="avatar"></div>
             <div class="detail">
-              <div class="top">房间号：{{ route.params.roomId }}</div>
+              <div class="top">房间名：{{ roomName }}</div>
               <div class="bottom">
                 <span>你的socketId：{{ getSocketId() }}</span>
               </div>
@@ -72,8 +72,18 @@
             :key="index"
             class="item"
           >
-            <span class="name">{{ item.socketId }}：</span>
-            <span class="msg">{{ item.msg }}</span>
+            <template v-if="item.msgType === DanmuMsgTypeEnum.danmu">
+              <span class="name">{{ item.socketId }}：</span>
+              <span class="msg">{{ item.msg }}</span>
+            </template>
+            <template v-else-if="item.msgType === DanmuMsgTypeEnum.otherJoin">
+              <span class="name system">系统通知：</span>
+              <span class="msg">{{ item.socketId }}进入直播！</span>
+            </template>
+            <template v-else-if="item.msgType === DanmuMsgTypeEnum.userLeaved">
+              <span class="name system">系统通知：</span>
+              <span class="msg">{{ item.socketId }}离开直播！</span>
+            </template>
           </div>
         </div>
         <div class="send-msg">
@@ -95,13 +105,12 @@
 
 <script lang="ts" setup>
 import { getRandomString } from 'billd-utils';
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchRtcV1Play } from '@/api/srs';
-import { IAdminIn, LiveTypeEnum } from '@/interface';
+import { DanmuMsgTypeEnum, IAdminIn, IDanmu, ILiveUser } from '@/interface';
 import { SRSWebRTCClass } from '@/network/srsWebRtc';
-import { WebRTCClass } from '@/network/webRtc';
 import {
   WebSocketClass,
   WsConnectStatusEnum,
@@ -111,23 +120,22 @@ import { useNetworkStore } from '@/store/network';
 
 const networkStore = useNetworkStore();
 const route = useRoute();
-const danmuStr = ref('');
+
 const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
-const roomNoLive = ref(false);
-const isAddTrack = ref(false);
-const roomIdRef = ref<HTMLInputElement>();
-const joinRef = ref<HTMLButtonElement>();
-const leaveRef = ref<HTMLButtonElement>();
-const roomId = ref('');
-const websocketInstant = ref<WebSocketClass>();
-const isDone = ref(false);
 const localVideoRef = ref<HTMLVideoElement>();
-const localStream = ref();
-const currType = ref(LiveTypeEnum.camera); // 1:摄像头，2:录屏
-const joined = ref(false);
-const offerSended = ref(new Set());
-
+const trackInfo = reactive({
+  audio: true,
+  video: true,
+});
+const streamurl = ref();
+const roomNoLive = ref(false);
+const roomId = ref('');
+const roomName = ref('');
+const danmuStr = ref('');
+const websocketInstant = ref<WebSocketClass>();
+const damuList = ref<IDanmu[]>([]);
+const liveUserList = ref<ILiveUser[]>([]);
 const giftList = ref([
   { name: '鲜花', ico: '', price: '免费' },
   { name: '肥宅水', ico: '', price: '2元' },
@@ -136,26 +144,26 @@ const giftList = ref([
   { name: '一杯咖啡', ico: '', price: '10元' },
 ]);
 
-const damuList = ref<
-  {
-    socketId: string;
-    msgType: number;
-    msg: string;
-  }[]
->([]);
-
-const liveUserList = ref<
-  {
-    socketId: string;
-    avatar: string;
-    expr: number;
-  }[]
->([]);
-
 function closeWs() {
   const instance = networkStore.wsMap.get(roomId.value);
   if (!instance) return;
   instance.close();
+}
+
+function closeRtc() {
+  networkStore.rtcMap.forEach((rtc) => {
+    rtc.close();
+  });
+}
+
+function getSocketId() {
+  return networkStore.wsMap.get(roomId.value!)?.socketIo?.id || '-1';
+}
+
+function sendJoin() {
+  const instance = networkStore.wsMap.get(roomId.value);
+  if (!instance) return;
+  instance.send({ msgType: WsMsgTypeEnum.join, data: {} });
 }
 
 function sendDanmu() {
@@ -169,108 +177,41 @@ function sendDanmu() {
   });
   damuList.value.push({
     socketId: getSocketId(),
-    msgType: 1,
+    msgType: DanmuMsgTypeEnum.danmu,
     msg: danmuStr.value,
   });
   danmuStr.value = '';
 }
 
-onUnmounted(() => {
-  closeWs();
-});
-
-onMounted(() => {
-  if (topRef.value && bottomRef.value && localVideoRef.value) {
-    const res =
-      bottomRef.value.getBoundingClientRect().top -
-      (topRef.value.getBoundingClientRect().top +
-        topRef.value.getBoundingClientRect().height);
-    localVideoRef.value.style.height = `${res}px`;
-  }
-  roomId.value = route.params.roomId as string;
-  console.warn('开始new WebSocketClass');
-  websocketInstant.value = new WebSocketClass({
-    roomId: roomId.value,
-    url:
-      process.env.NODE_ENV === 'development'
-        ? 'ws://localhost:4300'
-        : 'wss://live.hsslive.cn',
-    isAdmin: false,
-  });
-  websocketInstant.value.update();
-  initReceive();
-  sendJoin();
-
-  localVideoRef.value?.addEventListener('loadstart', () => {
-    console.warn('视频流-loadstart');
-    const rtc = networkStore.getRtcMap(roomId.value);
-    if (!rtc) return;
-    rtc.rtcStatus.loadstart = true;
-    rtc.update();
-  });
-
-  localVideoRef.value?.addEventListener('loadedmetadata', () => {
-    console.warn('视频流-loadedmetadata');
-    const rtc = networkStore.getRtcMap(roomId.value);
-    if (!rtc) return;
-    rtc.rtcStatus.loadedmetadata = true;
-    rtc.update();
-    batchSendOffer();
-  });
-});
-
-function getSocketId() {
-  return networkStore.wsMap.get(roomId.value!)?.socketIo?.id || '-1';
-}
-
-function sendJoin() {
-  const instance = networkStore.wsMap.get(roomId.value);
-  if (!instance) return;
-  instance.send({ msgType: WsMsgTypeEnum.join, data: {} });
-}
-
-function batchSendOffer() {
-  liveUserList.value.forEach(async (item) => {
-    if (
-      !offerSended.value.has(item.socketId) &&
-      item.socketId !== getSocketId()
-    ) {
-      await startNewWebRtc(item.socketId);
-      await addTrack();
-      console.warn('new WebRTCClass完成');
-      console.log('执行sendOffer', {
-        sender: getSocketId(),
-        receiver: item.socketId,
-      });
-      sendOffer({ sender: getSocketId(), receiver: item.socketId });
-      offerSended.value.add(item.socketId);
-    }
-  });
-}
-
-function closeRtc() {
-  networkStore.rtcMap.forEach((rtc) => {
-    rtc.close();
-  });
+function startNewWebRtc(receiver: string) {
+  console.warn('开始new SRSWebRTCClass', receiver);
+  const rtc = new SRSWebRTCClass({ roomId: `${roomId.value}___${receiver}` });
+  rtc.rtcStatus.joined = true;
+  rtc.update();
+  return rtc;
 }
 
 async function handleSrsPlay() {
-  const rtc = new SRSWebRTCClass({
-    roomId: `${roomId.value}___${getSocketId()}`,
-  });
-  if (!rtc) return;
-  // rtc.addTrack({ track, stream: localStream.value, direction: 'recvonly' });
-  rtc.peerConnection?.addTransceiver('audio', { direction: 'recvonly' });
-  rtc.peerConnection?.addTransceiver('video', { direction: 'recvonly' });
+  const rtc = startNewWebRtc(getSocketId());
+  if (trackInfo.video) {
+    rtc.peerConnection?.addTransceiver('video', { direction: 'recvonly' });
+  }
+  if (trackInfo.audio) {
+    rtc.peerConnection?.addTransceiver('audio', { direction: 'recvonly' });
+  }
   try {
     const offer = await rtc.createOffer();
     if (!offer) return;
     await rtc.setLocalDescription(offer);
     const res: any = await fetchRtcV1Play({
-      api: 'http://localhost:1985/rtc/v1/play/',
+      api: `http://${
+        process.env.NODE_ENV === 'development'
+          ? 'localhost:1985'
+          : 'live.hsslive.cn:1985'
+      }/rtc/v1/play/`,
       clientip: null,
       sdp: offer.sdp!,
-      streamurl: `webrtc://localhost/live/livestream/${roomId.value}`,
+      streamurl: streamurl.value,
       tid: getRandomString(10),
     });
     await rtc.setRemoteDescription(
@@ -330,7 +271,7 @@ function initReceive() {
     if (!instance) return;
     damuList.value.push({
       socketId: data.socketId,
-      msgType: 1,
+      msgType: DanmuMsgTypeEnum.danmu,
       msg: data.data.msg,
     });
   });
@@ -338,15 +279,20 @@ function initReceive() {
   // 用户加入房间
   instance.socketIo.on(WsMsgTypeEnum.joined, (data) => {
     console.log('【websocket】用户加入房间完成', data);
-    joined.value = true;
+    roomName.value = data.data.roomName;
+    trackInfo.audio = data.data.trackInfo.audio;
+    trackInfo.video = data.data.trackInfo.video;
+    streamurl.value = data.data.srs.streamurl;
   });
 
   // 其他用户加入房间
   instance.socketIo.on(WsMsgTypeEnum.otherJoin, (data) => {
     console.log('【websocket】其他用户加入房间', data);
-    if (joined.value) {
-      batchSendOffer();
-    }
+    damuList.value.push({
+      socketId: data.socketId,
+      msgType: DanmuMsgTypeEnum.otherJoin,
+      msg: '',
+    });
   });
 
   // 用户离开房间
@@ -366,96 +312,60 @@ function initReceive() {
       (item) => item.socketId !== data.socketId
     );
     liveUserList.value = res;
-    console.log('当前所有在线用户', JSON.stringify(res));
-  });
-}
-
-async function startMediaDevices() {
-  currType.value = LiveTypeEnum.camera;
-  if (!localStream.value) {
-    // WARN navigator.mediaDevices在localhost和https才能用，http://192.168.1.103:8000局域网用不了
-    const event = await navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: true,
+    damuList.value.push({
+      socketId: data.socketId,
+      msgType: DanmuMsgTypeEnum.userLeaved,
+      msg: '',
     });
-    console.log('getUserMedia成功', event);
-    if (!localVideoRef.value) return;
-    localVideoRef.value.srcObject = event;
-    localStream.value = event;
-  }
-}
-function addTrack() {
-  if (!localStream.value) return;
-  liveUserList.value.forEach((item) => {
-    if (item.socketId !== getSocketId()) {
-      localStream.value.getTracks().forEach((track) => {
-        const rtc = networkStore.getRtcMap(
-          `${roomId.value}___${item.socketId}`
-        );
-        rtc?.addTrack(track, localStream.value);
-      });
-    }
-  });
-  isAddTrack.value = true;
-}
-
-async function startGetDisplayMedia() {
-  currType.value = LiveTypeEnum.screen;
-  if (!localStream.value) {
-    // WARN navigator.mediaDevices.getDisplayMedia在localhost和https才能用，http://192.168.1.103:8000局域网用不了
-    const event = await navigator.mediaDevices.getDisplayMedia({
-      video: true,
-      audio: true,
-    });
-    console.log('getDisplayMedia成功', event);
-    if (!localVideoRef.value) return;
-    localVideoRef.value.srcObject = event;
-    localStream.value = event;
-  }
-}
-
-async function sendOffer({
-  sender,
-  receiver,
-}: {
-  sender: string;
-  receiver: string;
-}) {
-  if (isDone.value) return;
-  if (!websocketInstant.value) return;
-  const rtc = networkStore.getRtcMap(`${roomId.value}___${receiver}`);
-  if (!rtc) return;
-  const sdp = await rtc.createOffer();
-  await rtc.setLocalDescription(sdp);
-  websocketInstant.value.send({
-    msgType: WsMsgTypeEnum.offer,
-    data: { sdp, sender, receiver },
   });
 }
 
-function startNewWebRtc(receiver: string) {
-  console.warn('开始new WebRTCClass', receiver);
-  const rtc = new WebRTCClass({ roomId: `${roomId.value}___${receiver}` });
-  rtc.rtcStatus.joined = true;
-  rtc.update();
-  return rtc;
-}
+onUnmounted(() => {
+  closeWs();
+});
 
-function leave() {
-  if (joinRef.value && leaveRef.value && roomIdRef.value) {
-    roomIdRef.value.disabled = false;
-    joinRef.value.disabled = false;
-    leaveRef.value.disabled = true;
+onMounted(() => {
+  if (topRef.value && bottomRef.value && localVideoRef.value) {
+    const res =
+      bottomRef.value.getBoundingClientRect().top -
+      (topRef.value.getBoundingClientRect().top +
+        topRef.value.getBoundingClientRect().height);
+    localVideoRef.value.style.height = `${res}px`;
   }
-  if (!websocketInstant.value) return;
-  websocketInstant.value.socketIo?.emit(WsMsgTypeEnum.leave, {
-    roomId: websocketInstant.value.roomId,
+  roomId.value = route.params.roomId as string;
+  console.warn('开始new WebSocketClass');
+  websocketInstant.value = new WebSocketClass({
+    roomId: roomId.value,
+    url:
+      process.env.NODE_ENV === 'development'
+        ? 'ws://localhost:4300'
+        : 'wss://live.hsslive.cn',
+    isAdmin: false,
   });
-}
+  websocketInstant.value.update();
+  initReceive();
+  sendJoin();
+
+  localVideoRef.value?.addEventListener('loadstart', () => {
+    console.warn('视频流-loadstart');
+    const rtc = networkStore.getRtcMap(roomId.value);
+    if (!rtc) return;
+    rtc.rtcStatus.loadstart = true;
+    rtc.update();
+  });
+
+  localVideoRef.value?.addEventListener('loadedmetadata', () => {
+    console.warn('视频流-loadedmetadata');
+    const rtc = networkStore.getRtcMap(roomId.value);
+    if (!rtc) return;
+    rtc.rtcStatus.loadedmetadata = true;
+    rtc.update();
+  });
+});
 </script>
 
 <style lang="scss" scoped>
-.pull-wrap {
+.srt-webrtc-pull-wrap {
   margin: 20px auto 0;
   min-width: $large-width;
   height: 700px;
@@ -495,7 +405,7 @@ function leave() {
           width: 64px;
           height: 64px;
           border-radius: 50%;
-          background-color: yellow;
+          background-color: skyblue;
         }
         .detail {
           .top {
@@ -552,7 +462,7 @@ function leave() {
       align-items: center;
       justify-content: space-around;
       height: 100px;
-      background-color: yellow;
+      background-color: papayawhip;
       .item {
         margin-right: 10px;
         text-align: center;
@@ -577,12 +487,11 @@ function leave() {
     position: relative;
     display: inline-block;
     box-sizing: border-box;
-    box-sizing: border-box;
     margin-left: 10px;
     min-width: 300px;
     height: 100%;
-    border-radius: 10px;
-    background-color: white;
+    border-radius: 6px;
+    background-color: papayawhip;
     color: #9499a0;
     .tab {
       display: flex;
@@ -621,13 +530,16 @@ function leave() {
     .danmu-list {
       overflow-y: scroll;
       padding: 0 15px;
-      height: 350px;
+      height: 450px;
       text-align: initial;
       .item {
         margin-bottom: 10px;
         font-size: 12px;
         .name {
           color: #9499a0;
+          &.system {
+            color: red;
+          }
         }
         .msg {
           color: #61666d;
@@ -660,10 +572,11 @@ function leave() {
         padding: 5px;
         width: 80px;
         border-radius: 4px;
-        background-color: #23ade5;
+        background-color: skyblue;
         color: white;
         text-align: center;
         font-size: 12px;
+        cursor: pointer;
       }
     }
   }
@@ -671,7 +584,7 @@ function leave() {
 
 // 屏幕宽度小于$large-width的时候
 @media screen and (max-width: $large-width) {
-  .pull-wrap {
+  .srt-webrtc-pull-wrap {
     .left {
       width: $medium-left-width;
     }
