@@ -12,9 +12,11 @@ billd 直播间（前端），目前实现了类似 bilibili 的直播功能，�
 
 # 后端
 
-> 需要 mysql、redis 环境
-
 [https://github.com/galaxy-s10/billd-live-server](https://github.com/galaxy-s10/billd-live-server)
+
+# 赞助
+
+[https://live.hsslive.cn/sponsors](https://live.hsslive.cn/sponsors)
 
 # 贡献
 
@@ -26,10 +28,6 @@ billd 直播间（前端），目前实现了类似 bilibili 的直播功能，�
     style="width:300px"
     />
 </div>
-
-# 赞助
-
-[https://live.hsslive.cn/sponsors](https://live.hsslive.cn/sponsors)
 
 # 演示
 
