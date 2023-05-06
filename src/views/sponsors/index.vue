@@ -75,6 +75,7 @@
 </template>
 
 <script lang="ts" setup>
+import { hrefToTarget, isMobile } from 'billd-utils';
 import QRCode from 'qrcode';
 import { onMounted, onUnmounted, ref } from 'vue';
 
@@ -231,6 +232,10 @@ async function startPay(item) {
       body: item.body,
     });
     if (res.code === 200) {
+      if (isMobile()) {
+        hrefToTarget(res.data.qr_code);
+        return;
+      }
       const base64 = await generateQR(res.data.qr_code);
       aliPayBase64.value = base64;
       getPayStatus(res.data.out_trade_no);

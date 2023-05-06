@@ -49,7 +49,7 @@
         href="https://github.com/galaxy-s10/billd-live"
       >
         <img
-          src="https://img.shields.io/github/stars/galaxy-s10/billd-live?label=Star&logo=GitHub&labelColor=white&logoColor=black&style=social&cacheSeconds=3600"
+          :src="githubStar"
           alt=""
         />
       </a>
@@ -89,13 +89,13 @@
 
 <script lang="ts" setup>
 import { openToTarget } from 'billd-utils';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { routerName } from '@/router';
 
 const router = useRouter();
-
+const githubStar = ref('');
 const pushList = ref([
   { title: 'Webrtc Push', routerName: routerName.webrtcPush },
   { title: 'SRS WebRTC Push', routerName: routerName.srsWebRtcPush },
@@ -105,6 +105,11 @@ const pullList = ref([
   { title: 'Webrtc Pull', routerName: routerName.webrtcPull },
   { title: 'SRS WebRTC Pull', routerName: routerName.srsWebRtcPull },
 ]);
+
+onMounted(() => {
+  githubStar.value =
+    'https://img.shields.io/github/stars/galaxy-s10/billd-live?label=Star&logo=GitHub&labelColor=white&logoColor=black&style=social&cacheSeconds=3600';
+});
 
 function goPushPage(routerName: string) {
   const url = router.resolve({ name: routerName });
