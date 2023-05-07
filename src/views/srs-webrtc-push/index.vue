@@ -166,17 +166,23 @@ const roomId = ref<string>(getRandomString(15));
 const danmuStr = ref('');
 const roomName = ref('');
 const localStream = ref();
-const trackInfo = reactive({
+const track = reactive({
   audio: true,
   video: true,
 });
-// const streamurl = ref(`webrtc://localhost/live/livestream/${roomId.value}`);
 const streamurl = ref(
   `webrtc://${
     process.env.NODE_ENV === 'development'
-      ? 'localhost'
+      ? 'localhost:5001'
       : 'live.hsslive.cn:5001'
   }/live/livestream/${roomId.value}`
+);
+const flvurl = ref(
+  `http://${
+    process.env.NODE_ENV === 'development'
+      ? 'localhost:5001'
+      : 'live.hsslive.cn:5001'
+  }/live/livestream/${roomId.value}.flv`
 );
 
 const websocketInstant = ref<WebSocketClass>();
@@ -422,8 +428,9 @@ function sendJoin() {
       coverImg: handleCoverImg(),
       srs: {
         streamurl: streamurl.value,
+        flvurl: flvurl.value,
       },
-      trackInfo,
+      track,
     },
   });
 }
@@ -504,8 +511,8 @@ async function startGetDisplayMedia() {
     });
     const audio = event.getAudioTracks();
     const video = event.getVideoTracks();
-    trackInfo.audio = !!audio.length;
-    trackInfo.video = !!video.length;
+    track.audio = !!audio.length;
+    track.video = !!video.length;
     console.log('getDisplayMedia成功', event);
     currMediaType.value = allMediaTypeList[LiveTypeEnum.screen];
     currMediaTypeList.value.push(allMediaTypeList[LiveTypeEnum.screen]);

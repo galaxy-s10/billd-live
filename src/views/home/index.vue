@@ -4,13 +4,37 @@
       class="left"
       :style="{ backgroundImage: `url(${currentLiveRoom?.coverImg})` }"
     >
-      <video src=""></video>
+      <video
+        v-if="currentLiveRoom?.flvurl"
+        id="localVideo"
+        ref="localVideoRef"
+        autoplay
+        webkit-playsinline="true"
+        playsinline
+        x-webkit-airplay="allow"
+        x5-video-player-type="h5"
+        x5-video-player-fullscreen="true"
+        x5-video-orientation="portraint"
+        muted
+        controls
+      ></video>
       <div
-        v-if="liveRoomList.length"
-        class="btn"
-        @click="joinRoom()"
+        v-if="currentLiveRoom"
+        class="btn-wrap"
       >
-        进入直播
+        <div
+          class="btn webrtc"
+          @click="joinRoom()"
+        >
+          进入直播（webrtc）
+        </div>
+        <div
+          v-if="currentLiveRoom?.flvurl"
+          class="btn flv"
+          @click="joinFlvRoom()"
+        >
+          进入直播（flv）
+        </div>
       </div>
     </div>
     <div class="right">
@@ -49,22 +73,18 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
+import { nextTick, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { fetchLiveList } from '@/api/live';
+import { useFlvPlay } from '@/hooks/use-play';
+import { ILive } from '@/interface';
 import { routerName } from '@/router';
 
-interface IRoom {
-  roomId: string;
-  roomName: string;
-  srs?: { streamurl: string };
-  coverImg: string;
-}
-
 const router = useRouter();
-const liveRoomList = ref<IRoom[]>([]);
-const currentLiveRoom = ref<IRoom>();
+const liveRoomList = ref<ILive[]>([]);
+const currentLiveRoom = ref<ILive>();
+const localVideoRef = ref<HTMLVideoElement>();
 
 async function getLiveRoomList() {
   try {
@@ -73,22 +93,14 @@ async function getLiveRoomList() {
       orderBy: 'desc',
     });
     if (res.code === 200) {
-      liveRoomList.value = res.data.rows.map((item) => {
-        return {
-          roomId: item.roomId,
-          roomName: JSON.parse(item.data).data.roomName,
-          coverImg: JSON.parse(item.data).data.coverImg,
-          srs: JSON.parse(item.data).data.srs,
-        };
-      });
+      liveRoomList.value = res.data.rows;
       if (res.data.total) {
-        const item = res.data.rows[0].data;
-        currentLiveRoom.value = {
-          roomId: res.data.rows[0].roomId,
-          roomName: JSON.parse(item).data.roomName,
-          coverImg: JSON.parse(item).data.coverImg,
-          srs: JSON.parse(item).data.srs,
-        };
+        currentLiveRoom.value = res.data.rows[0];
+        nextTick(() => {
+          if (currentLiveRoom.value?.flvurl) {
+            useFlvPlay(currentLiveRoom.value.flvurl, localVideoRef.value!);
+          }
+        });
       }
     }
   } catch (error) {
@@ -101,7 +113,7 @@ onMounted(() => {
 });
 
 function joinRoom() {
-  if (currentLiveRoom.value?.srs) {
+  if (currentLiveRoom.value?.streamurl) {
     router.push({
       name: routerName.srsWebRtcPull,
       params: { roomId: currentLiveRoom.value.roomId },
@@ -112,6 +124,13 @@ function joinRoom() {
       params: { roomId: currentLiveRoom.value?.roomId },
     });
   }
+}
+
+function joinFlvRoom() {
+  router.push({
+    name: routerName.srsFlvPull,
+    params: { roomId: currentLiveRoom.value?.roomId },
+  });
 }
 </script>
 
@@ -133,27 +152,43 @@ function joinRoom() {
     background-color: papayawhip;
     vertical-align: top;
 
+    #localVideo {
+      width: 100%;
+      height: 100%;
+    }
+
     @extend %coverBg;
 
     &:hover {
-      .btn {
-        display: inline-block;
+      .btn-wrap {
+        display: inline-flex;
       }
     }
-    .btn {
+    .btn-wrap {
       position: absolute;
       top: 50%;
       left: 50%;
       display: none;
-      padding: 14px 26px;
-      border: 1px solid rgba($color: skyblue, $alpha: 0.3);
-      border-radius: 4px;
-      color: skyblue;
-      font-size: 16px;
-      cursor: pointer;
+      align-items: center;
       transform: translate(-50%, -50%);
-      &:hover {
-        background-color: rgba($color: skyblue, $alpha: 0.3);
+
+      .btn {
+        cursor: pointer;
+
+        padding: 14px 26px;
+        border: 2px solid rgba($color: skyblue, $alpha: 0.5);
+        border-radius: 6px;
+        background-color: rgba(0, 0, 0, 0.3);
+        color: skyblue;
+        font-size: 16px;
+        &:hover {
+          background-color: rgba($color: skyblue, $alpha: 0.5);
+        }
+        &.webrtc {
+          margin-right: 10px;
+        }
+        &.flv {
+        }
       }
     }
   }
@@ -230,6 +265,7 @@ function joinRoom() {
           box-sizing: border-box;
           padding: 4px 8px;
           width: 100%;
+          border-radius: 0 0 4px 4px;
           background-image: linear-gradient(
             -180deg,
             rgba(0, 0, 0, 0),
@@ -238,7 +274,6 @@ function joinRoom() {
           color: white;
           text-align: initial;
           font-size: 13px;
-          border-radius: 0 0 4px 4px;
         }
       }
     }

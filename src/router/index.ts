@@ -15,6 +15,7 @@ export const routerName = {
   webrtcPull: 'webrtcPull',
   srsWebRtcPush: 'srsWebRtcPush',
   srsWebRtcPull: 'srsWebRtcPull',
+  srsFlvPull: 'srsFlvPull',
 };
 
 // 默认路由
@@ -62,6 +63,11 @@ export const defaultRoutes: RouteRecordRaw[] = [
         name: routerName.srsWebRtcPull,
         path: '/srs-webrtc-pull/:roomId',
         component: () => import('@/views/srs-webrtc-pull/index.vue'),
+      },
+      {
+        name: routerName.srsFlvPull,
+        path: '/srs-flv-pull/:roomId',
+        component: () => import('@/views/srs-flv-pull/index.vue'),
       },
     ],
   },

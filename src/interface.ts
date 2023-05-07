@@ -1,4 +1,18 @@
 // 这里放项目里面的类型
+export interface ILive {
+  id?: number;
+  system?: number;
+  socketId?: string;
+  roomId?: string;
+  roomName?: string;
+  coverImg?: string;
+  streamurl?: string;
+  flvurl?: string;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string;
+}
+
 export enum LiveTypeEnum {
   camera,
   screen,

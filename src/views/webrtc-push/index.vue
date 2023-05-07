@@ -289,6 +289,10 @@ function sendJoin() {
     data: {
       roomName: roomName.value,
       coverImg: handleCoverImg(),
+      track: {
+        video: true,
+        audio: true,
+      },
     },
   });
 }
@@ -416,12 +420,6 @@ function initReceive() {
       msgType: DanmuMsgTypeEnum.danmu,
       msg: data.data.msg,
     });
-  });
-
-  // 用户加入房间
-  instance.socketIo.on(WsMsgTypeEnum.join, (data) => {
-    console.log('【websocket】用户加入房间', data);
-    if (!instance) return;
   });
 
   // 用户加入房间

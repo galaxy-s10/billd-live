@@ -104,13 +104,11 @@
 </template>
 
 <script lang="ts" setup>
-import { getRandomString } from 'billd-utils';
 import { onMounted, onUnmounted, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
-import { fetchRtcV1Play } from '@/api/srs';
+import { useFlvPlay } from '@/hooks/use-play';
 import { DanmuMsgTypeEnum, IAdminIn, IDanmu, ILiveUser } from '@/interface';
-import { SRSWebRTCClass } from '@/network/srsWebRtc';
 import {
   WebSocketClass,
   WsConnectStatusEnum,
@@ -129,6 +127,7 @@ const track = reactive({
   video: true,
 });
 const streamurl = ref();
+const flvurl = ref();
 const roomNoLive = ref(false);
 const roomId = ref('');
 const roomName = ref('');
@@ -183,45 +182,6 @@ function sendDanmu() {
   danmuStr.value = '';
 }
 
-function startNewWebRtc(receiver: string) {
-  console.warn('开始new SRSWebRTCClass', receiver);
-  const rtc = new SRSWebRTCClass({ roomId: `${roomId.value}___${receiver}` });
-  rtc.rtcStatus.joined = true;
-  rtc.update();
-  return rtc;
-}
-
-async function handleSrsPlay() {
-  const rtc = startNewWebRtc(getSocketId());
-  if (track.video) {
-    rtc.peerConnection?.addTransceiver('video', { direction: 'recvonly' });
-  }
-  if (track.audio) {
-    rtc.peerConnection?.addTransceiver('audio', { direction: 'recvonly' });
-  }
-  try {
-    const offer = await rtc.createOffer();
-    if (!offer) return;
-    await rtc.setLocalDescription(offer);
-    const res: any = await fetchRtcV1Play({
-      api: `http://${
-        process.env.NODE_ENV === 'development'
-          ? 'localhost:1985'
-          : 'live.hsslive.cn:1985'
-      }/rtc/v1/play/`,
-      clientip: null,
-      sdp: offer.sdp!,
-      streamurl: streamurl.value,
-      tid: getRandomString(10),
-    });
-    await rtc.setRemoteDescription(
-      new RTCSessionDescription({ type: 'answer', sdp: res.sdp })
-    );
-  } catch (error) {
-    console.log(error);
-  }
-}
-
 function initReceive() {
   const instance = websocketInstant.value;
   if (!instance?.socketIo) return;
@@ -244,7 +204,6 @@ function initReceive() {
   // 当前所有在线用户
   instance.socketIo.on(WsMsgTypeEnum.roomLiveing, (data: IAdminIn) => {
     console.log('【websocket】收到管理员正在直播', data);
-    handleSrsPlay();
   });
 
   // 当前所有在线用户
@@ -283,6 +242,8 @@ function initReceive() {
     track.audio = data.track_audio;
     track.video = data.track_video;
     streamurl.value = data.streamurl;
+    flvurl.value = data.flvurl;
+    useFlvPlay(flvurl.value, localVideoRef.value!);
   });
 
   // 其他用户加入房间
