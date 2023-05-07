@@ -19,7 +19,7 @@
         controls
       ></video>
       <div
-        v-if="currentLiveRoom"
+        v-if="currentLiveRoom && currentLiveRoom.system === 2"
         class="btn-wrap"
       >
         <div
