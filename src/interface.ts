@@ -5,6 +5,8 @@ export interface ILive {
   socketId?: string;
   roomId?: string;
   roomName?: string;
+  track_video?: boolean;
+  track_audio?: boolean;
   coverImg?: string;
   streamurl?: string;
   flvurl?: string;
