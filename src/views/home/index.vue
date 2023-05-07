@@ -19,10 +19,11 @@
         controls
       ></video>
       <div
-        v-if="currentLiveRoom && currentLiveRoom.system === 2"
+        v-if="currentLiveRoom"
         class="btn-wrap"
       >
         <div
+          v-if="currentLiveRoom.system === 2"
           class="btn webrtc"
           @click="joinRoom()"
         >
