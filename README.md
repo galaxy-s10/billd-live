@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="">
+  <a href="https://live.hsslive.cn" target="_blank">
     <img
       width="200"
       src="https://resource.hsslive.cn/image/1613141138717Billd.webp"
