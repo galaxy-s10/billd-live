@@ -174,14 +174,14 @@ const streamurl = ref(
   `webrtc://${
     process.env.NODE_ENV === 'development'
       ? 'localhost:5001'
-      : 'live.hsslive.cn:5001'
+      : 'live.hsslive.cn/srsflv'
   }/live/livestream/${roomId.value}`
 );
 const flvurl = ref(
   `http://${
     process.env.NODE_ENV === 'development'
       ? 'localhost:5001'
-      : 'live.hsslive.cn:5001'
+      : 'live.hsslive.cn/srsflv'
   }/live/livestream/${roomId.value}.flv`
 );
 
