@@ -99,7 +99,7 @@ npm run start
 
 <div>
   <img
-    src="https://resource.hsslive.cn/image/004ee8afb2e6e725df743d0623dfd801.webp" 
+    src="https://resource.hsslive.cn/image/7c6a6004e95167537a3fae7a48f1d8c2.webp" 
     style="width:300px"
     />
 </div>
