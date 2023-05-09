@@ -244,6 +244,7 @@ function initReceive() {
     streamurl.value = data.streamurl;
     flvurl.value = data.flvurl;
     useFlvPlay(flvurl.value, localVideoRef.value!);
+    instance.send({ msgType: WsMsgTypeEnum.getLiveUser });
   });
 
   // 其他用户加入房间

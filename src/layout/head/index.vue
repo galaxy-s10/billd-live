@@ -71,18 +71,23 @@
       </div>
       <div
         v-if="![routerName.webrtcPush].includes(router.currentRoute.value.name as string)"
-        class="start ani"
+        class="btn ani"
         @click="goPushPage(routerName.webrtcPush)"
       >
         webrtc开播
       </div>
       <div
         v-if="![routerName.srsWebRtcPush].includes(router.currentRoute.value.name as string)"
-        class="start ani"
+        class="btn ani"
         @click="goPushPage(routerName.srsWebRtcPush)"
       >
         srs-webrtc开播
       </div>
+      <!-- <div
+        v-if="![routerName.srsWebRtcPush].includes(router.currentRoute.value.name as string)"
+        class="btn qqlogin"
+        @click="goPushPage(routerName.srsWebRtcPush)"
+      ></div> -->
     </div>
   </div>
 </template>
@@ -224,7 +229,7 @@ function goPushPage(routerName: string) {
       font-size: 14px;
       cursor: pointer;
     }
-    .start {
+    .btn {
       margin-right: 10px;
       padding: 5px 10px;
       border-radius: 6px;
@@ -234,6 +239,13 @@ function goPushPage(routerName: string) {
       cursor: pointer;
       &.ani {
         animation: big-small 1s ease infinite;
+      }
+      &.qqlogin {
+        width: 76px;
+        height: 24px;
+        background-color: none;
+
+        @include setBackground('@/assets/img/qq_login.png');
       }
     }
   }
