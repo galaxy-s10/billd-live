@@ -204,10 +204,10 @@ async function handleSrsPlay() {
     if (!offer) return;
     await rtc.setLocalDescription(offer);
     const res: any = await fetchRtcV1Play({
-      api: `http://${
+      api: `${
         process.env.NODE_ENV === 'development'
-          ? 'localhost:1985'
-          : 'live.hsslive.cn:1985'
+          ? 'http://localhost:1985'
+          : 'https://live.hsslive.cn/srs'
       }/rtc/v1/play/`,
       clientip: null,
       sdp: offer.sdp!,

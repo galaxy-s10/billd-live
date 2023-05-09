@@ -172,16 +172,14 @@ const track = reactive({
 });
 const streamurl = ref(
   `webrtc://${
-    process.env.NODE_ENV === 'development'
-      ? 'localhost:5001'
-      : 'live.hsslive.cn/srsflv'
+    process.env.NODE_ENV === 'development' ? 'localhost' : 'live.hsslive.cn'
   }/live/livestream/${roomId.value}`
 );
 const flvurl = ref(
-  `http://${
+  `${
     process.env.NODE_ENV === 'development'
-      ? 'localhost:5001'
-      : 'live.hsslive.cn/srsflv'
+      ? 'http://localhost:5001'
+      : 'https://live.hsslive.cn/srsflv'
   }/live/livestream/${roomId.value}.flv`
 );
 
@@ -466,10 +464,10 @@ async function handleSrsPush() {
     if (!offer) return;
     await rtc.setLocalDescription(offer);
     const res: any = await fetchRtcV1Publish({
-      api: `http://${
+      api: `${
         process.env.NODE_ENV === 'development'
-          ? 'localhost:1985'
-          : 'live.hsslive.cn:1985'
+          ? 'http://localhost:1985'
+          : 'https://live.hsslive.cn/srs'
       }/rtc/v1/publish/`,
       clientip: null,
       sdp: offer.sdp!,
