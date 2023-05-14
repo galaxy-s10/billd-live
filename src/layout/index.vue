@@ -5,12 +5,14 @@
       <component :is="Component"></component>
     </router-view>
     <FooterCpt></FooterCpt>
+    <ModalCpt></ModalCpt>
   </div>
 </template>
 
 <script lang="ts" setup>
 import FooterCpt from './footer/index.vue';
 import HeadCpt from './head/index.vue';
+import ModalCpt from './modal/index.vue';
 </script>
 
 <style lang="scss" scoped>

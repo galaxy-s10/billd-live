@@ -11,7 +11,10 @@
       </div>
     </div>
 
-    <div class="rank-list">
+    <div
+      v-if="rankList.length"
+      class="rank-list"
+    >
       <div class="top">
         <div
           v-for="(item, index) in [rankList[1], rankList[0], rankList[2]]"
@@ -56,7 +59,9 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
+
+import { fetchUserList } from '@/api/user';
 
 const rankType = ref([
   {
@@ -75,15 +80,40 @@ const rankType = ref([
 
 const currRankType = ref(1);
 
-const rankList = ref([
-  { username: '111', avatar: 'sss', rank: 1, level: 1, score: 111 },
-  { username: '22', avatar: '222', rank: 2, level: 1, score: 111 },
-  { username: '333', avatar: '333', rank: 3, level: 1, score: 111 },
-  { username: '444', avatar: '444', rank: 4, level: 1, score: 111 },
-  { username: '55', avatar: '555', rank: 5, level: 1, score: 111 },
-  { username: '66', avatar: '666', rank: 6, level: 1, score: 111 },
-  { username: '77', avatar: '777', rank: 7, level: 1, score: 111 },
-]);
+const mockRank = [
+  { username: '-', avatar: '', rank: 1, level: -1, score: -1 },
+  { username: '-', avatar: '', rank: 2, level: -1, score: -1 },
+  { username: '-', avatar: '', rank: 3, level: -1, score: -1 },
+  { username: '-', avatar: '', rank: 4, level: -1, score: -1 },
+];
+const rankList = ref(mockRank);
+
+async function getUserList() {
+  try {
+    const res = await fetchUserList();
+    if (res.code === 200) {
+      const length = res.data.rows.length;
+      rankList.value = res.data.rows.map((item, index) => {
+        return {
+          username: item.username!,
+          avatar: item.avatar!,
+          rank: index + 1,
+          level: 1,
+          score: 1,
+        };
+      });
+      if (length < 3) {
+        rankList.value.push(...mockRank.slice(length));
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+onMounted(() => {
+  getUserList();
+});
 </script>
 
 <style lang="scss" scoped>
@@ -102,7 +132,7 @@ const rankList = ref([
       margin: 0 10px;
       height: 40px;
       border-radius: 10px;
-      background-color: pink;
+      background-color: skyblue;
       color: white;
       text-align: center;
       font-weight: bold;

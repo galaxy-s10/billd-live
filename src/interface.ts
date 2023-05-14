@@ -1,5 +1,13 @@
 // 这里放项目里面的类型
 
+export interface IPaging<T> {
+  nowPage: number;
+  pageSize: number;
+  hasMore: boolean;
+  total: number;
+  rows: T[];
+}
+
 export enum liveTypeEnum {
   webrtcPull = 'webrtcPull',
   srsWebrtcPull = 'srsWebrtcPull',

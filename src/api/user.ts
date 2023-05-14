@@ -1,3 +1,4 @@
+import { IPaging, IUser } from '@/interface';
 import request from '@/utils/request';
 
 export function fetchUserInfo() {
@@ -5,4 +6,8 @@ export function fetchUserInfo() {
     url: '/api/user/get_user_info',
     method: 'get',
   });
+}
+
+export function fetchUserList() {
+  return request.get<IPaging<IUser>>('/api/user/list');
 }
