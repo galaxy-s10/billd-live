@@ -79,7 +79,7 @@ import { hrefToTarget, isMobile } from 'billd-utils';
 import QRCode from 'qrcode';
 import { onMounted, onUnmounted, ref } from 'vue';
 
-import { fetchAliPay, fetchAliPayList, fetchAliPayStatus } from '@/api/aliPay';
+import { fetchAliPay, fetchAliPayList, fetchAliPayStatus } from '@/api/order';
 
 const payOk = ref(false);
 const onMountedTime = ref('');

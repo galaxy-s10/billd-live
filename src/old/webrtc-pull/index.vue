@@ -29,7 +29,6 @@
             x5-video-player-fullscreen="true"
             x5-video-orientation="portraint"
             muted
-            controls
           ></video>
         </div>
         <div
@@ -51,7 +50,7 @@
         <div class="tab">
           <span>在线用户</span>
           <span> | </span>
-          <span>大航海</span>
+          <span>排行榜</span>
         </div>
         <div class="user-list">
           <div
@@ -61,7 +60,7 @@
           >
             <div class="info">
               <div class="avatar"></div>
-              <div class="nickname">{{ item.socketId }}</div>
+              <div class="username">{{ item.socketId }}</div>
             </div>
             <div class="expr">{{ item.expr }}</div>
           </div>
@@ -318,7 +317,7 @@ function initReceive() {
   instance.socketIo.on(WsMsgTypeEnum.otherJoin, (data) => {
     console.log('【websocket】其他用户加入房间', data);
     damuList.value.push({
-      socketId: data.socketId,
+      socketId: data.data.socketId,
       msgType: DanmuMsgTypeEnum.otherJoin,
       msg: '',
     });
@@ -542,7 +541,7 @@ onMounted(() => {
             border-radius: 50%;
             background-color: skyblue;
           }
-          .nickname {
+          .username {
             color: black;
           }
         }

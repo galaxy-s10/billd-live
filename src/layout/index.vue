@@ -4,10 +4,12 @@
     <router-view v-slot="{ Component }">
       <component :is="Component"></component>
     </router-view>
+    <FooterCpt></FooterCpt>
   </div>
 </template>
 
 <script lang="ts" setup>
+import FooterCpt from './footer/index.vue';
 import HeadCpt from './head/index.vue';
 </script>
 

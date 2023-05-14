@@ -1,9 +1,11 @@
 import FriendlyErrorsWebpackPlugin from '@soda/friendly-errors-webpack-plugin';
-import BilldHtmlWebpackPlugin from 'billd-html-webpack-plugin';
+import BilldHtmlWebpackPlugin, { logData } from 'billd-html-webpack-plugin';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import ESLintPlugin from 'eslint-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import { NaiveUiResolver } from 'unplugin-vue-components/resolvers';
+import ComponentsPlugin from 'unplugin-vue-components/webpack';
 import { VueLoaderPlugin } from 'vue-loader';
 import { Configuration, DefinePlugin } from 'webpack';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
@@ -313,6 +315,11 @@ const commonConfig = (isProduction) => {
       new FriendlyErrorsWebpackPlugin(),
       // 解析vue
       new VueLoaderPlugin(),
+      // eslint-disable-next-line
+      ComponentsPlugin({
+        // eslint-disable-next-line
+        resolvers: [NaiveUiResolver()],
+      }),
       // windicss
       windicssEnable && new WindiCSSWebpackPlugin(),
       // 该插件将为您生成一个HTML5文件，其中包含使用脚本标签的所有Webpack捆绑包
@@ -362,6 +369,7 @@ const commonConfig = (isProduction) => {
       new DefinePlugin({
         BASE_URL: `${JSON.stringify(outputStaticUrl(isProduction))}`, // public下的index.html里面的favicon.ico的路径
         'process.env': {
+          BilldHtmlWebpackPlugin: JSON.stringify(logData()),
           NODE_ENV: JSON.stringify(isProduction ? 'production' : 'development'),
           PUBLIC_PATH: JSON.stringify(outputStaticUrl(isProduction)),
           VUE_APP_RELEASE_PROJECT_NAME: JSON.stringify(
@@ -371,8 +379,8 @@ const commonConfig = (isProduction) => {
             process.env.VUE_APP_RELEASE_PROJECT_ENV
           ),
         },
-        __VUE_OPTIONS_API__: 'true',
-        __VUE_PROD_DEVTOOLS__: 'false',
+        __VUE_OPTIONS_API__: false,
+        __VUE_PROD_DEVTOOLS__: false,
       }),
       // bundle分析
       analyzerEnable &&

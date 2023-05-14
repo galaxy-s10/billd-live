@@ -1,5 +1,5 @@
 <template>
-  <div class="srt-webrtc-pull-wrap">
+  <div class="srs-webrtc-pull-wrap">
     <template v-if="roomNoLive">当前房间没在直播~</template>
     <template v-else>
       <div class="left">
@@ -28,9 +28,11 @@
             x5-video-player-type="h5"
             x5-video-player-fullscreen="true"
             x5-video-orientation="portraint"
-            muted
-            controls
+            :muted="appStore.muted"
           ></video>
+          <div class="controls">
+            <VideoControls></VideoControls>
+          </div>
         </div>
         <div
           ref="bottomRef"
@@ -51,19 +53,33 @@
         <div class="tab">
           <span>在线用户</span>
           <span> | </span>
-          <span>大航海</span>
+          <span>排行榜</span>
         </div>
         <div class="user-list">
           <div
-            v-for="(item, index) in liveUserList"
+            v-for="(item, index) in liveUserList.filter((item) =>
+              userStore.userInfo ? item.socketId !== getSocketId() : true
+            )"
             :key="index"
             class="item"
           >
             <div class="info">
               <div class="avatar"></div>
-              <div class="nickname">{{ item.socketId }}</div>
+              <div class="username">{{ item.socketId }}</div>
             </div>
-            <div class="expr">{{ item.expr }}</div>
+          </div>
+          <div
+            v-if="userStore.userInfo"
+            class="item"
+          >
+            <div class="info">
+              <img
+                :src="userStore.userInfo.avatar"
+                class="avatar"
+                alt=""
+              />
+              <div class="username">{{ userStore.userInfo.username }}</div>
+            </div>
           </div>
         </div>
         <div class="danmu-list">
@@ -73,16 +89,22 @@
             class="item"
           >
             <template v-if="item.msgType === DanmuMsgTypeEnum.danmu">
-              <span class="name">{{ item.socketId }}：</span>
+              <span class="name">
+                {{ item.userInfo?.username || item.socketId }}：
+              </span>
               <span class="msg">{{ item.msg }}</span>
             </template>
             <template v-else-if="item.msgType === DanmuMsgTypeEnum.otherJoin">
               <span class="name system">系统通知：</span>
-              <span class="msg">{{ item.socketId }}进入直播！</span>
+              <span class="msg">
+                {{ item.userInfo?.username || item.socketId }}进入直播！
+              </span>
             </template>
             <template v-else-if="item.msgType === DanmuMsgTypeEnum.userLeaved">
               <span class="name system">系统通知：</span>
-              <span class="msg">{{ item.socketId }}离开直播！</span>
+              <span class="msg">
+                {{ item.userInfo?.username || item.socketId }}离开直播！
+              </span>
             </template>
           </div>
         </div>
@@ -90,6 +112,7 @@
           <textarea
             v-model="danmuStr"
             class="ipt"
+            @keydown="keydownDanmu"
           ></textarea>
           <div
             class="btn"
@@ -104,186 +127,44 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted, reactive, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
-import { useFlvPlay } from '@/hooks/use-play';
-import { DanmuMsgTypeEnum, IAdminIn, IDanmu, ILiveUser } from '@/interface';
-import {
-  WebSocketClass,
-  WsConnectStatusEnum,
-  WsMsgTypeEnum,
-} from '@/network/webSocket';
-import { useNetworkStore } from '@/store/network';
+import { usePull } from '@/hooks/use-pull';
+import { DanmuMsgTypeEnum, liveTypeEnum } from '@/interface';
+import { useAppStore } from '@/store/app';
+import { useUserStore } from '@/store/user';
 
-const networkStore = useNetworkStore();
 const route = useRoute();
+const userStore = useUserStore();
+const appStore = useAppStore();
 
 const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
 const localVideoRef = ref<HTMLVideoElement>();
-const track = reactive({
-  audio: true,
-  video: true,
+
+const {
+  initPull,
+  closeWs,
+  closeRtc,
+  getSocketId,
+  keydownDanmu,
+  sendDanmu,
+  roomName,
+  roomNoLive,
+  damuList,
+  giftList,
+  liveUserList,
+  danmuStr,
+} = usePull({
+  localVideoRef,
+  isFlv: route.query.liveType === liveTypeEnum.srsFlvPull,
+  isSRS: route.query.liveType === liveTypeEnum.srsWebrtcPull,
 });
-const streamurl = ref();
-const flvurl = ref();
-const roomNoLive = ref(false);
-const roomId = ref('');
-const roomName = ref('');
-const danmuStr = ref('');
-const websocketInstant = ref<WebSocketClass>();
-const damuList = ref<IDanmu[]>([]);
-const liveUserList = ref<ILiveUser[]>([]);
-const giftList = ref([
-  { name: '鲜花', ico: '', price: '免费' },
-  { name: '肥宅水', ico: '', price: '2元' },
-  { name: '小鸡腿', ico: '', price: '3元' },
-  { name: '大鸡腿', ico: '', price: '5元' },
-  { name: '一杯咖啡', ico: '', price: '10元' },
-]);
-
-function closeWs() {
-  const instance = networkStore.wsMap.get(roomId.value);
-  if (!instance) return;
-  instance.close();
-}
-
-function closeRtc() {
-  networkStore.rtcMap.forEach((rtc) => {
-    rtc.close();
-  });
-}
-
-function getSocketId() {
-  return networkStore.wsMap.get(roomId.value!)?.socketIo?.id || '-1';
-}
-
-function sendJoin() {
-  const instance = networkStore.wsMap.get(roomId.value);
-  if (!instance) return;
-  instance.send({ msgType: WsMsgTypeEnum.join, data: {} });
-}
-
-function sendDanmu() {
-  if (!danmuStr.value.length) {
-    alert('请输入弹幕内容！');
-  }
-  if (!websocketInstant.value) return;
-  websocketInstant.value.send({
-    msgType: WsMsgTypeEnum.message,
-    data: { msg: danmuStr.value },
-  });
-  damuList.value.push({
-    socketId: getSocketId(),
-    msgType: DanmuMsgTypeEnum.danmu,
-    msg: danmuStr.value,
-  });
-  danmuStr.value = '';
-}
-
-function initReceive() {
-  const instance = websocketInstant.value;
-  if (!instance?.socketIo) return;
-  // websocket连接成功
-  instance.socketIo.on(WsConnectStatusEnum.connect, () => {
-    console.log('【websocket】websocket连接成功', instance.socketIo?.id);
-    if (!instance) return;
-    instance.status = WsConnectStatusEnum.connect;
-    instance.update();
-  });
-
-  // websocket连接断开
-  instance.socketIo.on(WsConnectStatusEnum.disconnect, () => {
-    console.log('【websocket】websocket连接断开', instance);
-    if (!instance) return;
-    instance.status = WsConnectStatusEnum.disconnect;
-    instance.update();
-  });
-
-  // 当前所有在线用户
-  instance.socketIo.on(WsMsgTypeEnum.roomLiveing, (data: IAdminIn) => {
-    console.log('【websocket】收到管理员正在直播', data);
-  });
-
-  // 当前所有在线用户
-  instance.socketIo.on(WsMsgTypeEnum.roomNoLive, (data: IAdminIn) => {
-    console.log('【websocket】收到管理员不在直播', data);
-    roomNoLive.value = true;
-    closeRtc();
-  });
-
-  // 当前所有在线用户
-  instance.socketIo.on(WsMsgTypeEnum.liveUser, (data) => {
-    console.log('【websocket】当前所有在线用户', data);
-    if (!instance) return;
-    liveUserList.value = data.map((item) => ({
-      avatar: 'red',
-      socketId: item.id,
-      expr: 1,
-    }));
-  });
-
-  // 收到用户发送消息
-  instance.socketIo.on(WsMsgTypeEnum.message, (data) => {
-    console.log('【websocket】收到用户发送消息', data);
-    if (!instance) return;
-    damuList.value.push({
-      socketId: data.socketId,
-      msgType: DanmuMsgTypeEnum.danmu,
-      msg: data.data.msg,
-    });
-  });
-
-  // 用户加入房间
-  instance.socketIo.on(WsMsgTypeEnum.joined, (data) => {
-    console.log('【websocket】用户加入房间完成', data);
-    roomName.value = data.roomName;
-    track.audio = data.track_audio;
-    track.video = data.track_video;
-    streamurl.value = data.streamurl;
-    flvurl.value = data.flvurl;
-    useFlvPlay(flvurl.value, localVideoRef.value!);
-    instance.send({ msgType: WsMsgTypeEnum.getLiveUser });
-  });
-
-  // 其他用户加入房间
-  instance.socketIo.on(WsMsgTypeEnum.otherJoin, (data) => {
-    console.log('【websocket】其他用户加入房间', data);
-    damuList.value.push({
-      socketId: data.socketId,
-      msgType: DanmuMsgTypeEnum.otherJoin,
-      msg: '',
-    });
-  });
-
-  // 用户离开房间
-  instance.socketIo.on(WsMsgTypeEnum.leave, (data) => {
-    console.log('【websocket】用户离开房间', data);
-    if (!instance) return;
-    instance.socketIo?.emit(WsMsgTypeEnum.leave, {
-      roomId: instance.roomId,
-    });
-  });
-
-  // 用户离开房间完成
-  instance.socketIo.on(WsMsgTypeEnum.leaved, (data) => {
-    console.log('【websocket】用户离开房间完成', data);
-    if (!instance) return;
-    const res = liveUserList.value.filter(
-      (item) => item.socketId !== data.socketId
-    );
-    liveUserList.value = res;
-    damuList.value.push({
-      socketId: data.socketId,
-      msgType: DanmuMsgTypeEnum.userLeaved,
-      msg: '',
-    });
-  });
-}
 
 onUnmounted(() => {
   closeWs();
+  closeRtc();
 });
 
 onMounted(() => {
@@ -294,40 +175,12 @@ onMounted(() => {
         topRef.value.getBoundingClientRect().height);
     localVideoRef.value.style.height = `${res}px`;
   }
-  roomId.value = route.params.roomId as string;
-  console.warn('开始new WebSocketClass');
-  websocketInstant.value = new WebSocketClass({
-    roomId: roomId.value,
-    url:
-      process.env.NODE_ENV === 'development'
-        ? 'ws://localhost:4300'
-        : 'wss://live.hsslive.cn',
-    isAdmin: false,
-  });
-  websocketInstant.value.update();
-  initReceive();
-  sendJoin();
-
-  localVideoRef.value?.addEventListener('loadstart', () => {
-    console.warn('视频流-loadstart');
-    const rtc = networkStore.getRtcMap(roomId.value);
-    if (!rtc) return;
-    rtc.rtcStatus.loadstart = true;
-    rtc.update();
-  });
-
-  localVideoRef.value?.addEventListener('loadedmetadata', () => {
-    console.warn('视频流-loadedmetadata');
-    const rtc = networkStore.getRtcMap(roomId.value);
-    if (!rtc) return;
-    rtc.rtcStatus.loadedmetadata = true;
-    rtc.update();
-  });
+  initPull();
 });
 </script>
 
 <style lang="scss" scoped>
-.srt-webrtc-pull-wrap {
+.srs-webrtc-pull-wrap {
   margin: 20px auto 0;
   min-width: $large-width;
   height: 700px;
@@ -338,10 +191,11 @@ onMounted(() => {
     box-sizing: border-box;
     width: $large-left-width;
     height: 100%;
-    border-radius: 10px;
+    border-radius: 6px;
     background-color: white;
     color: #9499a0;
     vertical-align: top;
+    overflow: hidden;
     .head {
       display: flex;
       justify-content: space-between;
@@ -407,12 +261,19 @@ onMounted(() => {
       }
     }
     .video-wrap {
-      // height: 100px;
-      // height: 550px;
+      position: relative;
       background-color: #18191c;
       #localVideo {
         max-width: 100%;
         max-height: 100%;
+      }
+      .controls {
+        display: none;
+      }
+      &:hover {
+        .controls {
+          display: block;
+        }
       }
     }
     .gift {
@@ -483,7 +344,7 @@ onMounted(() => {
             border-radius: 50%;
             background-color: skyblue;
           }
-          .nickname {
+          .username {
             color: black;
           }
         }
@@ -546,7 +407,7 @@ onMounted(() => {
 
 // 屏幕宽度小于$large-width的时候
 @media screen and (max-width: $large-width) {
-  .srt-webrtc-pull-wrap {
+  .srs-webrtc-pull-wrap {
     .left {
       width: $medium-left-width;
     }

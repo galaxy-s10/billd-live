@@ -1,42 +1,49 @@
 <template>
   <div class="home-wrap">
-    <div
-      class="left"
-      :style="{ backgroundImage: `url(${currentLiveRoom?.coverImg})` }"
-    >
+    <div class="left">
+      <div
+        class="cover"
+        :style="{ backgroundImage: `url(${currentLiveRoom?.coverImg})` }"
+      ></div>
+      <!-- x-webkit-airplay这个属性应该是使此视频支持ios的AirPlay功能 -->
+      <!-- playsinline、 webkit-playsinline IOS微信浏览器支持小窗内播放 -->
+      <!-- x5-video-player-type 启用H5播放器，是wechat安卓版特性 -->
+      <!-- x5-video-player-fullscreen 全屏设置 -->
+      <!-- x5-video-orientation 声明播放器支持的方向，可选值landscape横屏，portraint竖屏。默认值portraint。 -->
       <video
         v-if="currentLiveRoom?.flvurl"
         id="localVideo"
         ref="localVideoRef"
         autoplay
-        webkit-playsinline="true"
         playsinline
+        webkit-playsinline="true"
         x-webkit-airplay="allow"
         x5-video-player-type="h5"
         x5-video-player-fullscreen="true"
         x5-video-orientation="portraint"
-        muted
-        controls
+        :muted="appStore.muted"
       ></video>
-      <div
-        v-if="currentLiveRoom"
-        class="btn-wrap"
-      >
-        <div
-          v-if="currentLiveRoom.system === 2"
-          class="btn webrtc"
-          @click="joinRoom()"
-        >
-          进入直播（webrtc）
+      <template v-if="currentLiveRoom">
+        <div class="controls">
+          <VideoControls></VideoControls>
         </div>
-        <div
-          v-if="currentLiveRoom?.flvurl"
-          class="btn flv"
-          @click="joinFlvRoom()"
-        >
-          进入直播（flv）
+        <div class="join-btn">
+          <div
+            v-if="currentLiveRoom.system === 2"
+            class="btn webrtc"
+            @click="joinRoom()"
+          >
+            进入直播（webrtc）
+          </div>
+          <div
+            v-if="currentLiveRoom?.flvurl"
+            class="btn flv"
+            @click="joinFlvRoom()"
+          >
+            进入直播（flv）
+          </div>
         </div>
-      </div>
+      </template>
     </div>
     <div class="right">
       <div
@@ -79,9 +86,11 @@ import { useRouter } from 'vue-router';
 
 import { fetchLiveList } from '@/api/live';
 import { useFlvPlay } from '@/hooks/use-play';
-import { ILive } from '@/interface';
+import { ILive, liveTypeEnum } from '@/interface';
 import { routerName } from '@/router';
+import { useAppStore } from '@/store/app';
 
+const appStore = useAppStore();
 const router = useRouter();
 const liveRoomList = ref<ILive[]>([]);
 const currentLiveRoom = ref<ILive>();
@@ -116,21 +125,34 @@ onMounted(() => {
 function joinRoom() {
   if (currentLiveRoom.value?.streamurl) {
     router.push({
-      name: routerName.srsWebRtcPull,
-      params: { roomId: currentLiveRoom.value.roomId },
+      name: routerName.pull,
+      params: {
+        roomId: currentLiveRoom.value.roomId,
+      },
+      query: {
+        liveType: liveTypeEnum.srsWebrtcPull,
+      },
     });
   } else {
     router.push({
-      name: routerName.webrtcPull,
-      params: { roomId: currentLiveRoom.value?.roomId },
+      name: routerName.pull,
+      params: {
+        roomId: currentLiveRoom.value?.roomId,
+      },
+      query: {
+        liveType: liveTypeEnum.webrtcPull,
+      },
     });
   }
 }
 
 function joinFlvRoom() {
   router.push({
-    name: routerName.srsFlvPull,
+    name: routerName.pull,
     params: { roomId: currentLiveRoom.value?.roomId },
+    query: {
+      liveType: liveTypeEnum.srsFlvPull,
+    },
   });
 }
 </script>
@@ -146,26 +168,43 @@ function joinFlvRoom() {
   .left {
     position: relative;
     display: inline-block;
+    overflow: hidden;
     box-sizing: border-box;
     width: $large-left-width;
     height: 610px;
     border-radius: 4px;
-    background-color: papayawhip;
+    background-color: rgba($color: #000000, $alpha: 0.3);
     vertical-align: top;
-
-    #localVideo {
-      width: 100%;
-      height: 100%;
-    }
 
     @extend %coverBg;
 
+    .cover {
+      position: absolute;
+      background-position: center center;
+      background-size: cover;
+      filter: blur(30px);
+
+      inset: 0;
+    }
+
+    #localVideo {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    .controls {
+      display: none;
+    }
+
     &:hover {
-      .btn-wrap {
+      .join-btn {
         display: inline-flex;
       }
+      .controls {
+        display: block;
+      }
     }
-    .btn-wrap {
+    .join-btn {
       position: absolute;
       top: 50%;
       left: 50%;
@@ -174,14 +213,13 @@ function joinFlvRoom() {
       transform: translate(-50%, -50%);
 
       .btn {
-        cursor: pointer;
-
         padding: 14px 26px;
         border: 2px solid rgba($color: skyblue, $alpha: 0.5);
         border-radius: 6px;
         background-color: rgba(0, 0, 0, 0.3);
         color: skyblue;
         font-size: 16px;
+        cursor: pointer;
         &:hover {
           background-color: rgba($color: skyblue, $alpha: 0.5);
         }

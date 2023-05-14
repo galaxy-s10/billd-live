@@ -13,7 +13,7 @@ export function fetchAliPay(data: {
   body: string;
 }) {
   return request.instance({
-    url: '/api/alipay/pay',
+    url: '/api/order/pay',
     method: 'post',
     data,
   });
@@ -26,7 +26,7 @@ export function fetchAliPay(data: {
  */
 export function fetchAliPayStatus(params: { out_trade_no: string }) {
   return request.instance({
-    url: '/api/alipay/pay_status',
+    url: '/api/order/pay_status',
     method: 'get',
     params,
   });
@@ -38,7 +38,7 @@ export function fetchAliPayStatus(params: { out_trade_no: string }) {
  */
 export function fetchAliPayList() {
   return request.instance({
-    url: '/api/alipay/pay_list',
+    url: '/api/order/order_list',
     method: 'get',
   });
 }

@@ -1,5 +1,8 @@
 import axios, { Axios, AxiosRequestConfig } from 'axios';
 
+import { useUserStore } from '@/store/user';
+import cache from '@/utils/cache';
+
 export interface MyAxiosPromise<T = any>
   extends Promise<{
     code: number;
@@ -26,6 +29,11 @@ class MyAxios {
     // 请求拦截器
     this.instance.interceptors.request.use(
       (cfg) => {
+        const token = cache.getStorageExp('token');
+        if (token) {
+          // eslint-disable-next-line
+          cfg.headers.Authorization = `Bearer ${token}`;
+        }
         return cfg;
       },
       (error) => {
@@ -45,7 +53,9 @@ class MyAxios {
         console.log('响应拦截到错误', error);
         if (error.message.indexOf('timeout') !== -1) {
           console.error(error.message);
-          return;
+          window.$message.error('请求超时，请重试');
+        } else {
+          window.$message.error('网络错误，请重试');
         }
         const statusCode = error.response.status as number;
         const errorResponseData = error.response.data;
@@ -69,6 +79,8 @@ class MyAxios {
           }
           if (statusCode === 401) {
             console.error(errorResponseData.message);
+            const userStore = useUserStore();
+            userStore.logout();
             return Promise.reject(errorResponseData);
           }
           if (statusCode === 403) {

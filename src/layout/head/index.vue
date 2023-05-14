@@ -8,14 +8,24 @@
         Billd直播
       </div>
       <div class="nav">
+        <a
+          :class="{
+            item: 1,
+            active: router.currentRoute.value.name === routerName.rank,
+          }"
+          href="/rank"
+          @click.prevent="router.push({ name: routerName.rank })"
+        >
+          排行榜
+        </a>
         <div
-          v-for="(item, index) in pushList.filter(
-            (item) => router.currentRoute.value.name === item.routerName
+          v-for="(item, index) in navLeftList.filter(
+            (item) => router.currentRoute.value.query.liveType === item.liveType
           )"
           :key="index"
           :class="{
             item: 1,
-            active: router.currentRoute.value.name === item.routerName,
+            active: router.currentRoute.value.query.liveType === item.liveType,
           }"
           @click="goPushPage(item.routerName)"
         >
@@ -23,71 +33,69 @@
         </div>
         <div
           v-for="(item, index) in pullList.filter(
-            (item) => router.currentRoute.value.name === item.routerName
+            (item) => router.currentRoute.value.query.liveType === item.liveType
           )"
           :key="index"
           :class="{
             item: 1,
-            active: router.currentRoute.value.name === item.routerName,
+            active: router.currentRoute.value.query.liveType === item.liveType,
           }"
         >
           {{ item.title }}
         </div>
       </div>
     </div>
-    <!-- <div class="search">
-      <input
-        class="ipt"
-        type="text"
-        placeholder="搜索"
-      />
-    </div> -->
     <div class="right">
+      <div
+        v-if="!userStore.userInfo"
+        class="qqlogin"
+        @click="useQQLogin()"
+      >
+        登录
+      </div>
+      <n-dropdown
+        v-else
+        trigger="hover"
+        :options="userOptions"
+        @select="handleUserSelect"
+      >
+        <div
+          class="qqlogin"
+          :style="{ backgroundImage: `url(${userStore.userInfo.avatar})` }"
+          @click="useQQLogin()"
+        ></div>
+      </n-dropdown>
+
       <a
-        class="github-btn"
+        class="sponsors"
+        href="/sponsors"
+        @click.prevent="router.push({ name: routerName.sponsors })"
+      >
+        赞助
+      </a>
+      <a
+        class="bilibili"
+        target="_blank"
+        href="https://space.bilibili.com/381307133/channel/seriesdetail?sid=3285689"
+      >
+        b站视频
+      </a>
+      <a
+        class="github"
         target="_blank"
         href="https://github.com/galaxy-s10/billd-live"
       >
-        <img
-          :src="githubStar"
-          alt=""
-        />
+        github
       </a>
 
-      <!-- <iframe
-        src="https://ghbtns.com/github-btn.html?user=galaxy-s10&repo=billd-live&type=fork&count=true&v=2"
-        frameborder="0"
-        scrolling="0"
-        width="105px"
-        height="21px"
-      ></iframe> -->
-
-      <div
-        v-if="router.currentRoute.value.name !== routerName.sponsors"
-        class="sponsors"
-        @click="router.push({ name: routerName.sponsors })"
+      <n-dropdown
+        v-if="router.currentRoute.value.name !== routerName.push"
+        trigger="hover"
+        :options="options"
+        @select="handlePushSelect"
       >
-        赞助支持
-      </div>
-      <div
-        v-if="![routerName.webrtcPush].includes(router.currentRoute.value.name as string)"
-        class="btn ani"
-        @click="goPushPage(routerName.webrtcPush)"
-      >
-        webrtc开播
-      </div>
-      <div
-        v-if="![routerName.srsWebRtcPush].includes(router.currentRoute.value.name as string)"
-        class="btn ani"
-        @click="goPushPage(routerName.srsWebRtcPush)"
-      >
-        srs-webrtc开播
-      </div>
-      <!-- <div
-        v-if="![routerName.srsWebRtcPush].includes(router.currentRoute.value.name as string)"
-        class="btn qqlogin"
-        @click="goPushPage(routerName.srsWebRtcPush)"
-      ></div> -->
+        <div class="start-live">我要开播</div>
+      </n-dropdown>
     </div>
   </div>
 </template>
@@ -97,24 +105,76 @@ import { openToTarget } from 'billd-utils';
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
+import { useQQLogin } from '@/hooks/use-login';
+import { liveTypeEnum } from '@/interface';
 import { routerName } from '@/router';
+import { useUserStore } from '@/store/user';
 
 const router = useRouter();
-const githubStar = ref('');
-const pushList = ref([
-  { title: 'Webrtc Push', routerName: routerName.webrtcPush },
-  { title: 'SRS WebRTC Push', routerName: routerName.srsWebRtcPush },
+const userStore = useUserStore();
+const navLeftList = ref([
+  {
+    title: 'Webrtc Push',
+    routerName: routerName.push,
+    liveType: liveTypeEnum.webrtcPush,
+  },
+  {
+    title: 'SRS WebRTC Push',
+    routerName: routerName.push,
+    liveType: liveTypeEnum.srsPush,
+  },
 ]);
 
 const pullList = ref([
-  { title: 'Webrtc Pull', routerName: routerName.webrtcPull },
-  { title: 'SRS WebRTC Pull', routerName: routerName.srsWebRtcPull },
+  {
+    title: 'Webrtc Pull',
+    routerName: routerName.pull,
+    liveType: liveTypeEnum.webrtcPull,
+  },
+  {
+    title: 'SRS WebRTC Pull Flv',
+    routerName: routerName.pull,
+    liveType: liveTypeEnum.srsFlvPull,
+  },
+  {
+    title: 'SRS WebRTC Pull',
+    routerName: routerName.pull,
+    liveType: liveTypeEnum.srsWebrtcPull,
+  },
 ]);
 
-onMounted(() => {
-  githubStar.value =
-    'https://img.shields.io/github/stars/galaxy-s10/billd-live?label=Star&logo=GitHub&labelColor=white&logoColor=black&style=social&cacheSeconds=3600';
-});
+const userOptions = ref([
+  {
+    label: '退出',
+    key: '1',
+  },
+]);
+
+const options = ref([
+  {
+    label: 'webrtc开播',
+    key: liveTypeEnum.webrtcPush,
+  },
+  {
+    label: 'srs-webrtc开播',
+    key: liveTypeEnum.srsPush,
+  },
+]);
+
+function handleUserSelect(key) {
+  if (key === '1') {
+    userStore.logout();
+  }
+}
+function handlePushSelect(key) {
+  const url = router.resolve({
+    name: routerName.push,
+    query: { liveType: key },
+  });
+  openToTarget(url.href);
+}
+
+onMounted(() => {});
 
 function goPushPage(routerName: string) {
   const url = router.resolve({ name: routerName });
@@ -150,13 +210,16 @@ function goPushPage(routerName: string) {
       .item {
         position: relative;
         padding: 0 10px;
+        color: black;
+        text-decoration: none;
         cursor: pointer;
+
         &.active {
           &::after {
             position: absolute;
             bottom: -6px;
             left: 50%;
-            width: 50%;
+            width: 40% !important;
             height: 2px;
             background-color: red;
             content: '';
@@ -165,71 +228,75 @@ function goPushPage(routerName: string) {
           }
         }
         &::after {
+          width: 0px !important;
+
+          @extend .active;
+        }
+        &:hover {
+          &::after {
+            width: 40% !important;
+          }
+        }
+      }
+    }
+  }
+  .right {
+    display: flex;
+    align-items: center;
+    margin-right: 20px;
+
+    .qqlogin {
+      box-sizing: border-box;
+      margin-right: 15px;
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      background-color: skyblue;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      color: white;
+      text-align: center;
+      font-size: 13px;
+      line-height: 35px;
+      cursor: pointer;
+    }
+
+    .sponsors,
+    .bilibili,
+    .github {
+      position: relative;
+      margin-right: 15px;
+      border-radius: 6px;
+      color: black;
+      text-decoration: none;
+      font-size: 14px;
+      cursor: pointer;
+      &.active {
+        &::after {
           position: absolute;
           bottom: -6px;
           left: 50%;
-          width: 0px;
+          width: 40%;
           height: 2px;
           background-color: red;
           content: '';
           transition: all 0.1s ease;
           transform: translateX(-50%);
         }
-        &:hover {
-          &::after {
-            width: 50%;
-          }
+      }
+      &::after {
+        width: 0px !important;
+
+        @extend .active;
+      }
+      &:hover {
+        &::after {
+          width: 40% !important;
         }
       }
     }
-  }
-  // .search {
-  //   flex: 1;
-
-  //   .ipt {
-  //     display: block;
-  //     box-sizing: border-box;
-  //     margin: 0 auto;
-  //     padding: 10px 20px;
-  //     min-width: 200px;
-  //     outline: none;
-  //     border: 1px solid hsla(0, 0%, 60%, 0.2);
-  //     border-radius: 8px;
-  //     border-radius: 10px;
-  //     background-color: #f1f2f3;
-  //     font-size: 14px;
-  //   }
-  // }
-  .right {
-    display: flex;
-    align-items: center;
-    margin-right: 20px;
-
-    @keyframes big-small {
-      0%,
-      100% {
-        transform: scale(1);
-      }
-      50% {
-        transform: scale(0.9);
-      }
-    }
-
-    .github-btn {
-      margin-right: 10px;
-      img {
-        display: block;
-      }
-    }
-
-    .sponsors {
-      margin-right: 10px;
-      padding: 5px 10px;
-      border-radius: 6px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-    .btn {
+    .start-live {
       margin-right: 10px;
       padding: 5px 10px;
       border-radius: 6px;
@@ -237,16 +304,6 @@ function goPushPage(routerName: string) {
       color: white;
       font-size: 14px;
       cursor: pointer;
-      &.ani {
-        animation: big-small 1s ease infinite;
-      }
-      &.qqlogin {
-        width: 76px;
-        height: 24px;
-        background-color: none;
-
-        @include setBackground('@/assets/img/qq_login.png');
-      }
     }
   }
 }

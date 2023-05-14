@@ -5,17 +5,14 @@ import Layout from '@/layout/index.vue';
 import type { RouteRecordRaw } from 'vue-router';
 
 export const routerName = {
-  aliPay: 'aliPay',
-  sponsors: 'sponsors',
   home: 'home',
+  rank: 'rank',
+  sponsors: 'sponsors',
+  oauth: 'oauth',
   notFound: 'notFound',
-  bilibiliPush: 'bilibiliPush',
-  test1: 'test1',
-  webrtcPush: 'webrtcPush',
-  webrtcPull: 'webrtcPull',
-  srsWebRtcPush: 'srsWebRtcPush',
-  srsWebRtcPull: 'srsWebRtcPull',
-  srsFlvPull: 'srsFlvPull',
+
+  pull: 'pull',
+  push: 'push',
 };
 
 // 默认路由
@@ -30,51 +27,31 @@ export const defaultRoutes: RouteRecordRaw[] = [
         component: () => import('@/views/home/index.vue'),
       },
       {
+        name: routerName.rank,
+        path: '/rank',
+        component: () => import('@/views/rank/index.vue'),
+      },
+      {
         name: routerName.sponsors,
         path: '/sponsors',
         component: () => import('@/views/sponsors/index.vue'),
       },
       {
-        name: routerName.bilibiliPush,
-        path: '/bilibiliPush',
-        component: () => import('@/views/bilibiliPush/index.vue'),
+        name: routerName.pull,
+        path: '/pull/:roomId',
+        component: () => import('@/views/pull/index.vue'),
       },
       {
-        name: routerName.test1,
-        path: '/test1',
-        component: () => import('@/views/test1/index.vue'),
-      },
-      {
-        name: routerName.webrtcPush,
-        path: '/webrtc-push',
-        component: () => import('@/views/webrtc-push/index.vue'),
-      },
-      {
-        name: routerName.webrtcPull,
-        path: '/webrtc-pull/:roomId',
-        component: () => import('@/views/webrtc-pull/index.vue'),
-      },
-      {
-        name: routerName.srsWebRtcPush,
-        path: '/srs-webrtc-push',
-        component: () => import('@/views/srs-webrtc-push/index.vue'),
-      },
-      {
-        name: routerName.srsWebRtcPull,
-        path: '/srs-webrtc-pull/:roomId',
-        component: () => import('@/views/srs-webrtc-pull/index.vue'),
-      },
-      {
-        name: routerName.srsFlvPull,
-        path: '/srs-flv-pull/:roomId',
-        component: () => import('@/views/srs-flv-pull/index.vue'),
+        name: routerName.push,
+        path: '/push',
+        component: () => import('@/views/push/index.vue'),
       },
     ],
   },
   {
-    name: routerName.aliPay,
-    path: '/ali-pay',
-    component: () => import('@/views/aliPay/index.vue'),
+    name: routerName.oauth,
+    path: '/oauth/:platform',
+    component: () => import('@/views/oauth/index.vue'),
   },
 ];
 const router = createRouter({
