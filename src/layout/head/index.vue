@@ -18,6 +18,16 @@
         >
           排行榜
         </a>
+        <a
+          :class="{
+            item: 1,
+            active: router.currentRoute.value.name === routerName.support,
+          }"
+          href="/support"
+          @click.prevent="router.push({ name: routerName.support })"
+        >
+          付费支持
+        </a>
         <div
           v-for="(item, index) in navLeftList.filter(
             (item) => router.currentRoute.value.query.liveType === item.liveType
@@ -74,6 +84,13 @@
         赞助
       </a>
       <a
+        class="about"
+        href="/about"
+        @click.prevent="router.push({ name: routerName.about })"
+      >
+        关于
+      </a>
+      <a
         class="bilibili"
         target="_blank"
         href="https://space.bilibili.com/381307133/channel/seriesdetail?sid=3285689"
@@ -85,7 +102,11 @@
         target="_blank"
         href="https://github.com/galaxy-s10/billd-live"
       >
-        github
+        <span class="txt">github</span>
+        <img
+          :src="githubStar"
+          alt=""
+        />
       </a>
 
       <n-dropdown
@@ -112,6 +133,8 @@ import { useUserStore } from '@/store/user';
 
 const router = useRouter();
 const userStore = useUserStore();
+const githubStar = ref('');
+
 const navLeftList = ref([
   {
     title: 'Webrtc Push',
@@ -161,6 +184,11 @@ const options = ref([
   },
 ]);
 
+onMounted(() => {
+  githubStar.value =
+    'https://img.shields.io/github/stars/galaxy-s10/billd-live?label=Star&logo=GitHub&labelColor=white&logoColor=black&style=social&cacheSeconds=3600';
+});
+
 function handleUserSelect(key) {
   if (key === '1') {
     userStore.logout();
@@ -173,8 +201,6 @@ function handlePushSelect(key) {
   });
   openToTarget(url.href);
 }
-
-onMounted(() => {});
 
 function goPushPage(routerName: string) {
   const url = router.resolve({ name: routerName });
@@ -264,6 +290,7 @@ function goPushPage(routerName: string) {
 
     .sponsors,
     .bilibili,
+    .about,
     .github {
       position: relative;
       margin-right: 15px;
@@ -294,6 +321,13 @@ function goPushPage(routerName: string) {
         &::after {
           width: 40% !important;
         }
+      }
+    }
+    .github {
+      display: flex;
+      align-items: center;
+      .txt {
+        margin-right: 5px;
       }
     }
     .start-live {

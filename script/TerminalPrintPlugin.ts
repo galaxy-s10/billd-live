@@ -19,10 +19,10 @@ class TerminalPrintPlugin {
         `- Network:  ${chalk.cyan(`http://${localIPv4!}:${port}${publicPath}`)}`
       );
       console.log(
-        `- 赞助支持: ${chalk.cyan(`https://live.hsslive.cn/sponsors`)}`
+        `- 赞助打赏: ${chalk.cyan(`https://live.hsslive.cn/sponsors`)}`
       );
       console.log(
-        `- 付费咨询: ${chalk.cyan(`https://live.hsslive.cn/support`)}`
+        `- 付费支持: ${chalk.cyan(`https://live.hsslive.cn/support`)}`
       );
       console.log(
         `- 欢迎PR:   ${chalk.cyan(

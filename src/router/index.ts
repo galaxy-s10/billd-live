@@ -6,8 +6,10 @@ import type { RouteRecordRaw } from 'vue-router';
 
 export const routerName = {
   home: 'home',
+  about: 'about',
   rank: 'rank',
   sponsors: 'sponsors',
+  support: 'support',
   oauth: 'oauth',
   notFound: 'notFound',
 
@@ -27,6 +29,11 @@ export const defaultRoutes: RouteRecordRaw[] = [
         component: () => import('@/views/home/index.vue'),
       },
       {
+        name: routerName.about,
+        path: '/about',
+        component: () => import('@/views/about/index.vue'),
+      },
+      {
         name: routerName.rank,
         path: '/rank',
         component: () => import('@/views/rank/index.vue'),
@@ -35,6 +42,11 @@ export const defaultRoutes: RouteRecordRaw[] = [
         name: routerName.sponsors,
         path: '/sponsors',
         component: () => import('@/views/sponsors/index.vue'),
+      },
+      {
+        name: routerName.support,
+        path: '/support',
+        component: () => import('@/views/support/index.vue'),
       },
       {
         name: routerName.pull,
