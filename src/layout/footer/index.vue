@@ -14,6 +14,8 @@ const billd: BilldHtmlWebpackPluginLog = process.env.BilldHtmlWebpackPlugin;
   position: fixed;
   bottom: 0;
   left: 50%;
+  width: 100%;
+  text-align: center;
   transform: translateX(-50%);
 }
 </style>
