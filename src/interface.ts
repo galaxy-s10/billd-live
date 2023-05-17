@@ -1,11 +1,51 @@
 // 这里放项目里面的类型
 
+export enum PayStatusEnum {
+  error = 'error',
+  WAIT_BUYER_PAY = 'WAIT_BUYER_PAY',
+  TRADE_SUCCESS = 'TRADE_SUCCESS',
+}
+
+export type IList<T> = {
+  nowPage?: string;
+  pageSize?: string;
+  orderBy?: string;
+  orderName?: string;
+  keyWord?: string;
+  rangTimeType?: 'created_at' | 'updated_at' | 'deleted_at';
+  rangTimeStart?: string;
+  rangTimeEnd?: string;
+} & T;
+
 export interface IPaging<T> {
   nowPage: number;
   pageSize: number;
   hasMore: boolean;
   total: number;
   rows: T[];
+}
+
+export interface IOrder {
+  id?: number;
+  billd_live_user_id?: number;
+  user: IUser;
+  out_trade_no?: string;
+  total_amount?: string;
+  subject?: string;
+  product_code?: string;
+  qr_code?: string;
+  buyer_logon_id?: string;
+  buyer_pay_amount?: string;
+  buyer_user_id?: string;
+  invoice_amount?: string;
+  point_amount?: string;
+  receipt_amount?: string;
+  send_pay_date?: string;
+  trade_no?: string;
+  trade_status?: string;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string;
 }
 
 export enum liveTypeEnum {

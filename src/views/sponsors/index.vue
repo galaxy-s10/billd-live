@@ -10,6 +10,18 @@
         class="item"
       >
         <div class="time">发起时间：{{ item.created_at }}，</div>
+        <div class="user">
+          <template v-if="item.user">
+            <img
+              :src="item.user.avatar"
+              class="avatar"
+              alt=""
+            />
+            <span class="username">{{ item.user.username }}</span>
+          </template>
+          <span v-else>游客</span>，
+        </div>
+
         <div class="account">支付宝账号：{{ item.buyer_logon_id }}，</div>
         <div class="gift">
           赞助了：{{ item.subject }}（{{ item.total_amount }}元），
@@ -79,7 +91,8 @@ import { hrefToTarget, isMobile } from 'billd-utils';
 import QRCode from 'qrcode';
 import { onMounted, onUnmounted, ref } from 'vue';
 
-import { fetchAliPay, fetchAliPayList, fetchAliPayStatus } from '@/api/order';
+import { fetchAliPay, fetchAliPayStatus, fetchOrderList } from '@/api/order';
+import { IOrder, PayStatusEnum } from '@/interface';
 
 const payOk = ref(false);
 const onMountedTime = ref('');
@@ -90,34 +103,7 @@ const receiveMoney = ref(0);
 const downTime = ref();
 const downTimeEnd = ref();
 
-const payList = ref<IPay[]>([]);
-
-interface IPay {
-  id: number;
-  out_trade_no: string;
-  total_amount: string;
-  subject: string;
-  product_code: string;
-  qr_code: string;
-  buyer_logon_id: string;
-  buyer_pay_amount: string;
-  buyer_user_id: string;
-  invoice_amount: string;
-  point_amount: string;
-  receipt_amount: string;
-  send_pay_date: string;
-  trade_no: string;
-  trade_status: string;
-  created_at: string;
-  updated_at: string;
-  deleted_at: null | string;
-}
-
-enum PayStatusEnum {
-  error = 'error',
-  WAIT_BUYER_PAY = 'WAIT_BUYER_PAY',
-  TRADE_SUCCESS = 'TRADE_SUCCESS',
-}
+const payList = ref<IOrder[]>([]);
 
 const currentPayStatus = ref(PayStatusEnum.error);
 
@@ -209,12 +195,15 @@ function handleDownTime() {
 
 async function getPayList() {
   try {
-    const res = await fetchAliPayList();
+    const res = await fetchOrderList({
+      trade_status: PayStatusEnum.TRADE_SUCCESS,
+    });
     if (res.code === 200) {
       payList.value = res.data.rows;
-      receiveMoney.value = payList.value
-        .filter((item) => item.trade_status !== PayStatusEnum.WAIT_BUYER_PAY)
-        .reduce((pre, item) => pre + Number(item.total_amount) * 100, 0);
+      receiveMoney.value = payList.value.reduce(
+        (pre, item) => pre + Number(item.total_amount) * 100,
+        0
+      );
     }
   } catch (error) {
     console.log(error);
@@ -294,6 +283,21 @@ function getPayStatus(outTradeNo: string) {
       width: 100%;
       text-align: left;
 
+      .user {
+        width: 120px;
+        padding: 0 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        .avatar {
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+        }
+        .username {
+          @extend %singleEllipsis;
+        }
+      }
       .account {
         width: 250px;
       }

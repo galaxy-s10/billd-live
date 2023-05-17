@@ -2,7 +2,7 @@ import request from '@/utils/request';
 
 export function fetchLiveList(params: { orderName: string; orderBy: string }) {
   return request.instance({
-    url: '/api/live/list',
+    url: '/live/list',
     method: 'get',
     params,
   });

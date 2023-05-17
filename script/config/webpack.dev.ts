@@ -99,19 +99,11 @@ export default new Promise((resolve) => {
               },
             },
             '/prodapi': {
-              target: 'http://42.193.157.44:3200',
+              target: 'https://live.hsslive.cn',
               secure: false,
               changeOrigin: true,
               pathRewrite: {
-                '^/prodapi': '/admin/',
-              },
-            },
-            '/betaapi': {
-              target: 'http://42.193.157.44:3300',
-              secure: false,
-              changeOrigin: true,
-              pathRewrite: {
-                '^/betaapi': '/admin/',
+                '^/prodapi': '/api/',
               },
             },
           },

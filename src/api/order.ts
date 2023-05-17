@@ -1,3 +1,4 @@
+import { IList, IOrder } from '@/interface';
 import request from '@/utils/request';
 
 /**
@@ -13,7 +14,7 @@ export function fetchAliPay(data: {
   body: string;
 }) {
   return request.instance({
-    url: '/api/order/pay',
+    url: '/order/pay',
     method: 'post',
     data,
   });
@@ -26,7 +27,7 @@ export function fetchAliPay(data: {
  */
 export function fetchAliPayStatus(params: { out_trade_no: string }) {
   return request.instance({
-    url: '/api/order/pay_status',
+    url: '/order/pay_status',
     method: 'get',
     params,
   });
@@ -36,9 +37,10 @@ export function fetchAliPayStatus(params: { out_trade_no: string }) {
  * @param out_trade_no 订单支付时传入的商户订单号
  * @returns
  */
-export function fetchAliPayList() {
+export function fetchOrderList(params: IList<IOrder>) {
   return request.instance({
-    url: '/api/order/order_list',
+    url: '/order/order_list',
     method: 'get',
+    params,
   });
 }

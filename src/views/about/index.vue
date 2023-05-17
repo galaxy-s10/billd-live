@@ -1,10 +1,16 @@
 <template>
   <div class="about-wrap">
-    <h2>有空再写，微信交流群：</h2>
+    <h2>有空再写</h2>
+    <h2>微信交流群 & 我的微信</h2>
     <img
       src="@/assets/img/wechat-group.webp"
       alt=""
       class="wechat-group"
+    />
+    <img
+      src="@/assets/img/my-wechat.webp"
+      alt=""
+      class="my-wechat"
     />
   </div>
 </template>
@@ -15,7 +21,10 @@
 .about-wrap {
   text-align: center;
   .wechat-group {
-    width: 400px;
+    height: 500px;
+  }
+  .my-wechat {
+    height: 500px;
   }
 }
 </style>

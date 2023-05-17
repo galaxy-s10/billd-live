@@ -8,7 +8,8 @@ export function fetchRtcV1Publish(data: {
   tid: string;
 }) {
   return request.instance({
-    url: `/srs/rtc/v1/publish/`,
+    baseURL: '/srs',
+    url: `/rtc/v1/publish/`,
     method: 'post',
     data,
   });
@@ -21,7 +22,8 @@ export function fetchRtcV1Play(data: {
   tid: string;
 }) {
   return request.instance({
-    url: '/srs/rtc/v1/play/',
+    baseURL: '/srs',
+    url: '/rtc/v1/play/',
     method: 'post',
     data,
   });

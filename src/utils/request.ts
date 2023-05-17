@@ -117,6 +117,7 @@ class MyAxios {
 }
 
 export default new MyAxios({
-  // baseURL:'/'
+  baseURL: '/api',
+  // baseURL: '/prodapi',
   timeout: 1000 * 5,
 });

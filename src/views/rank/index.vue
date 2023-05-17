@@ -41,7 +41,7 @@
           class="top50-item"
         >
           <div class="rank">
-            <i>{{ item.rank > 10 ? item.rank : '0' + item.rank }}</i>
+            <i>{{ item.rank >= 10 ? item.rank : '0' + item.rank }}</i>
           </div>
           <div class="left">
             <img
@@ -220,9 +220,11 @@ onMounted(() => {
           background-color: #fafbfc;
         }
         .rank {
+          width: 80px;
+          box-sizing: border-box;
           margin-right: 20px;
-          padding: 0 20px;
           border-radius: 40px;
+          text-align: center;
           background-color: #84f9da;
           color: white;
           font-size: 20px;
