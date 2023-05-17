@@ -95,11 +95,15 @@ npm run start
 
 ## 交流
 
-如果你对该项目感兴趣或有想法，欢迎进群：
+如果你对该项目感兴趣或有想法，欢迎进群或添加我的微信：
 
 <div>
   <img
-    src="https://resource.hsslive.cn/image/7c6a6004e95167537a3fae7a48f1d8c2.webp" 
-    style="width:300px"
+    src="https://resource.hsslive.cn/image/1443d854f04cd03980343ef3d003a427.webp" 
+    style="height:300px"
+    />
+  <img
+    src="https://resource.hsslive.cn/image/57c5b5598736e6e4f7e406ae503120f8.webp" 
+    style="height:300px"
     />
 </div>
