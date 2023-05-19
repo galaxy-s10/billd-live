@@ -19,8 +19,8 @@
         </div>
         <div class="video-wrap">
           <video
-            id="localVideo"
-            ref="localVideoRef"
+            id="remoteVideo"
+            ref="remoteVideoRef"
             autoplay
             webkit-playsinline="true"
             playsinline
@@ -32,6 +32,27 @@
           ></video>
           <div class="controls">
             <VideoControls></VideoControls>
+          </div>
+          <div class="sidebar">
+            <video
+              id="localVideo"
+              ref="localVideoRef"
+              style="width: 100px"
+              autoplay
+              webkit-playsinline="true"
+              playsinline
+              x-webkit-airplay="allow"
+              x5-video-player-type="h5"
+              x5-video-player-fullscreen="true"
+              x5-video-orientation="portraint"
+              :muted="appStore.muted"
+            ></video>
+            <div
+              class="plus"
+              @click="handleJoin()"
+            >
+              加入
+            </div>
           </div>
         </div>
         <div
@@ -127,7 +148,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { usePull } from '@/hooks/use-pull';
@@ -141,6 +162,7 @@ const appStore = useAppStore();
 
 const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
+const remoteVideoRef = ref<HTMLVideoElement>();
 const localVideoRef = ref<HTMLVideoElement>();
 
 const {
@@ -150,17 +172,33 @@ const {
   getSocketId,
   keydownDanmu,
   sendDanmu,
+  batchSendOffer,
+  startGetUserMedia,
+  startGetDisplayMedia,
   roomName,
   roomNoLive,
   damuList,
   giftList,
   liveUserList,
   danmuStr,
+  localStream,
 } = usePull({
   localVideoRef,
+  remoteVideoRef,
   isFlv: route.query.liveType === liveTypeEnum.srsFlvPull,
   isSRS: route.query.liveType === liveTypeEnum.srsWebrtcPull,
 });
+
+async function handleJoin() {
+  await startGetDisplayMedia();
+  batchSendOffer();
+}
+watch(
+  () => localStream,
+  (newVal) => {
+    localVideoRef.value!.srcObject = newVal.value;
+  }
+);
 
 onUnmounted(() => {
   closeWs();
@@ -168,12 +206,12 @@ onUnmounted(() => {
 });
 
 onMounted(() => {
-  if (topRef.value && bottomRef.value && localVideoRef.value) {
+  if (topRef.value && bottomRef.value && remoteVideoRef.value) {
     const res =
       bottomRef.value.getBoundingClientRect().top -
       (topRef.value.getBoundingClientRect().top +
         topRef.value.getBoundingClientRect().height);
-    localVideoRef.value.style.height = `${res}px`;
+    remoteVideoRef.value.style.height = `${res}px`;
   }
   initPull();
 });
@@ -263,12 +301,23 @@ onMounted(() => {
     .video-wrap {
       position: relative;
       background-color: #18191c;
-      #localVideo {
+      #remoteVideo {
         max-width: 100%;
         max-height: 100%;
       }
       .controls {
         display: none;
+      }
+      .sidebar {
+        position: absolute;
+        right: 0;
+        top: 0;
+        height: 100%;
+        background-color: rgba($color: #000000, $alpha: 0.3);
+        .plus {
+          color: white;
+          cursor: pointer;
+        }
       }
       &:hover {
         .controls {

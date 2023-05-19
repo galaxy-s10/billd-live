@@ -1,5 +1,5 @@
 import { getRandomString } from 'billd-utils';
-import { reactive, ref } from 'vue';
+import { Ref, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { fetchRtcV1Publish } from '@/api/srs';
@@ -26,7 +26,7 @@ export function usePush({
   localVideoRef,
   isSRS,
 }: {
-  localVideoRef;
+  localVideoRef: Ref<HTMLVideoElement | undefined>;
   isSRS?: boolean;
 }) {
   const route = useRoute();
@@ -42,6 +42,7 @@ export function usePush({
   const disabled = ref(false);
   const localStream = ref();
   const offerSended = ref(new Set());
+  const hooksRtcMap = ref(new Set());
 
   const track = reactive({
     audio: true,
@@ -113,6 +114,7 @@ export function usePush({
       console.warn('开始new SRSWebRTCClass');
       const rtc = new SRSWebRTCClass({
         roomId: `${roomId.value}___${getSocketId()}`,
+        videoEl: localVideoRef.value!,
       });
       localStream.value.getTracks().forEach((track) => {
         rtc.addTrack({
@@ -144,7 +146,10 @@ export function usePush({
       }
     } else {
       console.warn('开始new WebRTCClass');
-      const rtc = new WebRTCClass({ roomId: `${roomId.value}___${receiver!}` });
+      const rtc = new WebRTCClass({
+        roomId: `${roomId.value}___${receiver!}`,
+        videoEl: localVideoRef.value!,
+      });
       return rtc;
     }
   }
@@ -236,7 +241,7 @@ export function usePush({
         !offerSended.value.has(item.socketId) &&
         item.socketId !== getSocketId()
       ) {
-        await startNewWebRtc(item.socketId);
+        hooksRtcMap.value.add(await startNewWebRtc(item.socketId));
         await addTrack();
         console.warn('new WebRTCClass完成');
         console.log('执行sendOffer', {
@@ -470,6 +475,7 @@ export function usePush({
       localStream.value = event;
     }
   }
+
   function keydownDanmu(event: KeyboardEvent) {
     const key = event.key.toLowerCase();
     if (key === 'enter') {
@@ -540,7 +546,8 @@ export function usePush({
       txt: all.find((item) => item.kind === 'videoinput')?.label || '摄像头',
       type: MediaTypeEnum.camera,
     };
-    localVideoRef.value.addEventListener('loadstart', () => {
+    console.log('initPush', localVideoRef);
+    localVideoRef.value?.addEventListener('loadstart', () => {
       console.warn('视频流-loadstart');
       const rtc = networkStore.getRtcMap(roomId.value);
       if (!rtc) return;
@@ -548,7 +555,7 @@ export function usePush({
       rtc.update();
     });
 
-    localVideoRef.value.addEventListener('loadedmetadata', () => {
+    localVideoRef.value?.addEventListener('loadedmetadata', () => {
       console.warn('视频流-loadedmetadata');
       const rtc = networkStore.getRtcMap(roomId.value);
       if (!rtc) return;
@@ -579,5 +586,6 @@ export function usePush({
     damuList,
     liveUserList,
     currMediaTypeList,
+    hooksRtcMap,
   };
 }

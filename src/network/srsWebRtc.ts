@@ -18,7 +18,7 @@ function prettierInfo(
 
 export class SRSWebRTCClass {
   roomId = '-1';
-
+  videoEl;
   peerConnection: RTCPeerConnection | null = null;
   dataChannel: RTCDataChannel | null = null;
 
@@ -62,8 +62,15 @@ export class SRSWebRTCClass {
 
   localDescription: any;
 
-  constructor({ roomId }: { roomId: string }) {
+  constructor({
+    roomId,
+    videoEl,
+  }: {
+    roomId: string;
+    videoEl: HTMLVideoElement;
+  }) {
     this.roomId = roomId;
+    this.videoEl = videoEl;
     this.browser = browserTool();
     this.createPeerConnection();
     this.update();
@@ -83,7 +90,7 @@ export class SRSWebRTCClass {
     if (!this.peerConnection) return;
     this.rtcStatus.addStream = true;
     this.update();
-    document.querySelector<HTMLVideoElement>('#localVideo')!.srcObject = stream;
+    this.videoEl.srcObject = stream;
     prettierInfo('addStream成功', { browser: this.browser.browser }, 'warn');
   };
 

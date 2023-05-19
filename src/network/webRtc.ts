@@ -62,7 +62,7 @@ export const frontendErrorCode = {
 
 export class WebRTCClass {
   roomId = '-1';
-
+  videoEl;
   peerConnection: RTCPeerConnection | null = null;
   dataChannel: RTCDataChannel | null = null;
 
@@ -106,8 +106,15 @@ export class WebRTCClass {
 
   localDescription: any;
 
-  constructor({ roomId }: { roomId: string }) {
+  constructor({
+    roomId,
+    videoEl,
+  }: {
+    roomId: string;
+    videoEl: HTMLVideoElement;
+  }) {
     this.roomId = roomId;
+    this.videoEl = videoEl;
     this.browser = browserTool();
     this.createPeerConnection();
     this.update();
@@ -435,7 +442,7 @@ export class WebRTCClass {
     this.rtcStatus.addStream = true;
     this.update();
     console.log('addStreamaddStreamaddStream', stream);
-    document.querySelector<HTMLVideoElement>('#localVideo')!.srcObject = stream;
+    this.videoEl.srcObject = stream;
     prettierInfo('addStream成功', { browser: this.browser.browser }, 'warn');
   };
 
@@ -461,8 +468,6 @@ export class WebRTCClass {
     this.peerConnection?.addEventListener('track', (event: any) => {
       console.warn(`${this.roomId}，pc收到track事件`, event);
       this.addStream(event.streams[0]);
-      // document.querySelector<HTMLVideoElement>('#localVideo')!.srcObject =
-      //   event.streams[0];
     });
   };
 

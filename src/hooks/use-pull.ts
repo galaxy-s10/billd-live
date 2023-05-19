@@ -1,5 +1,5 @@
 import { getRandomString } from 'billd-utils';
-import { reactive, ref, watch } from 'vue';
+import { Ref, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchRtcV1Play } from '@/api/srs';
@@ -11,6 +11,7 @@ import {
   IDanmu,
   ILiveUser,
   IOffer,
+  MediaTypeEnum,
 } from '@/interface';
 import { SRSWebRTCClass } from '@/network/srsWebRtc';
 import { WebRTCClass } from '@/network/webRtc';
@@ -24,10 +25,12 @@ import { useUserStore } from '@/store/user';
 
 export function usePull({
   localVideoRef,
+  remoteVideoRef,
   isSRS,
   isFlv,
 }: {
-  localVideoRef;
+  localVideoRef: Ref<HTMLVideoElement | undefined>;
+  remoteVideoRef: Ref<HTMLVideoElement | undefined>;
   isSRS?: boolean;
   isFlv?: boolean;
 }) {
@@ -43,7 +46,9 @@ export function usePull({
   const danmuStr = ref('');
   const damuList = ref<IDanmu[]>([]);
   const liveUserList = ref<ILiveUser[]>([]);
+  const isDone = ref(false);
   const roomNoLive = ref(false);
+  const localStream = ref();
   const track = reactive({
     audio: true,
     video: true,
@@ -55,6 +60,67 @@ export function usePull({
     { name: '大鸡腿', ico: '', price: '5元' },
     { name: '一杯咖啡', ico: '', price: '10元' },
   ]);
+  const offerSended = ref(new Set());
+  const hooksRtcMap = ref(new Set());
+
+  const allMediaTypeList = {
+    [MediaTypeEnum.camera]: {
+      type: MediaTypeEnum.camera,
+      txt: '摄像头',
+    },
+    [MediaTypeEnum.screen]: {
+      type: MediaTypeEnum.screen,
+      txt: '窗口',
+    },
+  };
+  const currMediaTypeList = ref<
+    {
+      type: MediaTypeEnum;
+      txt: string;
+    }[]
+  >([]);
+  const currMediaType = ref<{
+    type: MediaTypeEnum;
+    txt: string;
+  }>();
+
+  /** 摄像头 */
+  async function startGetUserMedia() {
+    if (!localStream.value) {
+      // WARN navigator.mediaDevices在localhost和https才能用，http://192.168.1.103:8000局域网用不了
+      const event = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
+      console.log('getUserMedia成功', event);
+      currMediaType.value = allMediaTypeList[MediaTypeEnum.camera];
+      currMediaTypeList.value.push(allMediaTypeList[MediaTypeEnum.camera]);
+      if (!localVideoRef.value) return;
+      localVideoRef.value.srcObject = event;
+      localStream.value = event;
+    }
+  }
+
+  /** 窗口 */
+  async function startGetDisplayMedia() {
+    if (!localStream.value) {
+      // WARN navigator.mediaDevices.getDisplayMedia在localhost和https才能用，http://192.168.1.103:8000局域网用不了
+      const event = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: true,
+      });
+      const audio = event.getAudioTracks();
+      const video = event.getVideoTracks();
+      track.audio = !!audio.length;
+      track.video = !!video.length;
+      console.log('getDisplayMedia成功', event);
+      currMediaType.value = allMediaTypeList[MediaTypeEnum.screen];
+      currMediaTypeList.value.push(allMediaTypeList[MediaTypeEnum.screen]);
+      if (!localVideoRef.value) return;
+      localVideoRef.value.srcObject = event;
+      localStream.value = event;
+    }
+  }
 
   watch(
     [
@@ -87,7 +153,7 @@ export function usePull({
     });
     ws.update();
     initReceive();
-    localVideoRef.value.addEventListener('loadstart', () => {
+    remoteVideoRef.value?.addEventListener('loadstart', () => {
       console.warn('视频流-loadstart');
       const rtc = networkStore.getRtcMap(roomId.value);
       if (!rtc) return;
@@ -95,7 +161,7 @@ export function usePull({
       rtc.update();
     });
 
-    localVideoRef.value.addEventListener('loadedmetadata', () => {
+    remoteVideoRef.value?.addEventListener('loadedmetadata', () => {
       console.warn('视频流-loadedmetadata');
       const rtc = networkStore.getRtcMap(roomId.value);
       if (!rtc) return;
@@ -138,12 +204,65 @@ export function usePull({
     });
   }
 
+  function addTrack() {
+    if (!localStream.value) return;
+    liveUserList.value.forEach((item) => {
+      if (item.socketId !== getSocketId()) {
+        localStream.value.getTracks().forEach((track) => {
+          const rtc = networkStore.getRtcMap(
+            `${roomId.value}___${item.socketId}`
+          );
+          rtc?.addTrack(track, localStream.value);
+        });
+      }
+    });
+  }
+
+  async function sendOffer({
+    sender,
+    receiver,
+  }: {
+    sender: string;
+    receiver: string;
+  }) {
+    if (isDone.value) return;
+    const instance = networkStore.wsMap.get(roomId.value);
+    if (!instance) return;
+    const rtc = networkStore.getRtcMap(`${roomId.value}___${receiver}`);
+    if (!rtc) return;
+    const sdp = await rtc.createOffer();
+    await rtc.setLocalDescription(sdp);
+    instance.send({
+      msgType: WsMsgTypeEnum.offer,
+      data: { sdp, sender, receiver },
+    });
+  }
+  function batchSendOffer() {
+    liveUserList.value.forEach(async (item) => {
+      if (
+        !offerSended.value.has(item.socketId) &&
+        item.socketId !== getSocketId()
+      ) {
+        hooksRtcMap.value.add(await startNewWebRtc(item.socketId));
+        await addTrack();
+        console.warn('new WebRTCClass完成');
+        console.log('执行sendOffer', {
+          sender: getSocketId(),
+          receiver: item.socketId,
+        });
+        sendOffer({ sender: getSocketId(), receiver: item.socketId });
+        offerSended.value.add(item.socketId);
+      }
+    });
+  }
+
   /** 原生的webrtc时，receiver必传 */
   async function startNewWebRtc(receiver?: string) {
     if (isSRS) {
       console.warn('开始new SRSWebRTCClass', getSocketId());
       const rtc = new SRSWebRTCClass({
         roomId: `${roomId.value}___${getSocketId()}`,
+        videoEl: remoteVideoRef.value!,
       });
       rtc.rtcStatus.joined = true;
       rtc.update();
@@ -176,7 +295,10 @@ export function usePull({
       }
     } else {
       console.warn('开始new WebRTCClass');
-      const rtc = new WebRTCClass({ roomId: `${roomId.value}___${receiver!}` });
+      const rtc = new WebRTCClass({
+        roomId: `${roomId.value}___${receiver!}`,
+        videoEl: remoteVideoRef.value!,
+      });
       return rtc;
     }
   }
@@ -344,7 +466,7 @@ export function usePull({
       streamurl.value = data.data.streamurl;
       flvurl.value = data.data.flvurl;
       if (isFlv) {
-        useFlvPlay(flvurl.value, localVideoRef.value!);
+        useFlvPlay(flvurl.value, remoteVideoRef.value!);
       }
       instance.send({ msgType: WsMsgTypeEnum.getLiveUser });
     });
@@ -395,11 +517,15 @@ export function usePull({
     getSocketId,
     keydownDanmu,
     sendDanmu,
+    batchSendOffer,
+    startGetUserMedia,
+    startGetDisplayMedia,
     roomName,
     roomNoLive,
     damuList,
     giftList,
     liveUserList,
     danmuStr,
+    localStream,
   };
 }

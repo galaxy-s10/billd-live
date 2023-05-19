@@ -15,6 +15,8 @@ export const routerName = {
 
   pull: 'pull',
   push: 'push',
+  pushMeeting: 'pushMeeting',
+  pullMeeting: 'pullMeeting',
 };
 
 // 默认路由
@@ -57,6 +59,16 @@ export const defaultRoutes: RouteRecordRaw[] = [
         name: routerName.push,
         path: '/push',
         component: () => import('@/views/push/index.vue'),
+      },
+      {
+        name: routerName.pushMeeting,
+        path: '/meeting',
+        component: () => import('@/views/meeting/index.vue'),
+      },
+      {
+        name: routerName.pullMeeting,
+        path: '/meeting/:roomId',
+        component: () => import('@/views/meeting/roomId.vue'),
       },
     ],
   },

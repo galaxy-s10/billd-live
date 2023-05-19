@@ -54,6 +54,8 @@ export enum liveTypeEnum {
   srsFlvPull = 'srsFlvPull',
   srsPush = 'srsPush',
   webrtcPush = 'webrtcPush',
+  pushMeeting = 'pushMeeting',
+  pullMeeting = 'pullMeeting',
 }
 
 export interface BilldHtmlWebpackPluginLog {

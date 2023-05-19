@@ -182,6 +182,10 @@ const options = ref([
     label: 'srs-webrtc开播',
     key: liveTypeEnum.srsPush,
   },
+  {
+    label: 'webrtc多人会议',
+    key: liveTypeEnum.pushMeeting,
+  },
 ]);
 
 onMounted(() => {
@@ -195,11 +199,19 @@ function handleUserSelect(key) {
   }
 }
 function handlePushSelect(key) {
-  const url = router.resolve({
-    name: routerName.push,
-    query: { liveType: key },
-  });
-  openToTarget(url.href);
+  if (key === liveTypeEnum.webrtcPush || key === liveTypeEnum.srsPush) {
+    const url = router.resolve({
+      name: routerName.push,
+      query: { liveType: key },
+    });
+    openToTarget(url.href);
+  } else {
+    const url = router.resolve({
+      name: routerName.pushMeeting,
+    });
+    openToTarget(url.href);
+    window.$message.info('敬请期待！');
+  }
 }
 
 function goPushPage(routerName: string) {

@@ -1,7 +1,11 @@
 <template>
   <div class="about-wrap">
-    <h2>有空再写</h2>
-    <h2>微信交流群 & 我的微信</h2>
+    <h2>目前实现</h2>
+    <h3>1. 原生webrtc一对多直播（DONE）</h3>
+    <h3>2. srs-webrtc一对多直播（DONE）</h3>
+    <h3>3. 原生webrtc多对多直播（TODO）</h3>
+
+    <h1>微信交流群 & 我的微信</h1>
     <img
       src="@/assets/img/wechat-group.webp"
       alt=""
