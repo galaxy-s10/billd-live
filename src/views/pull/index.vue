@@ -43,6 +43,7 @@
               v-for="(item, index) in sidebarList"
               :key="index"
               class="item"
+              :socketId="item.socketId"
             >
               <video
                 :ref="(el) => (localVideoRef[item.socketId] = el)"
@@ -207,10 +208,12 @@ const {
 
 function handleJoin() {
   nextTick(async () => {
-    await startGetDisplayMedia();
+    // await startGetDisplayMedia();
+    await startGetUserMedia();
     addVideo();
   });
 }
+
 watch(
   () => localStream,
   (newVal) => {

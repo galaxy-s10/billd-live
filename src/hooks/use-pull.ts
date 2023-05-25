@@ -1,5 +1,5 @@
 import { getRandomString } from 'billd-utils';
-import { Ref, reactive, ref, watch } from 'vue';
+import { Ref, nextTick, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchRtcV1Play } from '@/api/srs';
@@ -280,23 +280,29 @@ export function usePull({
     });
   }
 
-  async function addVideo() {
-    const socketId = sender.value;
-    localVideoRef.value[socketId].srcObject = localStream.value;
-    hooksRtcMap.value.add(
-      await startNewWebRtc({
-        receiver: socketId,
-        videoEl: localVideoRef.value[socketId],
-      })
-    );
-    await addTransceiver();
-    console.warn('new WebRTCClass完成');
-    console.log('执行sendOffer', {
-      sender: getSocketId(),
-      receiver: socketId,
+  function addVideo() {
+    liveUserList.value.forEach(async (item) => {
+      if (item.socketId === sender.value) {
+        localVideoRef.value[sender.value].srcObject = localStream.value;
+      }
+      if (!offerSended.value.has(item.socketId)) {
+        hooksRtcMap.value.add(
+          await startNewWebRtc({
+            receiver: item.socketId,
+            // videoEl: localVideoRef.value[item.socketId],
+            videoEl: localVideoRef.value[sender.value],
+          })
+        );
+        await addTransceiver();
+        console.warn('new WebRTCClass完成');
+        console.log('执行sendOffer', {
+          sender: getSocketId(),
+          receiver: item.socketId,
+        });
+        sendOffer({ sender: getSocketId(), receiver: item.socketId });
+        offerSended.value.add(item.socketId);
+      }
     });
-    sendOffer({ sender: getSocketId(), receiver: socketId });
-    offerSended.value.add(socketId);
   }
 
   /** 原生的webrtc时，receiver必传 */
@@ -346,7 +352,7 @@ export function usePull({
       console.warn('开始new WebRTCClass');
       const rtc = new WebRTCClass({
         roomId: `${roomId.value}___${receiver!}`,
-        videoEl: remoteVideoRef.value!,
+        videoEl,
       });
       return rtc;
     }
@@ -403,38 +409,34 @@ export function usePull({
     });
 
     // 收到offer
-    instance.socketIo.on(WsMsgTypeEnum.offer, async (data: IOffer) => {
+    instance.socketIo.on(WsMsgTypeEnum.offer, (data: IOffer) => {
       console.warn('【websocket】收到offer', data);
       if (isSRS) return;
       if (!instance) return;
       if (data.data.receiver === getSocketId()) {
-        console.log('收到offer，这个offer是发给我的');
         sidebarList.value.push({ socketId: data.data.sender });
-        sender.value = data.data.sender;
-        const rtc = await startNewWebRtc({ receiver: data.data.sender });
-        if (rtc) {
-          await rtc.setRemoteDescription(data.data.sdp);
-          const sdp = await rtc.createAnswer();
-          await rtc.setLocalDescription(sdp);
-          instance.send({
-            msgType: WsMsgTypeEnum.answer,
-            data: { sdp, sender: getSocketId(), receiver: data.data.sender },
+        nextTick(async () => {
+          console.log(
+            '收到offer，这个offer是发给我的111',
+            localVideoRef.value[data.data.sender]
+          );
+          sender.value = data.data.sender;
+          const rtc = await startNewWebRtc({
+            receiver: data.data.sender,
+            videoEl: localVideoRef.value[data.data.sender],
           });
-        }
+          if (rtc) {
+            await rtc.setRemoteDescription(data.data.sdp);
+            const sdp = await rtc.createAnswer();
+            await rtc.setLocalDescription(sdp);
+            instance.send({
+              msgType: WsMsgTypeEnum.answer,
+              data: { sdp, sender: getSocketId(), receiver: data.data.sender },
+            });
+          }
+        });
       } else {
         console.log('收到offer，但是这个offer不是发给我的');
-        // sidebarList.value.push({ socketId: data.data.sender });
-        // sender.value = data.data.sender;
-        // const rtc = await startNewWebRtc({ receiver: data.data.sender });
-        // if (rtc) {
-        //   await rtc.setRemoteDescription(data.data.sdp);
-        //   const sdp = await rtc.createAnswer();
-        //   await rtc.setLocalDescription(sdp);
-        //   instance.send({
-        //     msgType: WsMsgTypeEnum.answer,
-        //     data: { sdp, sender: getSocketId(), receiver: data.data.sender },
-        //   });
-        // }
       }
     });
 

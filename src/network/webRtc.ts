@@ -446,7 +446,7 @@ export class WebRTCClass {
     // if (!this.peerConnection || this.rtcStatus.addStream) return;
     this.rtcStatus.addStream = true;
     this.update();
-    console.log('addStreamaddStreamaddStream', stream);
+    console.log('addStreamaddStreamaddStream', this.videoEl, stream);
     this.videoEl.srcObject = stream;
     prettierInfo('addStream成功', { browser: this.browser.browser }, 'warn');
   };

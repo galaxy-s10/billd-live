@@ -38,7 +38,7 @@ export function usePush({
 
   const roomId = ref<string>(getRandomString(15));
   const danmuStr = ref('');
-  const roomName = ref('');
+  const roomName = ref(getRandomString(5));
   const isDone = ref(false);
   const joined = ref(false);
   const disabled = ref(false);

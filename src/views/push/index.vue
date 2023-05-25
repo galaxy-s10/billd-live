@@ -279,6 +279,7 @@ onMounted(() => {
         position: relative;
         display: flex;
         flex: 1;
+        justify-content: center;
         height: 100%;
         background-color: rgba($color: #000000, $alpha: 0.5);
         #localVideo {
