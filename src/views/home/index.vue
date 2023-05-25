@@ -55,7 +55,7 @@
           :key="index"
           :class="{ item: 1, active: item.roomId === currentLiveRoom?.roomId }"
           :style="{ backgroundImage: `url(${item.coverImg})` }"
-          @click="currentLiveRoom = item"
+          @click="changeLiveRoom(item)"
         >
           <div
             class="border"
@@ -95,6 +95,15 @@ const router = useRouter();
 const liveRoomList = ref<ILive[]>([]);
 const currentLiveRoom = ref<ILive>();
 const localVideoRef = ref<HTMLVideoElement>();
+
+function changeLiveRoom(item: ILive) {
+  currentLiveRoom.value = item;
+  nextTick(() => {
+    if (item.flvurl) {
+      useFlvPlay(item.flvurl, localVideoRef.value!);
+    }
+  });
+}
 
 async function getLiveRoomList() {
   try {

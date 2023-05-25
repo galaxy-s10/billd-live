@@ -17,27 +17,14 @@
             </div>
           </div>
         </div>
-        <div class="video-wrap">
-          <video
-            id="remoteVideo"
-            ref="remoteVideoRef"
-            autoplay
-            webkit-playsinline="true"
-            playsinline
-            x-webkit-airplay="allow"
-            x5-video-player-type="h5"
-            x5-video-player-fullscreen="true"
-            x5-video-orientation="portraint"
-            :muted="appStore.muted"
-          ></video>
-          <div class="controls">
-            <VideoControls></VideoControls>
-          </div>
-          <div class="sidebar">
+        <div
+          ref="containerRef"
+          class="container"
+        >
+          <div class="video-wrap">
             <video
-              id="localVideo"
-              ref="localVideoRef"
-              style="width: 100px"
+              id="remoteVideo"
+              ref="remoteVideoRef"
               autoplay
               webkit-playsinline="true"
               playsinline
@@ -47,14 +34,38 @@
               x5-video-orientation="portraint"
               :muted="appStore.muted"
             ></video>
+            <div class="controls">
+              <VideoControls></VideoControls>
+            </div>
+          </div>
+          <div class="sidebar">
             <div
-              class="plus"
+              v-for="(item, index) in sidebarList"
+              :key="index"
+              class="item"
+            >
+              <video
+                :ref="(el) => (localVideoRef[item.socketId] = el)"
+                autoplay
+                webkit-playsinline="true"
+                playsinline
+                x-webkit-airplay="allow"
+                x5-video-player-type="h5"
+                x5-video-player-fullscreen="true"
+                x5-video-orientation="portraint"
+                muted
+              ></video>
+            </div>
+
+            <div
+              class="join"
               @click="handleJoin()"
             >
               加入
             </div>
           </div>
         </div>
+
         <div
           ref="bottomRef"
           class="gift"
@@ -148,7 +159,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted, ref, watch } from 'vue';
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { usePull } from '@/hooks/use-pull';
@@ -162,8 +173,9 @@ const appStore = useAppStore();
 
 const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
+const containerRef = ref<HTMLDivElement>();
 const remoteVideoRef = ref<HTMLVideoElement>();
-const localVideoRef = ref<HTMLVideoElement>();
+const localVideoRef = ref<HTMLVideoElement[]>([]);
 
 const {
   initPull,
@@ -175,6 +187,8 @@ const {
   batchSendOffer,
   startGetUserMedia,
   startGetDisplayMedia,
+  addTrack,
+  addVideo,
   roomName,
   roomNoLive,
   damuList,
@@ -182,6 +196,8 @@ const {
   liveUserList,
   danmuStr,
   localStream,
+  sender,
+  sidebarList,
 } = usePull({
   localVideoRef,
   remoteVideoRef,
@@ -189,14 +205,16 @@ const {
   isSRS: route.query.liveType === liveTypeEnum.srsWebrtcPull,
 });
 
-async function handleJoin() {
-  await startGetDisplayMedia();
-  batchSendOffer();
+function handleJoin() {
+  nextTick(async () => {
+    await startGetDisplayMedia();
+    addVideo();
+  });
 }
 watch(
   () => localStream,
   (newVal) => {
-    localVideoRef.value!.srcObject = newVal.value;
+    // localVideoRef.value!.srcObject = newVal.value;
   }
 );
 
@@ -206,12 +224,12 @@ onUnmounted(() => {
 });
 
 onMounted(() => {
-  if (topRef.value && bottomRef.value && remoteVideoRef.value) {
+  if (topRef.value && bottomRef.value && containerRef.value) {
     const res =
       bottomRef.value.getBoundingClientRect().top -
       (topRef.value.getBoundingClientRect().top +
         topRef.value.getBoundingClientRect().height);
-    remoteVideoRef.value.style.height = `${res}px`;
+    containerRef.value.style.height = `${res}px`;
   }
   initPull();
 });
@@ -226,19 +244,18 @@ onMounted(() => {
   .left {
     position: relative;
     display: inline-block;
+    overflow: hidden;
     box-sizing: border-box;
     width: $large-left-width;
     height: 100%;
     border-radius: 6px;
-    background-color: white;
+    background-color: papayawhip;
     color: #9499a0;
     vertical-align: top;
-    overflow: hidden;
     .head {
       display: flex;
       justify-content: space-between;
       padding: 20px;
-      background-color: papayawhip;
       .tag {
         display: inline-block;
         margin-right: 5px;
@@ -298,33 +315,43 @@ onMounted(() => {
         }
       }
     }
-    .video-wrap {
-      position: relative;
-      background-color: #18191c;
-      #remoteVideo {
-        max-width: 100%;
-        max-height: 100%;
-      }
-      .controls {
-        display: none;
+    .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      .video-wrap {
+        position: relative;
+        flex: 1;
+        height: 100%;
+        background-color: rgba($color: #000000, $alpha: 0.5);
+        #remoteVideo {
+          width: 100%;
+          height: 100%;
+        }
+        .controls {
+          display: none;
+        }
+
+        &:hover {
+          .controls {
+            display: block;
+          }
+        }
       }
       .sidebar {
-        position: absolute;
-        right: 0;
-        top: 0;
+        width: 120px;
         height: 100%;
         background-color: rgba($color: #000000, $alpha: 0.3);
-        .plus {
+        .join {
           color: white;
           cursor: pointer;
         }
-      }
-      &:hover {
-        .controls {
-          display: block;
+        video {
+          max-width: 100%;
         }
       }
     }
+
     .gift {
       position: absolute;
       right: 0;
@@ -334,7 +361,6 @@ onMounted(() => {
       align-items: center;
       justify-content: space-around;
       height: 100px;
-      background-color: papayawhip;
       .item {
         margin-right: 10px;
         text-align: center;

@@ -121,13 +121,18 @@ export class WebRTCClass {
     // this.handleWebRtcError();
   }
 
-  addTrack = (track, stream) => {
-    console.warn('addTrackaddTrack', track, stream);
+  addTransceiver = (track, stream) => {
+    console.warn('addTransceiveraddTransceiver', track, stream);
     this.sender = this.peerConnection?.addTransceiver(track, {
       streams: [stream],
       direction: 'sendonly',
     });
     // this.peerConnection?.addTrack(track, stream);
+  };
+
+  addTrack = (track, stream) => {
+    console.warn('addTrackaddTrack', track, stream);
+    this.peerConnection?.addTrack(track, stream);
   };
 
   handleWebRtcError = () => {

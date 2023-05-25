@@ -76,8 +76,8 @@ export class SRSWebRTCClass {
     this.update();
   }
 
-  addTrack = ({ track, stream, direction }) => {
-    console.warn('addTrackaddTrack', track, stream);
+  addTransceiver = ({ track, stream, direction }) => {
+    console.warn('addTransceiveraddTransceiver', track, stream);
     this.sender = this.peerConnection?.addTransceiver(track, {
       streams: [stream],
       direction,

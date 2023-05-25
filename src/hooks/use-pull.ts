@@ -29,7 +29,7 @@ export function usePull({
   isSRS,
   isFlv,
 }: {
-  localVideoRef: Ref<HTMLVideoElement | undefined>;
+  localVideoRef: Ref<HTMLVideoElement[]>;
   remoteVideoRef: Ref<HTMLVideoElement | undefined>;
   isSRS?: boolean;
   isFlv?: boolean;
@@ -49,6 +49,12 @@ export function usePull({
   const isDone = ref(false);
   const roomNoLive = ref(false);
   const localStream = ref();
+  const sidebarList = ref<
+    {
+      socketId: string;
+    }[]
+  >([]);
+
   const track = reactive({
     audio: true,
     video: true,
@@ -62,6 +68,7 @@ export function usePull({
   ]);
   const offerSended = ref(new Set());
   const hooksRtcMap = ref(new Set());
+  const sender = ref();
 
   const allMediaTypeList = {
     [MediaTypeEnum.camera]: {
@@ -95,8 +102,9 @@ export function usePull({
       console.log('getUserMedia成功', event);
       currMediaType.value = allMediaTypeList[MediaTypeEnum.camera];
       currMediaTypeList.value.push(allMediaTypeList[MediaTypeEnum.camera]);
-      if (!localVideoRef.value) return;
-      localVideoRef.value.srcObject = event;
+      // localVideoRef.value.forEach((item) => {
+      //   item.srcObject = event;
+      // });
       localStream.value = event;
     }
   }
@@ -116,8 +124,6 @@ export function usePull({
       console.log('getDisplayMedia成功', event);
       currMediaType.value = allMediaTypeList[MediaTypeEnum.screen];
       currMediaTypeList.value.push(allMediaTypeList[MediaTypeEnum.screen]);
-      if (!localVideoRef.value) return;
-      localVideoRef.value.srcObject = event;
       localStream.value = event;
     }
   }
@@ -204,6 +210,20 @@ export function usePull({
     });
   }
 
+  function addTransceiver() {
+    if (!localStream.value) return;
+    liveUserList.value.forEach((item) => {
+      if (item.socketId !== getSocketId()) {
+        localStream.value.getTracks().forEach((track) => {
+          const rtc = networkStore.getRtcMap(
+            `${roomId.value}___${item.socketId}`
+          );
+          rtc?.addTransceiver(track, localStream.value);
+        });
+      }
+    });
+  }
+
   function addTrack() {
     if (!localStream.value) return;
     liveUserList.value.forEach((item) => {
@@ -212,6 +232,7 @@ export function usePull({
           const rtc = networkStore.getRtcMap(
             `${roomId.value}___${item.socketId}`
           );
+          console.log(rtc, track, localStream.value, 9998);
           rtc?.addTrack(track, localStream.value);
         });
       }
@@ -237,14 +258,17 @@ export function usePull({
       data: { sdp, sender, receiver },
     });
   }
+
   function batchSendOffer() {
     liveUserList.value.forEach(async (item) => {
       if (
         !offerSended.value.has(item.socketId) &&
         item.socketId !== getSocketId()
       ) {
-        hooksRtcMap.value.add(await startNewWebRtc(item.socketId));
-        await addTrack();
+        hooksRtcMap.value.add(
+          await startNewWebRtc({ receiver: item.socketId })
+        );
+        await addTransceiver();
         console.warn('new WebRTCClass完成');
         console.log('执行sendOffer', {
           sender: getSocketId(),
@@ -256,13 +280,38 @@ export function usePull({
     });
   }
 
+  async function addVideo() {
+    const socketId = sender.value;
+    localVideoRef.value[socketId].srcObject = localStream.value;
+    hooksRtcMap.value.add(
+      await startNewWebRtc({
+        receiver: socketId,
+        videoEl: localVideoRef.value[socketId],
+      })
+    );
+    await addTransceiver();
+    console.warn('new WebRTCClass完成');
+    console.log('执行sendOffer', {
+      sender: getSocketId(),
+      receiver: socketId,
+    });
+    sendOffer({ sender: getSocketId(), receiver: socketId });
+    offerSended.value.add(socketId);
+  }
+
   /** 原生的webrtc时，receiver必传 */
-  async function startNewWebRtc(receiver?: string) {
+  async function startNewWebRtc({
+    receiver,
+    videoEl = remoteVideoRef.value!,
+  }: {
+    receiver?: string;
+    videoEl?: HTMLVideoElement;
+  }) {
     if (isSRS) {
       console.warn('开始new SRSWebRTCClass', getSocketId());
       const rtc = new SRSWebRTCClass({
         roomId: `${roomId.value}___${getSocketId()}`,
-        videoEl: remoteVideoRef.value!,
+        videoEl,
       });
       rtc.rtcStatus.joined = true;
       rtc.update();
@@ -360,7 +409,9 @@ export function usePull({
       if (!instance) return;
       if (data.data.receiver === getSocketId()) {
         console.log('收到offer，这个offer是发给我的');
-        const rtc = await startNewWebRtc(data.data.sender);
+        sidebarList.value.push({ socketId: data.data.sender });
+        sender.value = data.data.sender;
+        const rtc = await startNewWebRtc({ receiver: data.data.sender });
         if (rtc) {
           await rtc.setRemoteDescription(data.data.sdp);
           const sdp = await rtc.createAnswer();
@@ -372,6 +423,18 @@ export function usePull({
         }
       } else {
         console.log('收到offer，但是这个offer不是发给我的');
+        // sidebarList.value.push({ socketId: data.data.sender });
+        // sender.value = data.data.sender;
+        // const rtc = await startNewWebRtc({ receiver: data.data.sender });
+        // if (rtc) {
+        //   await rtc.setRemoteDescription(data.data.sdp);
+        //   const sdp = await rtc.createAnswer();
+        //   await rtc.setLocalDescription(sdp);
+        //   instance.send({
+        //     msgType: WsMsgTypeEnum.answer,
+        //     data: { sdp, sender: getSocketId(), receiver: data.data.sender },
+        //   });
+        // }
       }
     });
 
@@ -423,7 +486,7 @@ export function usePull({
     instance.socketIo.on(WsMsgTypeEnum.roomLiveing, (data: IAdminIn) => {
       console.log('【websocket】收到管理员正在直播', data);
       if (isSRS && !isFlv) {
-        startNewWebRtc();
+        startNewWebRtc({});
       }
     });
 
@@ -520,6 +583,8 @@ export function usePull({
     batchSendOffer,
     startGetUserMedia,
     startGetDisplayMedia,
+    addTrack,
+    addVideo,
     roomName,
     roomNoLive,
     damuList,
@@ -527,5 +592,7 @@ export function usePull({
     liveUserList,
     danmuStr,
     localStream,
+    sender,
+    sidebarList,
   };
 }

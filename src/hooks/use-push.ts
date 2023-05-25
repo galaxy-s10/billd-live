@@ -1,5 +1,5 @@
 import { getRandomString } from 'billd-utils';
-import { Ref, reactive, ref } from 'vue';
+import { Ref, nextTick, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { fetchRtcV1Publish } from '@/api/srs';
@@ -24,9 +24,11 @@ import { useUserStore } from '@/store/user';
 
 export function usePush({
   localVideoRef,
+  remoteVideoRef,
   isSRS,
 }: {
   localVideoRef: Ref<HTMLVideoElement | undefined>;
+  remoteVideoRef: Ref<HTMLVideoElement[]>;
   isSRS?: boolean;
 }) {
   const route = useRoute();
@@ -43,6 +45,11 @@ export function usePush({
   const localStream = ref();
   const offerSended = ref(new Set());
   const hooksRtcMap = ref(new Set());
+  const sidebarList = ref<
+    {
+      socketId: string;
+    }[]
+  >([]);
 
   const track = reactive({
     audio: true,
@@ -109,15 +116,21 @@ export function usePush({
   }
 
   /** 原生的webrtc时，receiver必传 */
-  async function startNewWebRtc(receiver?: string) {
+  async function startNewWebRtc({
+    receiver,
+    videoEl = localVideoRef.value!,
+  }: {
+    receiver?: string;
+    videoEl?: HTMLVideoElement;
+  }) {
     if (isSRS) {
       console.warn('开始new SRSWebRTCClass');
       const rtc = new SRSWebRTCClass({
         roomId: `${roomId.value}___${getSocketId()}`,
-        videoEl: localVideoRef.value!,
+        videoEl,
       });
       localStream.value.getTracks().forEach((track) => {
-        rtc.addTrack({
+        rtc.addTransceiver({
           track,
           stream: localStream.value,
           direction: 'sendonly',
@@ -148,7 +161,7 @@ export function usePush({
       console.warn('开始new WebRTCClass');
       const rtc = new WebRTCClass({
         roomId: `${roomId.value}___${receiver!}`,
-        videoEl: localVideoRef.value!,
+        videoEl,
       });
       return rtc;
     }
@@ -189,7 +202,7 @@ export function usePush({
           const rtc = networkStore.getRtcMap(
             `${roomId.value}___${item.socketId}`
           );
-          rtc?.addTrack(track, localStream.value);
+          rtc?.addTransceiver(track, localStream.value);
         });
       }
     });
@@ -241,7 +254,9 @@ export function usePush({
         !offerSended.value.has(item.socketId) &&
         item.socketId !== getSocketId()
       ) {
-        hooksRtcMap.value.add(await startNewWebRtc(item.socketId));
+        hooksRtcMap.value.add(
+          await startNewWebRtc({ receiver: item.socketId })
+        );
         await addTrack();
         console.warn('new WebRTCClass完成');
         console.log('执行sendOffer', {
@@ -281,22 +296,33 @@ export function usePush({
     });
 
     // 收到offer
-    instance.socketIo.on(WsMsgTypeEnum.offer, async (data: IOffer) => {
+    instance.socketIo.on(WsMsgTypeEnum.offer, (data: IOffer) => {
       console.warn('【websocket】收到offer', data);
       if (isSRS) return;
       if (!instance) return;
       if (data.data.receiver === getSocketId()) {
         console.log('收到offer，这个offer是发给我的');
-        const rtc = await startNewWebRtc(data.data.sender);
-        if (rtc) {
-          await rtc.setRemoteDescription(data.data.sdp);
-          const sdp = await rtc.createAnswer();
-          await rtc.setLocalDescription(sdp);
-          instance.send({
-            msgType: WsMsgTypeEnum.answer,
-            data: { sdp, sender: getSocketId(), receiver: data.data.sender },
+        sidebarList.value.push({ socketId: data.data.sender });
+        nextTick(async () => {
+          console.log(
+            remoteVideoRef.value[data.data.sender],
+            remoteVideoRef.value,
+            22222
+          );
+          const rtc = await startNewWebRtc({
+            receiver: data.data.sender,
+            videoEl: remoteVideoRef.value[data.data.sender],
           });
-        }
+          if (rtc) {
+            await rtc.setRemoteDescription(data.data.sdp);
+            const sdp = await rtc.createAnswer();
+            await rtc.setLocalDescription(sdp);
+            instance.send({
+              msgType: WsMsgTypeEnum.answer,
+              data: { sdp, sender: getSocketId(), receiver: data.data.sender },
+            });
+          }
+        });
       } else {
         console.log('收到offer，但是这个offer不是发给我的');
       }
@@ -378,7 +404,7 @@ export function usePush({
         socketId: `${getSocketId()}`,
       });
       if (isSRS) {
-        startNewWebRtc();
+        startNewWebRtc({});
       } else {
         batchSendOffer();
       }
@@ -446,6 +472,10 @@ export function usePush({
         video: true,
         audio: true,
       });
+      const audio = event.getAudioTracks();
+      const video = event.getVideoTracks();
+      track.audio = !!audio.length;
+      track.video = !!video.length;
       console.log('getUserMedia成功', event);
       currMediaType.value = allMediaTypeList[MediaTypeEnum.camera];
       currMediaTypeList.value.push(allMediaTypeList[MediaTypeEnum.camera]);
@@ -587,5 +617,6 @@ export function usePush({
     liveUserList,
     currMediaTypeList,
     hooksRtcMap,
+    sidebarList,
   };
 }

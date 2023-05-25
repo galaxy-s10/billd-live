@@ -4,42 +4,75 @@
       ref="topRef"
       class="left"
     >
-      <div class="video-wrap">
-        <video
-          id="localVideo"
-          ref="localVideoRef"
-          autoplay
-          webkit-playsinline="true"
-          playsinline
-          x-webkit-airplay="allow"
-          x5-video-player-type="h5"
-          x5-video-player-fullscreen="true"
-          x5-video-orientation="portraint"
-          muted
-        ></video>
-        <div
-          v-if="!currMediaTypeList || currMediaTypeList.length <= 0"
-          class="add-wrap"
-        >
-          <n-space>
-            <n-button
-              class="item"
-              @click="startGetUserMedia"
-            >
-              摄像头
-            </n-button>
-            <n-button
-              class="item"
-              @click="startGetDisplayMedia"
-            >
-              窗口
-            </n-button>
-          </n-space>
+      <div
+        ref="containerRef"
+        class="container"
+      >
+        <div class="video-wrap">
+          <video
+            id="localVideo"
+            ref="localVideoRef"
+            autoplay
+            webkit-playsinline="true"
+            playsinline
+            x-webkit-airplay="allow"
+            x5-video-player-type="h5"
+            x5-video-player-fullscreen="true"
+            x5-video-orientation="portraint"
+            muted
+          ></video>
+          <div
+            v-if="currMediaTypeList.length > 0"
+            class="controls"
+          >
+            <VideoControls></VideoControls>
+          </div>
+          <div
+            v-if="!currMediaTypeList || currMediaTypeList.length <= 0"
+            class="add-wrap"
+          >
+            <n-space>
+              <n-button
+                class="item"
+                @click="startGetUserMedia"
+              >
+                摄像头
+              </n-button>
+              <n-button
+                class="item"
+                @click="startGetDisplayMedia"
+              >
+                窗口
+              </n-button>
+            </n-space>
+          </div>
+        </div>
+
+        <div class="sidebar">
+          <div class="title">在线人员</div>
+          <div
+            v-for="(item, index) in sidebarList"
+            :key="index"
+            class="item"
+          >
+            <video
+              :ref="(el) => (remoteVideoRef[item.socketId] = el)"
+              autoplay
+              webkit-playsinline="true"
+              playsinline
+              x-webkit-airplay="allow"
+              x5-video-player-type="h5"
+              x5-video-player-fullscreen="true"
+              x5-video-orientation="portraint"
+              muted
+            ></video>
+          </div>
         </div>
       </div>
+
       <div
         ref="bottomRef"
-        class="control"
+        class="room-control"
       >
         <div class="info">
           <div
@@ -99,6 +132,7 @@
         </div>
       </div>
     </div>
+
     <div class="right">
       <div class="resource-card">
         <div class="title">素材列表</div>
@@ -168,10 +202,13 @@ import { useUserStore } from '@/store/user';
 const route = useRoute();
 const userStore = useUserStore();
 
+const liveType = route.query.liveType;
+
 const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
+const containerRef = ref<HTMLDivElement>();
 const localVideoRef = ref<HTMLVideoElement>();
-const liveType = route.query.liveType;
+const remoteVideoRef = ref<HTMLVideoElement[]>([]);
 
 const {
   initPush,
@@ -191,8 +228,10 @@ const {
   damuList,
   liveUserList,
   currMediaTypeList,
+  sidebarList,
 } = usePush({
   localVideoRef,
+  remoteVideoRef,
   isSRS: liveType === liveTypeEnum.srsPush,
 });
 
@@ -203,11 +242,11 @@ onUnmounted(() => {
 
 onMounted(() => {
   initPush();
-  if (topRef.value && bottomRef.value && localVideoRef.value) {
+  if (topRef.value && bottomRef.value && containerRef.value) {
     const res =
       bottomRef.value.getBoundingClientRect().top -
       topRef.value.getBoundingClientRect().top;
-    localVideoRef.value.style.height = `${res}px`;
+    containerRef.value.style.height = `${res}px`;
   }
 });
 </script>
@@ -221,37 +260,70 @@ onMounted(() => {
   .left {
     position: relative;
     display: inline-block;
+    overflow: hidden;
     box-sizing: border-box;
     width: $large-left-width;
     height: 100%;
     border-radius: 6px;
-    overflow: hidden;
     background-color: white;
     color: #9499a0;
     vertical-align: top;
 
-    .video-wrap {
-      position: relative;
-      background-color: #18191c;
-      #localVideo {
-        max-width: 100%;
-        max-height: 100%;
-      }
-      .add-wrap {
-        position: absolute;
-        top: 50%;
-        left: 50%;
+    .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 100%;
+      background-color: #fff;
+      .video-wrap {
+        position: relative;
         display: flex;
-        align-items: center;
-        justify-content: space-around;
-        padding: 0 20px;
-        height: 50px;
-        border-radius: 5px;
-        background-color: white;
-        transform: translate(-50%, -50%);
+        flex: 1;
+        height: 100%;
+        background-color: rgba($color: #000000, $alpha: 0.5);
+        #localVideo {
+          max-width: 100%;
+          max-height: 100%;
+        }
+        .controls {
+          display: none;
+        }
+        &:hover {
+          .controls {
+            display: block;
+          }
+        }
+        .add-wrap {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: space-around;
+          padding: 0 20px;
+          height: 50px;
+          border-radius: 5px;
+          background-color: white;
+          transform: translate(-50%, -50%);
+        }
+      }
+      .sidebar {
+        width: 130px;
+        height: 100%;
+        background-color: rgba($color: #000000, $alpha: 0.3);
+        .title {
+          color: white;
+        }
+        .join {
+          color: white;
+          cursor: pointer;
+        }
+        video {
+          max-width: 100%;
+        }
       }
     }
-    .control {
+    .room-control {
       position: absolute;
       right: 0;
       bottom: 0;
