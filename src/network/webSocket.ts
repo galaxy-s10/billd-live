@@ -53,6 +53,10 @@ export enum WsMsgTypeEnum {
   candidate = 'candidate',
 }
 
+export function prettierReceiveWebsocket(...arg) {
+  console.warn('【websocket】收到消息', ...arg);
+}
+
 export class WebSocketClass {
   socketIo: Socket | null = null;
   status: WsConnectStatusEnum = WsConnectStatusEnum.disconnect;
@@ -84,7 +88,7 @@ export class WebSocketClass {
       );
       return;
     }
-    console.log('【websocket】发送websocket消息', msgType, data);
+    console.warn('【websocket】发送消息', msgType, data);
     this.socketIo?.emit(msgType, {
       roomId: this.roomId,
       socketId: this.socketIo.id,
@@ -104,7 +108,4 @@ export class WebSocketClass {
     console.warn('手动关闭websocket连接', this.socketIo?.id);
     this.socketIo?.close();
   };
-
-  // 连接websocket
-  connect = () => {};
 }

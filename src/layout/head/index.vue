@@ -182,10 +182,6 @@ const options = ref([
     label: 'srs-webrtc开播',
     key: liveTypeEnum.srsPush,
   },
-  {
-    label: 'webrtc多人会议',
-    key: liveTypeEnum.pushMeeting,
-  },
 ]);
 
 onMounted(() => {
@@ -205,12 +201,6 @@ function handlePushSelect(key) {
       query: { liveType: key },
     });
     openToTarget(url.href);
-  } else {
-    const url = router.resolve({
-      name: routerName.pushMeeting,
-    });
-    openToTarget(url.href);
-    window.$message.info('敬请期待！');
   }
 }
 

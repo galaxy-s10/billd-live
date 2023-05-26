@@ -19,6 +19,7 @@ import {
   WebSocketClass,
   WsConnectStatusEnum,
   WsMsgTypeEnum,
+  prettierReceiveWebsocket,
 } from '@/network/webSocket';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
@@ -111,9 +112,6 @@ export function usePush({
     });
     ws.update();
     initReceive();
-    if (isSRS) {
-      sendJoin();
-    }
   }
 
   /** 原生的webrtc时，receiver必传 */
@@ -290,18 +288,16 @@ export function usePush({
     if (!instance?.socketIo) return;
     // websocket连接成功
     instance.socketIo.on(WsConnectStatusEnum.connect, () => {
-      console.log('【websocket】websocket连接成功', instance.socketIo?.id);
+      prettierReceiveWebsocket(WsConnectStatusEnum.connect);
       if (!instance) return;
       instance.status = WsConnectStatusEnum.connect;
       instance.update();
-      if (!isSRS) {
-        sendJoin();
-      }
+      sendJoin();
     });
 
     // websocket连接断开
     instance.socketIo.on(WsConnectStatusEnum.disconnect, () => {
-      console.log('【websocket】websocket连接断开', instance);
+      prettierReceiveWebsocket(WsConnectStatusEnum.disconnect, instance);
       if (!instance) return;
       instance.status = WsConnectStatusEnum.disconnect;
       instance.update();
@@ -309,8 +305,8 @@ export function usePush({
 
     // 收到offer
     instance.socketIo.on(WsMsgTypeEnum.offer, (data: IOffer) => {
-      console.warn(
-        '【websocket】收到offer',
+      prettierReceiveWebsocket(
+        WsMsgTypeEnum.offer,
         `发送者：${data.data.sender}，接收者：${data.data.receiver}`,
         data
       );
@@ -346,7 +342,11 @@ export function usePush({
 
     // 收到answer
     instance.socketIo.on(WsMsgTypeEnum.answer, async (data: IOffer) => {
-      console.warn('【websocket】收到answer', data);
+      prettierReceiveWebsocket(
+        WsMsgTypeEnum.answer,
+        `发送者：${data.data.sender}，接收者：${data.data.receiver}`,
+        data
+      );
       if (isSRS) return;
       if (isDone.value) return;
       if (!instance) return;
@@ -364,7 +364,11 @@ export function usePush({
 
     // 收到candidate
     instance.socketIo.on(WsMsgTypeEnum.candidate, (data: ICandidate) => {
-      console.warn('【websocket】收到candidate', data);
+      prettierReceiveWebsocket(
+        WsMsgTypeEnum.candidate,
+        `发送者：${data.data.sender}，接收者：${data.data.receiver}`,
+        data
+      );
       if (isSRS) return;
       if (isDone.value) return;
       if (!instance) return;
@@ -390,20 +394,19 @@ export function usePush({
       }
     });
 
-    // 当前所有在线用户
+    // 管理员正在直播
     instance.socketIo.on(WsMsgTypeEnum.roomLiveing, (data: IAdminIn) => {
-      console.log('【websocket】收到管理员正在直播', data);
+      prettierReceiveWebsocket(WsMsgTypeEnum.roomLiveing, data);
     });
 
     // 当前所有在线用户
-    instance.socketIo.on(WsMsgTypeEnum.liveUser, () => {
-      console.log('【websocket】当前所有在线用户');
-      if (!instance) return;
+    instance.socketIo.on(WsMsgTypeEnum.liveUser, (data) => {
+      prettierReceiveWebsocket(WsMsgTypeEnum.liveUser, data);
     });
 
     // 收到用户发送消息
     instance.socketIo.on(WsMsgTypeEnum.message, (data) => {
-      console.log('【websocket】收到用户发送消息', data);
+      prettierReceiveWebsocket(WsMsgTypeEnum.message, data);
       if (!instance) return;
       damuList.value.push({
         socketId: data.socketId,
@@ -414,7 +417,7 @@ export function usePush({
 
     // 用户加入房间完成
     instance.socketIo.on(WsMsgTypeEnum.joined, (data: IJoin) => {
-      console.log('【websocket】用户加入房间完成', data);
+      prettierReceiveWebsocket(WsMsgTypeEnum.joined, data);
       handleHeartbeat(data.data.liveId!);
       joined.value = true;
       liveUserList.value.push({
@@ -429,7 +432,7 @@ export function usePush({
 
     // 其他用户加入房间
     instance.socketIo.on(WsMsgTypeEnum.otherJoin, (data) => {
-      console.log('【websocket】其他用户加入房间', data);
+      prettierReceiveWebsocket(WsMsgTypeEnum.otherJoin, data);
       liveUserList.value.push({
         socketId: data.data.socketId,
       });
@@ -447,16 +450,17 @@ export function usePush({
 
     // 用户离开房间
     instance.socketIo.on(WsMsgTypeEnum.leave, (data) => {
-      console.log('【websocket】用户离开房间', data);
+      prettierReceiveWebsocket(WsMsgTypeEnum.leave, data);
       if (!instance) return;
-      instance.socketIo?.emit(WsMsgTypeEnum.leave, {
-        roomId: instance.roomId,
+      instance.send({
+        msgType: WsMsgTypeEnum.leave,
+        data: { roomId: instance.roomId },
       });
     });
 
     // 用户离开房间完成
     instance.socketIo.on(WsMsgTypeEnum.leaved, (data) => {
-      console.log('【websocket】用户离开房间完成', data);
+      prettierReceiveWebsocket(WsMsgTypeEnum.leaved, data);
       const res = liveUserList.value.filter(
         (item) => item.socketId !== data.socketId
       );

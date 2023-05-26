@@ -66,8 +66,6 @@ export class WebRTCClass {
   peerConnection: RTCPeerConnection | null = null;
   dataChannel: RTCDataChannel | null = null;
 
-  candidateFlag = false;
-
   sender?: RTCRtpTransceiver;
 
   getStatsSetIntervalDelay = 1000;
@@ -488,9 +486,8 @@ export class WebRTCClass {
       );
       this.rtcStatus.icecandidate = true;
       this.update();
-      if (event.candidate && !this.candidateFlag) {
+      if (event.candidate) {
         const networkStore = useNetworkStore();
-        this.candidateFlag = true;
         this.update();
         console.log('准备发送candidate', event.candidate.candidate);
         const roomId = this.roomId.split('___')[0];

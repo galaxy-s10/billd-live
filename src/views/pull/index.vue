@@ -38,7 +38,10 @@
               <VideoControls></VideoControls>
             </div>
           </div>
-          <div class="sidebar">
+          <div
+            v-if="showJoin"
+            class="sidebar"
+          >
             <div
               v-for="(item, index) in sidebarList"
               :key="index"
@@ -60,7 +63,6 @@
             </div>
 
             <div
-              v-if="showJoin"
               class="join"
               @click="handleJoin()"
             >
@@ -162,7 +164,7 @@
 </template>
 
 <script lang="ts" setup>
-import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { nextTick, onMounted, onUnmounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { usePull } from '@/hooks/use-pull';
@@ -200,7 +202,6 @@ const {
   liveUserList,
   danmuStr,
   localStream,
-  sender,
   sidebarList,
 } = usePull({
   localVideoRef,
@@ -218,19 +219,19 @@ function handleJoin() {
   });
 }
 
-watch(
-  () => localStream,
-  (newVal) => {
-    // localVideoRef.value!.srcObject = newVal.value;
-  }
-);
-
 onUnmounted(() => {
   closeWs();
   closeRtc();
 });
 
 onMounted(() => {
+  if (
+    [liveTypeEnum.srsFlvPull, liveTypeEnum.srsWebrtcPull].includes(
+      route.query.liveType as liveTypeEnum
+    )
+  ) {
+    showJoin.value = false;
+  }
   if (topRef.value && bottomRef.value && containerRef.value) {
     const res =
       bottomRef.value.getBoundingClientRect().top -
