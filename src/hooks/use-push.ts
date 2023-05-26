@@ -8,6 +8,7 @@ import {
   IAdminIn,
   ICandidate,
   IDanmu,
+  IJoin,
   ILiveUser,
   IOffer,
   MediaTypeEnum,
@@ -35,7 +36,7 @@ export function usePush({
   const router = useRouter();
   const userStore = useUserStore();
   const networkStore = useNetworkStore();
-
+  const heartbeatTimer = ref();
   const roomId = ref<string>(getRandomString(15));
   const danmuStr = ref('');
   const roomName = ref(getRandomString(5));
@@ -183,6 +184,17 @@ export function usePush({
     return dataURL;
   }
 
+  function handleHeartbeat(liveId: number) {
+    heartbeatTimer.value = setInterval(() => {
+      const instance = networkStore.wsMap.get(roomId.value);
+      if (!instance) return;
+      instance.send({
+        msgType: WsMsgTypeEnum.heartbeat,
+        data: { liveId },
+      });
+    }, 1000 * 5);
+  }
+
   function closeWs() {
     const instance = networkStore.wsMap.get(roomId.value);
     instance?.close();
@@ -244,7 +256,7 @@ export function usePush({
     await rtc.setLocalDescription(sdp);
     instance.send({
       msgType: WsMsgTypeEnum.offer,
-      data: { sdp, sender, receiver },
+      data: { sdp, sender, receiver, isAdmin: true },
     });
   }
 
@@ -297,7 +309,11 @@ export function usePush({
 
     // 收到offer
     instance.socketIo.on(WsMsgTypeEnum.offer, (data: IOffer) => {
-      console.warn('【websocket】收到offer', data);
+      console.warn(
+        '【websocket】收到offer',
+        `发送者：${data.data.sender}，接收者：${data.data.receiver}`,
+        data
+      );
       if (isSRS) return;
       if (!instance) return;
       if (data.data.receiver === getSocketId()) {
@@ -397,8 +413,9 @@ export function usePush({
     });
 
     // 用户加入房间完成
-    instance.socketIo.on(WsMsgTypeEnum.joined, (data) => {
+    instance.socketIo.on(WsMsgTypeEnum.joined, (data: IJoin) => {
       console.log('【websocket】用户加入房间完成', data);
+      handleHeartbeat(data.data.liveId!);
       joined.value = true;
       liveUserList.value.push({
         socketId: `${getSocketId()}`,

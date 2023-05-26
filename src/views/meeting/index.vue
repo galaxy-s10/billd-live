@@ -436,6 +436,7 @@ onMounted(() => {
       .list {
         margin-bottom: 10px;
         height: 300px;
+        overflow: scroll;
         .item {
           margin-bottom: 10px;
           font-size: 12px;

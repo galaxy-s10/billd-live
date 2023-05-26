@@ -202,5 +202,21 @@ export interface ICandidate {
     candidate: string;
     sdpMid: string | null;
     sdpMLineIndex: number | null;
+    receiver: string;
+    sender: string;
   };
+}
+
+export interface IJoin {
+  roomId: string;
+  socketId: string;
+  data: {
+    roomName: string;
+    coverImg: string;
+    userInfo?: IUser;
+    srs?: { streamurl: string; flvurl: string };
+    track: { audio: boolean; video: boolean };
+    liveId?: number;
+  };
+  isAdmin?: boolean;
 }

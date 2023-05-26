@@ -76,14 +76,15 @@ export class WebSocketClass {
 
   // 发送websocket消息
   send = ({ msgType, data }: { msgType: WsMsgTypeEnum; data?: any }) => {
-    console.log('【websocket】发送websocket消息', msgType, data);
     if (!this.socketIo?.connected) {
       console.error(
         '【websocket】未连接成功，不发送websocket消息！',
         msgType,
         data
       );
+      return;
     }
+    console.log('【websocket】发送websocket消息', msgType, data);
     this.socketIo?.emit(msgType, {
       roomId: this.roomId,
       socketId: this.socketIo.id,

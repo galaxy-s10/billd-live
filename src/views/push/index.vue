@@ -66,6 +66,7 @@
               x5-video-orientation="portraint"
               muted
             ></video>
+            <div>{{ item.socketId }}</div>
           </div>
         </div>
       </div>
@@ -437,6 +438,8 @@ onMounted(() => {
       .list {
         margin-bottom: 10px;
         height: 300px;
+        overflow: scroll;
+
         .item {
           margin-bottom: 10px;
           font-size: 12px;

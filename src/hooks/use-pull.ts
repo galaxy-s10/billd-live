@@ -183,7 +183,7 @@ export function usePull({
       instance.send({
         msgType: WsMsgTypeEnum.heartbeat,
       });
-    }, 1000 * 30);
+    }, 1000 * 5);
   }
 
   function closeWs() {
@@ -210,18 +210,17 @@ export function usePull({
     });
   }
 
-  function addTransceiver() {
+  function addTransceiver(socketId: string) {
+    console.log('333addTransceiver', localStream.value);
     if (!localStream.value) return;
-    liveUserList.value.forEach((item) => {
-      if (item.socketId !== getSocketId()) {
-        localStream.value.getTracks().forEach((track) => {
-          const rtc = networkStore.getRtcMap(
-            `${roomId.value}___${item.socketId}`
-          );
-          rtc?.addTransceiver(track, localStream.value);
-        });
-      }
-    });
+    if (socketId !== getSocketId()) {
+      console.log(3333);
+      localStream.value.getTracks().forEach((track) => {
+        const rtc = networkStore.getRtcMap(`${roomId.value}___${socketId}`);
+        console.log(999999);
+        rtc?.addTransceiver(track, localStream.value);
+      });
+    }
   }
 
   function addTrack() {
@@ -259,49 +258,50 @@ export function usePull({
     });
   }
 
-  function batchSendOffer() {
-    liveUserList.value.forEach(async (item) => {
-      if (
-        !offerSended.value.has(item.socketId) &&
-        item.socketId !== getSocketId()
-      ) {
-        hooksRtcMap.value.add(
-          await startNewWebRtc({ receiver: item.socketId })
-        );
-        await addTransceiver();
+  async function batchSendOffer(socketId: string) {
+    await nextTick(async () => {
+      console.log('batchSendOffer', offerSended.value, liveUserList.value);
+      console.log(socketId, 2222222);
+      if (!offerSended.value.has(socketId) && socketId !== getSocketId()) {
+        console.log('kkkkkk', socketId);
+        hooksRtcMap.value.add(await startNewWebRtc({ receiver: socketId }));
+        await addTransceiver(socketId);
         console.warn('new WebRTCClass完成');
         console.log('执行sendOffer', {
           sender: getSocketId(),
-          receiver: item.socketId,
+          receiver: socketId,
         });
-        sendOffer({ sender: getSocketId(), receiver: item.socketId });
-        offerSended.value.add(item.socketId);
+        sendOffer({ sender: getSocketId(), receiver: socketId });
+        offerSended.value.add(socketId);
       }
     });
   }
 
   function addVideo() {
-    liveUserList.value.forEach(async (item) => {
-      if (item.socketId === sender.value) {
-        localVideoRef.value[sender.value].srcObject = localStream.value;
-      }
-      if (!offerSended.value.has(item.socketId)) {
-        hooksRtcMap.value.add(
-          await startNewWebRtc({
+    sidebarList.value.push({ socketId: getSocketId() });
+    nextTick(() => {
+      liveUserList.value.forEach(async (item) => {
+        if (item.socketId === getSocketId()) {
+          localVideoRef.value[getSocketId()].srcObject = localStream.value;
+        }
+        if (!offerSended.value.has(item.socketId)) {
+          hooksRtcMap.value.add(
+            await startNewWebRtc({
+              receiver: item.socketId,
+              videoEl: localVideoRef.value[item.socketId],
+              // videoEl: localVideoRef.value[sender.value],
+            })
+          );
+          await addTransceiver(item.socketId);
+          console.warn('new WebRTCClass完成');
+          console.log('执行sendOffer', {
+            sender: getSocketId(),
             receiver: item.socketId,
-            // videoEl: localVideoRef.value[item.socketId],
-            videoEl: localVideoRef.value[sender.value],
-          })
-        );
-        await addTransceiver();
-        console.warn('new WebRTCClass完成');
-        console.log('执行sendOffer', {
-          sender: getSocketId(),
-          receiver: item.socketId,
-        });
-        sendOffer({ sender: getSocketId(), receiver: item.socketId });
-        offerSended.value.add(item.socketId);
-      }
+          });
+          sendOffer({ sender: getSocketId(), receiver: item.socketId });
+          offerSended.value.add(item.socketId);
+        }
+      });
     });
   }
 
@@ -393,11 +393,11 @@ export function usePull({
     // websocket连接成功
     instance.socketIo.on(WsConnectStatusEnum.connect, () => {
       console.log('【websocket】websocket连接成功');
+      handleHeartbeat();
       if (!instance) return;
       instance.status = WsConnectStatusEnum.connect;
       instance.update();
       sendJoin();
-      handleHeartbeat();
     });
 
     // websocket连接断开
@@ -409,21 +409,26 @@ export function usePull({
     });
 
     // 收到offer
-    instance.socketIo.on(WsMsgTypeEnum.offer, (data: IOffer) => {
-      console.warn('【websocket】收到offer', data);
+    instance.socketIo.on(WsMsgTypeEnum.offer, async (data: IOffer) => {
+      console.warn(
+        '【websocket】收到offer',
+        `发送者：${data.data.sender}，接收者：${data.data.receiver}`,
+        data
+      );
       if (isSRS) return;
       if (!instance) return;
       if (data.data.receiver === getSocketId()) {
-        sidebarList.value.push({ socketId: data.data.sender });
-        nextTick(async () => {
-          console.log(
-            '收到offer，这个offer是发给我的111',
-            localVideoRef.value[data.data.sender]
-          );
+        if (!data.isAdmin) {
+          sidebarList.value.push({ socketId: data.data.sender });
+        }
+        await nextTick(async () => {
+          console.log('收到offer，这个offer是发给我的');
           sender.value = data.data.sender;
           const rtc = await startNewWebRtc({
             receiver: data.data.sender,
-            videoEl: localVideoRef.value[data.data.sender],
+            videoEl: data.isAdmin
+              ? remoteVideoRef.value
+              : localVideoRef.value[data.data.sender],
           });
           if (rtc) {
             await rtc.setRemoteDescription(data.data.sdp);
@@ -431,7 +436,11 @@ export function usePull({
             await rtc.setLocalDescription(sdp);
             instance.send({
               msgType: WsMsgTypeEnum.answer,
-              data: { sdp, sender: getSocketId(), receiver: data.data.sender },
+              data: {
+                sdp,
+                sender: getSocketId(),
+                receiver: data.data.sender,
+              },
             });
           }
         });
@@ -464,8 +473,8 @@ export function usePull({
       if (!instance) return;
       const rtc = networkStore.getRtcMap(`${roomId.value}___${data.socketId}`);
       if (!rtc) return;
-      if (data.socketId !== getSocketId()) {
-        console.log('不是我发的candidate');
+      if (data.data.receiver === getSocketId()) {
+        console.log('是发给我的candidate');
         const candidate = new RTCIceCandidate({
           sdpMid: data.data.sdpMid,
           sdpMLineIndex: data.data.sdpMLineIndex,
@@ -480,7 +489,7 @@ export function usePull({
             console.error('candidate失败', err);
           });
       } else {
-        console.log('是我发的candidate');
+        console.log('不是发给我的candidate');
       }
     });
 
@@ -507,6 +516,7 @@ export function usePull({
         avatar: 'red',
         socketId: item.id,
       }));
+      // batchSendOffer();
     });
 
     // 收到用户发送消息
@@ -546,6 +556,7 @@ export function usePull({
         msg: '',
       };
       damuList.value.push(danmu);
+      batchSendOffer(data.data.socketId);
     });
 
     // 用户离开房间

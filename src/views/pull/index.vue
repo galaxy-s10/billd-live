@@ -56,9 +56,11 @@
                 x5-video-orientation="portraint"
                 muted
               ></video>
+              <div>{{ item.socketId }}</div>
             </div>
 
             <div
+              v-if="showJoin"
               class="join"
               @click="handleJoin()"
             >
@@ -172,6 +174,7 @@ const route = useRoute();
 const userStore = useUserStore();
 const appStore = useAppStore();
 
+const showJoin = ref(true);
 const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
@@ -207,6 +210,7 @@ const {
 });
 
 function handleJoin() {
+  showJoin.value = !showJoin.value;
   nextTick(async () => {
     // await startGetDisplayMedia();
     await startGetUserMedia();

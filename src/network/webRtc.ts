@@ -488,18 +488,21 @@ export class WebRTCClass {
       );
       this.rtcStatus.icecandidate = true;
       this.update();
-      if (event.candidate) {
+      if (event.candidate && !this.candidateFlag) {
         const networkStore = useNetworkStore();
         this.candidateFlag = true;
         this.update();
         console.log('准备发送candidate', event.candidate.candidate);
+        const roomId = this.roomId.split('___')[0];
+        console.log(this.roomId, networkStore.wsMap.get(roomId)?.socketIo?.id);
+        const receiver = this.roomId.split('___')[1];
         const data = {
           candidate: event.candidate.candidate,
           sdpMid: event.candidate.sdpMid,
           sdpMLineIndex: event.candidate.sdpMLineIndex,
-          // sender: networkStore.wsMap.get(this.roomId)?.socketIo?.id,
+          sender: networkStore.wsMap.get(roomId)?.socketIo?.id,
+          receiver,
         };
-        const roomId = this.roomId.split('___')[0];
         networkStore.wsMap
           .get(roomId)
           ?.send({ msgType: WsMsgTypeEnum.candidate, data });
