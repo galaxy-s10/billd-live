@@ -24,6 +24,8 @@ import {
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 
+import { loginTip } from './use-login';
+
 export function usePush({
   localVideoRef,
   remoteVideoRef,
@@ -95,14 +97,14 @@ export function usePush({
   }>();
 
   function startLive() {
+    if (!loginTip()) return;
     if (!roomNameIsOk()) return;
     if (currMediaTypeList.value.length <= 0) {
       window.$message.warning('请选择一个素材！');
       return;
     }
     disabled.value = true;
-
-    const ws = new WebSocketClass({
+    const instance = new WebSocketClass({
       roomId: roomId.value,
       url:
         process.env.NODE_ENV === 'development'
@@ -110,7 +112,7 @@ export function usePush({
           : 'wss://live.hsslive.cn',
       isAdmin: true,
     });
-    ws.update();
+    instance.update();
     initReceive();
   }
 

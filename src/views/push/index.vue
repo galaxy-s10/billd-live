@@ -1,5 +1,5 @@
 <template>
-  <div class="webrtc-push-wrap">
+  <div class="push-wrap">
     <div
       ref="topRef"
       class="left"
@@ -253,7 +253,7 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.webrtc-push-wrap {
+.push-wrap {
   margin: 20px auto 0;
   min-width: $large-width;
   height: 700px;
@@ -476,7 +476,7 @@ onMounted(() => {
 }
 // 屏幕宽度小于$large-width的时候
 @media screen and (max-width: $large-width) {
-  .webrtc-push-wrap {
+  .push-wrap {
     .left {
       width: $medium-left-width;
     }

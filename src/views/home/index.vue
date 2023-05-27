@@ -231,6 +231,7 @@ function joinFlvRoom() {
         cursor: pointer;
         &:hover {
           background-color: rgba($color: skyblue, $alpha: 0.5);
+          color: white;
         }
         &.webrtc {
           margin-right: 10px;

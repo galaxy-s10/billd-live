@@ -1,5 +1,5 @@
 <template>
-  <div class="srs-webrtc-pull-wrap">
+  <div class="pull-wrap">
     <template v-if="roomNoLive">当前房间没在直播~</template>
     <template v-else>
       <div class="left">
@@ -73,16 +73,27 @@
 
         <div
           ref="bottomRef"
-          class="gift"
+          class="gift-list"
         >
           <div
-            v-for="(item, index) in giftList"
+            v-for="(item, index) in giftGoodsList"
             :key="index"
             class="item"
           >
-            <div class="ico"></div>
+            <div
+              class="ico"
+              :style="{ backgroundImage: `url(${item.cover})` }"
+            >
+              <div
+                v-if="item.badge"
+                class="badge"
+                :style="{ backgroundColor: item.badge_bg }"
+              >
+                <span class="txt">{{ item.badge }}</span>
+              </div>
+            </div>
             <div class="name">{{ item.name }}</div>
-            <div class="price">{{ item.price }}</div>
+            <div class="price">￥{{ item.price }}</div>
           </div>
         </div>
       </div>
@@ -167,8 +178,14 @@
 import { nextTick, onMounted, onUnmounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
+import { fetchGoodsList } from '@/api/goods';
 import { usePull } from '@/hooks/use-pull';
-import { DanmuMsgTypeEnum, liveTypeEnum } from '@/interface';
+import {
+  DanmuMsgTypeEnum,
+  GoodsTypeEnum,
+  IGoods,
+  liveTypeEnum,
+} from '@/interface';
 import { useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
 
@@ -176,6 +193,7 @@ const route = useRoute();
 const userStore = useUserStore();
 const appStore = useAppStore();
 
+const giftGoodsList = ref<IGoods[]>([]);
 const showJoin = ref(true);
 const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
@@ -190,10 +208,7 @@ const {
   getSocketId,
   keydownDanmu,
   sendDanmu,
-  batchSendOffer,
   startGetUserMedia,
-  startGetDisplayMedia,
-  addTrack,
   addVideo,
   roomName,
   roomNoLive,
@@ -201,7 +216,6 @@ const {
   giftList,
   liveUserList,
   danmuStr,
-  localStream,
   sidebarList,
 } = usePull({
   localVideoRef,
@@ -210,10 +224,20 @@ const {
   isSRS: route.query.liveType === liveTypeEnum.srsWebrtcPull,
 });
 
+async function getGoodsList() {
+  const res = await fetchGoodsList({
+    type: GoodsTypeEnum.gift,
+    orderName: 'created_at',
+    orderBy: 'desc',
+  });
+  if (res.code === 200) {
+    giftGoodsList.value = res.data.rows;
+  }
+}
+
 function handleJoin() {
   showJoin.value = !showJoin.value;
   nextTick(async () => {
-    // await startGetDisplayMedia();
     await startGetUserMedia();
     addVideo();
   });
@@ -225,6 +249,7 @@ onUnmounted(() => {
 });
 
 onMounted(() => {
+  getGoodsList();
   if (
     [liveTypeEnum.srsFlvPull, liveTypeEnum.srsWebrtcPull].includes(
       route.query.liveType as liveTypeEnum
@@ -244,7 +269,7 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.srs-webrtc-pull-wrap {
+.pull-wrap {
   margin: 20px auto 0;
   min-width: $large-width;
   height: 700px;
@@ -314,7 +339,6 @@ onMounted(() => {
               width: 10px;
               height: 10px;
               border-radius: 50%;
-              background-color: skyblue;
             }
           }
         }
@@ -360,7 +384,7 @@ onMounted(() => {
       }
     }
 
-    .gift {
+    .gift-list {
       position: absolute;
       right: 0;
       bottom: 0;
@@ -368,15 +392,36 @@ onMounted(() => {
       display: flex;
       align-items: center;
       justify-content: space-around;
-      height: 100px;
+      height: 120px;
       .item {
         margin-right: 10px;
         text-align: center;
+        cursor: pointer;
 
         .ico {
+          position: relative;
           width: 50px;
           height: 50px;
-          background-color: skyblue;
+          background-position: center center;
+          background-size: cover;
+          background-repeat: no-repeat;
+          .badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 2px;
+            padding: 2px;
+            color: white;
+            .txt {
+              display: inline-block;
+              transform-origin: center !important;
+              line-height: 1;
+              @include minFont(10);
+            }
+          }
         }
         .name {
           color: #18191c;
@@ -490,7 +535,7 @@ onMounted(() => {
 
 // 屏幕宽度小于$large-width的时候
 @media screen and (max-width: $large-width) {
-  .srs-webrtc-pull-wrap {
+  .pull-wrap {
     .left {
       width: $medium-left-width;
     }

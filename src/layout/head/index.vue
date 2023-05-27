@@ -28,6 +28,36 @@
         >
           付费支持
         </a>
+        <a
+          :class="{
+            item: 1,
+            active: router.currentRoute.value.name === routerName.sponsors,
+          }"
+          href="/sponsors"
+          @click.prevent="router.push({ name: routerName.sponsors })"
+        >
+          赞助
+        </a>
+        <a
+          :class="{
+            item: 1,
+            active: router.currentRoute.value.name === routerName.about,
+          }"
+          href="/about"
+          @click.prevent="router.push({ name: routerName.about })"
+        >
+          关于
+        </a>
+        <a
+          :class="{
+            item: 1,
+            active: router.currentRoute.value.name === routerName.ad,
+          }"
+          href="/ad"
+          @click.prevent="router.push({ name: routerName.ad })"
+        >
+          广告
+        </a>
         <div
           v-for="(item, index) in navLeftList.filter(
             (item) => router.currentRoute.value.query.liveType === item.liveType
@@ -76,20 +106,26 @@
         ></div>
       </n-dropdown>
 
-      <a
-        class="sponsors"
+      <!-- <a
+        :class="{
+          sponsors: 1,
+          active: router.currentRoute.value.name === routerName.sponsors,
+        }"
         href="/sponsors"
         @click.prevent="router.push({ name: routerName.sponsors })"
       >
         赞助
       </a>
       <a
-        class="about"
+        :class="{
+          about: 1,
+          active: router.currentRoute.value.name === routerName.about,
+        }"
         href="/about"
         @click.prevent="router.push({ name: routerName.about })"
       >
         关于
-      </a>
+      </a> -->
       <a
         class="bilibili"
         target="_blank"
@@ -126,7 +162,7 @@ import { openToTarget } from 'billd-utils';
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { useQQLogin } from '@/hooks/use-login';
+import { loginTip, useQQLogin } from '@/hooks/use-login';
 import { liveTypeEnum } from '@/interface';
 import { routerName } from '@/router';
 import { useUserStore } from '@/store/user';
@@ -195,13 +231,14 @@ function handleUserSelect(key) {
   }
 }
 function handlePushSelect(key) {
-  if (key === liveTypeEnum.webrtcPush || key === liveTypeEnum.srsPush) {
-    const url = router.resolve({
-      name: routerName.push,
-      query: { liveType: key },
-    });
-    openToTarget(url.href);
+  if (!loginTip()) {
+    return;
   }
+  const url = router.resolve({
+    name: routerName.push,
+    query: { liveType: key },
+  });
+  openToTarget(url.href);
 }
 
 function goPushPage(routerName: string) {
@@ -290,9 +327,7 @@ function goPushPage(routerName: string) {
       cursor: pointer;
     }
 
-    .sponsors,
     .bilibili,
-    .about,
     .github {
       position: relative;
       margin-right: 15px;
@@ -306,7 +341,7 @@ function goPushPage(routerName: string) {
           position: absolute;
           bottom: -6px;
           left: 50%;
-          width: 40%;
+          width: 40% !important;
           height: 2px;
           background-color: red;
           content: '';

@@ -39,12 +39,12 @@
     <h2>开始赞助（支付宝）</h2>
     <div class="gift-list">
       <div
-        v-for="(item, index) in giftList"
+        v-for="(item, index) in sponsorsGoodsList"
         :key="index"
         class="item"
         @click="startPay(item)"
       >
-        {{ item.subject }}（{{ item.total_amount }}元）
+        {{ item.name }}（{{ item.price }}元）
       </div>
     </div>
     <div class="qrcode-wrap">
@@ -91,8 +91,9 @@ import { hrefToTarget, isMobile } from 'billd-utils';
 import QRCode from 'qrcode';
 import { onMounted, onUnmounted, ref } from 'vue';
 
+import { fetchGoodsList } from '@/api/goods';
 import { fetchAliPay, fetchAliPayStatus, fetchOrderList } from '@/api/order';
-import { IOrder, PayStatusEnum } from '@/interface';
+import { GoodsTypeEnum, IGoods, IOrder, PayStatusEnum } from '@/interface';
 
 const payOk = ref(false);
 const onMountedTime = ref('');
@@ -107,38 +108,7 @@ const payList = ref<IOrder[]>([]);
 
 const currentPayStatus = ref(PayStatusEnum.error);
 
-const giftList = ref([
-  {
-    total_amount: '0.10',
-    subject: '一根辣条',
-    body: 'aaa',
-  },
-  {
-    total_amount: '1.00',
-    subject: '一根烤肠',
-    body: 'bbb',
-  },
-  {
-    total_amount: '5.00',
-    subject: '一瓶奶茶',
-    body: 'ccc',
-  },
-  {
-    total_amount: '10.00',
-    subject: '一杯咖啡',
-    body: 'ddd',
-  },
-  {
-    total_amount: '50.00',
-    subject: '一顿麦当劳',
-    body: 'eee',
-  },
-  {
-    total_amount: '100.00',
-    subject: '一顿海底捞',
-    body: 'fff',
-  },
-]);
+const sponsorsGoodsList = ref<IGoods[]>([]);
 
 onUnmounted(() => {
   clearInterval(payStatusTimer.value);
@@ -148,6 +118,7 @@ onUnmounted(() => {
 onMounted(() => {
   onMountedTime.value = new Date().toLocaleString();
   getPayList();
+  getGoodsList();
 });
 
 function formatDownTime(startTime: number) {
@@ -193,6 +164,17 @@ function handleDownTime() {
   }, 1000);
 }
 
+async function getGoodsList() {
+  const res = await fetchGoodsList({
+    type: GoodsTypeEnum.sponsors,
+    orderName: 'created_at',
+    orderBy: 'desc',
+  });
+  if (res.code === 200) {
+    sponsorsGoodsList.value = res.data.rows;
+  }
+}
+
 async function getPayList() {
   try {
     const res = await fetchOrderList({
@@ -209,16 +191,16 @@ async function getPayList() {
     console.log(error);
   }
 }
-async function startPay(item) {
+async function startPay(item: IGoods) {
   currentPayStatus.value = PayStatusEnum.error;
   payOk.value = false;
   clearInterval(payStatusTimer.value);
   clearInterval(downTimer.value);
   try {
     const res = await fetchAliPay({
-      total_amount: item.total_amount,
-      subject: item.subject,
-      body: item.body,
+      total_amount: item.price!,
+      subject: item.name!,
+      body: item.name!,
     });
     if (res.code === 200) {
       if (isMobile()) {

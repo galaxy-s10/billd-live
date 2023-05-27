@@ -10,6 +10,7 @@ export const routerName = {
   rank: 'rank',
   sponsors: 'sponsors',
   support: 'support',
+  ad: 'ad',
   oauth: 'oauth',
   notFound: 'notFound',
 
@@ -47,6 +48,11 @@ export const defaultRoutes: RouteRecordRaw[] = [
         name: routerName.support,
         path: '/support',
         component: () => import('@/views/support/index.vue'),
+      },
+      {
+        name: routerName.ad,
+        path: '/ad',
+        component: () => import('@/views/ad/index.vue'),
       },
       {
         name: routerName.pull,
