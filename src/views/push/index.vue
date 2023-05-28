@@ -242,13 +242,13 @@ onUnmounted(() => {
 });
 
 onMounted(() => {
-  initPush();
   if (topRef.value && bottomRef.value && containerRef.value) {
     const res =
       bottomRef.value.getBoundingClientRect().top -
       topRef.value.getBoundingClientRect().top;
     containerRef.value.style.height = `${res}px`;
   }
+  initPush();
 });
 </script>
 

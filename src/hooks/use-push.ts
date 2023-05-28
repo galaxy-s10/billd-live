@@ -1,8 +1,20 @@
-import { getRandomString } from 'billd-utils';
-import { Ref, nextTick, reactive, ref } from 'vue';
+import { getRandomString, windowReload } from 'billd-utils';
+import {
+  Ref,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  reactive,
+  ref,
+  watch,
+} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { fetchRtcV1Publish } from '@/api/srs';
+import {
+  fetchCreateUserLiveRoom,
+  fetchUserHasLiveRoom,
+} from '@/api/userLiveRoom';
 import {
   DanmuMsgTypeEnum,
   IAdminIn,
@@ -25,6 +37,7 @@ import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 
 import { loginTip } from './use-login';
+import { useTip } from './use-tip';
 
 export function usePush({
   localVideoRef,
@@ -40,9 +53,9 @@ export function usePush({
   const userStore = useUserStore();
   const networkStore = useNetworkStore();
   const heartbeatTimer = ref();
-  const roomId = ref<string>(getRandomString(15));
+  const roomId = ref('-1');
+  const roomName = ref('');
   const danmuStr = ref('');
-  const roomName = ref(getRandomString(5));
   const isDone = ref(false);
   const joined = ref(false);
   const disabled = ref(false);
@@ -96,8 +109,58 @@ export function usePush({
     txt: string;
   }>();
 
-  function startLive() {
+  async function userHasLiveRoom() {
+    const res = await fetchUserHasLiveRoom(userStore.userInfo?.id!);
+    if (res.code === 200 && res.data) {
+      roomName.value = res.data.live_room?.roomName || '';
+      roomId.value = `${res.data.live_room?.id || -1}`;
+      router.push({ query: { ...route.query, roomId: roomId.value } });
+      return true;
+    }
+    return false;
+  }
+
+  async function handleCreateUserLiveRoom() {
+    try {
+      const res = await fetchCreateUserLiveRoom();
+      if (res.code === 200) {
+        window.$message.success('开通直播间成功！');
+        windowReload();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  watch(
+    () => userStore.userInfo,
+    async (newVal) => {
+      if (newVal) {
+        const res = await userHasLiveRoom();
+        if (!res) {
+          await useTip('你还没有直播间，是否立即开通？');
+          await handleCreateUserLiveRoom();
+        }
+      }
+    }
+  );
+
+  onMounted(() => {
     if (!loginTip()) return;
+  });
+
+  onUnmounted(() => {
+    clearInterval(heartbeatTimer.value);
+  });
+
+  async function startLive() {
+    if (!loginTip()) return;
+    const flag = await userHasLiveRoom();
+    if (!flag) {
+      await useTip('你还没有直播间，是否立即开通？');
+      await handleCreateUserLiveRoom();
+      return;
+    }
     if (!roomNameIsOk()) return;
     if (currMediaTypeList.value.length <= 0) {
       window.$message.warning('请选择一个素材！');
@@ -593,13 +656,11 @@ export function usePush({
   }
 
   async function initPush() {
-    router.push({ query: { ...route.query, roomId: roomId.value } });
     const all = await getAllMediaDevices();
     allMediaTypeList[MediaTypeEnum.camera] = {
       txt: all.find((item) => item.kind === 'videoinput')?.label || '摄像头',
       type: MediaTypeEnum.camera,
     };
-    console.log('initPush', localVideoRef);
     localVideoRef.value?.addEventListener('loadstart', () => {
       console.warn('视频流-loadstart');
       const rtc = networkStore.getRtcMap(roomId.value);

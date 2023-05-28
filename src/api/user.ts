@@ -8,6 +8,6 @@ export function fetchUserInfo() {
   });
 }
 
-export function fetchUserList() {
-  return request.get<IPaging<IUser>>('/user/list');
+export function fetchUserList(params: { orderName: string; orderBy: string }) {
+  return request.get<IPaging<IUser>>('/user/list', { params });
 }

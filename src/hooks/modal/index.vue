@@ -78,6 +78,7 @@ export default defineComponent({
       border-radius: 100px;
       text-align: center;
       line-height: 44px;
+      cursor: pointer;
 
       user-select: none;
 

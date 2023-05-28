@@ -1,29 +1,11 @@
 import { defineStore } from 'pinia';
 
 import { fetchUserInfo } from '@/api/user';
-import { IRole } from '@/interface';
+import { IRole, IUser } from '@/interface';
 import cache from '@/utils/cache';
 
 type RootState = {
-  userInfo?: {
-    id: number;
-    username: string;
-    status: number;
-    avatar: string;
-    title: string;
-    created_at: string;
-    updated_at: string;
-    deleted_at: any;
-    send_comments_total: number;
-    receive_comments_total: number;
-    send_stars_total: number;
-    receive_stars_total: number;
-    articles_total: number;
-    qq_users: any[];
-    github_users: any[];
-    email_users: any[];
-    roles: IRole[];
-  };
+  userInfo?: IUser;
   token?: string;
   roles?: IRole[];
 };

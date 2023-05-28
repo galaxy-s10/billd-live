@@ -9,9 +9,9 @@ import request from '@/utils/request';
  * @returns
  */
 export function fetchAliPay(data: {
-  total_amount: string;
-  subject: string;
-  body: string;
+  goodsId: number;
+  liveRoomId: number;
+  money?: string;
 }) {
   return request.instance({
     url: '/order/pay',

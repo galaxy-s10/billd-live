@@ -1,5 +1,5 @@
 import { getRandomString } from 'billd-utils';
-import { Ref, nextTick, reactive, ref, watch } from 'vue';
+import { Ref, nextTick, onUnmounted, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchRtcV1Play } from '@/api/srs';
@@ -45,6 +45,7 @@ export function usePull({
   const streamurl = ref('');
   const flvurl = ref('');
   const danmuStr = ref('');
+  const balance = ref('0.00');
   const damuList = ref<IDanmu[]>([]);
   const liveUserList = ref<ILiveUser[]>([]);
   const isDone = ref(false);
@@ -92,6 +93,10 @@ export function usePull({
     txt: string;
   }>();
 
+  onUnmounted(() => {
+    clearInterval(heartbeatTimer.value);
+  });
+
   /** 摄像头 */
   async function startGetUserMedia() {
     if (!localStream.value) {
@@ -135,6 +140,9 @@ export function usePull({
       () => networkStore.wsMap.get(roomId.value)?.socketIo?.connected,
     ],
     ([userInfo, connected]) => {
+      if (userInfo) {
+        balance.value = userInfo.wallet?.balance || '0.00';
+      }
       if (userInfo && connected) {
         const instance = networkStore.wsMap.get(roomId.value);
         if (!instance) return;
@@ -212,13 +220,10 @@ export function usePull({
   }
 
   function addTransceiver(socketId: string) {
-    console.log('333addTransceiver', localStream.value);
     if (!localStream.value) return;
     if (socketId !== getSocketId()) {
-      console.log(3333);
       localStream.value.getTracks().forEach((track) => {
         const rtc = networkStore.getRtcMap(`${roomId.value}___${socketId}`);
-        console.log(999999);
         rtc?.addTransceiver(track, localStream.value);
       });
     }
@@ -608,6 +613,7 @@ export function usePull({
     startGetDisplayMedia,
     addTrack,
     addVideo,
+    balance,
     roomName,
     roomNoLive,
     damuList,

@@ -2,10 +2,10 @@
   <div class="rank-wrap">
     <div class="type-list">
       <div
-        v-for="(item, index) in rankType"
+        v-for="(item, index) in rankTypeList"
         :key="index"
         :class="{ item: 1, active: item.type === currRankType }"
-        @click="currRankType = item.type"
+        @click="changeCurrRankType(item.type)"
       >
         {{ item.label }}
       </div>
@@ -32,6 +32,7 @@
           <div class="rank">
             <i>0{{ item.rank }}</i>
           </div>
+          <div v-if="item.balance">余额：{{ item.balance }}</div>
         </div>
       </div>
       <div class="top50-list">
@@ -61,36 +62,126 @@
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue';
 
+import { fetchLiveRoomList } from '@/api/liveRoom';
 import { fetchUserList } from '@/api/user';
+import { fetchWalletList } from '@/api/wallet';
+import { RankTypeEnum } from '@/interface';
 
-const rankType = ref([
+export interface IRankType {
+  type: RankTypeEnum;
+  label: string;
+}
+
+const rankTypeList = ref<IRankType[]>([
   {
-    type: 1,
+    type: RankTypeEnum.liveRoom,
     label: '主播榜',
   },
   {
-    type: 2,
-    label: '打赏榜',
+    type: RankTypeEnum.user,
+    label: '用户榜',
   },
   {
-    type: 3,
-    label: '等级榜',
+    type: RankTypeEnum.wallet,
+    label: '土豪榜',
   },
 ]);
 
-const currRankType = ref(1);
+const currRankType = ref(RankTypeEnum.liveRoom);
 
 const mockRank = [
-  { username: '-', avatar: '', rank: 1, level: -1, score: -1 },
-  { username: '-', avatar: '', rank: 2, level: -1, score: -1 },
-  { username: '-', avatar: '', rank: 3, level: -1, score: -1 },
-  { username: '-', avatar: '', rank: 4, level: -1, score: -1 },
+  {
+    username: '待上榜',
+    avatar: '',
+    rank: 1,
+    level: -1,
+    score: -1,
+  },
+  {
+    username: '待上榜',
+    avatar: '',
+    rank: 2,
+    level: -1,
+    score: -1,
+  },
+  {
+    username: '待上榜',
+    avatar: '',
+    rank: 3,
+    level: -1,
+    score: -1,
+  },
 ];
 const rankList = ref(mockRank);
 
+async function getWalletList() {
+  const res = await fetchWalletList();
+  if (res.code === 200) {
+    const length = res.data.rows.length;
+    rankList.value = res.data.rows.map((item, index) => {
+      return {
+        username: item.user_username!,
+        avatar: item.user_avatar!,
+        rank: index + 1,
+        level: 1,
+        score: 1,
+        balance: item.balance,
+      };
+    });
+    if (length < 3) {
+      rankList.value.push(...mockRank.slice(length));
+    }
+  }
+}
+async function getLiveRoomList() {
+  const res = await fetchLiveRoomList({
+    orderName: 'updated_at',
+    orderBy: 'desc',
+  });
+  if (res.code === 200) {
+    const length = res.data.rows.length;
+    rankList.value = res.data.rows.map((item, index) => {
+      return {
+        username: item.user_username!,
+        avatar: item.user_avatar!,
+        rank: index + 1,
+        level: 1,
+        score: 1,
+      };
+    });
+    if (length < 3) {
+      rankList.value.push(...mockRank.slice(length));
+    }
+  }
+}
+
+function changeCurrRankType(type: RankTypeEnum) {
+  currRankType.value = type;
+  switch (type) {
+    case RankTypeEnum.liveRoom:
+      getLiveRoomList();
+      break;
+    case RankTypeEnum.user:
+      getUserList();
+      break;
+    case RankTypeEnum.wallet:
+      getWalletList();
+      break;
+    default:
+      break;
+  }
+}
+
+onMounted(() => {
+  changeCurrRankType(currRankType.value);
+});
+
 async function getUserList() {
   try {
-    const res = await fetchUserList();
+    const res = await fetchUserList({
+      orderName: 'updated_at',
+      orderBy: 'desc',
+    });
     if (res.code === 200) {
       const length = res.data.rows.length;
       rankList.value = res.data.rows.map((item, index) => {
@@ -110,10 +201,6 @@ async function getUserList() {
     console.log(error);
   }
 }
-
-onMounted(() => {
-  getUserList();
-});
 </script>
 
 <style lang="scss" scoped>

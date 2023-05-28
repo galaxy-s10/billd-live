@@ -6,6 +6,20 @@ export enum PayStatusEnum {
   TRADE_SUCCESS = 'TRADE_SUCCESS',
 }
 
+export enum RankTypeEnum {
+  liveRoom = 'liveRoom',
+  user = 'user',
+  sponsors = 'sponsors',
+  wallet = 'wallet',
+}
+export interface IWallet {
+  id?: number;
+  user_id?: number;
+  balance?: string;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string;
+}
 export type IList<T> = {
   nowPage?: string;
   pageSize?: string;
@@ -52,6 +66,7 @@ export enum GoodsTypeEnum {
   support = 'support',
   sponsors = 'sponsors',
   gift = 'gift',
+  recharge = 'recharge',
 }
 
 export interface IGoods {
@@ -67,6 +82,30 @@ export interface IGoods {
   badge?: string;
   badge_bg?: string;
   remark?: string;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string;
+}
+
+export interface ILiveRoom {
+  id?: number;
+  /** 用户信息 */
+  user?: IUser;
+  /** 直播间名字 */
+  roomName?: string;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string;
+}
+
+export interface IUserLiveRoom {
+  id?: number;
+  user_id?: number;
+  live_room_id?: number;
+  /** 用户信息 */
+  user?: IUser;
+  /** 直播间信息 */
+  live_room?: ILiveRoom;
   created_at?: string;
   updated_at?: string;
   deleted_at?: string;
@@ -127,6 +166,7 @@ export interface IUser {
   id?: number;
   username?: string;
   password?: string;
+  email?: string;
   status?: number;
   avatar?: string;
   desc?: string;
@@ -136,6 +176,7 @@ export interface IUser {
   updated_at?: string;
   deleted_at?: string;
   qq_users?: IQqUser[];
+  wallet?: IWallet;
 }
 
 export interface IQqUser {

@@ -41,22 +41,22 @@
         <a
           :class="{
             item: 1,
-            active: router.currentRoute.value.name === routerName.about,
-          }"
-          href="/about"
-          @click.prevent="router.push({ name: routerName.about })"
-        >
-          关于
-        </a>
-        <a
-          :class="{
-            item: 1,
             active: router.currentRoute.value.name === routerName.ad,
           }"
           href="/ad"
           @click.prevent="router.push({ name: routerName.ad })"
         >
           广告
+        </a>
+        <a
+          :class="{
+            item: 1,
+            active: router.currentRoute.value.name === routerName.about,
+          }"
+          href="/about"
+          @click.prevent="router.push({ name: routerName.about })"
+        >
+          关于
         </a>
         <div
           v-for="(item, index) in navLeftList.filter(
@@ -106,26 +106,6 @@
         ></div>
       </n-dropdown>
 
-      <!-- <a
-        :class="{
-          sponsors: 1,
-          active: router.currentRoute.value.name === routerName.sponsors,
-        }"
-        href="/sponsors"
-        @click.prevent="router.push({ name: routerName.sponsors })"
-      >
-        赞助
-      </a>
-      <a
-        :class="{
-          about: 1,
-          active: router.currentRoute.value.name === routerName.about,
-        }"
-        href="/about"
-        @click.prevent="router.push({ name: routerName.about })"
-      >
-        关于
-      </a> -->
       <a
         class="bilibili"
         target="_blank"

@@ -5,7 +5,7 @@
         v-for="(item, index) in list"
         :key="index"
         class="item"
-        @click="handleClick"
+        @click="startPay(item)"
       >
         <div
           class="left"
@@ -35,16 +35,29 @@
         </div>
       </div>
     </div>
+    <QrPayCpt
+      v-if="showQrPay"
+      :money="goodsInfo.money"
+      :goods-id="goodsInfo.goodsId"
+      :live-room-id="goodsInfo.liveRoomId"
+    ></QrPayCpt>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
+import { nextTick, onMounted, reactive, ref } from 'vue';
 
 import { fetchGoodsList } from '@/api/goods';
+import QrPayCpt from '@/components/QrPay/index.vue';
 import { GoodsTypeEnum, IGoods } from '@/interface';
 
 const list = ref<IGoods[]>([]);
+const showQrPay = ref(false);
+const goodsInfo = reactive({
+  money: '0.00',
+  goodsId: -1,
+  liveRoomId: -1,
+});
 
 async function getGoodsList() {
   const res = await fetchGoodsList({
@@ -57,11 +70,18 @@ async function getGoodsList() {
     list.value = res.data.rows;
   }
 }
+
 onMounted(() => {
   getGoodsList();
 });
-function handleClick() {
-  window.$message.info('即将推出，敬请期待~');
+
+function startPay(item: IGoods) {
+  showQrPay.value = false;
+  nextTick(() => {
+    goodsInfo.money = item.price!;
+    goodsInfo.goodsId = item.id!;
+    showQrPay.value = true;
+  });
 }
 </script>
 

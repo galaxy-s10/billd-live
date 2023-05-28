@@ -6,6 +6,7 @@ import { QQ_CLIENT_ID, QQ_OAUTH_URL, QQ_REDIRECT_URI } from '@/constant';
 import LoginModalCpt from '@/hooks/loginModal/index.vue';
 import { PlatformEnum } from '@/interface';
 import { useUserStore } from '@/store/user';
+import cache from '@/utils/cache';
 import { clearLoginInfo, setLoginInfo } from '@/utils/cookie';
 
 const app = createApp(LoginModalCpt);
@@ -43,9 +44,10 @@ export async function handleLogin(e) {
   }
 }
 
-export function loginTip() {
-  const userStore = useUserStore();
-  if (!userStore.userInfo) {
+export function loginTip(show = false) {
+  const token = cache.getStorageExp('token');
+  instance.show = show;
+  if (!token) {
     window.$message.warning('请先登录~');
     instance.show = true;
     return false;

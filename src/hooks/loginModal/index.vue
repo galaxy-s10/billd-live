@@ -13,7 +13,7 @@
           class="qq-logo"
           src="@/assets/img/qq-logo.webp"
           alt=""
-          @click="useQQLogin()"
+          @click="handleQQlogin"
         />
         <div>qq登录</div>
       </div>
@@ -35,11 +35,15 @@ export default defineComponent({
     const title = ref('登录');
     const show = ref(false);
     const maskClosable = ref(true);
+    function handleQQlogin() {
+      show.value = !show.value;
+      useQQLogin();
+    }
     return {
       title,
       show,
       maskClosable,
-      useQQLogin,
+      handleQQlogin,
     };
   },
 });

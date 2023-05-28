@@ -39,7 +39,7 @@
             </div>
           </div>
           <div
-            v-if="showJoin"
+            v-if="showSidebar"
             class="sidebar"
           >
             <div
@@ -63,6 +63,7 @@
             </div>
 
             <div
+              v-if="showJoin"
               class="join"
               @click="handleJoin()"
             >
@@ -94,6 +95,14 @@
             </div>
             <div class="name">{{ item.name }}</div>
             <div class="price">￥{{ item.price }}</div>
+          </div>
+          <div
+            class="item"
+            @click="handleRecharge"
+          >
+            <div class="ico wallet"></div>
+            <div class="name">余额:{{ balance }}</div>
+            <div class="price">立即充值</div>
           </div>
         </div>
       </div>
@@ -170,6 +179,7 @@
           </div>
         </div>
       </div>
+      <RechargeCpt v-if="showRecharge"></RechargeCpt>
     </template>
   </div>
 </template>
@@ -189,12 +199,16 @@ import {
 import { useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
 
+import RechargeCpt from './recharge/index.vue';
+
 const route = useRoute();
 const userStore = useUserStore();
 const appStore = useAppStore();
 
 const giftGoodsList = ref<IGoods[]>([]);
+const showRecharge = ref(false);
 const showJoin = ref(true);
+const showSidebar = ref(true);
 const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
@@ -208,14 +222,20 @@ const {
   getSocketId,
   keydownDanmu,
   sendDanmu,
+  batchSendOffer,
   startGetUserMedia,
+  startGetDisplayMedia,
+  addTrack,
   addVideo,
+  balance,
   roomName,
   roomNoLive,
   damuList,
   giftList,
   liveUserList,
   danmuStr,
+  localStream,
+  sender,
   sidebarList,
 } = usePull({
   localVideoRef,
@@ -233,6 +253,10 @@ async function getGoodsList() {
   if (res.code === 200) {
     giftGoodsList.value = res.data.rows;
   }
+}
+
+function handleRecharge() {
+  showRecharge.value = !showRecharge.value;
 }
 
 function handleJoin() {
@@ -255,7 +279,7 @@ onMounted(() => {
       route.query.liveType as liveTypeEnum
     )
   ) {
-    showJoin.value = false;
+    showSidebar.value = false;
   }
   if (topRef.value && bottomRef.value && containerRef.value) {
     const res =
@@ -288,7 +312,7 @@ onMounted(() => {
     .head {
       display: flex;
       justify-content: space-between;
-      padding: 20px;
+      padding: 10px 20px;
       .tag {
         display: inline-block;
         margin-right: 5px;
@@ -392,12 +416,21 @@ onMounted(() => {
       display: flex;
       align-items: center;
       justify-content: space-around;
+      box-sizing: border-box;
       height: 120px;
       .item {
-        margin-right: 10px;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        justify-content: center;
+        box-sizing: border-box;
+        width: 110px;
+        height: 110px;
         text-align: center;
         cursor: pointer;
-
+        &:hover {
+          background-color: #ebe0ce;
+        }
         .ico {
           position: relative;
           width: 50px;
@@ -405,20 +438,24 @@ onMounted(() => {
           background-position: center center;
           background-size: cover;
           background-repeat: no-repeat;
+          &.wallet {
+            background-image: url('@/assets/img/wallet.webp');
+          }
           .badge {
             position: absolute;
-            top: -10px;
+            top: -8px;
             right: -10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 2px;
             padding: 2px;
+            border-radius: 2px;
             color: white;
             .txt {
               display: inline-block;
-              transform-origin: center !important;
               line-height: 1;
+              transform-origin: center !important;
+
               @include minFont(10);
             }
           }

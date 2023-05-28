@@ -7,8 +7,7 @@ export interface MyAxiosPromise<T = any>
   extends Promise<{
     code: number;
     data: T;
-    msg: string;
-    message?: string;
+    message: string;
   }> {}
 
 interface MyAxiosInstance extends Axios {
@@ -54,8 +53,6 @@ class MyAxios {
         if (error.message.indexOf('timeout') !== -1) {
           console.error(error.message);
           window.$message.error('请求超时，请重试');
-        } else {
-          window.$message.error('网络错误，请重试');
         }
         const statusCode = error.response.status as number;
         const errorResponseData = error.response.data;
@@ -75,20 +72,24 @@ class MyAxios {
           }
           if (statusCode === 400) {
             console.error(errorResponseData.message);
+            window.$message.error(errorResponseData.message);
             return Promise.reject(errorResponseData);
           }
           if (statusCode === 401) {
             console.error(errorResponseData.message);
+            window.$message.error(errorResponseData.message);
             const userStore = useUserStore();
             userStore.logout();
             return Promise.reject(errorResponseData);
           }
           if (statusCode === 403) {
             console.error(errorResponseData.message);
+            window.$message.error(errorResponseData.message);
             return Promise.reject(errorResponseData);
           }
           if (statusCode === 404) {
             console.error(errorResponseData.message);
+            window.$message.error(errorResponseData.message);
             return Promise.reject(errorResponseData);
           }
         } else {

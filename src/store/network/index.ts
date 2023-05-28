@@ -6,7 +6,6 @@ import { WebSocketClass } from '@/network/webSocket';
 type NetworkRootState = {
   wsMap: Map<string, WebSocketClass>;
   rtcMap: Map<string, WebRTCClass>;
-  fromUserMap: Map<string, string>;
 };
 
 export const useNetworkStore = defineStore('network', {
@@ -14,7 +13,6 @@ export const useNetworkStore = defineStore('network', {
     return {
       wsMap: new Map(),
       rtcMap: new Map(),
-      fromUserMap: new Map(),
     };
   },
   actions: {
@@ -33,9 +31,6 @@ export const useNetworkStore = defineStore('network', {
       } else {
         this.rtcMap.set(roomId, arg);
       }
-    },
-    updateFromUserMap(socketId: string, data) {
-      this.fromUserMap.set(socketId, data);
     },
     getRtcMap(roomId: string) {
       return this.rtcMap.get(roomId);

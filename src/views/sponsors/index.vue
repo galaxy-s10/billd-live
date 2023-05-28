@@ -47,67 +47,35 @@
         {{ item.name }}（{{ item.price }}元）
       </div>
     </div>
-    <div class="qrcode-wrap">
-      <img
-        v-if="aliPayBase64 !== ''"
-        class="qrcode"
-        :src="aliPayBase64"
-        alt=""
-      />
-      <template v-if="currentPayStatus !== PayStatusEnum.error">
-        <div class="mask">
-          <div class="txt">
-            {{
-              currentPayStatus === PayStatusEnum.TRADE_SUCCESS
-                ? '支付成功'
-                : '等待支付'
-            }}
-          </div>
-        </div>
-      </template>
-    </div>
-    <div v-if="aliPayBase64 !== ''">
-      <div class="bottom">
-        <div class="sao">打开支付宝扫一扫</div>
-        <div class="expr">有效期5分钟（{{ formatDownTime(downTime) }}）</div>
-      </div>
-    </div>
-
-    <h3 v-if="currentPayStatus === PayStatusEnum.WAIT_BUYER_PAY">
-      ps：支付宝标题显示：东圃牛杂档，是正常的~
-    </h3>
-
-    <div
-      v-if="payOk"
-      class="bottom"
-    >
-      <h2>感谢您的赞助~</h2>
-    </div>
+    <QrPayCpt
+      v-if="showQrPay"
+      :money="goodsInfo.money"
+      :goods-id="goodsInfo.goodsId"
+      :live-room-id="goodsInfo.liveRoomId"
+    ></QrPayCpt>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { hrefToTarget, isMobile } from 'billd-utils';
-import QRCode from 'qrcode';
-import { onMounted, onUnmounted, ref } from 'vue';
+import { nextTick, onMounted, onUnmounted, reactive, ref } from 'vue';
 
 import { fetchGoodsList } from '@/api/goods';
-import { fetchAliPay, fetchAliPayStatus, fetchOrderList } from '@/api/order';
+import { fetchOrderList } from '@/api/order';
+import QrPayCpt from '@/components/QrPay/index.vue';
 import { GoodsTypeEnum, IGoods, IOrder, PayStatusEnum } from '@/interface';
 
-const payOk = ref(false);
 const onMountedTime = ref('');
-const aliPayBase64 = ref('');
 const payStatusTimer = ref();
 const downTimer = ref();
 const receiveMoney = ref(0);
-const downTime = ref();
-const downTimeEnd = ref();
+const showQrPay = ref(false);
+const goodsInfo = reactive({
+  money: '0.00',
+  goodsId: -1,
+  liveRoomId: -1,
+});
 
 const payList = ref<IOrder[]>([]);
-
-const currentPayStatus = ref(PayStatusEnum.error);
-
 const sponsorsGoodsList = ref<IGoods[]>([]);
 
 onUnmounted(() => {
@@ -120,49 +88,6 @@ onMounted(() => {
   getPayList();
   getGoodsList();
 });
-
-function formatDownTime(startTime: number) {
-  const time2 = downTimeEnd.value - startTime;
-  const ms = 1;
-  const second = ms * 1000;
-  const minute = second * 60;
-  const hour = minute * 60;
-  const day = hour * 24;
-  if (time2 > day) {
-    const res = (time2 / day).toFixed(4).split('.');
-    return `${res[0]}天${Math.ceil(Number(`0.${res[1]}`) * 24)}时`;
-  } else if (time2 > hour) {
-    const res = (time2 / hour).toFixed(4).split('.');
-    return `${res[0]}时${Math.ceil(Number(`0.${res[1]}`) * 60)}分`;
-  } else if (time2 > minute) {
-    const res = (time2 / minute).toFixed(4).split('.');
-    return `${res[0]}分${Math.ceil(Number(`0.${res[1]}`) * 60)}秒`;
-  } else {
-    const res = (time2 / second).toFixed(4).split('.');
-    return `${res[0]}秒`;
-  }
-}
-
-async function generateQR(text) {
-  let base64 = '';
-  try {
-    base64 = await QRCode.toDataURL(text, {
-      margin: 1,
-    });
-  } catch (err) {
-    console.error('生成二维码失败！', err);
-  }
-  return base64;
-}
-
-function handleDownTime() {
-  clearInterval(downTimer.value);
-  downTimeEnd.value = +new Date() + 1000 * 60 * 5;
-  downTime.value = +new Date();
-  downTimer.value = setInterval(() => {
-    downTime.value = +new Date();
-  }, 1000);
-}
 
 async function getGoodsList() {
   const res = await fetchGoodsList({
@@ -191,55 +116,14 @@ async function getPayList() {
     console.log(error);
   }
 }
-async function startPay(item: IGoods) {
-  currentPayStatus.value = PayStatusEnum.error;
-  payOk.value = false;
-  clearInterval(payStatusTimer.value);
-  clearInterval(downTimer.value);
-  try {
-    const res = await fetchAliPay({
-      total_amount: item.price!,
-      subject: item.name!,
-      body: item.name!,
-    });
-    if (res.code === 200) {
-      if (isMobile()) {
-        hrefToTarget(res.data.qr_code);
-        return;
-      }
-      const base64 = await generateQR(res.data.qr_code);
-      aliPayBase64.value = base64;
-      getPayStatus(res.data.out_trade_no);
-      handleDownTime();
-    }
-  } catch (error) {
-    console.log(error);
-  }
-}
 
-function getPayStatus(outTradeNo: string) {
-  clearInterval(payStatusTimer.value);
-  payStatusTimer.value = setInterval(async () => {
-    try {
-      const res = await fetchAliPayStatus({
-        out_trade_no: outTradeNo,
-      });
-      if (res.data.tradeStatus === PayStatusEnum.WAIT_BUYER_PAY) {
-        currentPayStatus.value = PayStatusEnum.WAIT_BUYER_PAY;
-        console.log('等待支付');
-      }
-      if (res.data.tradeStatus === PayStatusEnum.TRADE_SUCCESS) {
-        currentPayStatus.value = PayStatusEnum.TRADE_SUCCESS;
-        clearInterval(downTimer.value);
-        clearInterval(payStatusTimer.value);
-        console.log('支付成功！');
-        payOk.value = true;
-        getPayList();
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }, 1000);
+function startPay(item: IGoods) {
+  showQrPay.value = false;
+  nextTick(() => {
+    goodsInfo.money = item.price!;
+    goodsInfo.goodsId = item.id!;
+    showQrPay.value = true;
+  });
 }
 </script>
 
@@ -307,35 +191,6 @@ function getPayStatus(outTradeNo: string) {
       background-color: skyblue;
       cursor: pointer;
     }
-  }
-  .qrcode-wrap {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
-    margin: 20px auto 0;
-    width: 140px;
-    height: 140px;
-
-    .mask {
-      position: absolute !important;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      @extend %maskBg;
-      .txt {
-        color: white;
-        font-weight: bold;
-      }
-    }
-  }
-  .bottom {
-    margin-top: 2px;
-    width: 100%;
-    text-align: center;
-    font-size: 14px;
   }
 }
 </style>
