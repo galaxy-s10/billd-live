@@ -120,8 +120,8 @@ async function getWalletList() {
     const length = res.data.rows.length;
     rankList.value = res.data.rows.map((item, index) => {
       return {
-        username: item.user_username!,
-        avatar: item.user_avatar!,
+        username: item.user.username!,
+        avatar: item.user.avatar!,
         rank: index + 1,
         level: 1,
         score: 1,

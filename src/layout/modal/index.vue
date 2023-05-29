@@ -19,5 +19,6 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 
-const showModal = ref(process.env.NODE_ENV === 'production');
+// const showModal = ref(process.env.NODE_ENV === 'production');
+const showModal = ref(false);
 </script>

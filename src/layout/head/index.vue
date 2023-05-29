@@ -57,6 +57,23 @@
           @click.prevent="router.push({ name: routerName.about })"
         >
           关于
+          <div class="list">
+            <div class="item">
+              <div class="txt">常见问题</div>
+            </div>
+            <div class="item">
+              <div class="txt">团队</div>
+            </div>
+            <div class="item">
+              <div class="txt">b站视频</div>
+              <n-icon
+                size="20"
+                color="#bfbfbf"
+              >
+                <TrendingUp></TrendingUp>
+              </n-icon>
+            </div>
+          </div>
         </a>
         <div
           v-for="(item, index) in navLeftList.filter(
@@ -138,6 +155,7 @@
 </template>
 
 <script lang="ts" setup>
+import { TrendingUp } from '@vicons/ionicons5';
 import { openToTarget } from 'billd-utils';
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -189,6 +207,27 @@ const userOptions = ref([
   },
 ]);
 
+enum OptionEnum {
+  problem,
+  team,
+  bilibili,
+}
+
+const aboutOptions = ref([
+  {
+    label: '常见问题',
+    key: OptionEnum.problem,
+  },
+  {
+    label: '团队',
+    key: OptionEnum.team,
+  },
+  {
+    label: 'b站视频',
+    key: OptionEnum.bilibili,
+  },
+]);
+
 const options = ref([
   {
     label: 'webrtc开播',
@@ -205,6 +244,7 @@ onMounted(() => {
     'https://img.shields.io/github/stars/galaxy-s10/billd-live?label=Star&logo=GitHub&labelColor=white&logoColor=black&style=social&cacheSeconds=3600';
 });
 
+function handleSelect(key) {}
 function handleUserSelect(key) {
   if (key === '1') {
     userStore.logout();
@@ -258,6 +298,25 @@ function goPushPage(routerName: string) {
         color: black;
         text-decoration: none;
         cursor: pointer;
+
+        .list {
+          position: absolute;
+          top: 100%;
+          right: 0;
+          padding: 10px;
+          width: 100px;
+          background-color: #fff;
+          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1),
+            0 2px 6px rgba(0, 0, 0, 0.08);
+          .item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            .txt {
+              margin-right: 5px;
+            }
+          }
+        }
 
         &.active {
           &::after {
