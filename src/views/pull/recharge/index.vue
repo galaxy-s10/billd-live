@@ -57,7 +57,7 @@ const goodsInfo = reactive({
 async function startPay() {
   console.log(money.value, minMoney);
   if (money.value < minMoney) {
-    window.$message.warning(`最少充值${minMoney}元`);
+    window.$message.warning(`最少充值${minMoney}元！`);
     return;
   }
   const res = await fetchFindByTypeGoods(GoodsTypeEnum.recharge);

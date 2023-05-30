@@ -219,7 +219,7 @@ async function getUserList() {
       margin: 0 10px;
       height: 40px;
       border-radius: 10px;
-      background-color: skyblue;
+      background-color: $theme-color-gold;
       color: white;
       text-align: center;
       font-weight: bold;

@@ -1,194 +1,254 @@
 <template>
   <div class="sponsors-wrap">
-    <h1 class="txt">
-      截止至{{ onMountedTime }}，已收到：{{ receiveMoney / 100 }}元赞助~
-    </h1>
-    <div class="pay-list">
-      <div
-        v-for="(item, index) in payList"
-        :key="index"
-        class="item"
-      >
-        <div class="time">发起时间：{{ item.created_at }}，</div>
-        <div class="user">
-          <template v-if="item.user">
-            <img
-              :src="item.user.avatar"
-              class="avatar"
-              alt=""
-            />
-            <span class="username">{{ item.user.username }}</span>
-          </template>
-          <span v-else>游客</span>，
+    <div class="content">
+      <h1 class="title">成为billd-live的赞助者</h1>
+      <div class="desc">
+        目前billd-live仅仅是作者业余时间开发以及维护，需要投入非常多时间以及精力，
+        你的赞助将会为billd-live提供经济支持。
+      </div>
+      <div class="hr"></div>
+      <div class="list">
+        <div class="item">
+          <h2>以企业名义赞助billd-live</h2>
+          <p>如果你是企业用户，并且从billd-live中受益，请考虑捐赠以示感谢。</p>
         </div>
-
-        <div class="account">支付宝账号：{{ item.buyer_logon_id }}，</div>
-        <div class="gift">
-          赞助了：{{ item.subject }}（{{ item.total_amount }}元），
+        <div class="hr"></div>
+        <div class="item">
+          <h2>以个人名义赞助billd-live</h2>
+          <p>
+            如果你是个人用户，并且从billd-live中受益，请考虑捐赠以示感谢——就当是偶尔请我们喝杯咖啡。
+          </p>
         </div>
-        <div class="status">
-          状态：{{
-            item.trade_status === PayStatusEnum.WAIT_BUYER_PAY
-              ? '支付中'
-              : '已支付'
-          }}，
+        <div class="hr"></div>
+        <div class="item sponsors">
+          <h2>当前赞助商</h2>
+          <h3>铂金赞助商</h3>
+          <div class="hr"></div>
+          <div class="list platinum-list">
+            <a
+              v-for="(item, index) in platinumList"
+              :key="index"
+              class="bg platinum"
+              :href="item.url"
+              @click.prevent="openToTarget(item.url)"
+            >
+              <img
+                :src="item.logo"
+                alt=""
+              />
+            </a>
+          </div>
+          <h3>金牌赞助商</h3>
+          <div class="hr"></div>
+          <div class="list gold-list">
+            <a
+              v-for="(item, index) in goldList"
+              :key="index"
+              class="bg gold"
+              :href="item.url"
+              @click.prevent="openToTarget(item.url)"
+            >
+              <img
+                :src="item.logo"
+                alt=""
+              />
+            </a>
+          </div>
+          <h3>银牌赞助商</h3>
+          <div class="hr"></div>
+          <div class="list silver-list">
+            <a
+              v-for="(item, index) in silverList"
+              :key="index"
+              class="bg silver"
+              :href="item.url"
+              @click.prevent="openToTarget(item.url)"
+            >
+              <img
+                :src="item.logo"
+                alt=""
+              />
+            </a>
+          </div>
         </div>
-        <div class="time">支付时间：{{ item.send_pay_date || '-' }}</div>
       </div>
     </div>
-    <h2>开始赞助（支付宝）</h2>
-    <div class="gift-list">
-      <div
-        v-for="(item, index) in sponsorsGoodsList"
-        :key="index"
-        class="item"
-        @click="startPay(item)"
-      >
-        {{ item.name }}（{{ item.price }}元）
-      </div>
+    <div class="aside">
+      <div class="title">本页目录</div>
+      <div class="item">以个人名义赞助billd-live</div>
+      <div class="item">以企业名义赞助billd-live</div>
+      <div class="item">当前赞助商</div>
     </div>
-    <QrPayCpt
-      v-if="showQrPay"
-      :money="goodsInfo.money"
-      :goods-id="goodsInfo.goodsId"
-      :live-room-id="goodsInfo.liveRoomId"
-    ></QrPayCpt>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { nextTick, onMounted, onUnmounted, reactive, ref } from 'vue';
+import { openToTarget } from 'billd-utils';
+import { ref } from 'vue';
 
-import { fetchGoodsList } from '@/api/goods';
-import { fetchOrderList } from '@/api/order';
-import QrPayCpt from '@/components/QrPay/index.vue';
-import { GoodsTypeEnum, IGoods, IOrder, PayStatusEnum } from '@/interface';
+// 铂金赞助
+const platinumList = ref([
+  {
+    logo: 'https://sponsors.vuejs.org/images/line_corporation.avif',
+    url: 'aaa',
+  },
+  {
+    logo: 'https://sponsors.vuejs.org/images/vueschool.avif',
+    url: 'bbb',
+  },
+]);
 
-const onMountedTime = ref('');
-const payStatusTimer = ref();
-const downTimer = ref();
-const receiveMoney = ref(0);
-const showQrPay = ref(false);
-const goodsInfo = reactive({
-  money: '0.00',
-  goodsId: -1,
-  liveRoomId: -1,
-});
+// 金牌赞助
+const goldList = ref([
+  {
+    logo: 'https://sponsors.vuejs.org/images/famous_fonts.avif',
+    url: '',
+  },
+  {
+    logo: 'https://sponsors.vuejs.org/images/herodevs.avif',
+    url: '',
+  },
+  {
+    logo: 'https://sponsors.vuejs.org/images/herodevs.avif',
+    url: '',
+  },
+]);
 
-const payList = ref<IOrder[]>([]);
-const sponsorsGoodsList = ref<IGoods[]>([]);
-
-onUnmounted(() => {
-  clearInterval(payStatusTimer.value);
-  clearInterval(downTimer.value);
-});
-
-onMounted(() => {
-  onMountedTime.value = new Date().toLocaleString();
-  getPayList();
-  getGoodsList();
-});
-
-async function getGoodsList() {
-  const res = await fetchGoodsList({
-    type: GoodsTypeEnum.sponsors,
-    orderName: 'created_at',
-    orderBy: 'desc',
-  });
-  if (res.code === 200) {
-    sponsorsGoodsList.value = res.data.rows;
-  }
-}
-
-async function getPayList() {
-  try {
-    const res = await fetchOrderList({
-      trade_status: PayStatusEnum.TRADE_SUCCESS,
-    });
-    if (res.code === 200) {
-      payList.value = res.data.rows;
-      receiveMoney.value = payList.value.reduce(
-        (pre, item) => pre + Number(item.total_amount) * 100,
-        0
-      );
-    }
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-function startPay(item: IGoods) {
-  showQrPay.value = false;
-  nextTick(() => {
-    goodsInfo.money = item.price!;
-    goodsInfo.goodsId = item.id!;
-    showQrPay.value = true;
-  });
-}
+// 银牌赞助
+const silverList = ref([
+  {
+    logo: 'https://sponsors.vuejs.org/images/vuemastery.avif',
+    url: '',
+  },
+  {
+    logo: 'https://sponsors.vuejs.org/images/herodevs.avif',
+    url: '',
+  },
+  {
+    logo: 'https://sponsors.vuejs.org/images/herodevs.avif',
+    url: '',
+  },
+]);
 </script>
 
 <style lang="scss" scoped>
 .sponsors-wrap {
-  text-align: center;
-  .pay-list {
-    display: flex;
-    overflow: scroll;
-    align-items: center;
-    flex-direction: column;
-    box-sizing: border-box;
-    margin-bottom: 20px;
-    padding: 10px;
-    width: 100%;
-    height: 200px;
-    background-color: papayawhip;
-    .item {
-      display: inline-flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-bottom: 4px;
-      width: 100%;
-      text-align: left;
+  display: flex;
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding-top: 50px;
+  width: 960px;
+  color: rgb(33, 53, 71);
 
-      .user {
-        width: 120px;
-        padding: 0 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        .avatar {
-          width: 30px;
-          height: 30px;
-          border-radius: 50%;
+  .content {
+    flex: 1;
+    font-size: 16px;
+    .title {
+      margin: 0;
+      margin-bottom: 60px;
+      font-weight: 500;
+      font-size: 40px;
+    }
+    .hr {
+      margin: 60px 0 20px 0;
+      width: 100%;
+      height: 1px;
+      background-color: #e7e7e7;
+    }
+
+    .link {
+      color: $theme-color-gold;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .list {
+      h2 {
+        font-weight: 600;
+      }
+
+      .item {
+        font-size: 16px;
+        &.sponsors {
+          h3 {
+            margin-top: 50px;
+            text-align: center;
+          }
+          .list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-evenly;
+          }
+          .bg {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+            justify-content: center;
+            box-sizing: border-box;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            &.platinum {
+              width: 100%;
+              height: 160px;
+              img {
+                width: 300px;
+              }
+            }
+            &.gold {
+              width: 49%;
+              height: 120px;
+              img {
+                width: 200px;
+              }
+              // 最后一行是2个元素,则将最后一个元素添加一个30%
+              &:last-child:nth-child(2n-1) {
+                margin-right: calc(((100% - (49% * 2)) * 1 / 2) + (49% * 1));
+              }
+              // 最后一行是1个元素
+              &:last-child:nth-child(2n-2) {
+                margin-right: calc(((100% - (49% * 2)) * 2 / 2) + (49% * 2));
+              }
+            }
+            &.silver {
+              width: 32%;
+              height: 90px;
+              img {
+                width: 150px;
+              }
+              // 最后一行是3个元素,则将最后一行3个元素都添加底部外边距
+              &:last-child:nth-child(3n) {
+              }
+              // 最后一行是2个元素,则将最后一个元素添加一个30%
+              &:last-child:nth-child(3n-1) {
+                margin-right: calc(((100% - (32% * 3)) * 1 / 4) + (32% * 1));
+              }
+              // 最后一行是1个元素
+              &:last-child:nth-child(3n-2) {
+                margin-right: calc(((100% - (32% * 3)) * 2 / 4) + (32% * 2));
+              }
+            }
+            img {
+              max-width: 100%;
+              max-height: 100%;
+            }
+          }
         }
-        .username {
-          @extend %singleEllipsis;
-        }
-      }
-      .account {
-        width: 250px;
-      }
-      .gift {
-        width: 260px;
-      }
-      .status {
-        width: 120px;
-        text-align: left;
-      }
-      .time {
-        width: 280px;
       }
     }
   }
-  .gift-list {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    justify-content: center;
+  .aside {
+    padding-left: 90px;
+    .title {
+      margin-bottom: 8px;
+      color: rgb(33, 53, 71);
+      font-weight: 700;
+      font-size: 12px;
+    }
     .item {
-      margin: 5px;
-      padding: 5px 10px;
-      border-radius: 4px;
-      background-color: skyblue;
+      margin-bottom: 8px;
+      color: rgba(60, 60, 60, 0.7);
+      font-size: 13px;
       cursor: pointer;
     }
   }

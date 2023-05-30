@@ -189,6 +189,7 @@ import { nextTick, onMounted, onUnmounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchGoodsList } from '@/api/goods';
+import { loginTip } from '@/hooks/use-login';
 import { usePull } from '@/hooks/use-pull';
 import {
   DanmuMsgTypeEnum,
@@ -256,6 +257,7 @@ async function getGoodsList() {
 }
 
 function handleRecharge() {
+  if (!loginTip()) return;
   showRecharge.value = !showRecharge.value;
 }
 
@@ -333,7 +335,7 @@ onMounted(() => {
           width: 64px;
           height: 64px;
           border-radius: 50%;
-          background-color: skyblue;
+          background-color: $theme-color-gold;
         }
         .detail {
           .top {
@@ -507,7 +509,7 @@ onMounted(() => {
             width: 25px;
             height: 25px;
             border-radius: 50%;
-            background-color: skyblue;
+            background-color: $theme-color-gold;
           }
           .username {
             color: black;
@@ -560,7 +562,7 @@ onMounted(() => {
         padding: 5px;
         width: 80px;
         border-radius: 4px;
-        background-color: skyblue;
+        background-color: $theme-color-gold;
         color: white;
         text-align: center;
         font-size: 12px;

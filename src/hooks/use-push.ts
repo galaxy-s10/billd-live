@@ -612,7 +612,7 @@ export function usePush({
     }
     const instance = networkStore.wsMap.get(roomId.value);
     if (!instance) {
-      window.$message.error('还没开播，不能发送弹幕');
+      window.$message.error('还没开播，不能发送弹幕！');
       return;
     }
     instance.send({

@@ -171,7 +171,7 @@ function joinFlvRoom() {
   padding: 20px 0;
   min-width: $large-width;
   height: 610px;
-  background-color: skyblue;
+  background-color: papayawhip;
   text-align: center;
 
   .left {
@@ -223,14 +223,14 @@ function joinFlvRoom() {
 
       .btn {
         padding: 14px 26px;
-        border: 2px solid rgba($color: skyblue, $alpha: 0.5);
+        border: 2px solid rgba($color: papayawhip, $alpha: 0.5);
         border-radius: 6px;
         background-color: rgba(0, 0, 0, 0.3);
-        color: skyblue;
+        color: papayawhip;
         font-size: 16px;
         cursor: pointer;
         &:hover {
-          background-color: rgba($color: skyblue, $alpha: 0.5);
+          background-color: rgba($color: papayawhip, $alpha: 0.5);
           color: white;
         }
         &.webrtc {
@@ -275,7 +275,7 @@ function joinFlvRoom() {
           bottom: 0;
           left: 0;
           z-index: 1;
-          border: 2px solid skyblue;
+          border: 2px solid papayawhip;
           border-radius: 4px;
         }
         .triangle {
@@ -284,7 +284,7 @@ function joinFlvRoom() {
           left: 0;
           display: inline-block;
           border: 5px solid transparent;
-          border-right-color: skyblue;
+          border-right-color: papayawhip;
           transform: translate(-100%, -50%);
         }
         &.active {
@@ -327,6 +327,7 @@ function joinFlvRoom() {
       }
     }
     .none {
+      width: 200px;
       color: white;
       font-size: 14px;
     }

@@ -10,9 +10,14 @@ export const routerName = {
   rank: 'rank',
   sponsors: 'sponsors',
   support: 'support',
+  link: 'link',
   ad: 'ad',
+  faq: 'faq',
+  team: 'team',
   oauth: 'oauth',
+  release: 'release',
   notFound: 'notFound',
+  group: 'group',
 
   pull: 'pull',
   push: 'push',
@@ -32,7 +37,28 @@ export const defaultRoutes: RouteRecordRaw[] = [
       {
         name: routerName.about,
         path: '/about',
-        component: () => import('@/views/about/index.vue'),
+        children: [
+          {
+            name: routerName.group,
+            path: 'group',
+            component: () => import('@/views/group/index.vue'),
+          },
+          {
+            name: routerName.faq,
+            path: 'faq',
+            component: () => import('@/views/faq/index.vue'),
+          },
+          {
+            name: routerName.team,
+            path: 'team',
+            component: () => import('@/views/team/index.vue'),
+          },
+          {
+            name: routerName.release,
+            path: 'release',
+            component: () => import('@/views/release/index.vue'),
+          },
+        ],
       },
       {
         name: routerName.rank,
@@ -54,6 +80,7 @@ export const defaultRoutes: RouteRecordRaw[] = [
         path: '/ad',
         component: () => import('@/views/ad/index.vue'),
       },
+
       {
         name: routerName.pull,
         path: '/pull/:roomId',

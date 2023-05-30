@@ -109,7 +109,7 @@
           <div class="top">
             <span class="item">
               <i class="ico"></i>
-              <span>正在观看人数：{{ liveUserList.length }}</span>
+              <span>正在观看：{{ liveUserList.length }}</span>
             </span>
           </div>
           <div class="bottom">

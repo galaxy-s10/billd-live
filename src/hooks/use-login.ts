@@ -48,7 +48,7 @@ export function loginTip(show = false) {
   const token = cache.getStorageExp('token');
   instance.show = show;
   if (!token) {
-    window.$message.warning('请先登录~');
+    window.$message.warning('请先登录！');
     instance.show = true;
     return false;
   }

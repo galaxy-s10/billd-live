@@ -2,15 +2,27 @@
   <div class="head-wrap">
     <div class="left">
       <div
-        class="logo"
+        class="logo-wrap"
         @click="router.push('/')"
       >
-        Billd直播
+        <!-- <div class="logo"></div> -->
+        <div class="txt">Billd直播</div>
       </div>
+
       <div class="nav">
         <a
+          class="item"
           :class="{
-            item: 1,
+            active: router.currentRoute.value.path === '/',
+          }"
+          href="/"
+          @click.prevent="router.push('/')"
+        >
+          首页
+        </a>
+        <a
+          class="item"
+          :class="{
             active: router.currentRoute.value.name === routerName.rank,
           }"
           href="/rank"
@@ -19,8 +31,8 @@
           排行榜
         </a>
         <a
+          class="item"
           :class="{
-            item: 1,
             active: router.currentRoute.value.name === routerName.support,
           }"
           href="/support"
@@ -29,18 +41,8 @@
           付费支持
         </a>
         <a
+          class="item"
           :class="{
-            item: 1,
-            active: router.currentRoute.value.name === routerName.sponsors,
-          }"
-          href="/sponsors"
-          @click.prevent="router.push({ name: routerName.sponsors })"
-        >
-          赞助
-        </a>
-        <a
-          :class="{
-            item: 1,
             active: router.currentRoute.value.name === routerName.ad,
           }"
           href="/ad"
@@ -48,61 +50,97 @@
         >
           广告
         </a>
-        <a
-          :class="{
-            item: 1,
-            active: router.currentRoute.value.name === routerName.about,
-          }"
-          href="/about"
-          @click.prevent="router.push({ name: routerName.about })"
-        >
-          关于
-          <div class="list">
-            <div class="item">
-              <div class="txt">常见问题</div>
-            </div>
-            <div class="item">
-              <div class="txt">团队</div>
-            </div>
-            <div class="item">
-              <div class="txt">b站视频</div>
-              <n-icon
-                size="20"
-                color="#bfbfbf"
-              >
-                <TrendingUp></TrendingUp>
-              </n-icon>
-            </div>
-          </div>
-        </a>
-        <div
-          v-for="(item, index) in navLeftList.filter(
-            (item) => router.currentRoute.value.query.liveType === item.liveType
-          )"
-          :key="index"
-          :class="{
-            item: 1,
-            active: router.currentRoute.value.query.liveType === item.liveType,
-          }"
-          @click="goPushPage(item.routerName)"
-        >
-          {{ item.title }}
-        </div>
-        <div
-          v-for="(item, index) in pullList.filter(
-            (item) => router.currentRoute.value.query.liveType === item.liveType
-          )"
-          :key="index"
-          :class="{
-            item: 1,
-            active: router.currentRoute.value.query.liveType === item.liveType,
-          }"
-        >
-          {{ item.title }}
-        </div>
       </div>
     </div>
     <div class="right">
+      <div class="ecosystem">
+        <div class="txt">生态系统</div>
+        <VPIconChevronDown class="icon"></VPIconChevronDown>
+        <div class="list">
+          <div class="title">资源</div>
+          <a
+            v-for="(item, index) in resource"
+            :key="index"
+            :href="item.url"
+            class="item"
+            @click="handleJump(item)"
+          >
+            <div class="txt">{{ item.label }}</div>
+            <VPIconExternalLink
+              v-if="item.url"
+              class="icon"
+            ></VPIconExternalLink>
+          </a>
+          <div class="hr"></div>
+          <div class="title">官方库</div>
+          <a
+            v-for="(item, index) in plugins"
+            :key="index"
+            class="item"
+            :href="item.url"
+            @click="handleJump(item)"
+          >
+            <div class="txt">{{ item.label }}</div>
+            <VPIconExternalLink
+              v-if="item.url"
+              class="icon"
+            ></VPIconExternalLink>
+          </a>
+        </div>
+      </div>
+      <div class="about">
+        <div class="txt">关于</div>
+        <VPIconChevronDown class="icon"></VPIconChevronDown>
+        <div class="list">
+          <a
+            v-for="(item, index) in about"
+            :key="index"
+            class="item"
+            :href="item.url"
+            @click.prevent="
+              item.routerName
+                ? router.push({ name: item.routerName })
+                : openToTarget(item.url)
+            "
+          >
+            <div class="txt">{{ item.label }}</div>
+            <VPIconExternalLink
+              v-if="item.url"
+              class="icon"
+            ></VPIconExternalLink>
+          </a>
+        </div>
+      </div>
+      <a
+        class="sponsors"
+        :class="{
+          active: router.currentRoute.value.name === routerName.sponsors,
+        }"
+        href="/sponsors"
+        @click.prevent="router.push({ name: routerName.sponsors })"
+      >
+        赞助
+      </a>
+      <a
+        class="github"
+        target="_blank"
+        href="https://github.com/galaxy-s10/billd-live"
+      >
+        <img
+          :src="githubStar"
+          alt=""
+        />
+        <!-- Github -->
+      </a>
+      <n-dropdown
+        v-if="router.currentRoute.value.name !== routerName.push"
+        trigger="hover"
+        :options="options"
+        placement="bottom-end"
+        @select="handlePushSelect"
+      >
+        <div class="start-live">我要开播</div>
+      </n-dropdown>
       <div
         v-if="!userStore.userInfo"
         class="qqlogin"
@@ -122,44 +160,17 @@
           @click="useQQLogin()"
         ></div>
       </n-dropdown>
-
-      <a
-        class="bilibili"
-        target="_blank"
-        href="https://space.bilibili.com/381307133/channel/seriesdetail?sid=3285689"
-      >
-        b站视频
-      </a>
-      <a
-        class="github"
-        target="_blank"
-        href="https://github.com/galaxy-s10/billd-live"
-      >
-        <span class="txt">github</span>
-        <img
-          :src="githubStar"
-          alt=""
-        />
-      </a>
-
-      <n-dropdown
-        v-if="router.currentRoute.value.name !== routerName.push"
-        trigger="hover"
-        :options="options"
-        @select="handlePushSelect"
-      >
-        <div class="start-live">我要开播</div>
-      </n-dropdown>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { TrendingUp } from '@vicons/ionicons5';
 import { openToTarget } from 'billd-utils';
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
+import VPIconChevronDown from '@/components/icons/VPIconChevronDown.vue';
+import VPIconExternalLink from '@/components/icons/VPIconExternalLink.vue';
 import { loginTip, useQQLogin } from '@/hooks/use-login';
 import { liveTypeEnum } from '@/interface';
 import { routerName } from '@/router';
@@ -169,37 +180,6 @@ const router = useRouter();
 const userStore = useUserStore();
 const githubStar = ref('');
 
-const navLeftList = ref([
-  {
-    title: 'Webrtc Push',
-    routerName: routerName.push,
-    liveType: liveTypeEnum.webrtcPush,
-  },
-  {
-    title: 'SRS WebRTC Push',
-    routerName: routerName.push,
-    liveType: liveTypeEnum.srsPush,
-  },
-]);
-
-const pullList = ref([
-  {
-    title: 'Webrtc Pull',
-    routerName: routerName.pull,
-    liveType: liveTypeEnum.webrtcPull,
-  },
-  {
-    title: 'SRS WebRTC Pull Flv',
-    routerName: routerName.pull,
-    liveType: liveTypeEnum.srsFlvPull,
-  },
-  {
-    title: 'SRS WebRTC Pull',
-    routerName: routerName.pull,
-    liveType: liveTypeEnum.srsWebrtcPull,
-  },
-]);
-
 const userOptions = ref([
   {
     label: '退出',
@@ -207,26 +187,67 @@ const userOptions = ref([
   },
 ]);
 
-enum OptionEnum {
-  problem,
-  team,
-  bilibili,
-}
-
-const aboutOptions = ref([
+const about = ref([
   {
     label: '常见问题',
-    key: OptionEnum.problem,
+    routerName: routerName.faq,
   },
   {
     label: '团队',
-    key: OptionEnum.team,
+    routerName: routerName.team,
+  },
+  {
+    label: '官方群',
+    routerName: routerName.group,
+  },
+  {
+    label: '版本发布',
+    routerName: routerName.release,
   },
   {
     label: 'b站视频',
-    key: OptionEnum.bilibili,
+    url: 'https://space.bilibili.com/381307133/channel/seriesdetail?sid=3285689',
   },
 ]);
+const resource = ref([
+  {
+    label: 'billd-live-server',
+    url: 'https://github.com/galaxy-s10/billd-live-server',
+  },
+  {
+    label: 'billd-live-admin',
+  },
+]);
+const plugins = ref([
+  {
+    label: 'billd-ui',
+    url: 'https://github.com/galaxy-s10/billd-ui',
+  },
+  {
+    label: 'billd-cli',
+    url: 'https://github.com/galaxy-s10/billd-cli',
+  },
+  {
+    label: 'billd-utils',
+    url: 'https://github.com/galaxy-s10/billd-utils',
+  },
+  {
+    label: 'billd-scss',
+    url: 'https://github.com/galaxy-s10/billd-scss',
+  },
+  {
+    label: 'billd-html-webpack-plugin',
+    url: 'https://github.com/galaxy-s10/billd-html-webpack-plugin',
+  },
+]);
+
+function handleJump(item) {
+  if (item.url) {
+    openToTarget(item.url);
+  } else {
+    window.$message.info('敬请期待！');
+  }
+}
 
 const options = ref([
   {
@@ -244,12 +265,12 @@ onMounted(() => {
     'https://img.shields.io/github/stars/galaxy-s10/billd-live?label=Star&logo=GitHub&labelColor=white&logoColor=black&style=social&cacheSeconds=3600';
 });
 
-function handleSelect(key) {}
 function handleUserSelect(key) {
   if (key === '1') {
     userStore.logout();
   }
 }
+
 function handlePushSelect(key) {
   if (!loginTip()) {
     return;
@@ -260,11 +281,6 @@ function handlePushSelect(key) {
   });
   openToTarget(url.href);
 }
-
-function goPushPage(routerName: string) {
-  const url = router.resolve({ name: routerName });
-  openToTarget(url.href);
-}
 </script>
 
 <style lang="scss" scoped>
@@ -272,74 +288,81 @@ function goPushPage(routerName: string) {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 0 20px;
   min-width: $medium-width;
   height: 64px;
   background-color: #fff;
   box-shadow: inset 0 -1px #f1f2f3 !important;
+  .hr {
+    width: 100%;
+    height: 1px;
+    background-color: #e7e7e7;
+  }
   .left {
     display: flex;
     align-items: center;
-    .logo {
-      margin: 0 20px;
-      width: 100px;
-      height: 40px;
-      background-color: skyblue;
-      color: white;
-      text-align: center;
-      line-height: 40px;
+    height: 100%;
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      margin-right: 20px;
       cursor: pointer;
+
+      // .logo {
+      //   margin-right: 5px;
+      //   width: 35px;
+      //   height: 35px;
+      //   border-radius: 50%;
+      //   font-size: 12px;
+      //   // animation: rotate 3s linear infinite;
+
+      //   @include setBackground('@/assets/img/logo.webp');
+      //   @keyframes rotate {
+      //     0% {
+      //       transform: rotate(0deg);
+      //     }
+      //     100% {
+      //       transform: rotate(360deg);
+      //     }
+      //   }
+      // }
+      .txt {
+        color: $theme-color-gold;
+        font-weight: 500;
+        font-size: 18px;
+      }
     }
+
     .nav {
       display: flex;
       align-items: center;
+      height: 100%;
       .item {
         position: relative;
-        padding: 0 10px;
+        display: flex;
+        align-items: center;
+        margin-right: 20px;
+        height: 100%;
         color: black;
         text-decoration: none;
         cursor: pointer;
 
-        .list {
-          position: absolute;
-          top: 100%;
-          right: 0;
-          padding: 10px;
-          width: 100px;
-          background-color: #fff;
-          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1),
-            0 2px 6px rgba(0, 0, 0, 0.08);
-          .item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 5px;
-            .txt {
-              margin-right: 5px;
-            }
-          }
-        }
-
         &.active {
           &::after {
             position: absolute;
-            bottom: -6px;
-            left: 50%;
-            width: 40% !important;
-            height: 2px;
-            background-color: red;
+            top: calc(50% - 8px);
+            transform: translateY(-100%);
+            right: -5px;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background-color: $theme-color-gold;
             content: '';
             transition: all 0.1s ease;
-            transform: translateX(-50%);
           }
-        }
-        &::after {
-          width: 0px !important;
-
-          @extend .active;
         }
         &:hover {
-          &::after {
-            width: 40% !important;
-          }
+          color: $theme-color-gold;
         }
       }
     }
@@ -347,7 +370,7 @@ function goPushPage(routerName: string) {
   .right {
     display: flex;
     align-items: center;
-    margin-right: 20px;
+    height: 100%;
 
     .qqlogin {
       box-sizing: border-box;
@@ -355,48 +378,104 @@ function goPushPage(routerName: string) {
       width: 35px;
       height: 35px;
       border-radius: 50%;
-      background-color: skyblue;
-      background-position: center;
-      background-size: cover;
-      background-repeat: no-repeat;
-      color: white;
+      background-color: papayawhip;
       text-align: center;
       font-size: 13px;
       line-height: 35px;
       cursor: pointer;
+
+      @extend %containBg;
     }
 
-    .bilibili,
+    .about,
+    .ecosystem,
+    .sponsors,
     .github {
       position: relative;
-      margin-right: 15px;
+      display: flex;
+      align-items: center;
+      margin-right: 20px;
+      height: 100%;
       border-radius: 6px;
       color: black;
       text-decoration: none;
-      font-size: 14px;
+      font-size: 13px;
       cursor: pointer;
-      &.active {
-        &::after {
-          position: absolute;
-          bottom: -6px;
-          left: 50%;
-          width: 40% !important;
-          height: 2px;
-          background-color: red;
-          content: '';
-          transition: all 0.1s ease;
-          transform: translateX(-50%);
-        }
+      .icon {
+        fill: currentColor;
       }
-      &::after {
-        width: 0px !important;
-
-        @extend .active;
+      a {
+        color: black;
+        text-decoration: none;
+        font-size: 13px;
       }
       &:hover {
-        &::after {
-          width: 40% !important;
+        color: $theme-color-gold;
+        .icon {
+          color: $theme-color-gold;
         }
+      }
+    }
+    .about,
+    .ecosystem {
+      &:hover {
+        .list {
+          display: block;
+          .item {
+            &:hover {
+              color: $theme-color-gold;
+              a {
+                color: $theme-color-gold;
+              }
+            }
+          }
+        }
+      }
+      .icon {
+        margin-left: 5px;
+        width: 13px;
+      }
+      .list {
+        position: absolute;
+        top: 80%;
+        right: 0;
+        z-index: 2;
+        display: none;
+        box-sizing: border-box;
+        padding: 10px 0;
+        border-radius: 5px;
+        background-color: #fff;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1),
+          0 2px 6px rgba(0, 0, 0, 0.08);
+        .item {
+          display: flex;
+          align-items: center;
+          margin-bottom: 5px;
+          padding: 0 20px;
+          color: black;
+          .icon {
+            width: 13px;
+            color: #3c3c4354;
+          }
+        }
+        .title {
+          margin: 10px 0 5px;
+          padding: 0 20px;
+          color: rgba(60, 60, 60, 0.33);
+        }
+        .title:first-child {
+          margin-top: 0;
+        }
+      }
+    }
+    .ecosystem {
+      .list {
+        width: 220px;
+      }
+    }
+    .about {
+      .list {
+        width: 120px;
       }
     }
     .github {
@@ -407,12 +486,12 @@ function goPushPage(routerName: string) {
       }
     }
     .start-live {
-      margin-right: 10px;
-      padding: 5px 10px;
+      margin-right: 20px;
+      padding: 5px 15px;
       border-radius: 6px;
-      background-color: skyblue;
+      background-color: $theme-color-gold;
       color: white;
-      font-size: 14px;
+      font-size: 13px;
       cursor: pointer;
     }
   }
