@@ -74,6 +74,7 @@
 
         <div
           ref="bottomRef"
+          v-loading="giftLoading"
           class="gift-list"
         >
           <div
@@ -207,6 +208,7 @@ const userStore = useUserStore();
 const appStore = useAppStore();
 
 const giftGoodsList = ref<IGoods[]>([]);
+const giftLoading = ref(false);
 const showRecharge = ref(false);
 const showJoin = ref(true);
 const showSidebar = ref(true);
@@ -246,13 +248,20 @@ const {
 });
 
 async function getGoodsList() {
-  const res = await fetchGoodsList({
-    type: GoodsTypeEnum.gift,
-    orderName: 'created_at',
-    orderBy: 'desc',
-  });
-  if (res.code === 200) {
-    giftGoodsList.value = res.data.rows;
+  try {
+    giftLoading.value = true;
+    const res = await fetchGoodsList({
+      type: GoodsTypeEnum.gift,
+      orderName: 'created_at',
+      orderBy: 'desc',
+    });
+    if (res.code === 200) {
+      giftGoodsList.value = res.data.rows;
+    }
+  } catch (error) {
+    console.log(error);
+  } finally {
+    giftLoading.value = false;
   }
 }
 

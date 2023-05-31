@@ -1,5 +1,6 @@
 <template>
   <div class="ad-wrap">
+    <h1 class="title">广告位招租</h1>
     <div class="ad-list">
       <div
         v-for="(item, index) in list"
@@ -84,6 +85,9 @@ const list = ref([
 
 <style lang="scss" scoped>
 .ad-wrap {
+  .title {
+    text-align: center;
+  }
   .ad-list {
     padding: 20px;
 

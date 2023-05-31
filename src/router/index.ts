@@ -10,6 +10,8 @@ export const routerName = {
   rank: 'rank',
   sponsors: 'sponsors',
   support: 'support',
+  order: 'order',
+  shop: 'shop',
   link: 'link',
   ad: 'ad',
   faq: 'faq',
@@ -66,6 +68,11 @@ export const defaultRoutes: RouteRecordRaw[] = [
         component: () => import('@/views/rank/index.vue'),
       },
       {
+        name: routerName.shop,
+        path: '/shop',
+        component: () => import('@/views/shop/index.vue'),
+      },
+      {
         name: routerName.sponsors,
         path: '/sponsors',
         component: () => import('@/views/sponsors/index.vue'),
@@ -74,6 +81,11 @@ export const defaultRoutes: RouteRecordRaw[] = [
         name: routerName.support,
         path: '/support',
         component: () => import('@/views/support/index.vue'),
+      },
+      {
+        name: routerName.order,
+        path: '/order',
+        component: () => import('@/views/order/index.vue'),
       },
       {
         name: routerName.ad,

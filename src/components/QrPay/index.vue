@@ -172,7 +172,7 @@ function getPayStatus(outTradeNo: string) {
     } catch (error) {
       console.log(error);
     }
-  }, 1000);
+  }, 2000);
 }
 </script>
 

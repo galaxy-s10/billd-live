@@ -65,6 +65,7 @@ import { onMounted, ref } from 'vue';
 import { fetchLiveRoomList } from '@/api/liveRoom';
 import { fetchUserList } from '@/api/user';
 import { fetchWalletList } from '@/api/wallet';
+import { fullLoading } from '@/components/FullLoading';
 import { RankTypeEnum } from '@/interface';
 
 export interface IRankType {
@@ -115,43 +116,57 @@ const mockRank = [
 const rankList = ref(mockRank);
 
 async function getWalletList() {
-  const res = await fetchWalletList();
-  if (res.code === 200) {
-    const length = res.data.rows.length;
-    rankList.value = res.data.rows.map((item, index) => {
-      return {
-        username: item.user.username!,
-        avatar: item.user.avatar!,
-        rank: index + 1,
-        level: 1,
-        score: 1,
-        balance: item.balance,
-      };
-    });
-    if (length < 3) {
-      rankList.value.push(...mockRank.slice(length));
+  try {
+    fullLoading({ loading: true });
+    const res = await fetchWalletList();
+    if (res.code === 200) {
+      const length = res.data.rows.length;
+      rankList.value = res.data.rows.map((item, index) => {
+        return {
+          username: item.user.username!,
+          avatar: item.user.avatar!,
+          rank: index + 1,
+          level: 1,
+          score: 1,
+          balance: item.balance,
+        };
+      });
+      if (length < 3) {
+        rankList.value.push(...mockRank.slice(length));
+      }
     }
+  } catch (error) {
+    console.log(error);
+  } finally {
+    fullLoading({ loading: false });
   }
 }
 async function getLiveRoomList() {
-  const res = await fetchLiveRoomList({
-    orderName: 'updated_at',
-    orderBy: 'desc',
-  });
-  if (res.code === 200) {
-    const length = res.data.rows.length;
-    rankList.value = res.data.rows.map((item, index) => {
-      return {
-        username: item.user_username!,
-        avatar: item.user_avatar!,
-        rank: index + 1,
-        level: 1,
-        score: 1,
-      };
+  try {
+    fullLoading({ loading: true });
+    const res = await fetchLiveRoomList({
+      orderName: 'updated_at',
+      orderBy: 'desc',
     });
-    if (length < 3) {
-      rankList.value.push(...mockRank.slice(length));
+    if (res.code === 200) {
+      const length = res.data.rows.length;
+      rankList.value = res.data.rows.map((item, index) => {
+        return {
+          username: item.user_username!,
+          avatar: item.user_avatar!,
+          rank: index + 1,
+          level: 1,
+          score: 1,
+        };
+      });
+      if (length < 3) {
+        rankList.value.push(...mockRank.slice(length));
+      }
     }
+  } catch (error) {
+    console.log(error);
+  } finally {
+    fullLoading({ loading: false });
   }
 }
 
@@ -178,6 +193,7 @@ onMounted(() => {
 
 async function getUserList() {
   try {
+    fullLoading({ loading: true });
     const res = await fetchUserList({
       orderName: 'updated_at',
       orderBy: 'desc',
@@ -199,6 +215,8 @@ async function getUserList() {
     }
   } catch (error) {
     console.log(error);
+  } finally {
+    fullLoading({ loading: false });
   }
 }
 </script>

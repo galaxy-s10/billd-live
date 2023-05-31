@@ -4,12 +4,22 @@
       截止至{{ onMountedTime }}，已收到：{{ receiveMoney / 100 }}元赞助~
     </h1>
     <div class="pay-list">
+      <div class="head-wrap">
+        <div
+          v-for="(item, index) in headList"
+          :key="index"
+          class="head"
+        >
+          <div>{{ item.label }}</div>
+        </div>
+      </div>
+
       <div
         v-for="(item, index) in payList"
         :key="index"
         class="item"
       >
-        <div class="time">发起时间：{{ item.created_at }}，</div>
+        <div class="time">{{ item.created_at }}</div>
         <div class="user">
           <template v-if="item.user">
             <img
@@ -19,25 +29,24 @@
             />
             <span class="username">{{ item.user.username }}</span>
           </template>
-          <span v-else>游客</span>，
+          <span v-else>游客</span>
         </div>
 
-        <div class="account">支付宝账号：{{ item.buyer_logon_id }}，</div>
-        <div class="gift">
-          赞助了：{{ item.subject }}（{{ item.total_amount }}元），
-        </div>
+        <div class="account">{{ item.buyer_logon_id }}</div>
+        <div class="gift">{{ item.subject }}</div>
+        <div class="gift">{{ item.total_amount }}元</div>
         <div class="status">
-          状态：{{
+          {{
             item.trade_status === PayStatusEnum.WAIT_BUYER_PAY
               ? '支付中'
               : '已支付'
-          }}，
+          }}
         </div>
-        <div class="time">支付时间：{{ item.send_pay_date || '-' }}</div>
+        <div class="time">{{ item.send_pay_date || '-' }}</div>
       </div>
     </div>
     <h2>开始赞助（支付宝）</h2>
-    <div class="gift-list">
+    <div class="goods-list">
       <div
         v-for="(item, index) in sponsorsGoodsList"
         :key="index"
@@ -77,6 +86,37 @@ const goodsInfo = reactive({
 
 const payList = ref<IOrder[]>([]);
 const sponsorsGoodsList = ref<IGoods[]>([]);
+
+const headList = ref([
+  {
+    label: '创建时间',
+    key: 'created_at',
+  },
+  {
+    label: '用户',
+    key: 'avatar',
+  },
+  {
+    label: '支付宝账号',
+    key: 'buyer_logon_id',
+  },
+  {
+    label: '商品',
+    key: 'subject',
+  },
+  {
+    label: '价格',
+    key: 'total_amount',
+  },
+  {
+    label: '状态',
+    key: 'trade_status',
+  },
+  {
+    label: '完成时间',
+    key: 'send_pay_date',
+  },
+]);
 
 onUnmounted(() => {
   clearInterval(payStatusTimer.value);
@@ -131,55 +171,41 @@ function startPay(item: IGoods) {
 .sponsors-wrap {
   text-align: center;
   .pay-list {
-    display: flex;
-    overflow: scroll;
-    align-items: center;
-    flex-direction: column;
-    box-sizing: border-box;
-    margin-bottom: 20px;
-    padding: 10px;
-    width: 100%;
-    height: 200px;
-    background-color: papayawhip;
+    .head-wrap {
+      display: flex;
+      align-items: center;
+      .head {
+        flex: 1;
+        box-sizing: border-box;
+        margin-bottom: 5px;
+      }
+    }
     .item {
-      display: inline-flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-bottom: 4px;
-      width: 100%;
-      text-align: left;
-
-      .user {
-        width: 120px;
-        padding: 0 10px;
+      display: flex;
+      align-items: center;
+      height: 40px;
+      color: #666;
+      > div {
         display: flex;
         align-items: center;
+        flex: 1;
         justify-content: center;
+      }
+      &:nth-child(2n) {
+        background-color: #fafbfc;
+      }
+      .time {
+      }
+      .user {
         .avatar {
           width: 30px;
           height: 30px;
           border-radius: 50%;
         }
-        .username {
-          @extend %singleEllipsis;
-        }
-      }
-      .account {
-        width: 250px;
-      }
-      .gift {
-        width: 260px;
-      }
-      .status {
-        width: 120px;
-        text-align: left;
-      }
-      .time {
-        width: 280px;
       }
     }
   }
-  .gift-list {
+  .goods-list {
     display: flex;
     align-items: center;
     flex-wrap: wrap;

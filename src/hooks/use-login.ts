@@ -2,6 +2,7 @@ import { hrefToTarget, isMobile } from 'billd-utils';
 import { createApp } from 'vue';
 
 import { fetchQQLogin } from '@/api/qqUser';
+import { fullLoading } from '@/components/FullLoading';
 import { QQ_CLIENT_ID, QQ_OAUTH_URL, QQ_REDIRECT_URI } from '@/constant';
 import LoginModalCpt from '@/hooks/loginModal/index.vue';
 import { PlatformEnum } from '@/interface';
@@ -31,6 +32,9 @@ export async function handleLogin(e) {
         const res = await fetchQQLogin(data);
         if (res.code === 200) {
           window.$message.success('登录成功！');
+          fullLoading({
+            loading: false,
+          });
         }
         userStore.setToken(res.data);
         userStore.getUserInfo();
@@ -60,6 +64,12 @@ export function loginMessage() {
 }
 
 export function useQQLogin() {
+  fullLoading({
+    loading: true,
+    showMask: true,
+    content: 'qq登录...',
+    style: { color: 'white' },
+  });
   const url = (state: string) =>
     `${QQ_OAUTH_URL}/authorize?response_type=code&client_id=${QQ_CLIENT_ID}&redirect_uri=${QQ_REDIRECT_URI}&scope=get_user_info,get_vip_info,get_vip_rich_info&state=${state}`;
   let loginInfo = JSON.stringify({

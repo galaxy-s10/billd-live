@@ -44,7 +44,7 @@
                   </a>
                 </div>
               </div>
-              <div class="desc country">
+              <div class="desc">
                 <n-icon size="18">
                   <LocationOutline></LocationOutline>
                 </n-icon>
@@ -85,7 +85,10 @@
                 :href="iten.github"
                 @click.prevent="openToTarget(iten.github)"
               >
-                <n-icon size="22">
+                <n-icon
+                  size="22"
+                  class="ico"
+                >
                   <LogoGithub></LogoGithub>
                 </n-icon>
               </a>
@@ -160,7 +163,6 @@ const list = ref([
   }
   .desc {
     margin: 0;
-    width: 500px;
     color: #3c3c3cb3;
     font-size: 16px;
     line-height: 1.8;
@@ -189,24 +191,20 @@ const list = ref([
       }
     }
     .members {
-      flex-grow: 1;
-
+      flex-grow: 0.8;
       .item {
         position: relative;
         display: flex;
-        margin-bottom: 30px;
         padding: 30px 0;
         border-radius: 10px;
         background-color: #f9f9f9;
         .avatar {
-          flex-shrink: 0;
           margin-left: 30px;
           width: 80px;
           height: 80px;
           border-radius: 50%;
         }
         .data {
-          flex-shrink: 0;
           margin-left: 30px;
           .name {
             margin-bottom: 2px;

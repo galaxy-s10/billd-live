@@ -6,6 +6,7 @@ import { createApp } from 'vue';
 import adapter from 'webrtc-adapter';
 
 import Message from '@/components/Message/index.vue';
+import registerDirectives from '@/directives';
 import router from '@/router/index';
 import store from '@/store/index';
 
@@ -14,7 +15,7 @@ import App from './App.vue';
 console.log('webrtc-adapter', adapter.browserDetails);
 
 const app = createApp(App);
-
+registerDirectives(app);
 app.use(store);
 app.use(router);
 

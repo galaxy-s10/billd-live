@@ -23,22 +23,22 @@
         <a
           class="item"
           :class="{
-            active: router.currentRoute.value.name === routerName.rank,
+            active: router.currentRoute.value.name === routerName.shop,
           }"
-          href="/rank"
-          @click.prevent="router.push({ name: routerName.rank })"
+          href="/shop"
+          @click.prevent="router.push({ name: routerName.shop })"
         >
-          排行榜
+          商店
         </a>
         <a
           class="item"
           :class="{
-            active: router.currentRoute.value.name === routerName.support,
+            active: router.currentRoute.value.name === routerName.order,
           }"
-          href="/support"
-          @click.prevent="router.push({ name: routerName.support })"
+          href="/order"
+          @click.prevent="router.push({ name: routerName.order })"
         >
-          付费支持
+          订单
         </a>
         <a
           class="item"
@@ -50,67 +50,89 @@
         >
           广告
         </a>
+        <a
+          class="item"
+          :class="{
+            active: router.currentRoute.value.name === routerName.rank,
+          }"
+          href="/rank"
+          @click.prevent="router.push({ name: routerName.rank })"
+        >
+          排行榜
+        </a>
       </div>
     </div>
     <div class="right">
-      <div class="ecosystem">
-        <div class="txt">生态系统</div>
-        <VPIconChevronDown class="icon"></VPIconChevronDown>
-        <div class="list">
-          <div class="title">资源</div>
-          <a
-            v-for="(item, index) in resource"
-            :key="index"
-            :href="item.url"
-            class="item"
-            @click="handleJump(item)"
-          >
-            <div class="txt">{{ item.label }}</div>
-            <VPIconExternalLink
-              v-if="item.url"
-              class="icon"
-            ></VPIconExternalLink>
-          </a>
-          <div class="hr"></div>
-          <div class="title">官方库</div>
-          <a
-            v-for="(item, index) in plugins"
-            :key="index"
-            class="item"
-            :href="item.url"
-            @click="handleJump(item)"
-          >
-            <div class="txt">{{ item.label }}</div>
-            <VPIconExternalLink
-              v-if="item.url"
-              class="icon"
-            ></VPIconExternalLink>
-          </a>
-        </div>
-      </div>
-      <div class="about">
-        <div class="txt">关于</div>
-        <VPIconChevronDown class="icon"></VPIconChevronDown>
-        <div class="list">
-          <a
-            v-for="(item, index) in about"
-            :key="index"
-            class="item"
-            :href="item.url"
-            @click.prevent="
-              item.routerName
-                ? router.push({ name: item.routerName })
-                : openToTarget(item.url)
-            "
-          >
-            <div class="txt">{{ item.label }}</div>
-            <VPIconExternalLink
-              v-if="item.url"
-              class="icon"
-            ></VPIconExternalLink>
-          </a>
-        </div>
-      </div>
+      <Dropdown class="ecosystem">
+        <template #btn>
+          <div class="btn">
+            生态系统<VPIconChevronDown class="icon"></VPIconChevronDown>
+          </div>
+        </template>
+        <template #list>
+          <div class="list">
+            <div class="title">资源</div>
+            <a
+              v-for="(item, index) in resource"
+              :key="index"
+              :href="item.url"
+              class="item"
+              @click="handleJump(item)"
+            >
+              <div class="txt">{{ item.label }}</div>
+              <VPIconExternalLink
+                v-if="item.url"
+                class="icon"
+              ></VPIconExternalLink>
+            </a>
+            <div class="hr"></div>
+            <div class="title">官方库</div>
+            <a
+              v-for="(item, index) in plugins"
+              :key="index"
+              class="item"
+              :href="item.url"
+              @click="handleJump(item)"
+            >
+              <div class="txt">{{ item.label }}</div>
+              <VPIconExternalLink
+                v-if="item.url"
+                class="icon"
+              ></VPIconExternalLink>
+            </a>
+          </div>
+        </template>
+      </Dropdown>
+
+      <Dropdown class="about">
+        <template #btn>
+          <div class="btn">
+            关于<VPIconChevronDown class="icon"></VPIconChevronDown>
+          </div>
+        </template>
+        <template #list>
+          <div class="list">
+            <a
+              v-for="(item, index) in about"
+              :key="index"
+              class="item"
+              :href="item.url"
+              @click.prevent="
+                item.routerName
+                  ? router.push({ name: item.routerName })
+                  : openToTarget(item.url)
+              "
+            >
+              <div class="txt">{{ item.label }}</div>
+              <VPIconExternalLink
+                v-if="item.url"
+                class="icon"
+              ></VPIconExternalLink>
+            </a>
+          </div>
+        </template>
+      </Dropdown>
+
       <a
         class="sponsors"
         :class="{
@@ -121,6 +143,7 @@
       >
         赞助
       </a>
+
       <a
         class="github"
         target="_blank"
@@ -130,36 +153,59 @@
           :src="githubStar"
           alt=""
         />
-        <!-- Github -->
       </a>
-      <n-dropdown
-        v-if="router.currentRoute.value.name !== routerName.push"
-        trigger="hover"
-        :options="options"
-        placement="bottom-end"
-        @select="handlePushSelect"
-      >
-        <div class="start-live">我要开播</div>
-      </n-dropdown>
+
+      <Dropdown class="start-live">
+        <template #btn>
+          <div class="btn">我要开播</div>
+        </template>
+        <template #list>
+          <div class="list">
+            <a
+              class="item"
+              @click.prevent="handleStartLive(liveTypeEnum.webrtcPush)"
+            >
+              <div class="txt">webrtc开播</div>
+            </a>
+            <a
+              class="item"
+              @click.prevent="handleStartLive(liveTypeEnum.srsPush)"
+            >
+              <div class="txt">srs-webrtc开播</div>
+            </a>
+          </div>
+        </template>
+      </Dropdown>
+
       <div
         v-if="!userStore.userInfo"
         class="qqlogin"
         @click="useQQLogin()"
       >
-        登录
+        <div class="btn">登录</div>
       </div>
-      <n-dropdown
+      <Dropdown
         v-else
-        trigger="hover"
-        :options="userOptions"
-        @select="handleUserSelect"
+        class="qqlogin"
       >
-        <div
-          class="qqlogin"
-          :style="{ backgroundImage: `url(${userStore.userInfo.avatar})` }"
-          @click="useQQLogin()"
-        ></div>
-      </n-dropdown>
+        <template #btn>
+          <div
+            class="btn"
+            :style="{ backgroundImage: `url(${userStore.userInfo.avatar})` }"
+            @click="useQQLogin()"
+          ></div>
+        </template>
+        <template #list>
+          <div class="list">
+            <a
+              class="item"
+              @click.prevent="userStore.logout()"
+            >
+              <div class="txt">退出</div>
+            </a>
+          </div>
+        </template>
+      </Dropdown>
     </div>
   </div>
 </template>
@@ -169,6 +215,7 @@ import { openToTarget } from 'billd-utils';
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
+import Dropdown from '@/components/Dropdown/index.vue';
 import VPIconChevronDown from '@/components/icons/VPIconChevronDown.vue';
 import VPIconExternalLink from '@/components/icons/VPIconExternalLink.vue';
 import { loginTip, useQQLogin } from '@/hooks/use-login';
@@ -179,13 +226,6 @@ import { useUserStore } from '@/store/user';
 const router = useRouter();
 const userStore = useUserStore();
 const githubStar = ref('');
-
-const userOptions = ref([
-  {
-    label: '退出',
-    key: '1',
-  },
-]);
 
 const about = ref([
   {
@@ -249,29 +289,12 @@ function handleJump(item) {
   }
 }
 
-const options = ref([
-  {
-    label: 'webrtc开播',
-    key: liveTypeEnum.webrtcPush,
-  },
-  {
-    label: 'srs-webrtc开播',
-    key: liveTypeEnum.srsPush,
-  },
-]);
-
 onMounted(() => {
   githubStar.value =
     'https://img.shields.io/github/stars/galaxy-s10/billd-live?label=Star&logo=GitHub&labelColor=white&logoColor=black&style=social&cacheSeconds=3600';
 });
 
-function handleUserSelect(key) {
-  if (key === '1') {
-    userStore.logout();
-  }
-}
-
-function handlePushSelect(key) {
+function handleStartLive(key) {
   if (!loginTip()) {
     return;
   }
@@ -288,7 +311,7 @@ function handlePushSelect(key) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
+  padding: 0 30px;
   min-width: $medium-width;
   height: 64px;
   background-color: #fff;
@@ -351,7 +374,6 @@ function handlePushSelect(key) {
           &::after {
             position: absolute;
             top: calc(50% - 8px);
-            transform: translateY(-100%);
             right: -5px;
             width: 5px;
             height: 5px;
@@ -359,6 +381,7 @@ function handlePushSelect(key) {
             background-color: $theme-color-gold;
             content: '';
             transition: all 0.1s ease;
+            transform: translateY(-100%);
           }
         }
         &:hover {
@@ -367,132 +390,137 @@ function handlePushSelect(key) {
       }
     }
   }
+
   .right {
     display: flex;
     align-items: center;
     height: 100%;
 
-    .qqlogin {
-      box-sizing: border-box;
-      margin-right: 15px;
-      width: 35px;
-      height: 35px;
-      border-radius: 50%;
-      background-color: papayawhip;
-      text-align: center;
-      font-size: 13px;
-      line-height: 35px;
-      cursor: pointer;
-
-      @extend %containBg;
-    }
-
     .about,
-    .ecosystem,
-    .sponsors,
-    .github {
-      position: relative;
-      display: flex;
-      align-items: center;
+    .ecosystem {
       margin-right: 20px;
-      height: 100%;
-      border-radius: 6px;
-      color: black;
-      text-decoration: none;
-      font-size: 13px;
-      cursor: pointer;
-      .icon {
-        fill: currentColor;
-      }
-      a {
-        color: black;
-        text-decoration: none;
-        font-size: 13px;
-      }
       &:hover {
         color: $theme-color-gold;
+      }
+      .btn {
+        display: flex;
+        align-items: center;
         .icon {
+          margin-left: 5px;
+          width: 13px;
+
+          fill: currentColor;
+        }
+        &:hover {
           color: $theme-color-gold;
         }
       }
-    }
-    .about,
-    .ecosystem {
-      &:hover {
-        .list {
-          display: block;
-          .item {
-            &:hover {
-              color: $theme-color-gold;
-              a {
-                color: $theme-color-gold;
-              }
-            }
-          }
-        }
-      }
-      .icon {
-        margin-left: 5px;
-        width: 13px;
-      }
+
       .list {
-        position: absolute;
-        top: 80%;
-        right: 0;
-        z-index: 2;
-        display: none;
-        box-sizing: border-box;
-        padding: 10px 0;
-        border-radius: 5px;
-        background-color: #fff;
-        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1),
-          0 2px 6px rgba(0, 0, 0, 0.08);
+        width: 120px;
         .item {
           display: flex;
           align-items: center;
           margin-bottom: 5px;
-          padding: 0 20px;
+          padding: 0 15px;
           color: black;
+          text-decoration: none;
+          cursor: pointer;
+          &:hover {
+            color: $theme-color-gold;
+          }
           .icon {
+            margin-left: 5px;
             width: 13px;
             color: #3c3c4354;
+
+            fill: currentColor;
           }
-        }
-        .title {
-          margin: 10px 0 5px;
-          padding: 0 20px;
-          color: rgba(60, 60, 60, 0.33);
-        }
-        .title:first-child {
-          margin-top: 0;
         }
       }
     }
     .ecosystem {
       .list {
         width: 220px;
+        .title {
+          margin: 10px 0 5px;
+          padding: 0 15px;
+          color: rgba(60, 60, 60, 0.33);
+
+          &:first-child {
+            margin-top: 0;
+          }
+        }
       }
     }
-    .about {
-      .list {
-        width: 120px;
-      }
-    }
-    .github {
+
+    .github,
+    .sponsors {
       display: flex;
       align-items: center;
+      margin-right: 20px;
+      color: black;
+      text-decoration: none;
+      &:hover {
+        color: $theme-color-gold;
+      }
       .txt {
         margin-right: 5px;
       }
     }
+
     .start-live {
       margin-right: 20px;
-      padding: 5px 15px;
-      border-radius: 6px;
-      background-color: $theme-color-gold;
-      color: white;
-      font-size: 13px;
-      cursor: pointer;
+
+      .btn {
+        padding: 5px 15px;
+        border-radius: 6px;
+        background-color: $theme-color-gold;
+        color: white;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .list {
+        width: 150px;
+        .item {
+          display: flex;
+          align-items: center;
+          margin-bottom: 5px;
+          padding: 0 15px;
+          cursor: pointer;
+          &:hover {
+            color: $theme-color-gold;
+          }
+        }
+      }
+    }
+    .qqlogin {
+      .btn {
+        box-sizing: border-box;
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background-color: papayawhip;
+        font-size: 13px;
+        cursor: pointer;
+
+        @extend %containBg;
+      }
+      .list {
+        width: 70px;
+        .item {
+          display: flex;
+          justify-content: center;
+          padding: 0 15px;
+          cursor: pointer;
+          &:hover {
+            color: $theme-color-gold;
+          }
+        }
+      }
     }
   }
 }
