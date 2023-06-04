@@ -73,6 +73,8 @@ git clone https://github.com/galaxy-s10/billd-live.git
 
 - 安装依赖
 
+> 建议使用 node 版本：16.16.0
+
 ```bash
 pnpm i
 ```
