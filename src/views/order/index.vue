@@ -30,7 +30,7 @@
         </div>
 
         <div class="account">{{ item.buyer_logon_id }}</div>
-        <div class="gift">{{ item.subject }}</div>
+        <div class="gift">{{ item.billd_live_order_subject }}</div>
         <div class="gift">{{ item.total_amount }}元</div>
         <div class="status">
           {{

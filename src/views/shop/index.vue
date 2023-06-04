@@ -121,7 +121,7 @@ function changeTab(type: GoodsTypeEnum) {
 }
 
 function startPay(item: IGoods) {
-  if (Number(Number(item.price).toFixed(0)) <= 0) {
+  if (Number(item.price) === 0) {
     window.$message.info('该商品是免费的，不需要购买！');
     return;
   }

@@ -41,22 +41,40 @@ export interface IPaging<T> {
 
 export interface IOrder {
   id?: number;
-  user?: any; // 用户信息
+  /** 用户信息 */
+  user?: IUser;
+  /** 商品信息 */
+  goods?: IGoods;
   billd_live_user_id?: number;
-  out_trade_no?: string;
-  total_amount?: string;
-  subject?: string;
+  billd_live_goods_id?: number;
+  billd_live_live_room_id?: number;
+  /** 判断幂等 */
+  billd_live_order_version?: number;
+  billd_live_order_subject?: string;
   product_code?: string;
   qr_code?: string;
+  /** 买家支付宝账号 */
   buyer_logon_id?: string;
+  /** 买家实付金额，单位为元，两位小数。 */
   buyer_pay_amount?: string;
+  /** 买家在支付宝的用户id */
   buyer_user_id?: string;
+  /** 交易的订单金额，单位为元，两位小数。该参数的值为支付时传入的total_amount */
+  total_amount?: string;
+  /** 交易中用户支付的可开具发票的金额，单位为元，两位小数。 */
   invoice_amount?: string;
+  /** 积分支付的金额，单位为元，两位小数。 */
   point_amount?: string;
+  /** 实收金额，单位为元，两位小数。该金额为本笔交易，商户账户能够实际收到的金额 */
   receipt_amount?: string;
-  send_pay_date?: string;
+  /** 支付宝交易号 */
   trade_no?: string;
+  /** 商家订单号 */
+  out_trade_no?: string;
+  /** 交易状态：WAIT_BUYER_PAY（交易创建，等待买家付款）、TRADE_CLOSED（未付款交易超时关闭，或支付完成后全额退款）、TRADE_SUCCESS（交易支付成功）、TRADE_FINISHED（交易结束，不可退款） */
   trade_status?: string;
+  /** 本次交易打款给卖家的时间 */
+  send_pay_date?: string;
   created_at?: string;
   updated_at?: string;
   deleted_at?: string;
