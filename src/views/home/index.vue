@@ -53,21 +53,25 @@
         <div
           v-for="(item, index) in liveRoomList"
           :key="index"
-          :class="{ item: 1, active: item.roomId === currentLiveRoom?.roomId }"
+          :class="{
+            item: 1,
+            active: item.live_room_id === currentLiveRoom?.live_room_id,
+          }"
           :style="{ backgroundImage: `url(${item.coverImg})` }"
           @click="changeLiveRoom(item)"
         >
           <div
             class="border"
             :style="{
-              opacity: item.roomId === currentLiveRoom?.roomId ? 1 : 0,
+              opacity:
+                item.live_room_id === currentLiveRoom?.live_room_id ? 1 : 0,
             }"
           ></div>
           <div
-            v-if="item.roomId === currentLiveRoom?.roomId"
+            v-if="item.live_room_id === currentLiveRoom?.live_room_id"
             class="triangle"
           ></div>
-          <div class="txt">{{ item.roomName }}</div>
+          <div class="txt">{{ item.live_room?.roomName }}</div>
         </div>
       </div>
       <div
@@ -136,7 +140,7 @@ function joinRoom() {
     router.push({
       name: routerName.pull,
       params: {
-        roomId: currentLiveRoom.value.roomId,
+        roomId: currentLiveRoom.value.live_room_id,
       },
       query: {
         liveType: liveTypeEnum.srsWebrtcPull,
@@ -146,7 +150,7 @@ function joinRoom() {
     router.push({
       name: routerName.pull,
       params: {
-        roomId: currentLiveRoom.value?.roomId,
+        roomId: currentLiveRoom.value?.live_room_id,
       },
       query: {
         liveType: liveTypeEnum.webrtcPull,
@@ -158,7 +162,7 @@ function joinRoom() {
 function joinFlvRoom() {
   router.push({
     name: routerName.pull,
-    params: { roomId: currentLiveRoom.value?.roomId },
+    params: { roomId: currentLiveRoom.value?.live_room_id },
     query: {
       liveType: liveTypeEnum.srsFlvPull,
     },

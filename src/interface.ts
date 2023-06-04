@@ -202,10 +202,15 @@ export interface IQqUser {
 
 export interface ILive {
   id?: number;
+  /** 1:系统直播;2:用户直播 */
   system?: number;
+  /** 用户信息 */
+  user?: IUser;
+  /** 直播间信息 */
+  live_room?: ILiveRoom;
   socketId?: string;
-  roomId?: string;
-  roomName?: string;
+  user_id?: number;
+  live_room_id?: number;
   track_video?: boolean;
   track_audio?: boolean;
   coverImg?: string;

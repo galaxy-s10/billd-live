@@ -344,7 +344,6 @@ onMounted(() => {
           width: 64px;
           height: 64px;
           border-radius: 50%;
-          background-color: skyblue;
           background-position: center center;
           background-size: cover;
           background-repeat: no-repeat;
@@ -383,7 +382,6 @@ onMounted(() => {
               width: 10px;
               height: 10px;
               border-radius: 50%;
-              background-color: skyblue;
             }
           }
         }

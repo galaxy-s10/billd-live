@@ -21,8 +21,9 @@
           :key="index"
           :class="{ item: 1, [`rank-${item.rank}`]: 1 }"
         >
-          <div class="avatar">
+          <div class="avatar-wrap">
             <img
+              class="avatar"
               :src="item.avatar"
               alt=""
             />
@@ -31,8 +32,27 @@
           <div class="username">{{ item.username }}</div>
           <div class="rank">
             <i>0{{ item.rank }}</i>
+            <div
+              v-if="item.live && currRankType === RankTypeEnum.liveRoom"
+              class="living"
+              @click="
+                router.push({
+                  name: routerName.pull,
+                  params: { roomId: item.live.live_room_id },
+                  query: {
+                    liveType: item.live.flvurl
+                      ? liveTypeEnum.srsFlvPull
+                      : liveTypeEnum.webrtcPull,
+                  },
+                })
+              "
+            >
+              直播中
+            </div>
           </div>
-          <div v-if="item.balance">余额：{{ item.balance }}</div>
+          <div v-if="item.balance && currRankType === RankTypeEnum.wallet">
+            钱包：{{ item.balance }}
+          </div>
         </div>
       </div>
       <div class="top50-list">
@@ -51,6 +71,28 @@
               alt=""
             />
             <div class="username">{{ item.username }}</div>
+            <div class="wallet">
+              <div v-if="item.balance && currRankType === RankTypeEnum.wallet">
+                （钱包：{{ item.balance }}）
+              </div>
+            </div>
+            <div
+              v-if="item.live && currRankType === RankTypeEnum.liveRoom"
+              class="living-tag"
+              @click="
+                router.push({
+                  name: routerName.pull,
+                  params: { roomId: item.live.live_room_id },
+                  query: {
+                    liveType: item.live.flvurl
+                      ? liveTypeEnum.srsFlvPull
+                      : liveTypeEnum.webrtcPull,
+                  },
+                })
+              "
+            >
+              直播中
+            </div>
           </div>
           <div class="right"></div>
         </div>
@@ -66,7 +108,8 @@ import { fetchLiveRoomList } from '@/api/liveRoom';
 import { fetchUserList } from '@/api/user';
 import { fetchWalletList } from '@/api/wallet';
 import { fullLoading } from '@/components/FullLoading';
-import { RankTypeEnum } from '@/interface';
+import { ILive, RankTypeEnum, liveTypeEnum } from '@/interface';
+import router, { routerName } from '@/router';
 
 export interface IRankType {
   type: RankTypeEnum;
@@ -76,7 +119,7 @@ export interface IRankType {
 const rankTypeList = ref<IRankType[]>([
   {
     type: RankTypeEnum.liveRoom,
-    label: '主播榜',
+    label: '直播榜',
   },
   {
     type: RankTypeEnum.user,
@@ -88,15 +131,27 @@ const rankTypeList = ref<IRankType[]>([
   },
 ]);
 
+const mockDataNums = 4;
+
 const currRankType = ref(RankTypeEnum.liveRoom);
 
-const mockRank = [
+const mockRank: {
+  username: string;
+  avatar: string;
+  rank: number;
+  level: number;
+  score: number;
+  balance: string;
+  live?: ILive;
+}[] = [
   {
     username: '待上榜',
     avatar: '',
     rank: 1,
     level: -1,
     score: -1,
+    balance: '0.00',
+    live: undefined,
   },
   {
     username: '待上榜',
@@ -104,6 +159,8 @@ const mockRank = [
     rank: 2,
     level: -1,
     score: -1,
+    balance: '0.00',
+    live: undefined,
   },
   {
     username: '待上榜',
@@ -111,6 +168,17 @@ const mockRank = [
     rank: 3,
     level: -1,
     score: -1,
+    balance: '0.00',
+    live: undefined,
+  },
+  {
+    username: '待上榜',
+    avatar: '',
+    rank: 4,
+    level: -1,
+    score: -1,
+    balance: '0.00',
+    live: undefined,
   },
 ];
 const rankList = ref(mockRank);
@@ -118,7 +186,7 @@ const rankList = ref(mockRank);
 async function getWalletList() {
   try {
     fullLoading({ loading: true });
-    const res = await fetchWalletList();
+    const res = await fetchWalletList({});
     if (res.code === 200) {
       const length = res.data.rows.length;
       rankList.value = res.data.rows.map((item, index) => {
@@ -131,7 +199,7 @@ async function getWalletList() {
           balance: item.balance,
         };
       });
-      if (length < 3) {
+      if (length < mockDataNums) {
         rankList.value.push(...mockRank.slice(length));
       }
     }
@@ -141,6 +209,7 @@ async function getWalletList() {
     fullLoading({ loading: false });
   }
 }
+
 async function getLiveRoomList() {
   try {
     fullLoading({ loading: true });
@@ -157,9 +226,10 @@ async function getLiveRoomList() {
           rank: index + 1,
           level: 1,
           score: 1,
+          live: item.live,
         };
       });
-      if (length < 3) {
+      if (length < mockDataNums) {
         rankList.value.push(...mockRank.slice(length));
       }
     }
@@ -207,9 +277,10 @@ async function getUserList() {
           rank: index + 1,
           level: 1,
           score: 1,
+          balance: '',
         };
       });
-      if (length < 3) {
+      if (length < mockDataNums) {
         rankList.value.push(...mockRank.slice(length));
       }
     }
@@ -254,6 +325,20 @@ async function getUserList() {
   .rank-list {
     width: 100%;
 
+    .living-tag {
+      display: inline-block;
+      margin: 0 auto;
+      padding: 2px 5px;
+      width: 40px;
+      border: 1px solid $theme-color-gold;
+      border-radius: 10px;
+      color: $theme-color-gold;
+      text-align: center;
+      font-size: 12px;
+      line-height: 1.2;
+      cursor: pointer;
+    }
+
     .top {
       display: flex;
       align-items: flex-end;
@@ -268,6 +353,7 @@ async function getUserList() {
         border-radius: 15px;
         background-color: white;
         text-align: center;
+
         &.rank-1 {
           height: 200px;
           border-color: #ff6744;
@@ -275,17 +361,32 @@ async function getUserList() {
           .rank {
             margin-top: 20px;
           }
+          .avatar-wrap {
+            .avatar {
+              border: 2px solid #ff6744;
+            }
+          }
         }
         &.rank-2 {
           border-color: #44d6ff;
           color: #44d6ff;
+          .avatar-wrap {
+            .avatar {
+              border: 2px solid #44d6ff;
+            }
+          }
         }
         &.rank-3 {
           border-color: #ffb200;
           color: #ffb200;
+          .avatar-wrap {
+            .avatar {
+              border: 2px solid #ffb200;
+            }
+          }
         }
 
-        .avatar {
+        .avatar-wrap {
           position: relative;
           margin-top: -50px;
           img {
@@ -294,20 +395,28 @@ async function getUserList() {
             width: 100px;
             height: 100px;
             border-radius: 50%;
-            background-color: pink;
           }
         }
-
         .username {
           margin-bottom: 10px;
           font-size: 22px;
         }
+
         .rank {
+          position: relative;
           display: inline-block;
           padding: 0px 20px;
           border: 1px solid;
           border-radius: 20px;
           font-size: 20px;
+          .living {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translate(-50%, 130%);
+
+            @extend .living-tag;
+          }
         }
       }
     }
@@ -325,27 +434,33 @@ async function getUserList() {
           background-color: #fafbfc;
         }
         .rank {
-          width: 80px;
           box-sizing: border-box;
           margin-right: 20px;
+          width: 80px;
           border-radius: 40px;
-          text-align: center;
           background-color: #84f9da;
           color: white;
+          text-align: center;
           font-size: 20px;
         }
         .left {
           display: flex;
           align-items: center;
+          font-size: 12px;
+
           .avatar {
             margin-right: 10px;
             width: 28px;
             height: 28px;
             border-radius: 50%;
-            background-color: pink;
           }
           .username {
-            font-size: 12px;
+            width: 100px;
+
+            @extend %singleEllipsis;
+          }
+          .wallet {
+            margin-left: 4px;
           }
         }
       }
