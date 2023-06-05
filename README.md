@@ -28,8 +28,8 @@ billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://
 - [x] srs webrtc 推流， `webrtc` 或 `http-flv` 拉流
 - [ ] [obs](https://github.com/obsproject/obs-studio)推流
 - [x] 支付宝打赏
-- [ ] 用户模块
-- [ ] 订单模块
+- [x] 用户模块
+- [x] 订单模块
 - [ ] 礼物模块
 - [ ] 在线后台
 - [ ] 适配移动端
