@@ -20,6 +20,18 @@
           </p>
         </div>
         <div class="hr"></div>
+        <div class="item">
+          <h2>赞助等级</h2>
+          <ul>
+            <li>铂金赞助商（2500元/月）</li>
+            <li>金牌赞助商（1500元/月）</li>
+            <li>银牌赞助商（1000元/月）</li>
+            <li>铜牌赞助商（500元/月）</li>
+            <li>慷慨支持者（100元/月）</li>
+            <li>个人支持者（10元/月）</li>
+          </ul>
+        </div>
+        <div class="hr"></div>
         <div class="item sponsors">
           <h2>当前赞助商</h2>
           <h3>铂金赞助商</h3>
@@ -77,6 +89,7 @@
       <div class="title">本页目录</div>
       <div class="item">以个人名义赞助billd-live</div>
       <div class="item">以企业名义赞助billd-live</div>
+      <div class="item">赞助等级</div>
       <div class="item">当前赞助商</div>
     </div>
   </div>
@@ -250,6 +263,9 @@ const silverList = ref([
       color: rgba(60, 60, 60, 0.7);
       font-size: 13px;
       cursor: pointer;
+      &:hover {
+        color: #213547;
+      }
     }
   }
 }

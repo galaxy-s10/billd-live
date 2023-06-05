@@ -7,9 +7,13 @@
         <div class="item">
           <h2>billd-live是什么？</h2>
           <p>
-            billd-live 是一个web端的直播平台，目前支持使用WebRTC或SRS进行直播。
+            billd-live 是一个web端的直播平台，目前支持使用WebRTC或SRS进行直播：
           </p>
+          <p>- 原生webrtc一对多直播（DONE）</p>
+          <p>- srs-webrtc一对多直播（DONE）</p>
+          <p>- 原生webrtc多对多直播（DONE）</p>
         </div>
+        <div class="hr"></div>
         <div class="item">
           <h2>谁在维护billd-live？</h2>
           <p>
@@ -118,6 +122,9 @@ const list = ref([]);
       color: rgba(60, 60, 60, 0.7);
       font-size: 13px;
       cursor: pointer;
+      &:hover {
+        color: #213547;
+      }
     }
   }
 }

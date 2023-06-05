@@ -49,9 +49,9 @@ export default defineComponent({
     @include loadingSizeChange(30px, rgba($theme-color-gold, 0.5));
   }
   .txt {
+    position: relative;
     margin-top: 10px;
     font-size: 14px;
-    position: relative;
   }
 }
 </style>

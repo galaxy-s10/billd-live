@@ -3,7 +3,7 @@ import { App, ComponentPublicInstance, Directive, createApp } from 'vue';
 import main from '@/components/FullLoading/main.vue';
 
 const map = new Map<
-  string,
+  HTMLElement,
   {
     app: App<Element>;
     instance: ComponentPublicInstance<InstanceType<typeof main>>;
@@ -27,7 +27,7 @@ export default <Directive>{
       app.mount(container);
     el.appendChild(container);
     instance.loading = value;
-    vnode.scopeId && map.set(vnode.scopeId, { app, instance });
+    map.set(el, { app, instance });
     return instance;
   },
   // 绑定元素的父组件更新前调用
@@ -35,17 +35,15 @@ export default <Directive>{
   // 在绑定元素的父组件及他自己的所有子节点都更新后调用
   updated(el, binding, vnode) {
     const { value } = binding;
-    if (vnode.scopeId) {
-      const res = map.get(vnode.scopeId);
-      if (res) {
-        res.instance.loading = value;
-      }
+    const res = map.get(el);
+    if (res) {
+      res.instance.loading = value;
     }
   },
   // 绑定元素的父组件卸载前调用
   beforeUnmount() {},
   // 绑定元素的父组件卸载后调用
   unmounted(el, binding, vnode) {
-    vnode.scopeId && map.get(vnode.scopeId)?.app.unmount();
+    map.get(el)?.app.unmount();
   },
 };

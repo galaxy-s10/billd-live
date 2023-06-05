@@ -23,7 +23,9 @@
     <div v-if="aliPayBase64 !== ''">
       <div class="bottom">
         <div class="sao">打开支付宝扫一扫</div>
-        <div class="expr">有效期5分钟（{{ formatDownTime(downTime) }}）</div>
+        <div class="expr">
+          有效期5分钟（{{ formatDownTime(downTimeEnd, downTimeStart) }}）
+        </div>
       </div>
     </div>
 
@@ -55,7 +57,7 @@ const payOk = ref(false);
 const aliPayBase64 = ref('');
 const payStatusTimer = ref();
 const downTimer = ref();
-const downTime = ref();
+const downTimeStart = ref();
 const downTimeEnd = ref();
 
 const currentPayStatus = ref(PayStatusEnum.error);
@@ -78,25 +80,22 @@ onMounted(() => {
   });
 });
 
-function formatDownTime(startTime: number) {
-  const time2 = downTimeEnd.value - startTime;
-  const ms = 1;
-  const second = ms * 1000;
-  const minute = second * 60;
-  const hour = minute * 60;
-  const day = hour * 24;
-  if (time2 > day) {
-    const res = (time2 / day).toFixed(4).split('.');
-    return `${res[0]}天${Math.ceil(Number(`0.${res[1]}`) * 24)}时`;
-  } else if (time2 > hour) {
-    const res = (time2 / hour).toFixed(4).split('.');
-    return `${res[0]}时${Math.ceil(Number(`0.${res[1]}`) * 60)}分`;
-  } else if (time2 > minute) {
-    const res = (time2 / minute).toFixed(4).split('.');
-    return `${res[0]}分${Math.ceil(Number(`0.${res[1]}`) * 60)}秒`;
+function formatDownTime(endTime: number, startTime: number) {
+  const times = (endTime - startTime) / 1000;
+  // js获取剩余天数
+  const d = parseInt(String(times / 60 / 60 / 24));
+  // js获取剩余小时
+  const h = parseInt(String((times / 60 / 60) % 24));
+  // js获取剩余分钟
+  const m = parseInt(String((times / 60) % 60));
+  // js获取剩余秒
+  const s = parseInt(String(times % 60));
+  if (d > 0) {
+    return `${d}天${h}时`;
+  } else if (h > 0) {
+    return `${h}时${m}分`;
   } else {
-    const res = (time2 / second).toFixed(4).split('.');
-    return `${res[0]}秒`;
+    return `${m}分${s}秒`;
   }
 }
 
@@ -115,9 +114,9 @@ async function generateQR(text) {
 function handleDownTime() {
   clearInterval(downTimer.value);
   downTimeEnd.value = +new Date() + 1000 * 60 * 5;
-  downTime.value = +new Date();
+  downTimeStart.value = +new Date();
   downTimer.value = setInterval(() => {
-    downTime.value = +new Date();
+    downTimeStart.value = +new Date();
   }, 1000);
 }
 

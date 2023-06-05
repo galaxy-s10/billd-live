@@ -8,11 +8,14 @@
           class="head"
         >
           <div class="info">
-            <div class="avatar"></div>
+            <div
+              class="avatar"
+              :style="{ backgroundImage: `url(${userAvatar})` }"
+            ></div>
             <div class="detail">
-              <div class="top">房间名：{{ roomName }}</div>
+              <div class="top">{{ userName || '-' }}</div>
               <div class="bottom">
-                <span>你的socketId：{{ getSocketId() }}</span>
+                <span>{{ roomName }}</span>
               </div>
             </div>
           </div>
@@ -232,6 +235,8 @@ const {
   addVideo,
   balance,
   roomName,
+  userName,
+  userAvatar,
   roomNoLive,
   damuList,
   giftList,
@@ -324,15 +329,6 @@ onMounted(() => {
       display: flex;
       justify-content: space-between;
       padding: 10px 20px;
-      .tag {
-        display: inline-block;
-        margin-right: 5px;
-        padding: 1px 4px;
-        border: 1px solid;
-        border-radius: 2px;
-        color: #9499a0;
-        font-size: 12px;
-      }
 
       .info {
         display: flex;
@@ -344,7 +340,7 @@ onMounted(() => {
           width: 64px;
           height: 64px;
           border-radius: 50%;
-          background-color: $theme-color-gold;
+          @extend %containBg;
         }
         .detail {
           .top {
@@ -518,7 +514,7 @@ onMounted(() => {
             width: 25px;
             height: 25px;
             border-radius: 50%;
-            background-color: $theme-color-gold;
+            @extend %containBg;
           }
           .username {
             color: black;

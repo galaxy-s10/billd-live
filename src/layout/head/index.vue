@@ -63,6 +63,24 @@
       </div>
     </div>
     <div class="right">
+      <Dropdown class="doc">
+        <template #btn>
+          <div class="btn">
+            文档<VPIconChevronDown class="icon"></VPIconChevronDown>
+          </div>
+        </template>
+        <template #list>
+          <div class="list">
+            <a
+              class="item"
+              @click="quickStart"
+            >
+              <div class="txt">快速上手</div>
+            </a>
+          </div>
+        </template>
+      </Dropdown>
+
       <Dropdown class="ecosystem">
         <template #btn>
           <div class="btn">
@@ -294,6 +312,10 @@ onMounted(() => {
     'https://img.shields.io/github/stars/galaxy-s10/billd-live?label=Star&logo=GitHub&labelColor=white&logoColor=black&style=social&cacheSeconds=3600';
 });
 
+function quickStart() {
+  window.$message.info('敬请期待！');
+}
+
 function handleStartLive(key) {
   if (!loginTip()) {
     return;
@@ -396,6 +418,7 @@ function handleStartLive(key) {
     align-items: center;
     height: 100%;
 
+    .doc,
     .about,
     .ecosystem {
       margin-right: 20px;

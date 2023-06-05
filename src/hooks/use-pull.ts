@@ -9,6 +9,7 @@ import {
   IAdminIn,
   ICandidate,
   IDanmu,
+  ILive,
   ILiveUser,
   IOffer,
   MediaTypeEnum,
@@ -42,6 +43,8 @@ export function usePull({
   const heartbeatTimer = ref();
   const roomId = ref(route.params.roomId as string);
   const roomName = ref('');
+  const userName = ref('');
+  const userAvatar = ref('');
   const streamurl = ref('');
   const flvurl = ref('');
   const danmuStr = ref('');
@@ -547,13 +550,15 @@ export function usePull({
     });
 
     // 用户加入房间
-    instance.socketIo.on(WsMsgTypeEnum.joined, (data) => {
+    instance.socketIo.on(WsMsgTypeEnum.joined, (data: { data: ILive }) => {
       prettierReceiveWebsocket(WsMsgTypeEnum.joined, data);
-      roomName.value = data.data.roomName;
-      track.audio = data.data.track_audio;
-      track.video = data.data.track_video;
-      streamurl.value = data.data.streamurl;
-      flvurl.value = data.data.flvurl;
+      roomName.value = data.data.live_room?.roomName!;
+      userName.value = data.data.user?.username!;
+      userAvatar.value = data.data.user?.avatar!;
+      track.audio = data.data.track_audio!;
+      track.video = data.data.track_video!;
+      streamurl.value = data.data.streamurl!;
+      flvurl.value = data.data.flvurl!;
       if (isFlv) {
         useFlvPlay(flvurl.value, remoteVideoRef.value!);
       }
@@ -615,6 +620,8 @@ export function usePull({
     addVideo,
     balance,
     roomName,
+    userName,
+    userAvatar,
     roomNoLive,
     damuList,
     giftList,
