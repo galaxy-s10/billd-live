@@ -269,13 +269,9 @@ export function usePull({
 
   async function batchSendOffer(socketId: string) {
     await nextTick(async () => {
-      console.log('batchSendOffer', offerSended.value, liveUserList.value);
-      console.log(socketId, 2222222);
       if (!offerSended.value.has(socketId) && socketId !== getSocketId()) {
-        console.log('kkkkkk', socketId);
         hooksRtcMap.value.add(await startNewWebRtc({ receiver: socketId }));
         await addTransceiver(socketId);
-        console.warn('new WebRTCClass完成');
         console.log('执行sendOffer', {
           sender: getSocketId(),
           receiver: socketId,
@@ -302,7 +298,6 @@ export function usePull({
             })
           );
           await addTransceiver(item.socketId);
-          console.warn('new WebRTCClass完成');
           console.log('执行sendOffer', {
             sender: getSocketId(),
             receiver: item.socketId,

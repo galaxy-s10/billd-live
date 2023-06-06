@@ -61,12 +61,6 @@ export function usePush({
   const disabled = ref(false);
   const localStream = ref();
   const offerSended = ref(new Set());
-  const hooksRtcMap = ref(new Set());
-  const sidebarList = ref<
-    {
-      socketId: string;
-    }[]
-  >([]);
 
   const track = reactive({
     audio: true,
@@ -109,6 +103,40 @@ export function usePush({
     txt: string;
   }>();
 
+  watch(
+    () => userStore.userInfo,
+    async (newVal) => {
+      if (newVal) {
+        const res = await userHasLiveRoom();
+        if (!res) {
+          await useTip('你还没有直播间，是否立即开通？');
+          await handleCreateUserLiveRoom();
+        }
+      }
+    }
+  );
+
+  onMounted(() => {
+    if (!loginTip()) return;
+  });
+
+  onUnmounted(() => {
+    clearInterval(heartbeatTimer.value);
+    closeWs();
+    closeRtc();
+  });
+
+  function closeWs() {
+    const instance = networkStore.wsMap.get(roomId.value);
+    instance?.close();
+  }
+
+  function closeRtc() {
+    networkStore.rtcMap.forEach((rtc) => {
+      rtc.close();
+    });
+  }
+
   async function userHasLiveRoom() {
     const res = await fetchUserHasLiveRoom(userStore.userInfo?.id!);
     if (res.code === 200 && res.data) {
@@ -131,27 +159,6 @@ export function usePush({
       console.log(error);
     }
   }
-
-  watch(
-    () => userStore.userInfo,
-    async (newVal) => {
-      if (newVal) {
-        const res = await userHasLiveRoom();
-        if (!res) {
-          await useTip('你还没有直播间，是否立即开通？');
-          await handleCreateUserLiveRoom();
-        }
-      }
-    }
-  );
-
-  onMounted(() => {
-    if (!loginTip()) return;
-  });
-
-  onUnmounted(() => {
-    clearInterval(heartbeatTimer.value);
-  });
 
   async function startLive() {
     if (!loginTip()) return;
@@ -258,17 +265,6 @@ export function usePush({
     }, 1000 * 5);
   }
 
-  function closeWs() {
-    const instance = networkStore.wsMap.get(roomId.value);
-    instance?.close();
-  }
-
-  function closeRtc() {
-    networkStore.rtcMap.forEach((rtc) => {
-      rtc.close();
-    });
-  }
-
   function addTrack() {
     if (!localStream.value) return;
     liveUserList.value.forEach((item) => {
@@ -329,11 +325,7 @@ export function usePush({
         !offerSended.value.has(item.socketId) &&
         item.socketId !== getSocketId()
       ) {
-        hooksRtcMap.value.add(
-          await startNewWebRtc({ receiver: item.socketId })
-        );
         await addTrack();
-        console.warn('new WebRTCClass完成');
         console.log('执行sendOffer', {
           sender: getSocketId(),
           receiver: item.socketId,
@@ -379,13 +371,7 @@ export function usePush({
       if (!instance) return;
       if (data.data.receiver === getSocketId()) {
         console.log('收到offer，这个offer是发给我的');
-        sidebarList.value.push({ socketId: data.data.sender });
         nextTick(async () => {
-          console.log(
-            remoteVideoRef.value[data.data.sender],
-            remoteVideoRef.value,
-            22222
-          );
           const rtc = await startNewWebRtc({
             receiver: data.data.sender,
             videoEl: remoteVideoRef.value[data.data.sender],
@@ -630,18 +616,20 @@ export function usePush({
   /** 结束直播 */
   function endLive() {
     disabled.value = false;
-    closeRtc();
     currMediaTypeList.value = [];
     localStream.value = null;
     localVideoRef.value!.srcObject = null;
+    clearInterval(heartbeatTimer.value);
     const instance = networkStore.wsMap.get(roomId.value);
-    if (!instance) return;
-    instance.send({
-      msgType: WsMsgTypeEnum.roomNoLive,
-      data: {},
-    });
+    if (instance) {
+      instance.send({
+        msgType: WsMsgTypeEnum.roomNoLive,
+        data: {},
+      });
+    }
     setTimeout(() => {
-      instance.close();
+      closeWs();
+      closeRtc();
     }, 500);
   }
   async function getAllMediaDevices() {
@@ -690,8 +678,6 @@ export function usePush({
     startGetUserMedia,
     startLive,
     endLive,
-    closeWs,
-    closeRtc,
     sendDanmu,
     keydownDanmu,
     disabled,
@@ -700,7 +686,5 @@ export function usePush({
     damuList,
     liveUserList,
     currMediaTypeList,
-    hooksRtcMap,
-    sidebarList,
   };
 }

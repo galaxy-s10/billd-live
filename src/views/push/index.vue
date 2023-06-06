@@ -51,7 +51,9 @@
         <div class="sidebar">
           <div class="title">在线人员</div>
           <div
-            v-for="(item, index) in sidebarList"
+            v-for="(item, index) in liveUserList.filter(
+              (item) => item.socketId !== getSocketId()
+            )"
             :key="index"
             class="item"
           >
@@ -193,7 +195,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { usePush } from '@/hooks/use-push';
@@ -204,7 +206,6 @@ const route = useRoute();
 const userStore = useUserStore();
 
 const liveType = route.query.liveType;
-
 const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
@@ -219,8 +220,6 @@ const {
   startGetUserMedia,
   startLive,
   endLive,
-  closeWs,
-  closeRtc,
   sendDanmu,
   keydownDanmu,
   disabled,
@@ -229,16 +228,10 @@ const {
   damuList,
   liveUserList,
   currMediaTypeList,
-  sidebarList,
 } = usePush({
   localVideoRef,
   remoteVideoRef,
   isSRS: liveType === liveTypeEnum.srsPush,
-});
-
-onUnmounted(() => {
-  closeWs();
-  closeRtc();
 });
 
 onMounted(() => {

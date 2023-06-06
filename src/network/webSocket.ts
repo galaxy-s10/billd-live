@@ -1,6 +1,7 @@
 import { Socket, io } from 'socket.io-client';
 
 import { useNetworkStore } from '@/store/network';
+import { useUserStore } from '@/store/user';
 
 // websocket连接状态
 export enum WsConnectStatusEnum {
@@ -61,20 +62,21 @@ export class WebSocketClass {
   socketIo: Socket | null = null;
   status: WsConnectStatusEnum = WsConnectStatusEnum.disconnect;
   url = '';
-
   roomId = '-1';
   isAdmin = false;
 
-  constructor({ roomId, url, isAdmin }) {
+  constructor(data: { roomId: string; url: string; isAdmin: boolean }) {
     if (!window.WebSocket) {
       alert('当前环境不支持WebSocket！');
       return;
     }
-    this.roomId = roomId;
-    this.isAdmin = isAdmin;
-
-    this.url = url;
-    this.socketIo = io(url, { transports: ['websocket'], forceBase64: false });
+    this.roomId = data.roomId;
+    this.isAdmin = data.isAdmin;
+    this.url = data.url;
+    this.socketIo = io(data.url, {
+      transports: ['websocket'],
+      forceBase64: false,
+    });
     this.update();
   }
 
@@ -89,11 +91,14 @@ export class WebSocketClass {
       return;
     }
     console.warn('【websocket】发送消息', msgType, data);
+    const userStore = useUserStore();
     this.socketIo?.emit(msgType, {
       roomId: this.roomId,
       socketId: this.socketIo.id,
-      data,
       isAdmin: this.isAdmin,
+      user_id: userStore.userInfo?.id,
+      user_token: userStore.token,
+      data,
     });
   };
 

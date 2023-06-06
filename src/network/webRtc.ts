@@ -491,7 +491,6 @@ export class WebRTCClass {
         this.update();
         console.log('准备发送candidate', event.candidate.candidate);
         const roomId = this.roomId.split('___')[0];
-        console.log(this.roomId, networkStore.wsMap.get(roomId)?.socketIo?.id);
         const receiver = this.roomId.split('___')[1];
         const data = {
           candidate: event.candidate.candidate,
