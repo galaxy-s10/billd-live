@@ -1,22 +1,41 @@
 import flvJs from 'flv.js';
+import { onMounted, onUnmounted, ref } from 'vue';
 
-export async function useFlvPlay(flvurl: string, videoEl: HTMLVideoElement) {
-  if (flvJs.isSupported()) {
-    const flvPlayer = flvJs.createPlayer({
-      type: 'flv',
-      url: flvurl,
-    });
-    flvPlayer.attachMediaElement(videoEl);
-    flvPlayer.load();
-    try {
-      await flvPlayer.play();
-      return { flvPlayer };
-    } catch (err) {
-      console.log(err);
-      return { err: '播放失败' };
+export function useFlvPlay() {
+  const flvPlayer = ref();
+
+  onMounted(() => {});
+
+  onUnmounted(() => {
+    if (flvPlayer.value) {
+      flvPlayer.value.destroy();
     }
-  } else {
-    console.error('不支持flv');
-    return { err: '不支持flv' };
+  });
+
+  async function startPlay(data: {
+    flvurl: string;
+    videoEl: HTMLVideoElement;
+  }) {
+    if (flvPlayer.value) {
+      flvPlayer.value.destroy();
+    }
+    if (flvJs.isSupported()) {
+      const player = flvJs.createPlayer({
+        type: 'flv',
+        url: data.flvurl,
+      });
+      player.attachMediaElement(data.videoEl);
+      player.load();
+      try {
+        await player.play();
+        flvPlayer.value = player;
+      } catch (err) {
+        console.log(err);
+      }
+    } else {
+      console.error('不支持flv');
+    }
   }
+
+  return { startPlay };
 }

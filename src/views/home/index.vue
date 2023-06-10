@@ -93,7 +93,6 @@
 </template>
 
 <script lang="ts" setup>
-import FlvJs from 'flv.js';
 import { nextTick, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -108,22 +107,14 @@ const router = useRouter();
 const liveRoomList = ref<ILive[]>([]);
 const currentLiveRoom = ref<ILive>();
 const localVideoRef = ref<HTMLVideoElement>();
-const player = ref<FlvJs.Player>();
+
+const { startPlay } = useFlvPlay();
 
 function changeLiveRoom(item: ILive) {
   currentLiveRoom.value = item;
-  if (player.value) {
-    player.value.destroy();
-  }
   nextTick(async () => {
     if (item.flvurl) {
-      const { err, flvPlayer } = await useFlvPlay(
-        item.flvurl,
-        localVideoRef.value!
-      );
-      if (!err) {
-        player.value = flvPlayer;
-      }
+      await startPlay({ flvurl: item.flvurl, videoEl: localVideoRef.value! });
     }
   });
 }
@@ -140,13 +131,10 @@ async function getLiveRoomList() {
         currentLiveRoom.value = res.data.rows[0];
         nextTick(async () => {
           if (currentLiveRoom.value?.flvurl) {
-            const { err, flvPlayer } = await useFlvPlay(
-              currentLiveRoom.value.flvurl,
-              localVideoRef.value!
-            );
-            if (!err) {
-              player.value = flvPlayer;
-            }
+            await startPlay({
+              flvurl: currentLiveRoom.value.flvurl,
+              videoEl: localVideoRef.value!,
+            });
           }
         });
       }

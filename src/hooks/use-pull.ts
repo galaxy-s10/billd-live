@@ -1,5 +1,4 @@
 import { getRandomString } from 'billd-utils';
-import FlvJs from 'flv.js';
 import { Ref, nextTick, onUnmounted, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -61,7 +60,7 @@ export function usePull({
     }[]
   >([]);
 
-  const player = ref<FlvJs.Player>();
+  const { startPlay } = useFlvPlay();
 
   const track = reactive({
     audio: true,
@@ -101,9 +100,6 @@ export function usePull({
 
   onUnmounted(() => {
     clearInterval(heartbeatTimer.value);
-    if (player.value) {
-      player.value.destroy();
-    }
   });
 
   /** 摄像头 */
@@ -563,13 +559,10 @@ export function usePull({
         streamurl.value = data.data.streamurl!;
         flvurl.value = data.data.flvurl!;
         if (isFlv) {
-          const { err, flvPlayer } = await useFlvPlay(
-            flvurl.value,
-            remoteVideoRef.value!
-          );
-          if (!err) {
-            player.value = flvPlayer;
-          }
+          await startPlay({
+            flvurl: flvurl.value,
+            videoEl: remoteVideoRef.value!,
+          });
         }
         instance.send({ msgType: WsMsgTypeEnum.getLiveUser });
       }
