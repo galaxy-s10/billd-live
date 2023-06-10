@@ -1,4 +1,5 @@
 import { getRandomString } from 'billd-utils';
+import FlvJs from 'flv.js';
 import { Ref, nextTick, onUnmounted, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -60,6 +61,8 @@ export function usePull({
     }[]
   >([]);
 
+  const player = ref<FlvJs.Player>();
+
   const track = reactive({
     audio: true,
     video: true,
@@ -98,6 +101,9 @@ export function usePull({
 
   onUnmounted(() => {
     clearInterval(heartbeatTimer.value);
+    if (player.value) {
+      player.value.destroy();
+    }
   });
 
   /** 摄像头 */
@@ -545,20 +551,29 @@ export function usePull({
     });
 
     // 用户加入房间
-    instance.socketIo.on(WsMsgTypeEnum.joined, (data: { data: ILive }) => {
-      prettierReceiveWebsocket(WsMsgTypeEnum.joined, data);
-      roomName.value = data.data.live_room?.roomName!;
-      userName.value = data.data.user?.username!;
-      userAvatar.value = data.data.user?.avatar!;
-      track.audio = data.data.track_audio!;
-      track.video = data.data.track_video!;
-      streamurl.value = data.data.streamurl!;
-      flvurl.value = data.data.flvurl!;
-      if (isFlv) {
-        useFlvPlay(flvurl.value, remoteVideoRef.value!);
+    instance.socketIo.on(
+      WsMsgTypeEnum.joined,
+      async (data: { data: ILive }) => {
+        prettierReceiveWebsocket(WsMsgTypeEnum.joined, data);
+        roomName.value = data.data.live_room?.roomName!;
+        userName.value = data.data.user?.username!;
+        userAvatar.value = data.data.user?.avatar!;
+        track.audio = data.data.track_audio!;
+        track.video = data.data.track_video!;
+        streamurl.value = data.data.streamurl!;
+        flvurl.value = data.data.flvurl!;
+        if (isFlv) {
+          const { err, flvPlayer } = await useFlvPlay(
+            flvurl.value,
+            remoteVideoRef.value!
+          );
+          if (!err) {
+            player.value = flvPlayer;
+          }
+        }
+        instance.send({ msgType: WsMsgTypeEnum.getLiveUser });
       }
-      instance.send({ msgType: WsMsgTypeEnum.getLiveUser });
-    });
+    );
 
     // 其他用户加入房间
     instance.socketIo.on(WsMsgTypeEnum.otherJoin, (data) => {

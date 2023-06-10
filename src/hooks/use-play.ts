@@ -1,6 +1,6 @@
 import flvJs from 'flv.js';
 
-export function useFlvPlay(flvurl: string, videoEl: HTMLVideoElement) {
+export async function useFlvPlay(flvurl: string, videoEl: HTMLVideoElement) {
   if (flvJs.isSupported()) {
     const flvPlayer = flvJs.createPlayer({
       type: 'flv',
@@ -9,11 +9,14 @@ export function useFlvPlay(flvurl: string, videoEl: HTMLVideoElement) {
     flvPlayer.attachMediaElement(videoEl);
     flvPlayer.load();
     try {
-      flvPlayer.play();
-    } catch (error) {
-      console.log(error);
+      await flvPlayer.play();
+      return { flvPlayer };
+    } catch (err) {
+      console.log(err);
+      return { err: '播放失败' };
     }
   } else {
     console.error('不支持flv');
+    return { err: '不支持flv' };
   }
 }
