@@ -24,12 +24,23 @@
           x5-video-player-fullscreen="true"
           x5-video-orientation="portraint"
           :muted="appStore.muted"
+          @click="showControls = !showControls"
         ></video>
         <template v-if="currentLiveRoom">
-          <div class="controls">
+          <div
+            class="controls"
+            :style="{
+              display: !isMobile() ? 'none' : showControls ? 'block' : 'none',
+            }"
+          >
             <VideoControls></VideoControls>
           </div>
-          <div class="join-btn">
+          <div
+            class="join-btn"
+            :style="{
+              display: !isMobile() ? 'none' : showControls ? 'block' : 'none',
+            }"
+          >
             <div
               v-if="currentLiveRoom.system === 2"
               class="btn webrtc"
@@ -85,14 +96,12 @@
       </div>
     </div>
 
-    <div class="foot">
-      <h1>billd-live当前是beta状态，欢迎测试~</h1>
-      <h2>billd-live目前只有作者一人维护，期待有志者参与~</h2>
-    </div>
+    <div class="foot"></div>
   </div>
 </template>
 
 <script lang="ts" setup>
+import { isMobile } from 'billd-utils';
 import { nextTick, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -104,6 +113,7 @@ import { useAppStore } from '@/store/app';
 
 const appStore = useAppStore();
 const router = useRouter();
+const showControls = ref(false);
 const liveRoomList = ref<ILive[]>([]);
 const currentLiveRoom = ref<ILive>();
 const localVideoRef = ref<HTMLVideoElement>();
@@ -223,10 +233,10 @@ function joinFlvRoom() {
 
       &:hover {
         .join-btn {
-          display: inline-flex;
+          display: inline-flex !important;
         }
         .controls {
-          display: block;
+          display: block !important;
         }
       }
       .join-btn {

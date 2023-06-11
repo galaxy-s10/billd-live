@@ -5,6 +5,9 @@ export const QQ_REDIRECT_URI = 'https://live.hsslive.cn/oauth/qq_login';
 export const AUTHOR_GITHUB = 'https://github.com/galaxy-s10';
 export const LIVE_CLIENT_URL = 'https://live.hsslive.cn';
 
+export const APIFOX_URL =
+  'https://apifox.com/apidoc/shared-c7556b54-17b2-494e-a039-572d83f103ed/';
+
 // 全局的cookie的key
 export const COOKIE_KEY = {
   loginInfo: 'loginInfo',

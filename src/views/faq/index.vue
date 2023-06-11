@@ -5,6 +5,32 @@
       <div class="hr"></div>
       <div class="list">
         <div class="item">
+          <h2>如何本地运行billd-live？</h2>
+          <p>
+            1. 仔细阅读
+            <span
+              class="link"
+              @click="
+                openToTarget('https://github.com/galaxy-s10/billd-live#readme')
+              "
+              >billd-live的readme
+            </span>
+          </p>
+          <p>
+            2. 仔细阅读
+            <span
+              class="link"
+              @click="
+                openToTarget(
+                  'https://github.com/galaxy-s10/billd-live-server#readme'
+                )
+              "
+              >billd-live-server的readme
+            </span>
+          </p>
+        </div>
+        <div class="hr"></div>
+        <div class="item">
           <h2>billd-live是什么？</h2>
           <p>
             billd-live 是一个web端的直播平台，目前支持使用WebRTC或SRS进行直播：
@@ -49,12 +75,13 @@
         <div class="hr"></div>
         <div class="item">
           <h2>如何参与贡献？</h2>
-          <p>非常欢迎！具体TODO</p>
+          <p>非常欢迎！欢迎提Issue 或 PR！</p>
         </div>
       </div>
     </div>
     <div class="aside">
       <div class="title">本页目录</div>
+      <div class="item">如何本地运行billd-live？</div>
       <div class="item">billd-live是什么？</div>
       <div class="item">谁在维护billd-live？</div>
       <div class="item">billd-live使用了什么技术栈？</div>
@@ -64,6 +91,7 @@
 </template>
 
 <script lang="ts" setup>
+import { openToTarget } from 'billd-utils';
 import { ref } from 'vue';
 
 import { AUTHOR_GITHUB } from '@/constant';
@@ -99,6 +127,7 @@ const list = ref([]);
       color: $theme-color-gold;
       text-decoration: none;
       font-weight: 500;
+      cursor: pointer;
     }
     .list {
       h2 {

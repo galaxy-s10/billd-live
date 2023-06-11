@@ -47,6 +47,7 @@ export function usePull({
   const userAvatar = ref('');
   const streamurl = ref('');
   const flvurl = ref('');
+  const coverImg = ref('');
   const danmuStr = ref('');
   const balance = ref('0.00');
   const damuList = ref<IDanmu[]>([]);
@@ -558,6 +559,7 @@ export function usePull({
         track.video = data.data.track_video!;
         streamurl.value = data.data.streamurl!;
         flvurl.value = data.data.flvurl!;
+        coverImg.value = data.data.coverImg!;
         if (isFlv) {
           await startPlay({
             flvurl: flvurl.value,
@@ -625,6 +627,7 @@ export function usePull({
     roomName,
     userName,
     userAvatar,
+    coverImg,
     roomNoLive,
     damuList,
     giftList,

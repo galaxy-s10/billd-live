@@ -25,6 +25,10 @@
           class="container"
         >
           <div class="video-wrap">
+            <div
+              class="cover"
+              :style="{ backgroundImage: `url(${coverImg})` }"
+            ></div>
             <video
               id="remoteVideo"
               ref="remoteVideoRef"
@@ -36,8 +40,12 @@
               x5-video-player-fullscreen="true"
               x5-video-orientation="portraint"
               :muted="appStore.muted"
+              @click="showControls = !showControls"
             ></video>
-            <div class="controls">
+            <div
+              class="controls"
+              :style="{ display: showControls ? 'block' : 'none' }"
+            >
               <VideoControls></VideoControls>
             </div>
           </div>
@@ -211,6 +219,7 @@ const userStore = useUserStore();
 const appStore = useAppStore();
 
 const giftGoodsList = ref<IGoods[]>([]);
+const showControls = ref(false);
 const giftLoading = ref(false);
 const showRecharge = ref(false);
 const showJoin = ref(true);
@@ -237,6 +246,7 @@ const {
   roomName,
   userName,
   userAvatar,
+  coverImg,
   roomNoLive,
   damuList,
   giftList,
@@ -340,6 +350,7 @@ onMounted(() => {
           width: 64px;
           height: 64px;
           border-radius: 50%;
+
           @extend %containBg;
         }
         .detail {
@@ -384,10 +395,20 @@ onMounted(() => {
       justify-content: space-between;
       .video-wrap {
         position: relative;
+        overflow: hidden;
         flex: 1;
         height: 100%;
         background-color: rgba($color: #000000, $alpha: 0.5);
+        .cover {
+          position: absolute;
+          background-position: center center;
+          background-size: cover;
+          filter: blur(30px);
+
+          inset: 0;
+        }
         #remoteVideo {
+          position: relative;
           width: 100%;
           height: 100%;
         }
@@ -514,6 +535,7 @@ onMounted(() => {
             width: 25px;
             height: 25px;
             border-radius: 50%;
+
             @extend %containBg;
           }
           .username {

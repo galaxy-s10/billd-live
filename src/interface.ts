@@ -6,12 +6,43 @@ export enum PayStatusEnum {
   TRADE_SUCCESS = 'TRADE_SUCCESS',
 }
 
+export interface IServerInfo {
+  project_name: string;
+  project_env: string;
+  updated_at: string;
+  server: {
+    uname: string;
+    redisVersion: string;
+    mysqlVersion: string;
+    nginxVersion: string;
+    dockerVersion: string;
+    pm2Version: string;
+    nodeVersion: string;
+    npmVersion: string;
+    pnpmVersion: string;
+  };
+  billd: {
+    pkgName: string;
+    pkgVersion: string;
+    pkgRepository: string;
+    commitSubject: string;
+    commitBranch: string;
+    committerDate: string;
+    commitHash: string;
+    committerName: string;
+    committerEmail: string;
+    lastBuildDate: string;
+    nodeVersion: string;
+  };
+}
+
 export enum RankTypeEnum {
   liveRoom = 'liveRoom',
   user = 'user',
   sponsors = 'sponsors',
   wallet = 'wallet',
 }
+
 export interface IWallet {
   id?: number;
   user_id?: number;

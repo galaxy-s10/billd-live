@@ -38,6 +38,7 @@
     "./.eslintrc.js",
     "./babel.config.js",
     "./postcss.config.js",
+    "./components.d.ts",
     "windi.config.ts"
   ],
   // https://github.com/microsoft/TypeScript/wiki/Performance

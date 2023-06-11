@@ -77,6 +77,13 @@
             >
               <div class="txt">快速上手</div>
             </a>
+            <a
+              class="item"
+              @click="openToTarget(APIFOX_URL)"
+            >
+              <div class="txt">接口文档</div>
+              <VPIconExternalLink class="icon"></VPIconExternalLink>
+            </a>
           </div>
         </template>
       </Dropdown>
@@ -236,6 +243,7 @@ import { useRouter } from 'vue-router';
 import Dropdown from '@/components/Dropdown/index.vue';
 import VPIconChevronDown from '@/components/icons/VPIconChevronDown.vue';
 import VPIconExternalLink from '@/components/icons/VPIconExternalLink.vue';
+import { APIFOX_URL } from '@/constant';
 import { loginTip, useQQLogin } from '@/hooks/use-login';
 import { liveTypeEnum } from '@/interface';
 import { routerName } from '@/router';
