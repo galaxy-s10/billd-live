@@ -1,5 +1,7 @@
-import flvJs from 'flv.js';
 import { onMounted, onUnmounted, ref } from 'vue';
+
+// @ts-ignore
+const flvJs = window.flvjs;
 
 export function useFlvPlay() {
   const flvPlayer = ref();

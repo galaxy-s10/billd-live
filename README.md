@@ -91,6 +91,10 @@ pnpm i billd-utils@latest billd-scss@latest billd-html-webpack-plugin@latest bil
 npm run start
 ```
 
+## FAQ
+
+~~不通过 npm 安装 flv.js，因为安装了 flv.js 后，`import flvJs from 'flv.js'` 会导致 vscode 的 ts 错乱。因此直接下载 flv.min.js 使用。~~，应该是我的 vscode 用了 vscode 的 ts 版本（ts 的 5.x 版本），用回工作区（也就是项目里面安装的 ts 的 4.9 的版本）的 ts 版本就没事了
+
 ## 赞助
 
 [https://live.hsslive.cn/sponsors](https://live.hsslive.cn/sponsors)

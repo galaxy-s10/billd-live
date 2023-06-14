@@ -20,6 +20,7 @@ export const routerName = {
   release: 'release',
   notFound: 'notFound',
   group: 'group',
+  profile: 'profile',
 
   pull: 'pull',
   push: 'push',
@@ -71,6 +72,11 @@ export const defaultRoutes: RouteRecordRaw[] = [
         name: routerName.shop,
         path: '/shop',
         component: () => import('@/views/shop/index.vue'),
+      },
+      {
+        name: routerName.profile,
+        path: '/profile/:userId',
+        component: () => import('@/views/profile/index.vue'),
       },
       {
         name: routerName.sponsors,

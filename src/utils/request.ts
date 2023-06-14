@@ -55,20 +55,13 @@ class MyAxios {
           window.$message.error('请求超时，请重试');
         }
         const statusCode = error.response.status as number;
-        const errorResponseData = error.response.data;
+        const errorResponse = error.response;
+        const errorResponseData = errorResponse.data;
         const whiteList = ['400', '401', '403', '404'];
         if (error.response) {
           if (!whiteList.includes(`${statusCode}`)) {
-            if (statusCode === 500) {
-              let msg = errorResponseData.message;
-              if (errorResponseData?.errorCode) {
-                msg = errorResponseData.error;
-              }
-              console.error(msg);
-              return Promise.reject(msg);
-            }
-            console.error(error.message);
-            return Promise.reject(error);
+            window.$message.error(error.message);
+            return Promise.reject(error.message);
           }
           if (statusCode === 400) {
             console.error(errorResponseData.message);
@@ -95,6 +88,7 @@ class MyAxios {
         } else {
           // 请求超时没有response
           console.error(error.message);
+          window.$message.error(error.message);
           return Promise.reject(error.message);
         }
       }

@@ -66,18 +66,8 @@ export function usePush({
     audio: true,
     video: true,
   });
-  const streamurl = ref(
-    `webrtc://${
-      process.env.NODE_ENV === 'development' ? 'localhost' : 'live.hsslive.cn'
-    }/live/livestream/${roomId.value}`
-  );
-  const flvurl = ref(
-    `${
-      process.env.NODE_ENV === 'development'
-        ? 'http://localhost:5001'
-        : 'https://live.hsslive.cn/srsflv'
-    }/live/livestream/${roomId.value}.flv`
-  );
+  const streamurl = ref('');
+  const flvurl = ref('');
 
   const damuList = ref<IDanmu[]>([]);
   const liveUserList = ref<ILiveUser[]>([]);
@@ -117,6 +107,15 @@ export function usePush({
   );
 
   onMounted(() => {
+    roomId.value = route.query.roomId as string;
+    streamurl.value = `webrtc://${
+      process.env.NODE_ENV === 'development' ? 'localhost' : 'live.hsslive.cn'
+    }/livestream/roomId___${roomId.value}`;
+    flvurl.value = `${
+      process.env.NODE_ENV === 'development'
+        ? 'http://localhost:5001'
+        : 'https://live.hsslive.cn/srsflv'
+    }/livestream/roomId___${roomId.value}.flv`;
     if (!loginTip()) return;
   });
 
@@ -140,7 +139,7 @@ export function usePush({
   async function userHasLiveRoom() {
     const res = await fetchUserHasLiveRoom(userStore.userInfo?.id!);
     if (res.code === 200 && res.data) {
-      roomName.value = res.data.live_room?.roomName || '';
+      roomName.value = res.data.live_room?.name || '';
       roomId.value = `${res.data.live_room?.id || -1}`;
       router.push({ query: { ...route.query, roomId: roomId.value } });
       return true;

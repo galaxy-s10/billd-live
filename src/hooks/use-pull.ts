@@ -552,7 +552,7 @@ export function usePull({
       WsMsgTypeEnum.joined,
       async (data: { data: ILive }) => {
         prettierReceiveWebsocket(WsMsgTypeEnum.joined, data);
-        roomName.value = data.data.live_room?.roomName!;
+        roomName.value = data.data.live_room?.name!;
         userName.value = data.data.user?.username!;
         userAvatar.value = data.data.user?.avatar!;
         track.audio = data.data.track_audio!;

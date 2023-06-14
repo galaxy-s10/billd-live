@@ -21,15 +21,22 @@
           :key="index"
           :class="{ item: 1, [`rank-${item.rank}`]: 1 }"
         >
-          <div class="avatar-wrap">
-            <img
-              class="avatar"
-              :src="item.avatar"
-              alt=""
-            />
-            <div class="border"></div>
+          <div
+            class="avatar"
+            @click="
+              router.push({
+                name: routerName.profile,
+                params: { userId: item.user.id },
+              })
+            "
+          >
+            <Avatar
+              :size="100"
+              :avatar="item.user.avatar"
+              :living="!!item.live"
+            ></Avatar>
           </div>
-          <div class="username">{{ item.username }}</div>
+          <div class="username">{{ item.user.username }}</div>
           <div class="rank">
             <i>0{{ item.rank }}</i>
             <div
@@ -66,11 +73,11 @@
           </div>
           <div class="left">
             <img
-              :src="item.avatar"
+              :src="item.user.avatar"
               class="avatar"
               alt=""
             />
-            <div class="username">{{ item.username }}</div>
+            <div class="username">{{ item.user.username }}</div>
             <div class="wallet">
               <div v-if="item.balance && currRankType === RankTypeEnum.wallet">
                 （钱包：{{ item.balance }}）
@@ -108,7 +115,7 @@ import { fetchLiveRoomList } from '@/api/liveRoom';
 import { fetchUserList } from '@/api/user';
 import { fetchWalletList } from '@/api/wallet';
 import { fullLoading } from '@/components/FullLoading';
-import { ILive, RankTypeEnum, liveTypeEnum } from '@/interface';
+import { ILive, IUser, liveTypeEnum, RankTypeEnum } from '@/interface';
 import router, { routerName } from '@/router';
 
 export interface IRankType {
@@ -136,8 +143,7 @@ const mockDataNums = 4;
 const currRankType = ref(RankTypeEnum.liveRoom);
 
 const mockRank: {
-  username: string;
-  avatar: string;
+  user: IUser;
   rank: number;
   level: number;
   score: number;
@@ -145,8 +151,11 @@ const mockRank: {
   live?: ILive;
 }[] = [
   {
-    username: '待上榜',
-    avatar: '',
+    user: {
+      id: -1,
+      username: '待上榜',
+      avatar: '',
+    },
     rank: 1,
     level: -1,
     score: -1,
@@ -154,8 +163,11 @@ const mockRank: {
     live: undefined,
   },
   {
-    username: '待上榜',
-    avatar: '',
+    user: {
+      id: -1,
+      username: '待上榜',
+      avatar: '',
+    },
     rank: 2,
     level: -1,
     score: -1,
@@ -163,8 +175,11 @@ const mockRank: {
     live: undefined,
   },
   {
-    username: '待上榜',
-    avatar: '',
+    user: {
+      id: -1,
+      username: '待上榜',
+      avatar: '',
+    },
     rank: 3,
     level: -1,
     score: -1,
@@ -172,8 +187,11 @@ const mockRank: {
     live: undefined,
   },
   {
-    username: '待上榜',
-    avatar: '',
+    user: {
+      id: -1,
+      username: '待上榜',
+      avatar: '',
+    },
     rank: 4,
     level: -1,
     score: -1,
@@ -191,8 +209,11 @@ async function getWalletList() {
       const length = res.data.rows.length;
       rankList.value = res.data.rows.map((item, index) => {
         return {
-          username: item.user.username!,
-          avatar: item.user.avatar!,
+          user: {
+            id: item.id!,
+            username: item.username!,
+            avatar: item.avatar!,
+          },
           rank: index + 1,
           level: 1,
           score: 1,
@@ -221,8 +242,11 @@ async function getLiveRoomList() {
       const length = res.data.rows.length;
       rankList.value = res.data.rows.map((item, index) => {
         return {
-          username: item.user_username!,
-          avatar: item.user_avatar!,
+          user: {
+            id: item.user_id!,
+            username: item.user_username!,
+            avatar: item.user_avatar!,
+          },
           rank: index + 1,
           level: 1,
           score: 1,
@@ -272,8 +296,11 @@ async function getUserList() {
       const length = res.data.rows.length;
       rankList.value = res.data.rows.map((item, index) => {
         return {
-          username: item.username!,
-          avatar: item.avatar!,
+          user: {
+            id: item.id!,
+            username: item.username!,
+            avatar: item.avatar!,
+          },
           rank: index + 1,
           level: 1,
           score: 1,
@@ -386,17 +413,12 @@ async function getUserList() {
           }
         }
 
-        .avatar-wrap {
-          position: relative;
+        .avatar {
           margin-top: -50px;
-          img {
-            display: inline-block;
-            margin: 0 auto;
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-          }
+          display: inline-block;
+          cursor: pointer;
         }
+
         .username {
           margin-bottom: 10px;
           font-size: 22px;

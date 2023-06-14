@@ -44,7 +44,9 @@
             ></video>
             <div
               class="controls"
-              :style="{ display: showControls ? 'block' : 'none' }"
+              :style="{
+                display: !isMobile() ? 'none' : showControls ? 'block' : 'none',
+              }"
             >
               <VideoControls></VideoControls>
             </div>
@@ -197,6 +199,7 @@
 </template>
 
 <script lang="ts" setup>
+import { isMobile } from 'billd-utils';
 import { nextTick, onMounted, onUnmounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -418,7 +421,7 @@ onMounted(() => {
 
         &:hover {
           .controls {
-            display: block;
+            display: block !important;
           }
         }
       }
