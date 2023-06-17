@@ -41,19 +41,9 @@
           <div class="rank">
             <i>0{{ item.rank }}</i>
             <div
-              v-if="item.live && currRankType === RankTypeEnum.liveRoom"
+              v-if="item.live?.live && currRankType === RankTypeEnum.liveRoom"
               class="living"
-              @click="
-                router.push({
-                  name: routerName.pull,
-                  params: { roomId: item.live.live_room_id },
-                  query: {
-                    liveType: item.live.flvurl
-                      ? liveTypeEnum.srsFlvPull
-                      : liveTypeEnum.webrtcPull,
-                  },
-                })
-              "
+              @click="handleJoin(item.live)"
             >
               直播中
             </div>
@@ -85,19 +75,9 @@
               </div>
             </div>
             <div
-              v-if="item.live && currRankType === RankTypeEnum.liveRoom"
+              v-if="item.live?.live && currRankType === RankTypeEnum.liveRoom"
               class="living-tag"
-              @click="
-                router.push({
-                  name: routerName.pull,
-                  params: { roomId: item.live.live_room_id },
-                  query: {
-                    liveType: item.live.flvurl
-                      ? liveTypeEnum.srsFlvPull
-                      : liveTypeEnum.webrtcPull,
-                  },
-                })
-              "
+              @click="handleJoin(item.live)"
             >
               直播中
             </div>
@@ -116,7 +96,13 @@ import { fetchLiveRoomList } from '@/api/liveRoom';
 import { fetchBlogUserList, fetchUserList } from '@/api/user';
 import { fetchWalletList } from '@/api/wallet';
 import { fullLoading } from '@/components/FullLoading';
-import { ILive, IUser, liveTypeEnum, RankTypeEnum } from '@/interface';
+import {
+  ILiveRoom,
+  IUser,
+  LiveRoomTypeEnum,
+  liveTypeEnum,
+  RankTypeEnum,
+} from '@/interface';
 import router, { routerName } from '@/router';
 
 export interface IRankType {
@@ -153,7 +139,7 @@ const mockRank: {
   level: number;
   score: number;
   balance: string;
-  live?: ILive;
+  live?: ILiveRoom;
 }[] = [
   {
     user: {
@@ -206,6 +192,23 @@ const mockRank: {
 ];
 const rankList = ref(mockRank);
 
+function handleJoin(item) {
+  let liveType: liveTypeEnum = liveTypeEnum.webrtcPull;
+  if (
+    item?.type === LiveRoomTypeEnum.system ||
+    item?.type === LiveRoomTypeEnum.user_obs
+  ) {
+    liveType = liveTypeEnum.srsFlvPull;
+  } else if (item?.type === LiveRoomTypeEnum.user_srs) {
+    liveType = liveTypeEnum.srsWebrtcPull;
+  }
+  router.push({
+    name: routerName.pull,
+    params: { roomId: item.live.live_room_id },
+    query: { liveType },
+  });
+}
+
 async function getWalletList() {
   try {
     fullLoading({ loading: true });
@@ -248,6 +251,7 @@ async function getLiveRoomList() {
             username: item.user_username!,
             avatar: item.user_avatar!,
           },
+          live: item,
           rank: index + 1,
           level: 1,
           score: 1,

@@ -151,6 +151,8 @@ export interface ILiveRoom {
   user?: IUser;
   /** 直播间名字 */
   name?: string;
+  /** 联表（live表） */
+  live?: string;
   user_live_room?: IUserLiveRoom & { user: IUser };
   /** 权重 */
   weight?: number;

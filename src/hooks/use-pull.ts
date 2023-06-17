@@ -461,9 +461,13 @@ export function usePull({
           'webrtc'
         );
         if (route.query.liveType === liveTypeEnum.srsWebrtcPull) {
-          console.log('');
+          instance.send({ msgType: WsMsgTypeEnum.getLiveUser });
+        } else if (route.query.liveType === liveTypeEnum.srsFlvPull) {
+          await startPlay({
+            flvurl: flvurl.value,
+            videoEl: remoteVideoRef.value!,
+          });
         } else if (
-          data.data.live_room?.type === LiveRoomTypeEnum.user_srs ||
           data.data.live_room?.type === LiveRoomTypeEnum.user_obs ||
           data.data.live_room?.type === LiveRoomTypeEnum.system
         ) {
@@ -472,7 +476,6 @@ export function usePull({
             videoEl: remoteVideoRef.value!,
           });
         }
-        instance.send({ msgType: WsMsgTypeEnum.getLiveUser });
       }
     );
 

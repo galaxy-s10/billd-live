@@ -45,7 +45,9 @@
           >
             <div
               v-if="
-                currentLiveRoom.live_room?.type !== LiveRoomTypeEnum.user_obs
+                currentLiveRoom.live_room?.type ===
+                  LiveRoomTypeEnum.user_wertc ||
+                currentLiveRoom.live_room?.type === LiveRoomTypeEnum.user_srs
               "
               class="btn webrtc"
               @click="joinRoom()"
@@ -54,6 +56,8 @@
             </div>
             <div
               v-if="
+                currentLiveRoom.live_room?.type === LiveRoomTypeEnum.system ||
+                currentLiveRoom.live_room?.type === LiveRoomTypeEnum.user_obs ||
                 currentLiveRoom?.live_room?.type === LiveRoomTypeEnum.user_srs
               "
               class="btn flv"
