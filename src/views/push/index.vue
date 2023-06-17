@@ -52,13 +52,13 @@
           <div class="title">在线人员</div>
           <div
             v-for="(item, index) in liveUserList.filter(
-              (item) => item.socketId !== getSocketId()
+              (item) => item.id !== getSocketId()
             )"
             :key="index"
             class="item"
           >
             <video
-              :ref="(el) => (remoteVideoRef[item.socketId] = el)"
+              :ref="(el) => (remoteVideoRef[item.id] = el)"
               autoplay
               webkit-playsinline="true"
               playsinline
@@ -68,7 +68,7 @@
               x5-video-orientation="portraint"
               muted
             ></video>
-            <div>{{ item.socketId }}</div>
+            <div>{{ item.userInfo?.username || item.id }}</div>
           </div>
         </div>
       </div>
@@ -159,18 +159,26 @@
               class="item"
             >
               <template v-if="item.msgType === DanmuMsgTypeEnum.danmu">
-                <span class="name">{{ item.socketId }}：</span>
+                <span class="name">
+                  {{ item.userInfo?.username || item.socket_id }}：
+                </span>
                 <span class="msg">{{ item.msg }}</span>
               </template>
               <template v-else-if="item.msgType === DanmuMsgTypeEnum.otherJoin">
                 <span class="name system">系统通知：</span>
-                <span class="msg">{{ item.socketId }}进入直播！</span>
+                <span class="msg">
+                  <span>{{ item.userInfo?.username || item.socket_id }}</span>
+                  <span>进入直播！</span>
+                </span>
               </template>
               <template
                 v-else-if="item.msgType === DanmuMsgTypeEnum.userLeaved"
               >
                 <span class="name system">系统通知：</span>
-                <span class="msg">{{ item.socketId }}离开直播！</span>
+                <span class="msg">
+                  <span>{{ item.userInfo?.username || item.socket_id }}</span>
+                  <span>离开直播！</span>
+                </span>
               </template>
             </div>
           </div>

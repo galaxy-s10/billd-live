@@ -41,6 +41,7 @@ export enum RankTypeEnum {
   user = 'user',
   sponsors = 'sponsors',
   wallet = 'wallet',
+  blog = 'blog',
 }
 
 export interface IWallet {
@@ -136,12 +137,26 @@ export interface IGoods {
   deleted_at?: string;
 }
 
+/** 直播间类型 */
+export enum LiveRoomTypeEnum {
+  system, // 系统直播
+  user_wertc, // 主播使用webrtc直播（用户只能看webrtc直播）
+  user_srs, // 主播使用srs直播（用户可以看webrtc或flv直播）
+  user_obs, // 主播使用obs/ffmpeg直播（用户只能看flv直播）
+}
+
 export interface ILiveRoom {
   id?: number;
   /** 用户信息 */
   user?: IUser;
   /** 直播间名字 */
   name?: string;
+  user_live_room?: IUserLiveRoom & { user: IUser };
+  /** 权重 */
+  weight?: number;
+  key?: string;
+  type?: LiveRoomTypeEnum;
+  cover_img?: string;
   rtmp_url?: string;
   flv_url?: string;
   hls_url?: string;
@@ -255,20 +270,17 @@ export interface IQqUser {
 
 export interface ILive {
   id?: number;
-  /** 1:系统直播;2:用户直播 */
-  system?: number;
   /** 用户信息 */
   user?: IUser;
   /** 直播间信息 */
   live_room?: ILiveRoom;
-  socketId?: string;
+  socket_id?: string;
   user_id?: number;
   live_room_id?: number;
-  track_video?: boolean;
-  track_audio?: boolean;
-  coverImg?: string;
-  streamurl?: string;
-  flvurl?: string;
+  /** 1开启;2关闭 */
+  track_video?: number;
+  /** 1开启;2关闭 */
+  track_audio?: number;
   created_at?: string;
   updated_at?: string;
   deleted_at?: string;
@@ -285,59 +297,94 @@ export enum DanmuMsgTypeEnum {
   userLeaved,
 }
 
+export interface IUpdateJoinInfo {
+  socket_id: string;
+  is_anchor: boolean;
+  user_info?: IUser;
+  data: {
+    live_room_id: number;
+  };
+}
+
 export interface ILiveUser {
-  socketId: string;
+  id: string;
+  rooms?: string[];
   userInfo?: IUser;
 }
 
 export interface IDanmu {
   msgType: DanmuMsgTypeEnum;
   msg: string;
-  socketId: string;
+  socket_id: string;
   userInfo?: IUser;
 }
 
-export interface IAdminIn {
-  roomId: string;
-  socketId: string;
-  isAdmin: boolean;
-  data: any;
+export interface IMessage {
+  socket_id: string;
+  is_anchor: boolean;
+  user_info?: IUser;
+  data: {
+    msgType: DanmuMsgTypeEnum;
+    msg: string;
+    live_room_id: number;
+  };
+}
+
+export type IOtherJoin = {
+  data: IUserLiveRoom & {
+    join_socket_id: string;
+  };
+};
+
+export interface IJoin {
+  socket_id: string;
+  is_anchor: boolean;
+  user_info?: IUser;
+  data: {
+    live_id?: number;
+    live_room: ILiveRoom;
+    track: { audio: number; video: number };
+  };
 }
 
 export interface IOffer {
-  socketId: string;
-  roomId: string;
+  socket_id: string;
+  is_anchor: boolean;
+  user_info?: IUser;
   data: {
     sdp: any;
-    target: string;
     sender: string;
     receiver: string;
+    live_room_id: number;
   };
-  isAdmin: boolean;
+}
+
+export interface IAnswer {
+  sdp: any;
+  sender: string;
+  receiver: string;
+  live_room_id: number;
+}
+export interface IHeartbeat {
+  socket_id: string;
+  is_anchor: boolean;
+  user_info?: IUser;
+  data?: {
+    live_id: number;
+    live_room_id: number;
+  };
 }
 
 export interface ICandidate {
-  socketId: string;
-  roomId: string;
+  socket_id: string;
+  is_anchor: boolean;
+  user_info?: IUser;
   data: {
+    live_room_id: number;
     candidate: string;
     sdpMid: string | null;
     sdpMLineIndex: number | null;
     receiver: string;
     sender: string;
   };
-}
-
-export interface IJoin {
-  roomId: string;
-  socketId: string;
-  data: {
-    roomName: string;
-    coverImg: string;
-    userInfo?: IUser;
-    srs?: { streamurl: string; flvurl: string };
-    track: { audio: boolean; video: boolean };
-    liveId?: number;
-  };
-  isAdmin?: boolean;
 }

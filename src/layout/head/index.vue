@@ -217,14 +217,19 @@
           <div
             class="btn"
             :style="{ backgroundImage: `url(${userStore.userInfo.avatar})` }"
-            @click="useQQLogin()"
           ></div>
         </template>
         <template #list>
           <div class="list">
             <a
               class="item"
-              @click.prevent="userStore.logout()"
+              @click.prevent="router.push({ name: routerName.account })"
+            >
+              <div class="txt">个人信息</div>
+            </a>
+            <a
+              class="item"
+              @click.prevent="handleLogout"
             >
               <div class="txt">退出</div>
             </a>
@@ -236,7 +241,7 @@
 </template>
 
 <script lang="ts" setup>
-import { openToTarget } from 'billd-utils';
+import { openToTarget, windowReload } from 'billd-utils';
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -306,6 +311,13 @@ const plugins = ref([
     url: 'https://github.com/galaxy-s10/billd-html-webpack-plugin',
   },
 ]);
+
+function handleLogout() {
+  userStore.logout();
+  setTimeout(() => {
+    windowReload();
+  }, 500);
+}
 
 function handleJump(item) {
   if (item.url) {
@@ -541,10 +553,10 @@ function handleStartLive(key) {
         @extend %containBg;
       }
       .list {
-        width: 70px;
+        width: 90px;
         .item {
           display: flex;
-          justify-content: center;
+          // justify-content: flex-end;
           padding: 0 15px;
           cursor: pointer;
           &:hover {

@@ -5,7 +5,9 @@
       <div class="left">
         <div
           class="cover"
-          :style="{ backgroundImage: `url(${currentLiveRoom?.coverImg})` }"
+          :style="{
+            backgroundImage: `url(${currentLiveRoom?.live_room?.cover_img})`,
+          }"
         ></div>
         <!-- x-webkit-airplay这个属性应该是使此视频支持ios的AirPlay功能 -->
         <!-- playsinline、 webkit-playsinline IOS微信浏览器支持小窗内播放 -->
@@ -13,7 +15,7 @@
         <!-- x5-video-player-fullscreen 全屏设置 -->
         <!-- x5-video-orientation 声明播放器支持的方向，可选值landscape横屏，portraint竖屏。默认值portraint。 -->
         <video
-          v-if="currentLiveRoom?.flvurl"
+          v-if="currentLiveRoom?.live_room?.flv_url"
           id="localVideo"
           ref="localVideoRef"
           autoplay
@@ -42,14 +44,18 @@
             }"
           >
             <div
-              v-if="currentLiveRoom.system === 2"
+              v-if="
+                currentLiveRoom.live_room?.type !== LiveRoomTypeEnum.user_obs
+              "
               class="btn webrtc"
               @click="joinRoom()"
             >
               进入直播（webrtc）
             </div>
             <div
-              v-if="currentLiveRoom?.flvurl"
+              v-if="
+                currentLiveRoom?.live_room?.type === LiveRoomTypeEnum.user_srs
+              "
               class="btn flv"
               @click="joinFlvRoom()"
             >
@@ -70,7 +76,7 @@
               item: 1,
               active: item.live_room_id === currentLiveRoom?.live_room_id,
             }"
-            :style="{ backgroundImage: `url(${item.coverImg})` }"
+            :style="{ backgroundImage: `url(${item.live_room?.cover_img})` }"
             @click="changeLiveRoom(item)"
           >
             <div
@@ -84,7 +90,7 @@
               v-if="item.live_room_id === currentLiveRoom?.live_room_id"
               class="triangle"
             ></div>
-            <div class="txt">{{ item.live_room?.roomName }}</div>
+            <div class="txt">{{ item.live_room?.name }}</div>
           </div>
         </div>
         <div
@@ -96,7 +102,7 @@
       </div>
     </div>
 
-    <div class="foot"></div>
+    <div class="foot">*部分内容来源网络，如有侵权，请联系我删除~</div>
   </div>
 </template>
 
@@ -107,7 +113,7 @@ import { useRouter } from 'vue-router';
 
 import { fetchLiveList } from '@/api/live';
 import { useFlvPlay } from '@/hooks/use-play';
-import { ILive, liveTypeEnum } from '@/interface';
+import { ILive, LiveRoomTypeEnum, liveTypeEnum } from '@/interface';
 import { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
 
@@ -123,8 +129,15 @@ const { startPlay } = useFlvPlay();
 function changeLiveRoom(item: ILive) {
   currentLiveRoom.value = item;
   nextTick(async () => {
-    if (item.flvurl) {
-      await startPlay({ flvurl: item.flvurl, videoEl: localVideoRef.value! });
+    if (
+      item.live_room?.type === LiveRoomTypeEnum.user_srs ||
+      item.live_room?.type === LiveRoomTypeEnum.user_obs ||
+      item.live_room?.type === LiveRoomTypeEnum.system
+    ) {
+      await startPlay({
+        flvurl: item.live_room.flv_url!,
+        videoEl: localVideoRef.value!,
+      });
     }
   });
 }
@@ -140,9 +153,15 @@ async function getLiveRoomList() {
       if (res.data.total) {
         currentLiveRoom.value = res.data.rows[0];
         nextTick(async () => {
-          if (currentLiveRoom.value?.flvurl) {
+          if (
+            currentLiveRoom.value?.live_room?.type ===
+              LiveRoomTypeEnum.user_srs ||
+            currentLiveRoom.value?.live_room?.type ===
+              LiveRoomTypeEnum.user_obs ||
+            currentLiveRoom.value?.live_room?.type === LiveRoomTypeEnum.system
+          ) {
             await startPlay({
-              flvurl: currentLiveRoom.value.flvurl,
+              flvurl: currentLiveRoom.value.live_room.flv_url!,
               videoEl: localVideoRef.value!,
             });
           }
@@ -159,7 +178,7 @@ onMounted(() => {
 });
 
 function joinRoom() {
-  if (currentLiveRoom.value?.streamurl) {
+  if (currentLiveRoom.value?.live_room?.type === LiveRoomTypeEnum.user_srs) {
     router.push({
       name: routerName.pull,
       params: {
@@ -183,6 +202,8 @@ function joinRoom() {
 }
 
 function joinFlvRoom() {
+  // console.log(currentLiveRoom.value?.live_room_id);
+  // return;
   router.push({
     name: routerName.pull,
     params: { roomId: currentLiveRoom.value?.live_room_id },
@@ -349,6 +370,8 @@ function joinFlvRoom() {
             color: white;
             text-align: initial;
             font-size: 13px;
+
+            @extend %singleEllipsis;
           }
         }
       }
@@ -360,6 +383,7 @@ function joinFlvRoom() {
     }
   }
   .foot {
+    margin-top: 10px;
     text-align: center;
   }
 }

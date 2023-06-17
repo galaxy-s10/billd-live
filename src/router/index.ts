@@ -7,6 +7,7 @@ import type { RouteRecordRaw } from 'vue-router';
 export const routerName = {
   home: 'home',
   about: 'about',
+  account: 'account',
   rank: 'rank',
   sponsors: 'sponsors',
   support: 'support',
@@ -77,6 +78,11 @@ export const defaultRoutes: RouteRecordRaw[] = [
         name: routerName.profile,
         path: '/profile/:userId',
         component: () => import('@/views/profile/index.vue'),
+      },
+      {
+        name: routerName.account,
+        path: '/account',
+        component: () => import('@/views/account/index.vue'),
       },
       {
         name: routerName.sponsors,

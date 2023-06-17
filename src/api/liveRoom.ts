@@ -10,3 +10,10 @@ export function fetchLiveRoomList(params: {
     params,
   });
 }
+
+export function fetchUpdateLiveRoomKey() {
+  return request.instance({
+    url: '/live_room/update_key',
+    method: 'put',
+  });
+}

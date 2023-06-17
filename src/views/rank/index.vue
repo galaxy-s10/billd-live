@@ -24,10 +24,11 @@
           <div
             class="avatar"
             @click="
-              router.push({
-                name: routerName.profile,
-                params: { userId: item.user.id },
-              })
+              currRankType !== RankTypeEnum.blog &&
+                router.push({
+                  name: routerName.profile,
+                  params: { userId: item.user.id },
+                })
             "
           >
             <Avatar
@@ -79,7 +80,7 @@
             />
             <div class="username">{{ item.user.username }}</div>
             <div class="wallet">
-              <div v-if="item.balance && currRankType === RankTypeEnum.wallet">
+              <div v-if="currRankType === RankTypeEnum.wallet">
                 （钱包：{{ item.balance }}）
               </div>
             </div>
@@ -112,7 +113,7 @@
 import { onMounted, ref } from 'vue';
 
 import { fetchLiveRoomList } from '@/api/liveRoom';
-import { fetchUserList } from '@/api/user';
+import { fetchBlogUserList, fetchUserList } from '@/api/user';
 import { fetchWalletList } from '@/api/wallet';
 import { fullLoading } from '@/components/FullLoading';
 import { ILive, IUser, liveTypeEnum, RankTypeEnum } from '@/interface';
@@ -135,6 +136,10 @@ const rankTypeList = ref<IRankType[]>([
   {
     type: RankTypeEnum.wallet,
     label: '土豪榜',
+  },
+  {
+    type: RankTypeEnum.blog,
+    label: '博客用户',
   },
 ]);
 
@@ -209,11 +214,7 @@ async function getWalletList() {
       const length = res.data.rows.length;
       rankList.value = res.data.rows.map((item, index) => {
         return {
-          user: {
-            id: item.id!,
-            username: item.username!,
-            avatar: item.avatar!,
-          },
+          user: item.user,
           rank: index + 1,
           level: 1,
           score: 1,
@@ -236,7 +237,7 @@ async function getLiveRoomList() {
     fullLoading({ loading: true });
     const res = await fetchLiveRoomList({
       orderName: 'updated_at',
-      orderBy: 'desc',
+      orderBy: 'asc',
     });
     if (res.code === 200) {
       const length = res.data.rows.length;
@@ -250,7 +251,6 @@ async function getLiveRoomList() {
           rank: index + 1,
           level: 1,
           score: 1,
-          live: item.live,
         };
       });
       if (length < mockDataNums) {
@@ -263,27 +263,6 @@ async function getLiveRoomList() {
     fullLoading({ loading: false });
   }
 }
-
-function changeCurrRankType(type: RankTypeEnum) {
-  currRankType.value = type;
-  switch (type) {
-    case RankTypeEnum.liveRoom:
-      getLiveRoomList();
-      break;
-    case RankTypeEnum.user:
-      getUserList();
-      break;
-    case RankTypeEnum.wallet:
-      getWalletList();
-      break;
-    default:
-      break;
-  }
-}
-
-onMounted(() => {
-  changeCurrRankType(currRankType.value);
-});
 
 async function getUserList() {
   try {
@@ -317,6 +296,62 @@ async function getUserList() {
     fullLoading({ loading: false });
   }
 }
+async function getBlogUserList() {
+  try {
+    fullLoading({ loading: true });
+    const res = await fetchBlogUserList({
+      orderName: 'updated_at',
+      orderBy: 'desc',
+    });
+    if (res.code === 200) {
+      const length = res.data.rows.length;
+      rankList.value = res.data.rows.map((item, index) => {
+        return {
+          user: {
+            id: item.id!,
+            username: item.username!,
+            avatar: item.avatar!,
+          },
+          rank: index + 1,
+          level: 1,
+          score: 1,
+          balance: '',
+        };
+      });
+      if (length < mockDataNums) {
+        rankList.value.push(...mockRank.slice(length));
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  } finally {
+    fullLoading({ loading: false });
+  }
+}
+
+function changeCurrRankType(type: RankTypeEnum) {
+  currRankType.value = type;
+  switch (type) {
+    case RankTypeEnum.liveRoom:
+      getLiveRoomList();
+      break;
+    case RankTypeEnum.user:
+      getUserList();
+      break;
+    case RankTypeEnum.blog:
+      getBlogUserList();
+      break;
+    case RankTypeEnum.wallet:
+      getWalletList();
+      break;
+    default:
+      break;
+  }
+}
+
+onMounted(() => {
+  changeCurrRankType(currRankType.value);
+});
 </script>
 
 <style lang="scss" scoped>

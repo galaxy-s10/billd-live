@@ -36,7 +36,7 @@
     "axios": "^1.2.1",
     "billd-deploy": "^1.0.16",
     "billd-html-webpack-plugin": "^1.0.1",
-    "billd-scss": "^0.0.6",
+    "billd-scss": "^0.0.7",
     "billd-utils": "^0.0.12",
     "browser-tool": "^1.0.5",
     "js-cookie": "^3.0.5",

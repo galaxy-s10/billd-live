@@ -17,12 +17,16 @@ import {
 } from '@/api/userLiveRoom';
 import {
   DanmuMsgTypeEnum,
-  IAdminIn,
+  IAnswer,
   ICandidate,
   IDanmu,
+  IHeartbeat,
   IJoin,
   ILiveUser,
+  IMessage,
   IOffer,
+  IOtherJoin,
+  LiveRoomTypeEnum,
   MediaTypeEnum,
 } from '@/interface';
 import { SRSWebRTCClass } from '@/network/srsWebRtc';
@@ -63,8 +67,8 @@ export function usePush({
   const offerSended = ref(new Set());
 
   const track = reactive({
-    audio: true,
-    video: true,
+    audio: 1,
+    video: 1,
   });
   const streamurl = ref('');
   const flvurl = ref('');
@@ -101,6 +105,12 @@ export function usePush({
         if (!res) {
           await useTip('你还没有直播间，是否立即开通？');
           await handleCreateUserLiveRoom();
+        } else {
+          const rtmpUrl = newVal.live_rooms![0]!.rtmp_url!.replace(
+            'rtmp',
+            'webrtc'
+          );
+          streamurl.value = rtmpUrl;
         }
       }
     }
@@ -108,9 +118,6 @@ export function usePush({
 
   onMounted(() => {
     roomId.value = route.query.roomId as string;
-    streamurl.value = `webrtc://${
-      process.env.NODE_ENV === 'development' ? 'localhost' : 'live.hsslive.cn'
-    }/livestream/roomId___${roomId.value}`;
     flvurl.value = `${
       process.env.NODE_ENV === 'development'
         ? 'http://localhost:5001'
@@ -179,7 +186,7 @@ export function usePush({
         process.env.NODE_ENV === 'development'
           ? 'ws://localhost:4300'
           : 'wss://live.hsslive.cn',
-      isAdmin: true,
+      isAnchor: true,
     });
     instance.update();
     initReceive();
@@ -194,7 +201,7 @@ export function usePush({
     videoEl?: HTMLVideoElement;
   }) {
     if (isSRS) {
-      console.warn('开始new SRSWebRTCClass');
+      console.warn('开始new SRSWebRTCClass', `${roomId.value}___${receiver!}`);
       const rtc = new SRSWebRTCClass({
         roomId: `${roomId.value}___${getSocketId()}`,
         videoEl,
@@ -218,7 +225,10 @@ export function usePush({
           }/rtc/v1/publish/`,
           clientip: null,
           sdp: offer.sdp!,
-          streamurl: streamurl.value,
+          streamurl: userStore.userInfo!.live_rooms![0]!.rtmp_url!.replace(
+            'rtmp',
+            'webrtc'
+          ),
           tid: getRandomString(10),
         });
         await rtc.setRemoteDescription(
@@ -228,7 +238,7 @@ export function usePush({
         console.log(error);
       }
     } else {
-      console.warn('开始new WebRTCClass');
+      console.warn('开始new WebRTCClass', `${roomId.value}___${receiver!}`);
       const rtc = new WebRTCClass({
         roomId: `${roomId.value}___${receiver!}`,
         videoEl,
@@ -257,9 +267,13 @@ export function usePush({
     heartbeatTimer.value = setInterval(() => {
       const instance = networkStore.wsMap.get(roomId.value);
       if (!instance) return;
+      const heartbeatData: IHeartbeat['data'] = {
+        live_id: liveId,
+        live_room_id: Number(roomId.value),
+      };
       instance.send({
         msgType: WsMsgTypeEnum.heartbeat,
-        data: { liveId },
+        data: heartbeatData,
       });
     }, 1000 * 5);
   }
@@ -267,11 +281,9 @@ export function usePush({
   function addTrack() {
     if (!localStream.value) return;
     liveUserList.value.forEach((item) => {
-      if (item.socketId !== getSocketId()) {
+      if (item.id !== getSocketId()) {
         localStream.value.getTracks().forEach((track) => {
-          const rtc = networkStore.getRtcMap(
-            `${roomId.value}___${item.socketId}`
-          );
+          const rtc = networkStore.getRtcMap(`${roomId.value}___${item.id}`);
           rtc?.addTransceiver(track, localStream.value);
         });
       }
@@ -281,20 +293,18 @@ export function usePush({
   function sendJoin() {
     const instance = networkStore.wsMap.get(roomId.value);
     if (!instance) return;
+    const joinData: IJoin['data'] = {
+      live_room: {
+        id: Number(roomId.value),
+        name: roomName.value,
+        cover_img: handleCoverImg(),
+        type: isSRS ? LiveRoomTypeEnum.user_srs : LiveRoomTypeEnum.user_wertc,
+      },
+      track,
+    };
     instance.send({
       msgType: WsMsgTypeEnum.join,
-      data: {
-        roomName: roomName.value,
-        coverImg: handleCoverImg(),
-        srs: isSRS
-          ? {
-              streamurl: streamurl.value,
-              flvurl: flvurl.value,
-            }
-          : undefined,
-        track,
-        userInfo: userStore.userInfo,
-      },
+      data: joinData,
     });
   }
 
@@ -314,23 +324,35 @@ export function usePush({
     await rtc.setLocalDescription(sdp);
     instance.send({
       msgType: WsMsgTypeEnum.offer,
-      data: { sdp, sender, receiver, isAdmin: true },
+      data: {
+        sdp,
+        sender,
+        receiver,
+        live_room_id: roomId.value,
+      },
     });
   }
 
   function batchSendOffer() {
+    console.log('batchSendOffer');
     liveUserList.value.forEach(async (item) => {
-      if (
-        !offerSended.value.has(item.socketId) &&
-        item.socketId !== getSocketId()
-      ) {
+      console.log(item, 'liveUserList');
+      const socketId = item.id;
+      if (!offerSended.value.has(socketId) && socketId !== getSocketId()) {
+        const rtc = networkStore.getRtcMap(`${roomId.value}___${socketId}`);
+        if (!rtc) {
+          await startNewWebRtc({
+            receiver: socketId,
+            videoEl: localVideoRef.value,
+          });
+        }
         await addTrack();
         console.log('执行sendOffer', {
           sender: getSocketId(),
-          receiver: item.socketId,
+          receiver: socketId,
         });
-        sendOffer({ sender: getSocketId(), receiver: item.socketId });
-        offerSended.value.add(item.socketId);
+        sendOffer({ sender: getSocketId(), receiver: socketId });
+        offerSended.value.add(socketId);
       }
     });
   }
@@ -379,9 +401,15 @@ export function usePush({
             await rtc.setRemoteDescription(data.data.sdp);
             const sdp = await rtc.createAnswer();
             await rtc.setLocalDescription(sdp);
+            const answerData: IAnswer = {
+              sdp,
+              sender: getSocketId(),
+              receiver: data.data.sender,
+              live_room_id: data.data.live_room_id,
+            };
             instance.send({
               msgType: WsMsgTypeEnum.answer,
-              data: { sdp, sender: getSocketId(), receiver: data.data.sender },
+              data: answerData,
             });
           }
         });
@@ -400,7 +428,7 @@ export function usePush({
       if (isSRS) return;
       if (isDone.value) return;
       if (!instance) return;
-      const rtc = networkStore.getRtcMap(`${roomId.value}___${data.socketId}`);
+      const rtc = networkStore.getRtcMap(`${roomId.value}___${data.socket_id}`);
       if (!rtc) return;
       rtc.rtcStatus.answer = true;
       rtc.update();
@@ -422,9 +450,9 @@ export function usePush({
       if (isSRS) return;
       if (isDone.value) return;
       if (!instance) return;
-      const rtc = networkStore.getRtcMap(`${roomId.value}___${data.socketId}`);
+      const rtc = networkStore.getRtcMap(`${roomId.value}___${data.socket_id}`);
       if (!rtc) return;
-      if (data.socketId !== getSocketId()) {
+      if (data.socket_id !== getSocketId()) {
         console.log('不是我发的candidate');
         const candidate = new RTCIceCandidate({
           sdpMid: data.data.sdpMid,
@@ -445,7 +473,7 @@ export function usePush({
     });
 
     // 管理员正在直播
-    instance.socketIo.on(WsMsgTypeEnum.roomLiveing, (data: IAdminIn) => {
+    instance.socketIo.on(WsMsgTypeEnum.roomLiveing, (data) => {
       prettierReceiveWebsocket(WsMsgTypeEnum.roomLiveing, data);
     });
 
@@ -455,23 +483,25 @@ export function usePush({
     });
 
     // 收到用户发送消息
-    instance.socketIo.on(WsMsgTypeEnum.message, (data) => {
+    instance.socketIo.on(WsMsgTypeEnum.message, (data: IMessage) => {
       prettierReceiveWebsocket(WsMsgTypeEnum.message, data);
       if (!instance) return;
       damuList.value.push({
-        socketId: data.socketId,
+        socket_id: data.socket_id,
         msgType: DanmuMsgTypeEnum.danmu,
         msg: data.data.msg,
+        userInfo: data.user_info,
       });
     });
 
     // 用户加入房间完成
     instance.socketIo.on(WsMsgTypeEnum.joined, (data: IJoin) => {
       prettierReceiveWebsocket(WsMsgTypeEnum.joined, data);
-      handleHeartbeat(data.data.liveId!);
+      handleHeartbeat(data.data.live_id || -1);
       joined.value = true;
       liveUserList.value.push({
-        socketId: `${getSocketId()}`,
+        id: `${getSocketId()}`,
+        userInfo: data.user_info,
       });
       if (isSRS) {
         startNewWebRtc({});
@@ -481,15 +511,16 @@ export function usePush({
     });
 
     // 其他用户加入房间
-    instance.socketIo.on(WsMsgTypeEnum.otherJoin, (data) => {
+    instance.socketIo.on(WsMsgTypeEnum.otherJoin, (data: IOtherJoin) => {
       prettierReceiveWebsocket(WsMsgTypeEnum.otherJoin, data);
       liveUserList.value.push({
-        socketId: data.data.socketId,
+        id: data.data.join_socket_id,
+        userInfo: data.data.user,
       });
       damuList.value.push({
-        socketId: data.data.socketId,
-        userInfo: data.data.userInfo,
         msgType: DanmuMsgTypeEnum.otherJoin,
+        socket_id: data.data.join_socket_id,
+        userInfo: data.data.user,
         msg: '',
       });
       if (isSRS) return;
@@ -512,11 +543,11 @@ export function usePush({
     instance.socketIo.on(WsMsgTypeEnum.leaved, (data) => {
       prettierReceiveWebsocket(WsMsgTypeEnum.leaved, data);
       const res = liveUserList.value.filter(
-        (item) => item.socketId !== data.socketId
+        (item) => item.id !== data.socketId
       );
       liveUserList.value = res;
       damuList.value.push({
-        socketId: data.socketId,
+        socket_id: data.socketId,
         msgType: DanmuMsgTypeEnum.userLeaved,
         msg: '',
       });
@@ -528,8 +559,8 @@ export function usePush({
       window.$message.warning('请输入房间名！');
       return false;
     }
-    if (roomName.value.length < 3 || roomName.value.length > 10) {
-      window.$message.warning('房间名要求3-10个字符！');
+    if (roomName.value.length < 3 || roomName.value.length > 30) {
+      window.$message.warning('房间名要求3-30个字符！');
       return false;
     }
     return true;
@@ -545,8 +576,8 @@ export function usePush({
       });
       const audio = event.getAudioTracks();
       const video = event.getVideoTracks();
-      track.audio = !!audio.length;
-      track.video = !!video.length;
+      track.audio = audio.length ? 1 : 2;
+      track.video = video.length ? 1 : 2;
       console.log('getUserMedia成功', event);
       currMediaType.value = allMediaTypeList[MediaTypeEnum.camera];
       currMediaTypeList.value.push(allMediaTypeList[MediaTypeEnum.camera]);
@@ -566,8 +597,8 @@ export function usePush({
       });
       const audio = event.getAudioTracks();
       const video = event.getVideoTracks();
-      track.audio = !!audio.length;
-      track.video = !!video.length;
+      track.audio = audio.length ? 1 : 2;
+      track.video = video.length ? 1 : 2;
       console.log('getDisplayMedia成功', event);
       currMediaType.value = allMediaTypeList[MediaTypeEnum.screen];
       currMediaTypeList.value.push(allMediaTypeList[MediaTypeEnum.screen]);
@@ -600,14 +631,20 @@ export function usePush({
       window.$message.error('还没开播，不能发送弹幕！');
       return;
     }
+    const messageData: IMessage['data'] = {
+      msg: danmuStr.value,
+      msgType: DanmuMsgTypeEnum.danmu,
+      live_room_id: Number(roomId.value),
+    };
     instance.send({
       msgType: WsMsgTypeEnum.message,
-      data: { msg: danmuStr.value },
+      data: messageData,
     });
     damuList.value.push({
-      socketId: getSocketId(),
+      socket_id: getSocketId(),
       msgType: DanmuMsgTypeEnum.danmu,
       msg: danmuStr.value,
+      userInfo: userStore.userInfo,
     });
     danmuStr.value = '';
   }

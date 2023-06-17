@@ -63,15 +63,15 @@ export class WebSocketClass {
   status: WsConnectStatusEnum = WsConnectStatusEnum.disconnect;
   url = '';
   roomId = '-1';
-  isAdmin = false;
+  isAnchor = false;
 
-  constructor(data: { roomId: string; url: string; isAdmin: boolean }) {
+  constructor(data: { roomId: string; url: string; isAnchor: boolean }) {
     if (!window.WebSocket) {
       alert('当前环境不支持WebSocket！');
       return;
     }
     this.roomId = data.roomId;
-    this.isAdmin = data.isAdmin;
+    this.isAnchor = data.isAnchor;
     this.url = data.url;
     this.socketIo = io(data.url, {
       transports: ['websocket'],
@@ -92,14 +92,13 @@ export class WebSocketClass {
     }
     console.warn('【websocket】发送消息', msgType, data);
     const userStore = useUserStore();
-    this.socketIo?.emit(msgType, {
-      roomId: this.roomId,
-      socketId: this.socketIo.id,
-      isAdmin: this.isAdmin,
-      user_id: userStore.userInfo?.id,
-      user_token: userStore.token,
+    const sendData = {
+      socket_id: this.socketIo.id,
+      is_anchor: this.isAnchor,
+      user_info: userStore.userInfo,
       data,
-    });
+    };
+    this.socketIo?.emit(msgType, sendData);
   };
 
   // 更新store

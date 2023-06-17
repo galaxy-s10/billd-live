@@ -15,7 +15,7 @@
             <div class="detail">
               <div class="top">{{ userName || '-' }}</div>
               <div class="bottom">
-                <span>{{ roomName }}</span>
+                <span>{{ roomName }},{{ getSocketId() }}</span>
               </div>
             </div>
           </div>
@@ -24,7 +24,10 @@
           ref="containerRef"
           class="container"
         >
-          <div class="video-wrap">
+          <div
+            v-loading="videoLoading"
+            class="video-wrap"
+          >
             <div
               class="cover"
               :style="{ backgroundImage: `url(${coverImg})` }"
@@ -128,15 +131,20 @@
         </div>
         <div class="user-list">
           <div
-            v-for="(item, index) in liveUserList.filter((item) =>
-              userStore.userInfo ? item.socketId !== getSocketId() : true
+            v-for="(item, index) in liveUserList.filter(
+              (item) => item.id !== getSocketId()
             )"
             :key="index"
             class="item"
           >
             <div class="info">
-              <div class="avatar"></div>
-              <div class="username">{{ item.socketId }}</div>
+              <div
+                class="avatar"
+                :style="{ backgroundImage: `url(${item.userInfo?.avatar})` }"
+              ></div>
+              <div class="username">
+                {{ item.userInfo?.username || item.id }}
+              </div>
             </div>
           </div>
           <div
@@ -161,20 +169,20 @@
           >
             <template v-if="item.msgType === DanmuMsgTypeEnum.danmu">
               <span class="name">
-                {{ item.userInfo?.username || item.socketId }}：
+                {{ item.userInfo?.username || item.socket_id }}：
               </span>
               <span class="msg">{{ item.msg }}</span>
             </template>
             <template v-else-if="item.msgType === DanmuMsgTypeEnum.otherJoin">
               <span class="name system">系统通知：</span>
               <span class="msg">
-                {{ item.userInfo?.username || item.socketId }}进入直播！
+                {{ item.userInfo?.username || item.socket_id }}进入直播！
               </span>
             </template>
             <template v-else-if="item.msgType === DanmuMsgTypeEnum.userLeaved">
               <span class="name system">系统通知：</span>
               <span class="msg">
-                {{ item.userInfo?.username || item.socketId }}离开直播！
+                {{ item.userInfo?.username || item.socket_id }}离开直播！
               </span>
             </template>
           </div>
@@ -245,6 +253,7 @@ const {
   startGetDisplayMedia,
   addTrack,
   addVideo,
+  videoLoading,
   balance,
   roomName,
   userName,

@@ -1,24 +1,46 @@
 <template>
   <n-modal
     v-model:show="showModal"
-    title="提示"
+    title="公告"
     preset="dialog"
     positive-text="OK"
   >
-    目前billd-live项目的
-    <a
-      href="https://github.com/galaxy-s10/billd-live"
-      target="_blank"
-    >
-      github仓库
-    </a>
-    还是公开状态，可能将在不久后设置为私有，但是会对老用户（前20名用户，可以在排行榜看当前用户数量）开放，抓紧时间登录一下吧~
+    <p>
+      billd-live开始支持ffmpeg、obs推流，欢迎体验！
+      <b
+        class="link"
+        @click="openToTarget('https://www.hsslive.cn/article/150')"
+      >
+        查看教程
+      </b>
+    </p>
+    <p>
+      billd-live付费课开始预定！299元/人，定金50，付定金后减50，实付249！<b
+        class="link"
+        @click="openToTarget('https://www.hsslive.cn/article/151')"
+      >
+        查看详情
+      </b>
+    </p>
   </n-modal>
 </template>
 
 <script lang="ts" setup>
+import { openToTarget } from 'billd-utils';
 import { ref } from 'vue';
 
+import router, { routerName } from '@/router';
 // const showModal = ref(process.env.NODE_ENV === 'production');
-const showModal = ref(false);
+// const showModal = ref(false);
+// const showModal = ref(true);
+const showModal = ref(router.currentRoute.value.name === routerName.home);
 </script>
+
+<style lang="scss" scoped>
+.link {
+  color: $theme-color-gold;
+  text-decoration: none;
+  font-weight: 500;
+  cursor: pointer;
+}
+</style>

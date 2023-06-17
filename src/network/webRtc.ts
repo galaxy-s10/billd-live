@@ -1,5 +1,6 @@
 import browserTool from 'browser-tool';
 
+import { ICandidate } from '@/interface';
 import { useNetworkStore } from '@/store/network';
 
 import { WsMsgTypeEnum } from './webSocket';
@@ -492,12 +493,13 @@ export class WebRTCClass {
         console.log('准备发送candidate', event.candidate.candidate);
         const roomId = this.roomId.split('___')[0];
         const receiver = this.roomId.split('___')[1];
-        const data = {
+        const data: ICandidate['data'] = {
           candidate: event.candidate.candidate,
           sdpMid: event.candidate.sdpMid,
           sdpMLineIndex: event.candidate.sdpMLineIndex,
-          sender: networkStore.wsMap.get(roomId)?.socketIo?.id,
+          sender: networkStore.wsMap.get(roomId)?.socketIo?.id || '',
           receiver,
+          live_room_id: Number(roomId),
         };
         networkStore.wsMap
           .get(roomId)
