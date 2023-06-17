@@ -14,6 +14,12 @@ export function useFlvPlay() {
     }
   });
 
+  function destroy() {
+    if (flvPlayer.value) {
+      flvPlayer.value.destroy();
+    }
+  }
+
   async function startPlay(data: {
     flvurl: string;
     videoEl: HTMLVideoElement;
@@ -39,5 +45,5 @@ export function useFlvPlay() {
     }
   }
 
-  return { startPlay };
+  return { startPlay, destroy };
 }

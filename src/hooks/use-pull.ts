@@ -352,10 +352,10 @@ export function usePull({
       });
       rtc.rtcStatus.joined = true;
       rtc.update();
-      if (track.video) {
+      if (track.video === 1) {
         rtc.peerConnection?.addTransceiver('video', { direction: 'recvonly' });
       }
-      if (track.audio) {
+      if (track.audio === 1) {
         rtc.peerConnection?.addTransceiver('audio', { direction: 'recvonly' });
       }
       try {

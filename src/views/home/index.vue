@@ -128,7 +128,7 @@ const liveRoomList = ref<ILive[]>([]);
 const currentLiveRoom = ref<ILive>();
 const localVideoRef = ref<HTMLVideoElement>();
 
-const { startPlay } = useFlvPlay();
+const { startPlay, destroy } = useFlvPlay();
 
 function changeLiveRoom(item: ILive) {
   currentLiveRoom.value = item;
@@ -142,6 +142,8 @@ function changeLiveRoom(item: ILive) {
         flvurl: item.live_room.flv_url!,
         videoEl: localVideoRef.value!,
       });
+    } else {
+      destroy();
     }
   });
 }
@@ -168,6 +170,8 @@ async function getLiveRoomList() {
               flvurl: currentLiveRoom.value.live_room.flv_url!,
               videoEl: localVideoRef.value!,
             });
+          } else {
+            destroy();
           }
         });
       }

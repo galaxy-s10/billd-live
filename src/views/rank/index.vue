@@ -34,7 +34,7 @@
             <Avatar
               :size="100"
               :avatar="item.user.avatar"
-              :living="!!item.live"
+              :living="!!item.live?.live"
             ></Avatar>
           </div>
           <div class="username">{{ item.user.username }}</div>
