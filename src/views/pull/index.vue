@@ -10,12 +10,14 @@
           <div class="info">
             <div
               class="avatar"
-              :style="{ backgroundImage: `url(${userAvatar})` }"
+              :style="{
+                backgroundImage: `url(${userAvatar})`,
+              }"
             ></div>
             <div class="detail">
               <div class="top">{{ userName || '-' }}</div>
               <div class="bottom">
-                <span>{{ roomName }},{{ getSocketId() }}</span>
+                <span>{{ roomName }}</span>
               </div>
             </div>
           </div>
@@ -30,7 +32,11 @@
           >
             <div
               class="cover"
-              :style="{ backgroundImage: `url(${coverImg})` }"
+              :style="{
+                backgroundImage: `url(${
+                  coverImg || currentLiveRoom?.user?.avatar
+                })`,
+              }"
             ></div>
             <video
               id="remoteVideo"
@@ -258,6 +264,7 @@ const {
   roomName,
   userName,
   userAvatar,
+  currentLiveRoom,
   coverImg,
   roomNoLive,
   damuList,
@@ -311,6 +318,7 @@ onUnmounted(() => {
 });
 
 onMounted(() => {
+  console.log(currentLiveRoom.value, 1111);
   getGoodsList();
   if (
     [liveTypeEnum.srsFlvPull, liveTypeEnum.srsWebrtcPull].includes(

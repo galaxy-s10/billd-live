@@ -44,9 +44,16 @@
           </span>
           <span
             class="link"
+            @click="handleCopy"
+          >
+            复制
+          </span>
+          <span>，</span>
+          <span
+            class="link"
             @click="handleUpdateKey"
           >
-            点我更新
+            更新
           </span>
         </div>
       </div>
@@ -55,7 +62,7 @@
 </template>
 
 <script lang="ts" setup>
-import { openToTarget } from 'billd-utils';
+import { copyToClipBoard, openToTarget } from 'billd-utils';
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -76,6 +83,11 @@ async function handleUserInfo() {
   if (res.code === 200) {
     userInfo.value = res.data;
   }
+}
+
+function handleCopy() {
+  copyToClipBoard(newRtmpUrl.value || userInfo.value?.live_rooms?.[0].rtmp_url);
+  window.$message.success('复制成功！');
 }
 
 function openLiveRoom() {

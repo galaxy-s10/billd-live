@@ -6,7 +6,10 @@
         <div
           class="cover"
           :style="{
-            backgroundImage: `url(${currentLiveRoom?.live_room?.cover_img})`,
+            backgroundImage: `url(${
+              currentLiveRoom?.live_room?.cover_img ||
+              currentLiveRoom?.user?.avatar
+            })`,
           }"
         ></div>
         <!-- x-webkit-airplay这个属性应该是使此视频支持ios的AirPlay功能 -->
@@ -80,7 +83,11 @@
               item: 1,
               active: item.live_room_id === currentLiveRoom?.live_room_id,
             }"
-            :style="{ backgroundImage: `url(${item.live_room?.cover_img})` }"
+            :style="{
+              backgroundImage: `url(${
+                item.live_room?.cover_img || currentLiveRoom?.user?.avatar
+              })`,
+            }"
             @click="changeLiveRoom(item)"
           >
             <div

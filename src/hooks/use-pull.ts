@@ -51,6 +51,7 @@ export function usePull({
   const roomName = ref('');
   const userName = ref('');
   const userAvatar = ref('');
+  const currentLiveRoom = ref<ILive>();
   const streamurl = ref('');
   const flvurl = ref('');
   const coverImg = ref('');
@@ -460,6 +461,8 @@ export function usePull({
           'rtmp',
           'webrtc'
         );
+        currentLiveRoom.value = data.data;
+        console.log(data.data, userAvatar, 3333);
         if (route.query.liveType === liveTypeEnum.srsWebrtcPull) {
           instance.send({ msgType: WsMsgTypeEnum.getLiveUser });
         } else if (route.query.liveType === liveTypeEnum.srsFlvPull) {
@@ -668,6 +671,7 @@ export function usePull({
     roomName,
     userName,
     userAvatar,
+    currentLiveRoom,
     coverImg,
     roomNoLive,
     damuList,
