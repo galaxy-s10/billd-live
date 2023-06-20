@@ -85,7 +85,7 @@
             }"
             :style="{
               backgroundImage: `url(${
-                item.live_room?.cover_img || currentLiveRoom?.user?.avatar
+                item.live_room?.cover_img || item?.user?.avatar
               })`,
             }"
             @click="changeLiveRoom(item)"
@@ -139,6 +139,7 @@ const { startPlay, destroy } = useFlvPlay();
 
 function changeLiveRoom(item: ILive) {
   currentLiveRoom.value = item;
+  console.log(item, 22222);
   nextTick(async () => {
     if (
       item.live_room?.type === LiveRoomTypeEnum.user_srs ||

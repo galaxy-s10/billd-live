@@ -462,7 +462,6 @@ export function usePull({
           'webrtc'
         );
         currentLiveRoom.value = data.data;
-        console.log(data.data, userAvatar, 3333);
         if (route.query.liveType === liveTypeEnum.srsWebrtcPull) {
           instance.send({ msgType: WsMsgTypeEnum.getLiveUser });
         } else if (route.query.liveType === liveTypeEnum.srsFlvPull) {
@@ -619,7 +618,6 @@ export function usePull({
       const danmu: IDanmu = {
         msgType: DanmuMsgTypeEnum.otherJoin,
         socket_id: data.data.join_socket_id,
-        userInfo: data.data.user,
         msg: '',
       };
       damuList.value.push(danmu);
