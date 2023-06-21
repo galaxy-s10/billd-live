@@ -52,6 +52,13 @@
               @click="showControls = !showControls"
             ></video>
             <div
+              v-if="showTip && !clickShowTip"
+              class="tip-btn"
+              @click="handleTipBtn"
+            >
+              点击播放
+            </div>
+            <div
               class="controls"
               :style="{
                 display: !isMobile() ? 'none' : showControls ? 'block' : 'none',
@@ -60,6 +67,7 @@
               <VideoControls></VideoControls>
             </div>
           </div>
+
           <div
             v-if="showSidebar"
             class="sidebar"
@@ -219,6 +227,7 @@ import { useRoute } from 'vue-router';
 
 import { fetchGoodsList } from '@/api/goods';
 import { loginTip } from '@/hooks/use-login';
+import { flvJs, useHlsPlay } from '@/hooks/use-play';
 import { usePull } from '@/hooks/use-pull';
 import {
   DanmuMsgTypeEnum,
@@ -246,6 +255,10 @@ const bottomRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
 const remoteVideoRef = ref<HTMLVideoElement>();
 const localVideoRef = ref<HTMLVideoElement[]>([]);
+const showTip = ref(false);
+const clickShowTip = ref(false);
+
+const { startHlsPlay } = useHlsPlay();
 
 const {
   initPull,
@@ -280,6 +293,20 @@ const {
   isFlv: route.query.liveType === liveTypeEnum.srsFlvPull,
   isSRS: route.query.liveType === liveTypeEnum.srsWebrtcPull,
 });
+
+if (route.query.liveType === liveTypeEnum.srsHlsPull && !flvJs.isSupported()) {
+  showTip.value = true;
+}
+
+async function handleTipBtn() {
+  if (currentLiveRoom.value) {
+    clickShowTip.value = true;
+    await startHlsPlay({
+      hlsurl: currentLiveRoom.value.live_room!.hls_url!,
+      videoEl: localVideoRef.value!,
+    });
+  }
+}
 
 async function getGoodsList() {
   try {
@@ -442,6 +469,24 @@ onMounted(() => {
         // }
         .controls {
           display: none;
+        }
+        .tip-btn {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          z-index: 1;
+          align-items: center;
+          padding: 12px 26px;
+          border: 2px solid rgba($color: papayawhip, $alpha: 0.5);
+          border-radius: 6px;
+          background-color: rgba(0, 0, 0, 0.3);
+          color: $theme-color-gold;
+          cursor: pointer;
+          transform: translate(-50%, -50%);
+          &:hover {
+            background-color: rgba($color: papayawhip, $alpha: 0.5);
+            color: white;
+          }
         }
 
         &:hover {

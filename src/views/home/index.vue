@@ -41,6 +41,14 @@
             <VideoControls></VideoControls>
           </div>
           <div
+            v-if="showTip && !clickShowTip"
+            class="tip-btn"
+            @click="handleTipBtn"
+          >
+            点击播放
+          </div>
+          <div
+            v-else
             class="join-btn"
             :style="{
               display: !isMobile() ? 'none' : showControls ? 'block' : 'none',
@@ -59,9 +67,12 @@
             </div>
             <div
               v-if="
-                currentLiveRoom.live_room?.type === LiveRoomTypeEnum.system ||
-                currentLiveRoom.live_room?.type === LiveRoomTypeEnum.user_obs ||
-                currentLiveRoom?.live_room?.type === LiveRoomTypeEnum.user_srs
+                !showTip &&
+                (currentLiveRoom.live_room?.type === LiveRoomTypeEnum.system ||
+                  currentLiveRoom.live_room?.type ===
+                    LiveRoomTypeEnum.user_obs ||
+                  currentLiveRoom?.live_room?.type ===
+                    LiveRoomTypeEnum.user_srs)
               "
               class="btn flv"
               @click="joinFlvRoom()"
@@ -129,42 +140,65 @@
 </template>
 
 <script lang="ts" setup>
-import { isMobile } from 'billd-utils';
+import { isMobile, judgeDevice } from 'billd-utils';
 import { nextTick, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { fetchLiveList } from '@/api/live';
-import { useFlvPlay, useHlsPlay } from '@/hooks/use-play';
+import { flvJs, useFlvPlay, useHlsPlay } from '@/hooks/use-play';
 import { ILive, LiveRoomTypeEnum, liveTypeEnum } from '@/interface';
 import { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
 
 const appStore = useAppStore();
 const router = useRouter();
+const showTip = ref(false);
+const clickShowTip = ref(false);
 const showControls = ref(false);
 const liveRoomList = ref<ILive[]>([]);
 const currentLiveRoom = ref<ILive>();
 const localVideoRef = ref<HTMLVideoElement>();
 
 const { startFlvPlay, destroyFlv } = useFlvPlay();
-const { startHlsPlay } = useHlsPlay();
+const { startHlsPlay, destroyHls } = useHlsPlay();
+
+if (!flvJs.isSupported()) {
+  showTip.value = true;
+}
+
+async function handleTipBtn() {
+  if (currentLiveRoom.value) {
+    clickShowTip.value = true;
+    await startHlsPlay({
+      hlsurl: currentLiveRoom.value.live_room!.hls_url!,
+      videoEl: localVideoRef.value!,
+    });
+  }
+}
 
 function changeLiveRoom(item: ILive) {
   currentLiveRoom.value = item;
+
   nextTick(async () => {
     if (
       item.live_room?.type === LiveRoomTypeEnum.user_srs ||
       item.live_room?.type === LiveRoomTypeEnum.user_obs ||
       item.live_room?.type === LiveRoomTypeEnum.system
     ) {
-      // await startFlvPlay({
-      //   flvurl: item.live_room.flv_url!,
-      //   videoEl: localVideoRef.value!,
-      // });
-      await startHlsPlay({
-        hlsurl: item.live_room.hls_url!,
-        videoEl: localVideoRef.value!,
-      });
+      if (flvJs.isSupported()) {
+        await startFlvPlay({
+          flvurl: item.live_room.flv_url!,
+          videoEl: localVideoRef.value!,
+        });
+      } else {
+        // showTip.value = true;
+        // clickShowTip.value = false;
+        destroyHls();
+        await startHlsPlay({
+          hlsurl: item.live_room.hls_url!,
+          videoEl: localVideoRef.value!,
+        });
+      }
     } else {
       destroyFlv();
     }
@@ -189,14 +223,17 @@ async function getLiveRoomList() {
               LiveRoomTypeEnum.user_obs ||
             currentLiveRoom.value?.live_room?.type === LiveRoomTypeEnum.system
           ) {
-            // await startFlvPlay({
-            //   flvurl: currentLiveRoom.value.live_room.flv_url!,
-            //   videoEl: localVideoRef.value!,
-            // });
-            await startHlsPlay({
-              hlsurl: currentLiveRoom.value.live_room.hls_url!,
-              videoEl: localVideoRef.value!,
-            });
+            if (judgeDevice().isIphone) {
+              await startHlsPlay({
+                hlsurl: currentLiveRoom.value.live_room.hls_url!,
+                videoEl: localVideoRef.value!,
+              });
+            } else {
+              await startFlvPlay({
+                flvurl: currentLiveRoom.value.live_room.flv_url!,
+                videoEl: localVideoRef.value!,
+              });
+            }
           } else {
             destroyFlv();
           }
@@ -237,8 +274,6 @@ function joinRoom() {
 }
 
 function joinFlvRoom() {
-  // console.log(currentLiveRoom.value?.live_room_id);
-  // return;
   router.push({
     name: routerName.pull,
     params: { roomId: currentLiveRoom.value?.live_room_id },
@@ -248,8 +283,6 @@ function joinFlvRoom() {
   });
 }
 function joinHlsRoom() {
-  // console.log(currentLiveRoom.value?.live_room_id);
-  // return;
   router.push({
     name: routerName.pull,
     params: { roomId: currentLiveRoom.value?.live_room_id },
@@ -314,6 +347,24 @@ function joinHlsRoom() {
         }
         .controls {
           display: block !important;
+        }
+      }
+      .tip-btn {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        z-index: 1;
+        align-items: center;
+        padding: 12px 26px;
+        border: 2px solid rgba($color: papayawhip, $alpha: 0.5);
+        border-radius: 6px;
+        background-color: rgba(0, 0, 0, 0.3);
+        color: $theme-color-gold;
+        cursor: pointer;
+        transform: translate(-50%, -50%);
+        &:hover {
+          background-color: rgba($color: papayawhip, $alpha: 0.5);
+          color: white;
         }
       }
       .join-btn {

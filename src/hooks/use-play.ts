@@ -6,7 +6,7 @@ import { onMounted, onUnmounted, ref, watch } from 'vue';
 
 import { useAppStore } from '@/store/app';
 // @ts-ignore
-const flvJs = window.flvjs;
+export const flvJs = window.flvjs;
 
 export function useFlvPlay() {
   const flvPlayer = ref();
@@ -61,14 +61,13 @@ export function useHlsPlay() {
   onMounted(() => {});
 
   onUnmounted(() => {
-    if (hlsPlayer.value) {
-      hlsPlayer.value.dispose();
-    }
+    destroyHls();
   });
 
   function destroyHls() {
     if (hlsPlayer.value) {
       hlsPlayer.value.dispose();
+      videoEl.value?.remove();
     }
   }
 
@@ -84,11 +83,12 @@ export function useHlsPlay() {
   function startHlsPlay(data: { hlsurl: string; videoEl: HTMLVideoElement }) {
     console.log('startHlsPlay', data.hlsurl);
     if (hlsPlayer.value) {
-      hlsPlayer.value.dispose();
+      destroyHls();
     }
-    const appStore = useAppStore();
     const newVideo = document.createElement('video');
-    newVideo.muted = appStore.muted;
+    newVideo.muted = true;
+    newVideo.playsInline = true;
+    newVideo.setAttribute('webkit-playsinline', 'true');
     videoEl.value = newVideo;
     data.videoEl.parentElement?.appendChild(newVideo);
     return new Promise((resolve, reject) => {
