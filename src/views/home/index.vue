@@ -68,6 +68,17 @@
             >
               进入直播（flv）
             </div>
+            <div
+              v-if="
+                currentLiveRoom.live_room?.type === LiveRoomTypeEnum.system ||
+                currentLiveRoom.live_room?.type === LiveRoomTypeEnum.user_obs ||
+                currentLiveRoom?.live_room?.type === LiveRoomTypeEnum.user_srs
+              "
+              class="btn hls"
+              @click="joinHlsRoom()"
+            >
+              进入直播（hls）
+            </div>
           </div>
         </template>
       </div>
@@ -123,7 +134,7 @@ import { nextTick, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { fetchLiveList } from '@/api/live';
-import { useFlvPlay } from '@/hooks/use-play';
+import { useFlvPlay, useHlsPlay } from '@/hooks/use-play';
 import { ILive, LiveRoomTypeEnum, liveTypeEnum } from '@/interface';
 import { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
@@ -135,23 +146,27 @@ const liveRoomList = ref<ILive[]>([]);
 const currentLiveRoom = ref<ILive>();
 const localVideoRef = ref<HTMLVideoElement>();
 
-const { startPlay, destroy } = useFlvPlay();
+const { startFlvPlay, destroyFlv } = useFlvPlay();
+const { startHlsPlay } = useHlsPlay();
 
 function changeLiveRoom(item: ILive) {
   currentLiveRoom.value = item;
-  console.log(item, 22222);
   nextTick(async () => {
     if (
       item.live_room?.type === LiveRoomTypeEnum.user_srs ||
       item.live_room?.type === LiveRoomTypeEnum.user_obs ||
       item.live_room?.type === LiveRoomTypeEnum.system
     ) {
-      await startPlay({
-        flvurl: item.live_room.flv_url!,
+      // await startFlvPlay({
+      //   flvurl: item.live_room.flv_url!,
+      //   videoEl: localVideoRef.value!,
+      // });
+      await startHlsPlay({
+        hlsurl: item.live_room.hls_url!,
         videoEl: localVideoRef.value!,
       });
     } else {
-      destroy();
+      destroyFlv();
     }
   });
 }
@@ -174,12 +189,16 @@ async function getLiveRoomList() {
               LiveRoomTypeEnum.user_obs ||
             currentLiveRoom.value?.live_room?.type === LiveRoomTypeEnum.system
           ) {
-            await startPlay({
-              flvurl: currentLiveRoom.value.live_room.flv_url!,
+            // await startFlvPlay({
+            //   flvurl: currentLiveRoom.value.live_room.flv_url!,
+            //   videoEl: localVideoRef.value!,
+            // });
+            await startHlsPlay({
+              hlsurl: currentLiveRoom.value.live_room.hls_url!,
               videoEl: localVideoRef.value!,
             });
           } else {
-            destroy();
+            destroyFlv();
           }
         });
       }
@@ -228,6 +247,17 @@ function joinFlvRoom() {
     },
   });
 }
+function joinHlsRoom() {
+  // console.log(currentLiveRoom.value?.live_room_id);
+  // return;
+  router.push({
+    name: routerName.pull,
+    params: { roomId: currentLiveRoom.value?.live_room_id },
+    query: {
+      liveType: liveTypeEnum.srsHlsPull,
+    },
+  });
+}
 </script>
 
 <style lang="scss" scoped>
@@ -258,12 +288,22 @@ function joinFlvRoom() {
 
         inset: 0;
       }
-
-      #localVideo {
-        position: relative;
+      :deep(video) {
+        position: absolute;
+        top: 0;
+        left: 50%;
         width: 100%;
         height: 100%;
+        transform: translate(-50%);
       }
+      // #localVideo {
+      //   position: relative;
+      //   width: 100%;
+      //   height: 100%;
+      //   video {
+      //     height: 100%;
+      //   }
+      // }
       .controls {
         display: none;
       }
@@ -280,6 +320,7 @@ function joinFlvRoom() {
         position: absolute;
         top: 50%;
         left: 50%;
+        z-index: 1;
         display: none;
         align-items: center;
         transform: translate(-50%, -50%);
@@ -300,6 +341,7 @@ function joinFlvRoom() {
             margin-right: 10px;
           }
           &.flv {
+            margin-right: 10px;
           }
         }
       }

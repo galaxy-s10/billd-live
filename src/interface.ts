@@ -184,6 +184,7 @@ export enum liveTypeEnum {
   webrtcPull = 'webrtcPull',
   srsWebrtcPull = 'srsWebrtcPull',
   srsFlvPull = 'srsFlvPull',
+  srsHlsPull = 'srsHlsPull',
   srsPush = 'srsPush',
   webrtcPush = 'webrtcPush',
 }

@@ -48,12 +48,14 @@
     "socket.io-client": "^4.6.1",
     "unplugin-vue-components": "^0.24.1",
     "vconsole": "^3.15.0",
+    "video.js": "^8.3.0",
     "vue": "^3.2.31",
     "vue-demi": "^0.13.11",
     "vue-router": "^4.0.13",
     "webrtc-adapter": "^8.2.2"
   },
   "devDependencies": {
+    "@types/video.js": "^7.3.52",
     "@babel/core": "^7.14.0",
     "@babel/preset-env": "^7.14.2",
     "@commitlint/cli": "^16.0.1",

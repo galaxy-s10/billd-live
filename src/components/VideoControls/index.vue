@@ -45,6 +45,7 @@ const appStore = useAppStore();
   box-sizing: border-box;
   padding-left: 10px;
   width: 100%;
+  z-index: 1;
   height: 40px;
   background-image: linear-gradient(
     -180deg,

@@ -427,11 +427,19 @@ onMounted(() => {
 
           inset: 0;
         }
-        #remoteVideo {
-          position: relative;
+        :deep(video) {
+          position: absolute;
+          top: 0;
+          left: 50%;
           width: 100%;
           height: 100%;
+          transform: translate(-50%);
         }
+        // #remoteVideo {
+        //   position: relative;
+        //   width: 100%;
+        //   height: 100%;
+        // }
         .controls {
           display: none;
         }

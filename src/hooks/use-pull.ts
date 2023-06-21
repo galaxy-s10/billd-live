@@ -1,9 +1,9 @@
-import { getRandomString } from 'billd-utils';
+import { getRandomString, judgeDevice } from 'billd-utils';
 import { Ref, nextTick, onUnmounted, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchRtcV1Play } from '@/api/srs';
-import { useFlvPlay } from '@/hooks/use-play';
+import { useFlvPlay, useHlsPlay } from '@/hooks/use-play';
 import {
   DanmuMsgTypeEnum,
   IAnswer,
@@ -54,6 +54,7 @@ export function usePull({
   const currentLiveRoom = ref<ILive>();
   const streamurl = ref('');
   const flvurl = ref('');
+  const hlsurl = ref('');
   const coverImg = ref('');
   const danmuStr = ref('');
   const balance = ref('0.00');
@@ -69,7 +70,8 @@ export function usePull({
     }[]
   >([]);
 
-  const { startPlay } = useFlvPlay();
+  const { startFlvPlay } = useFlvPlay();
+  const { startHlsPlay } = useHlsPlay();
 
   const track = reactive({
     audio: 1,
@@ -457,6 +459,7 @@ export function usePull({
         track.video = data.data.track_video!;
         coverImg.value = data.data.live_room?.cover_img!;
         flvurl.value = data.data.live_room?.flv_url!;
+        hlsurl.value = data.data.live_room?.hls_url!;
         streamurl.value = data.data.live_room!.rtmp_url!.replace(
           'rtmp',
           'webrtc'
@@ -465,18 +468,32 @@ export function usePull({
         if (route.query.liveType === liveTypeEnum.srsWebrtcPull) {
           instance.send({ msgType: WsMsgTypeEnum.getLiveUser });
         } else if (route.query.liveType === liveTypeEnum.srsFlvPull) {
-          await startPlay({
+          await startFlvPlay({
             flvurl: flvurl.value,
             videoEl: remoteVideoRef.value!,
           });
+        } else if (route.query.liveType === liveTypeEnum.srsHlsPull) {
+          await startHlsPlay({
+            hlsurl: hlsurl.value,
+            videoEl: remoteVideoRef.value!,
+          });
+          videoLoading.value = false;
         } else if (
           data.data.live_room?.type === LiveRoomTypeEnum.user_obs ||
           data.data.live_room?.type === LiveRoomTypeEnum.system
         ) {
-          await startPlay({
-            flvurl: flvurl.value,
-            videoEl: remoteVideoRef.value!,
-          });
+          if (judgeDevice().isIphone) {
+            await startHlsPlay({
+              hlsurl: flvurl.value,
+              videoEl: remoteVideoRef.value!,
+            });
+            videoLoading.value = false;
+          } else {
+            await startFlvPlay({
+              flvurl: flvurl.value,
+              videoEl: remoteVideoRef.value!,
+            });
+          }
         }
       }
     );
