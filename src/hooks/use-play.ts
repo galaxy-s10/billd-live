@@ -1,4 +1,4 @@
-import 'video.js/dist/video-js.min.css';
+import '@/assets/css/videojs.scss';
 
 import videoJs from 'video.js';
 import Player from 'video.js/dist/types/player';
@@ -101,6 +101,8 @@ export function useHlsPlay() {
               type: 'application/x-mpegURL',
             },
           ],
+          controls: false,
+          preload: 'auto',
         },
         function onPlayerReady() {
           console.log('Your player is ready!');

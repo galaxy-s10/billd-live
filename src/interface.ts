@@ -149,10 +149,11 @@ export interface ILiveRoom {
   id?: number;
   /** 用户信息 */
   user?: IUser;
-  /** 直播间名字 */
+  /** 用户信息 */
+  users?: IUser[];
+  /** 分区信息 */
+  area?: IArea;
   name?: string;
-  /** 联表（live表） */
-  live?: string;
   user_live_room?: IUserLiveRoom & { user: IUser };
   /** 权重 */
   weight?: number;
@@ -269,6 +270,31 @@ export interface IQqUser {
   created_at?: string;
   updated_at?: string;
   deleted_at?: any;
+}
+
+export interface IArea {
+  id?: number;
+  name?: string;
+  remark?: string;
+  /** 权重 */
+  weight?: number;
+  area_live_rooms?: IAreaLiveRoom[];
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string;
+}
+
+export interface IAreaLiveRoom {
+  id?: number;
+  area_id?: number;
+  live_room_id?: number;
+  /** 分区信息 */
+  area?: IUser;
+  /** 直播间信息 */
+  live_room?: ILiveRoom;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string;
 }
 
 export interface ILive {

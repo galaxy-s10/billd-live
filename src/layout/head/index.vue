@@ -5,8 +5,7 @@
         class="logo-wrap"
         @click="router.push('/')"
       >
-        <!-- <div class="logo"></div> -->
-        <div class="txt">Billd直播</div>
+        <div class="logo"></div>
       </div>
 
       <div class="nav">
@@ -373,28 +372,11 @@ function handleStartLive(key) {
       margin-right: 20px;
       cursor: pointer;
 
-      // .logo {
-      //   margin-right: 5px;
-      //   width: 35px;
-      //   height: 35px;
-      //   border-radius: 50%;
-      //   font-size: 12px;
-      //   // animation: rotate 3s linear infinite;
+      .logo {
+        width: 90px;
+        height: 56px;
 
-      //   @include setBackground('@/assets/img/logo.webp');
-      //   @keyframes rotate {
-      //     0% {
-      //       transform: rotate(0deg);
-      //     }
-      //     100% {
-      //       transform: rotate(360deg);
-      //     }
-      //   }
-      // }
-      .txt {
-        color: $theme-color-gold;
-        font-weight: 500;
-        font-size: 18px;
+        @include setBackground('@/assets/img/logo-txt.png');
       }
     }
 
@@ -539,12 +521,12 @@ function handleStartLive(key) {
     }
     .qqlogin {
       .btn {
-        box-sizing: border-box;
-        width: 35px;
-        height: 35px;
         display: flex;
         align-items: center;
         justify-content: center;
+        box-sizing: border-box;
+        width: 35px;
+        height: 35px;
         border-radius: 50%;
         background-color: papayawhip;
         font-size: 13px;

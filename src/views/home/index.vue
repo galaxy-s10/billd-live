@@ -177,6 +177,7 @@ async function handleTipBtn() {
 }
 
 function changeLiveRoom(item: ILive) {
+  if (item.id === currentLiveRoom.value?.id) return;
   currentLiveRoom.value = item;
 
   nextTick(async () => {

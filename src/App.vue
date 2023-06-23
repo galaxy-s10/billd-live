@@ -3,9 +3,11 @@
 </template>
 
 <script lang="ts" setup>
+import { isMobile } from 'billd-utils';
 import { onMounted } from 'vue';
 
 import { loginMessage } from '@/hooks/use-login';
+import router, { routerName } from '@/router';
 import { useUserStore } from '@/store/user';
 import cache from '@/utils/cache';
 
@@ -17,6 +19,11 @@ onMounted(() => {
   if (token) {
     userStore.setToken(token);
     userStore.getUserInfo();
+  }
+  if (isMobile()) {
+    router.push({ name: routerName.h5 });
+  } else {
+    router.push({ name: routerName.home });
   }
   // 启用vconsole
   // import('vconsole')
