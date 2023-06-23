@@ -5,6 +5,7 @@ import Player from 'video.js/dist/types/player';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 
 import { useAppStore } from '@/store/app';
+
 // @ts-ignore
 export const flvJs = window.flvjs;
 
@@ -14,9 +15,7 @@ export function useFlvPlay() {
   onMounted(() => {});
 
   onUnmounted(() => {
-    if (flvPlayer.value) {
-      flvPlayer.value.destroy();
-    }
+    destroyFlv();
   });
 
   function destroyFlv() {
@@ -29,9 +28,7 @@ export function useFlvPlay() {
     flvurl: string;
     videoEl: HTMLVideoElement;
   }) {
-    if (flvPlayer.value) {
-      flvPlayer.value.destroy();
-    }
+    destroyFlv();
     if (flvJs.isSupported()) {
       const player = flvJs.createPlayer({
         type: 'flv',
@@ -43,6 +40,7 @@ export function useFlvPlay() {
         await player.play();
         flvPlayer.value = player;
       } catch (err) {
+        console.error('flv播放失败');
         console.log(err);
       }
     } else {
@@ -81,17 +79,14 @@ export function useHlsPlay() {
   );
 
   function startHlsPlay(data: { hlsurl: string; videoEl: HTMLVideoElement }) {
-    console.log('startHlsPlay', data.hlsurl);
-    if (hlsPlayer.value) {
-      destroyHls();
-    }
+    destroyHls();
     const newVideo = document.createElement('video');
     newVideo.muted = true;
     newVideo.playsInline = true;
     newVideo.setAttribute('webkit-playsinline', 'true');
     videoEl.value = newVideo;
     data.videoEl.parentElement?.appendChild(newVideo);
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       hlsPlayer.value = videoJs(
         newVideo,
         {
@@ -106,9 +101,15 @@ export function useHlsPlay() {
         },
         function onPlayerReady() {
           console.log('Your player is ready!');
+
           // @ts-ignore
           this.play();
           resolve('ok');
+          setTimeout(() => {
+            newVideo.muted = false;
+            appStore.setMuted(false);
+          }, 0);
+
           // @ts-ignore
           this.on('ended', function () {
             console.log('Awww...over so soon?!');

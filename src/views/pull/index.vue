@@ -52,13 +52,6 @@
               @click="showControls = !showControls"
             ></video>
             <div
-              v-if="showTip && !clickShowTip"
-              class="tip-btn"
-              @click="handleTipBtn"
-            >
-              点击播放
-            </div>
-            <div
               class="controls"
               :style="{
                 display: !isMobile() ? 'none' : showControls ? 'block' : 'none',
@@ -230,7 +223,6 @@ import { useRoute } from 'vue-router';
 
 import { fetchGoodsList } from '@/api/goods';
 import { loginTip } from '@/hooks/use-login';
-import { flvJs, useHlsPlay } from '@/hooks/use-play';
 import { usePull } from '@/hooks/use-pull';
 import {
   DanmuMsgTypeEnum,
@@ -259,10 +251,6 @@ const danmuListRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
 const remoteVideoRef = ref<HTMLVideoElement>();
 const localVideoRef = ref<HTMLVideoElement[]>([]);
-const showTip = ref(false);
-const clickShowTip = ref(false);
-
-const { startHlsPlay } = useHlsPlay();
 
 const {
   initPull,
@@ -297,20 +285,6 @@ const {
   isFlv: route.query.liveType === liveTypeEnum.srsFlvPull,
   isSRS: route.query.liveType === liveTypeEnum.srsWebrtcPull,
 });
-
-if (route.query.liveType === liveTypeEnum.srsHlsPull && !flvJs.isSupported()) {
-  showTip.value = true;
-}
-
-async function handleTipBtn() {
-  if (currentLiveRoom.value) {
-    clickShowTip.value = true;
-    await startHlsPlay({
-      hlsurl: currentLiveRoom.value.live_room!.hls_url!,
-      videoEl: localVideoRef.value!,
-    });
-  }
-}
 
 async function getGoodsList() {
   try {

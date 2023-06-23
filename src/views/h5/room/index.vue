@@ -44,13 +44,16 @@
         :muted="appStore.muted"
       ></video>
       <div
-        v-if="showTip"
+        v-if="showPlayBtn"
         class="tip-btn"
         @click="startPull"
       >
         点击播放
       </div>
-      <div class="controls">
+      <div
+        v-if="!showPlayBtn"
+        class="controls"
+      >
         <VideoControls></VideoControls>
       </div>
     </div>
@@ -98,6 +101,7 @@
       <n-button
         type="info"
         size="small"
+        color="#ffd700"
         @click="sendDanmu"
       >
         发送
@@ -113,30 +117,20 @@ import { useRoute } from 'vue-router';
 import { fetchFindLiveRoom } from '@/api/liveRoom';
 import { useHlsPlay } from '@/hooks/use-play';
 import { usePull } from '@/hooks/use-pull';
-import { DanmuMsgTypeEnum, IGoods, ILiveRoom, liveTypeEnum } from '@/interface';
+import { DanmuMsgTypeEnum, ILiveRoom, liveTypeEnum } from '@/interface';
 import router, { mobileRouterName } from '@/router';
 import { useAppStore } from '@/store/app';
-import { useUserStore } from '@/store/user';
 
 const route = useRoute();
-const userStore = useUserStore();
 const appStore = useAppStore();
 
-const giftGoodsList = ref<IGoods[]>([]);
-const showControls = ref(false);
-const giftLoading = ref(false);
-const showRecharge = ref(false);
-const showJoin = ref(true);
-const showSidebar = ref(true);
-const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
 const remoteVideoRef = ref<HTMLVideoElement>();
 const localVideoRef = ref<HTMLVideoElement[]>([]);
-const showTip = ref(true);
-const clickShowTip = ref(false);
+const showPlayBtn = ref(true);
 
-const { startHlsPlay, destroyHls } = useHlsPlay();
+const { startHlsPlay } = useHlsPlay();
 
 const {
   initPull,
@@ -193,14 +187,14 @@ async function getLiveRoomInfo() {
 }
 
 async function startPull() {
-  showTip.value = false;
+  showPlayBtn.value = false;
   await startHlsPlay({
     hlsurl: liveRoomInfo.value!.hls_url!,
     videoEl: remoteVideoRef.value!,
   });
-  setTimeout(() => {
-    appStore.setMuted(false);
-  }, 0);
+  // setTimeout(() => {
+  //   appStore.setMuted(false);
+  // }, 0);
 }
 
 onMounted(() => {
@@ -294,9 +288,9 @@ onMounted(() => {
 
   .danmu-list {
     box-sizing: border-box;
+    padding: 0 15px;
     background-color: #0c1622;
     text-align: initial;
-    padding: 0 15px;
     .title {
       padding: 15px 0;
       color: #fff;
@@ -321,21 +315,20 @@ onMounted(() => {
     }
   }
   .send-msg {
-    background-color: #0c1622;
     position: fixed;
     bottom: 0;
     left: 0;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-evenly;
     box-sizing: border-box;
     padding: 0 10px;
     width: 100%;
     height: 40px;
+    background-color: #0c1622;
     .ipt {
       display: block;
       box-sizing: border-box;
-      margin-right: 10px;
       padding: 10px;
       width: 80%;
       height: 30px;

@@ -41,14 +41,6 @@
             <VideoControls></VideoControls>
           </div>
           <div
-            v-if="showTip && !clickShowTip"
-            class="tip-btn"
-            @click="handleTipBtn"
-          >
-            点击播放
-          </div>
-          <div
-            v-else
             class="join-btn"
             :style="{
               display: !isMobile() ? 'none' : showControls ? 'block' : 'none',
@@ -67,12 +59,7 @@
             </div>
             <div
               v-if="
-                !showTip &&
-                (currentLiveRoom.live_room?.type === LiveRoomTypeEnum.system ||
-                  currentLiveRoom.live_room?.type ===
-                    LiveRoomTypeEnum.user_obs ||
-                  currentLiveRoom?.live_room?.type ===
-                    LiveRoomTypeEnum.user_srs)
+                currentLiveRoom.live_room?.type !== LiveRoomTypeEnum.user_wertc
               "
               class="btn flv"
               @click="joinFlvRoom()"
@@ -81,9 +68,7 @@
             </div>
             <div
               v-if="
-                currentLiveRoom.live_room?.type === LiveRoomTypeEnum.system ||
-                currentLiveRoom.live_room?.type === LiveRoomTypeEnum.user_obs ||
-                currentLiveRoom?.live_room?.type === LiveRoomTypeEnum.user_srs
+                currentLiveRoom.live_room?.type !== LiveRoomTypeEnum.user_wertc
               "
               class="btn hls"
               @click="joinHlsRoom()"
@@ -152,8 +137,6 @@ import { useAppStore } from '@/store/app';
 
 const appStore = useAppStore();
 const router = useRouter();
-const showTip = ref(false);
-const clickShowTip = ref(false);
 const showControls = ref(false);
 const liveRoomList = ref<ILive[]>([]);
 const currentLiveRoom = ref<ILive>();
@@ -162,13 +145,8 @@ const localVideoRef = ref<HTMLVideoElement>();
 const { startFlvPlay, destroyFlv } = useFlvPlay();
 const { startHlsPlay, destroyHls } = useHlsPlay();
 
-if (!flvJs.isSupported()) {
-  showTip.value = true;
-}
-
 async function handleTipBtn() {
   if (currentLiveRoom.value) {
-    clickShowTip.value = true;
     await startHlsPlay({
       hlsurl: currentLiveRoom.value.live_room!.hls_url!,
       videoEl: localVideoRef.value!,
@@ -192,8 +170,6 @@ function changeLiveRoom(item: ILive) {
           videoEl: localVideoRef.value!,
         });
       } else {
-        // showTip.value = true;
-        // clickShowTip.value = false;
         destroyHls();
         await startHlsPlay({
           hlsurl: item.live_room.hls_url!,
@@ -283,6 +259,7 @@ function joinFlvRoom() {
     },
   });
 }
+
 function joinHlsRoom() {
   router.push({
     name: routerName.pull,
@@ -348,24 +325,6 @@ function joinHlsRoom() {
         }
         .controls {
           display: block !important;
-        }
-      }
-      .tip-btn {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        z-index: 1;
-        align-items: center;
-        padding: 12px 26px;
-        border: 2px solid rgba($color: papayawhip, $alpha: 0.5);
-        border-radius: 6px;
-        background-color: rgba(0, 0, 0, 0.3);
-        color: $theme-color-gold;
-        cursor: pointer;
-        transform: translate(-50%, -50%);
-        &:hover {
-          background-color: rgba($color: papayawhip, $alpha: 0.5);
-          color: white;
         }
       }
       .join-btn {

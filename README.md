@@ -2,7 +2,7 @@
   <a href="https://live.hsslive.cn" target="_blank">
     <img
       width="200"
-      src="https://resource.hsslive.cn/image/1613141138717Billd.webp"
+      src="https://github.com/galaxy-s10/billd-live/blob/master/src/assets/img/logo-txt.svg"
       alt="Billd-Live logo"
     />
   </a>
@@ -27,13 +27,12 @@ billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://
 - [x] 原生 webrtc 推拉流
 - [x] srs webrtc 推流， `webrtc` 或 `http-flv` 或 `hls`拉流
 - [x] [obs](https://github.com/obsproject/obs-studio)推流
-- [x] 支付宝打赏
 - [x] 用户模块
+- [x] 支付模块（支付宝当面付）
 - [x] 订单模块
-- [ ] 礼物模块
+- [x] 商品模块
+- [x] 适配移动端
 - [ ] 在线后台
-- [ ] 适配移动端
-- [ ] 敬请期待！
 
 ## 预览
 

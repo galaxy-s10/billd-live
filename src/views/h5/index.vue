@@ -1,31 +1,32 @@
 <template>
   <div class="h5-wrap">
-    <div class="logo-bar">
-      <div class="logo"></div>
+    <div
+      class="swiper"
+      :style="{ backgroundColor: currentSwiper.bg }"
+    >
+      {{ currentSwiper.txt }}
     </div>
-    <nav class="nav-list">
-      <div
-        v-for="(item, index) in navList"
-        :key="index"
-        class="item"
-        :class="{ active: currentNav.id === item.id }"
-        @click="currentNav = item"
-      >
-        {{ item.name }}
-      </div>
-    </nav>
-    <div class="swiper">
-      <div class="item"></div>
-    </div>
-    <div class="type-list">
+
+    <div
+      v-if="currentNav.id === appStore.mobileNav?.id"
+      class="type-list"
+    >
       <div
         v-for="(item, index) in liveRoomList"
         :key="index"
         class="item"
       >
-        <div class="title">
+        <div
+          class="title"
+          @click.stop
+        >
           <div class="left">{{ item.name }}</div>
-          <div class="right">查看全部</div>
+          <div
+            class="right"
+            @click="showAll(item)"
+          >
+            查看全部
+          </div>
         </div>
         <div class="live-room-list">
           <div
@@ -55,6 +56,12 @@
         </div>
       </div>
     </div>
+    <div
+      v-else
+      class="null"
+    >
+      敬请期待~
+    </div>
   </div>
 </template>
 
@@ -63,7 +70,10 @@ import { onMounted, ref } from 'vue';
 
 import { fetchAreaLiveRoomList } from '@/api/area';
 import { IArea, IAreaLiveRoom, liveTypeEnum } from '@/interface';
-import router, { routerName } from '@/router';
+import router, { mobileRouterName, routerName } from '@/router';
+import { useAppStore } from '@/store/app';
+
+const appStore = useAppStore();
 
 const navList = ref([
   { id: 1, name: '频道' },
@@ -73,6 +83,14 @@ const navList = ref([
 
 const currentNav = ref(navList.value[0]);
 const liveRoomList = ref<IArea[]>([]);
+
+const swiperList = ref([
+  { id: 1, txt: '广告位1', bg: '#FFCC70', url: '' },
+  { id: 2, txt: '广告位2', bg: '#C850C0', url: '' },
+  { id: 3, txt: '广告位3', bg: '#4158D0', url: '' },
+]);
+const timer = ref();
+const currentSwiper = ref({ id: 1, txt: '广告位1', bg: '#FFCC70', url: '' });
 
 async function getLiveRoomList() {
   try {
@@ -88,6 +106,14 @@ async function getLiveRoomList() {
   }
 }
 
+function showAll(item: IArea) {
+  router.push({
+    name: mobileRouterName.h5Area,
+    params: { areaId: item.id },
+    query: { name: item.name },
+  });
+}
+
 function goRoom(item: IAreaLiveRoom) {
   router.push({
     name: routerName.h5Room,
@@ -100,6 +126,14 @@ function goRoom(item: IAreaLiveRoom) {
 
 onMounted(() => {
   getLiveRoomList();
+  let num = 0;
+  timer.value = setInterval(() => {
+    num += 1;
+    if (num > swiperList.value.length - 1) {
+      num = 0;
+    }
+    currentSwiper.value = swiperList.value[num];
+  }, 3000);
 });
 </script>
 
@@ -146,7 +180,11 @@ onMounted(() => {
   .swiper {
     width: 100%;
     height: 130px;
-    background: red;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    font-size: 30px;
   }
   .type-list {
     .item {

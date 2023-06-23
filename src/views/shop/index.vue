@@ -219,7 +219,7 @@ function startPay(item: IGoods) {
           display: flex;
           align-items: center;
           .price {
-            color: gold;
+            color: $theme-color-gold;
             font-size: 22px;
           }
           .original-price {

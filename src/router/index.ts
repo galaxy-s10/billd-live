@@ -1,13 +1,15 @@
-import { isMobile } from 'billd-utils';
+import { isIPad, isMobile } from 'billd-utils';
 import { createRouter, createWebHistory } from 'vue-router';
 
-import Layout from '@/layout/index.vue';
+import MobileLayout from '@/layout/mobile/index.vue';
+import PcLayout from '@/layout/pc/index.vue';
 
 import type { RouteRecordRaw } from 'vue-router';
 
 export const mobileRouterName = {
   h5: 'h5',
   h5Room: 'h5Room',
+  h5Area: 'h5Area',
 };
 
 export const routerName = {
@@ -37,8 +39,13 @@ export const routerName = {
 // 默认路由
 export const defaultRoutes: RouteRecordRaw[] = [
   {
+    name: routerName.oauth,
+    path: '/oauth/:platform',
+    component: () => import('@/views/oauth/index.vue'),
+  },
+  {
     path: '/',
-    component: Layout,
+    component: PcLayout,
     children: [
       {
         name: routerName.home,
@@ -126,19 +133,25 @@ export const defaultRoutes: RouteRecordRaw[] = [
     ],
   },
   {
-    name: mobileRouterName.h5,
     path: '/h5',
-    component: () => import('@/views/h5/index.vue'),
+    component: MobileLayout,
+    children: [
+      {
+        name: mobileRouterName.h5,
+        path: '',
+        component: () => import('@/views/h5/index.vue'),
+      },
+      {
+        name: mobileRouterName.h5Area,
+        path: 'area/:areaId',
+        component: () => import('@/views/h5/area/index.vue'),
+      },
+    ],
   },
   {
     name: mobileRouterName.h5Room,
     path: '/h5/:roomId',
     component: () => import('@/views/h5/room/index.vue'),
-  },
-  {
-    name: routerName.oauth,
-    path: '/oauth/:platform',
-    component: () => import('@/views/oauth/index.vue'),
   },
 ];
 const router = createRouter({
@@ -157,7 +170,7 @@ router.beforeEach((to, from, next) => {
   if (to.name === routerName.oauth) {
     return next();
   }
-  if (isMobile()) {
+  if (isMobile() && !isIPad()) {
     if (!Object.keys(mobileRouterName).includes(to.name as string)) {
       // 当前移动端，但是跳转了非移动端路由
       return next({ name: mobileRouterName.h5 });

@@ -3,6 +3,7 @@ import { defineStore } from 'pinia';
 type AppRootState = {
   liveStatus: boolean;
   muted: boolean;
+  mobileNav: { id: number; name: string };
 };
 
 export const useAppStore = defineStore('app', {
@@ -10,6 +11,7 @@ export const useAppStore = defineStore('app', {
     return {
       liveStatus: false,
       muted: true,
+      mobileNav: { id: 1, name: '频道' },
     };
   },
   actions: {
@@ -18,6 +20,9 @@ export const useAppStore = defineStore('app', {
     },
     setMuted(res: AppRootState['muted']) {
       this.muted = res;
+    },
+    setMobileNav(res: AppRootState['mobileNav']) {
+      this.mobileNav = res;
     },
   },
 });
