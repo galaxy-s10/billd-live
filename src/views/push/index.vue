@@ -152,7 +152,10 @@
       <div class="danmu-card">
         <div class="title">弹幕互动</div>
         <div class="list-wrap">
-          <div class="list">
+          <div
+            ref="danmuListRef"
+            class="list"
+          >
             <div
               v-for="(item, index) in damuList"
               :key="index"
@@ -203,7 +206,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { usePush } from '@/hooks/use-push';
@@ -216,6 +219,7 @@ const userStore = useUserStore();
 const liveType = route.query.liveType;
 const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
+const danmuListRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
 const localVideoRef = ref<HTMLVideoElement>();
 const remoteVideoRef = ref<HTMLVideoElement[]>([]);
@@ -241,7 +245,16 @@ const {
   remoteVideoRef,
   isSRS: liveType === liveTypeEnum.srsPush,
 });
-
+watch(
+  () => damuList.value.length,
+  () => {
+    setTimeout(() => {
+      if (danmuListRef.value) {
+        danmuListRef.value.scrollTop = danmuListRef.value.scrollHeight;
+      }
+    }, 0);
+  }
+);
 onMounted(() => {
   if (topRef.value && bottomRef.value && containerRef.value) {
     const res =
@@ -435,9 +448,9 @@ onMounted(() => {
         margin-bottom: 10px;
       }
       .list {
+        overflow: scroll;
         margin-bottom: 10px;
         height: 300px;
-        overflow: scroll;
 
         .item {
           margin-bottom: 10px;

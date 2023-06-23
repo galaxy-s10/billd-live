@@ -25,13 +25,14 @@
       >
         <div class="title">
           <div class="left">{{ item.name }}</div>
-          <div class="right">进去看看</div>
+          <div class="right">查看全部</div>
         </div>
         <div class="live-room-list">
           <div
             v-for="(iten, indey) in item.area_live_rooms"
             :key="indey"
             class="live-room"
+            @click="goRoom(iten)"
           >
             <div
               class="cover"
@@ -61,7 +62,8 @@
 import { onMounted, ref } from 'vue';
 
 import { fetchAreaLiveRoomList } from '@/api/area';
-import { IArea } from '@/interface';
+import { IArea, IAreaLiveRoom, liveTypeEnum } from '@/interface';
+import router, { routerName } from '@/router';
 
 const navList = ref([
   { id: 1, name: '频道' },
@@ -84,6 +86,16 @@ async function getLiveRoomList() {
   } catch (error) {
     console.log(error);
   }
+}
+
+function goRoom(item: IAreaLiveRoom) {
+  router.push({
+    name: routerName.h5Room,
+    params: { roomId: item.live_room_id },
+    query: {
+      liveType: liveTypeEnum.srsHlsPull,
+    },
+  });
 }
 
 onMounted(() => {

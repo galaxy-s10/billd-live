@@ -175,7 +175,10 @@
             </div>
           </div>
         </div>
-        <div class="danmu-list">
+        <div
+          ref="danmuListRef"
+          class="danmu-list"
+        >
           <div
             v-for="(item, index) in damuList"
             :key="index"
@@ -222,7 +225,7 @@
 
 <script lang="ts" setup>
 import { isMobile } from 'billd-utils';
-import { nextTick, onMounted, onUnmounted, ref } from 'vue';
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchGoodsList } from '@/api/goods';
@@ -252,6 +255,7 @@ const showJoin = ref(true);
 const showSidebar = ref(true);
 const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
+const danmuListRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
 const remoteVideoRef = ref<HTMLVideoElement>();
 const localVideoRef = ref<HTMLVideoElement[]>([]);
@@ -344,8 +348,18 @@ onUnmounted(() => {
   closeRtc();
 });
 
+watch(
+  () => damuList.value.length,
+  () => {
+    setTimeout(() => {
+      if (danmuListRef.value) {
+        danmuListRef.value.scrollTop = danmuListRef.value.scrollHeight;
+      }
+    }, 0);
+  }
+);
+
 onMounted(() => {
-  console.log(currentLiveRoom.value, 1111);
   getGoodsList();
   if (
     [liveTypeEnum.srsFlvPull, liveTypeEnum.srsWebrtcPull].includes(
@@ -450,7 +464,7 @@ onMounted(() => {
           position: absolute;
           background-position: center center;
           background-size: cover;
-          filter: blur(30px);
+          filter: blur(10px);
 
           inset: 0;
         }

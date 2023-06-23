@@ -60,6 +60,7 @@ export function usePull({
   const balance = ref('0.00');
   const damuList = ref<IDanmu[]>([]);
   const liveUserList = ref<ILiveUser[]>([]);
+  const autoplayVal = ref(false);
   const videoLoading = ref(false);
   const isDone = ref(false);
   const roomNoLive = ref(false);
@@ -174,8 +175,11 @@ export function usePull({
     }
   );
 
-  function initPull() {
-    videoLoading.value = true;
+  function initPull(autolay = true) {
+    autoplayVal.value = autolay;
+    if (autoplayVal.value) {
+      videoLoading.value = true;
+    }
     console.warn('开始new WebSocketClass');
     const ws = new WebSocketClass({
       roomId: roomId.value,
@@ -468,11 +472,13 @@ export function usePull({
         if (route.query.liveType === liveTypeEnum.srsWebrtcPull) {
           instance.send({ msgType: WsMsgTypeEnum.getLiveUser });
         } else if (route.query.liveType === liveTypeEnum.srsFlvPull) {
+          if (!autoplayVal.value) return;
           await startFlvPlay({
             flvurl: flvurl.value,
             videoEl: remoteVideoRef.value!,
           });
         } else if (route.query.liveType === liveTypeEnum.srsHlsPull) {
+          if (!autoplayVal.value) return;
           await startHlsPlay({
             hlsurl: hlsurl.value,
             videoEl: remoteVideoRef.value!,
@@ -483,12 +489,14 @@ export function usePull({
           data.data.live_room?.type === LiveRoomTypeEnum.system
         ) {
           if (judgeDevice().isIphone) {
+            if (!autoplayVal.value) return;
             await startHlsPlay({
               hlsurl: flvurl.value,
               videoEl: remoteVideoRef.value!,
             });
             videoLoading.value = false;
           } else {
+            if (!autoplayVal.value) return;
             await startFlvPlay({
               flvurl: flvurl.value,
               videoEl: remoteVideoRef.value!,

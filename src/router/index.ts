@@ -1,13 +1,18 @@
+import { isMobile } from 'billd-utils';
 import { createRouter, createWebHistory } from 'vue-router';
 
 import Layout from '@/layout/index.vue';
 
 import type { RouteRecordRaw } from 'vue-router';
 
+export const mobileRouterName = {
+  h5: 'h5',
+  h5Room: 'h5Room',
+};
+
 export const routerName = {
   home: 'home',
   about: 'about',
-  h5: 'h5',
   account: 'account',
   rank: 'rank',
   sponsors: 'sponsors',
@@ -26,6 +31,7 @@ export const routerName = {
 
   pull: 'pull',
   push: 'push',
+  ...mobileRouterName,
 };
 
 // 默认路由
@@ -120,9 +126,14 @@ export const defaultRoutes: RouteRecordRaw[] = [
     ],
   },
   {
-    name: routerName.h5,
+    name: mobileRouterName.h5,
     path: '/h5',
     component: () => import('@/views/h5/index.vue'),
+  },
+  {
+    name: mobileRouterName.h5Room,
+    path: '/h5/:roomId',
+    component: () => import('@/views/h5/room/index.vue'),
   },
   {
     name: routerName.oauth,
@@ -140,6 +151,26 @@ const router = createRouter({
     },
   ],
   history: createWebHistory(),
+});
+
+router.beforeEach((to, from, next) => {
+  if (to.name === routerName.oauth) {
+    return next();
+  }
+  if (isMobile()) {
+    if (!Object.keys(mobileRouterName).includes(to.name as string)) {
+      // 当前移动端，但是跳转了非移动端路由
+      return next({ name: mobileRouterName.h5 });
+    } else {
+      return next();
+    }
+  } else {
+    if (Object.keys(mobileRouterName).includes(to.name as string)) {
+      // 当前非移动端，但是跳转了移动端路由
+      return next({ name: routerName.home });
+    }
+    return next();
+  }
 });
 
 export default router;

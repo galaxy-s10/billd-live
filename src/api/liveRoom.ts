@@ -17,3 +17,10 @@ export function fetchUpdateLiveRoomKey() {
     method: 'put',
   });
 }
+
+export function fetchFindLiveRoom(roomId: string) {
+  return request.instance({
+    url: `/live_room/find/${roomId}`,
+    method: 'get',
+  });
+}

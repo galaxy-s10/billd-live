@@ -318,7 +318,7 @@ function joinHlsRoom() {
         position: absolute;
         background-position: center center;
         background-size: cover;
-        filter: blur(30px);
+        filter: blur(10px);
 
         inset: 0;
       }
