@@ -94,7 +94,6 @@ async function getGoodsList(type: GoodsTypeEnum) {
       orderBy: 'desc',
     });
     if (res.code === 200) {
-      console.log(res.data);
       list.value = res.data.rows;
     }
   } catch (error) {

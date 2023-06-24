@@ -10,6 +10,8 @@ export const mobileRouterName = {
   h5: 'h5',
   h5Room: 'h5Room',
   h5Area: 'h5Area',
+  h5Rank: 'h5Rank',
+  h5Profile: 'h5Profile',
 };
 
 export const routerName = {
@@ -145,6 +147,16 @@ export const defaultRoutes: RouteRecordRaw[] = [
         name: mobileRouterName.h5Area,
         path: 'area/:areaId',
         component: () => import('@/views/h5/area/index.vue'),
+      },
+      {
+        name: mobileRouterName.h5Rank,
+        path: 'rank',
+        component: () => import('@/views/h5/rank/index.vue'),
+      },
+      {
+        name: mobileRouterName.h5Profile,
+        path: 'profile',
+        component: () => import('@/views/h5/profile/index.vue'),
       },
     ],
   },

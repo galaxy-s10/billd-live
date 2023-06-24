@@ -50,12 +50,7 @@
       >
         点击播放
       </div>
-      <div
-        v-if="!showPlayBtn"
-        class="controls"
-      >
-        <VideoControls></VideoControls>
-      </div>
+      <VideoControls v-else></VideoControls>
     </div>
     <div class="danmu-list">
       <div class="title">弹幕专区</div>
@@ -280,9 +275,6 @@ onMounted(() => {
         background-color: rgba($color: papayawhip, $alpha: 0.5);
         color: white;
       }
-    }
-    .controls {
-      display: block;
     }
   }
 

@@ -7,10 +7,8 @@
       {{ currentSwiper.txt }}
     </div>
 
-    <div
-      v-if="currentNav.id === appStore.mobileNav?.id"
-      class="type-list"
-    >
+    <!-- <div v-if="currentNav.id === appStore.mobileNav?.id"> -->
+    <div class="type-list">
       <div
         v-for="(item, index) in liveRoomList"
         :key="index"
@@ -55,12 +53,6 @@
           </div>
         </div>
       </div>
-    </div>
-    <div
-      v-else
-      class="null"
-    >
-      敬请期待~
     </div>
   </div>
 </template>

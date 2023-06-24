@@ -352,6 +352,7 @@ export function usePull({
     videoEl?: HTMLVideoElement;
   }) {
     if (isSRS) {
+      if (!autoplayVal.value) return;
       console.warn('开始new SRSWebRTCClass', getSocketId());
       const rtc = new SRSWebRTCClass({
         roomId: `${roomId.value}___${getSocketId()}`,
@@ -387,6 +388,7 @@ export function usePull({
         console.log(error);
       }
     } else {
+      if (!autoplayVal.value) return;
       console.warn('开始new WebRTCClass');
       const rtc = new WebRTCClass({
         roomId: `${roomId.value}___${receiver!}`,
@@ -488,15 +490,14 @@ export function usePull({
           data.data.live_room?.type === LiveRoomTypeEnum.user_obs ||
           data.data.live_room?.type === LiveRoomTypeEnum.system
         ) {
+          if (!autoplayVal.value) return;
           if (judgeDevice().isIphone) {
-            if (!autoplayVal.value) return;
             await startHlsPlay({
               hlsurl: flvurl.value,
               videoEl: remoteVideoRef.value!,
             });
             videoLoading.value = false;
           } else {
-            if (!autoplayVal.value) return;
             await startFlvPlay({
               flvurl: flvurl.value,
               videoEl: remoteVideoRef.value!,

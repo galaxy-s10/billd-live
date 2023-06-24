@@ -1,7 +1,6 @@
 <template>
   <div class="video-controls-wrap">
     <div
-      v-if="!appStore.muted"
       class="item"
       @click="appStore.setMuted(!appStore.muted)"
     >
@@ -9,19 +8,8 @@
         size="25"
         color="white"
       >
-        <VolumeHighOutline></VolumeHighOutline>
-      </n-icon>
-    </div>
-    <div
-      v-else
-      class="item"
-      @click="appStore.setMuted(!appStore.muted)"
-    >
-      <n-icon
-        size="25"
-        color="white"
-      >
-        <VolumeMuteOutline></VolumeMuteOutline>
+        <VolumeMuteOutline v-if="appStore.muted"></VolumeMuteOutline>
+        <VolumeHighOutline v-else></VolumeHighOutline>
       </n-icon>
     </div>
   </div>
@@ -47,6 +35,7 @@ const appStore = useAppStore();
   width: 100%;
   z-index: 1;
   height: 40px;
+  user-select: none;
   background-image: linear-gradient(
     -180deg,
     rgba(0, 0, 0, 0),

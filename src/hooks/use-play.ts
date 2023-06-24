@@ -68,13 +68,19 @@ export function useHlsPlay() {
       videoEl.value?.remove();
     }
   }
+  function setMuted(val) {
+    if (videoEl.value) {
+      videoEl.value.muted = val;
+    }
+    if (hlsPlayer.value) {
+      hlsPlayer.value.muted(val);
+    }
+  }
 
   watch(
     () => appStore.muted,
     (newVal) => {
-      if (videoEl.value) {
-        videoEl.value.muted = newVal;
-      }
+      setMuted(newVal);
     }
   );
 

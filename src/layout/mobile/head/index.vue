@@ -1,5 +1,5 @@
 <template>
-  <div class="m-head-wrap">
+  <div class="h5-head-wrap">
     <div class="logo-bar">
       <div
         class="logo"
@@ -8,11 +8,11 @@
     </div>
     <nav class="nav-list">
       <div
-        v-for="(item, index) in navList"
+        v-for="(item, index) in appStore.navList"
         :key="index"
         class="item"
-        :class="{ active: appStore.mobileNav.id === item.id }"
-        @click="appStore.setMobileNav(item)"
+        :class="{ active: route.name === item.routeName }"
+        @click="changeRoute(item)"
       >
         {{ item.name }}
       </div>
@@ -21,23 +21,21 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { useRoute } from 'vue-router';
 
 import router, { mobileRouterName } from '@/router';
-import { useAppStore } from '@/store/app';
+import { AppRootState, useAppStore } from '@/store/app';
 
+const route = useRoute();
 const appStore = useAppStore();
-const navList = ref([
-  { id: 1, name: '频道' },
-  { id: 2, name: '排行' },
-  { id: 3, name: '我的' },
-]);
 
-const currentNav = ref(navList.value[0]);
+function changeRoute(item: AppRootState['navList'][0]) {
+  router.push({ name: item.routeName });
+}
 </script>
 
 <style lang="scss" scoped>
-.m-head-wrap {
+.h5-head-wrap {
   .logo-bar {
     display: flex;
     align-items: center;

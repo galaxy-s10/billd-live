@@ -1,5 +1,5 @@
 <template>
-  <div class="m-area-wrap">
+  <div class="h5-area-wrap">
     <div class="title">{{ route.query.name }}</div>
     <div class="live-room-list">
       <div
@@ -60,15 +60,14 @@ async function getData() {
     id: Number(route.params.areaId),
   });
   if (res.code === 200) {
-    console.log(2);
     liveRoomList.value = res.data.rows;
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.m-area-wrap {
-  padding: 10px 20px;
+.h5-area-wrap {
+  padding: 0 20px;
   .title {
     margin-bottom: 10px;
   }

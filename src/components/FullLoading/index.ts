@@ -62,7 +62,6 @@ export const fullLoading = function (option: IOption): IOption {
 // 不推荐。
 // export const usefullLoading = {
 //   install: (app: App) => {
-//     console.log('kkkkkk', app);
 //     // 挂载在根实例的全局配置上
 //     app.config.globalProperties['$fullLoading'] = fullLoading;
 //   },
