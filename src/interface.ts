@@ -153,8 +153,10 @@ export interface ILiveRoom {
   users?: IUser[];
   /** 分区信息 */
   area?: IArea;
-  name?: string;
+  /** 直播信息 */
+  live?: ILive;
   user_live_room?: IUserLiveRoom & { user: IUser };
+  name?: string;
   /** 权重 */
   weight?: number;
   key?: string;

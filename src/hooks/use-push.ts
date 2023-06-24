@@ -159,7 +159,9 @@ export function usePush({
       const res = await fetchCreateUserLiveRoom();
       if (res.code === 200) {
         window.$message.success('开通直播间成功！');
-        windowReload();
+        setTimeout(() => {
+          windowReload();
+        }, 500);
       }
     } catch (error) {
       console.log(error);

@@ -42,6 +42,10 @@ const liveRoomList = ref<ILiveRoom[]>([]);
 
 const route = useRoute();
 function goRoom(item: ILiveRoom) {
+  if (!item.live) {
+    window.$message.info('该直播间没在直播~');
+    return;
+  }
   router.push({
     name: routerName.h5Room,
     params: { roomId: item.id },
