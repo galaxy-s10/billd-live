@@ -26,8 +26,8 @@ billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://
 
 - [x] 原生 webrtc 推拉流
 - [x] srs webrtc 推流， `webrtc` 或 `http-flv` 或 `hls`拉流
-- [x] [obs](https://github.com/obsproject/obs-studio)推流
-- [x] 用户模块
+- [x] [OBS](https://github.com/obsproject/obs-studio)推流
+- [x] 用户模块（qq 登录）
 - [x] 支付模块（支付宝当面付）
 - [x] 订单模块
 - [x] 商品模块
@@ -36,7 +36,60 @@ billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://
 
 ## 预览
 
-- 线上地址：[https://live.hsslive.cn](https://live.hsslive.cn)
+线上地址：[https://live.hsslive.cn](https://live.hsslive.cn)
+
+### 电脑端界面
+
+> 首页
+
+<img
+  src="https://resource.hsslive.cn/image/c988f43fa1a62423957511c7e0c9f0b7.png" 
+  style="width:800px"
+/>
+
+> 进入直播间
+
+<img
+  src="https://resource.hsslive.cn/image/9663a5c5b95f08df15e7c3eda96149f6.png" 
+  style="width:800px"
+/>
+
+> 发起直播
+
+<img
+  src="https://resource.hsslive.cn/image/58e6b03f0e4d1b604ee9738c9f0314f3.png" 
+  style="width:800px"
+/>
+
+> 排行榜
+
+<img
+  src="https://resource.hsslive.cn/image/4921bb840f2ecbe7b358ca1f705afbc9.png" 
+  style="width:800px"
+/>
+
+### 移动端界面
+
+> 首页
+
+<img
+  src="https://resource.hsslive.cn/image/9ea876ab32954d25d27bb7d2e30b6df1.png" 
+  style="height:500px"
+/>
+
+> 分页列表
+
+<img
+  src="https://resource.hsslive.cn/image/a250a90ea15b04c23e0f4ab7604a3f82.png" 
+  style="height:500px"
+/>
+
+> 进入直播间
+
+<img
+  src="https://resource.hsslive.cn/image/524cb6e6858285972a72fdfffcc53c27.png" 
+  style="height:500px"
+/>
 
 ## b 站视频
 
@@ -92,9 +145,11 @@ npm run build
 
 [https://live.hsslive.cn/about/faq](https://live.hsslive.cn/about/faq)
 
-~~不通过 npm 安装 flv.js，因为安装了 flv.js 后，`import flvJs from 'flv.js'` 会导致 vscode 的 ts 错乱。因此直接下载 flv.min.js 使用。~~，应该是我的 vscode 用了 vscode 的 ts 版本（ts 的 5.x 版本），用回工作区（也就是项目里面安装的 ts 的 4.9 的版本）的 ts 版本就没事了
+### flv.js
 
-## video.js 报错
+~~不通过 npm 安装 flv.js，因为安装了 flv.js 后，`import flvJs from 'flv.js'` 会导致 vscode 的 ts 错乱。因此直接下载 flv.min.js 使用。~~，应该是我的 vscode 用了 vscode 的 ts 版本（ts 的 5.x 版本），用回工作区（也就是项目里面安装的 ts 的 4.9 的版本）的 ts 版本就没事了？
+
+### video.js 报错
 
 Chrome 版本 114.0.5735.133（正式版本） (arm64)，调试移动端的时候，此时的地址栏是：http://localhost:8000/h5/3?liveType=srsHlsPull，使用模拟的安卓设备，点击播放没问题（播放的 hls），但是换成模拟一个苹果设备（任意苹果设备都行，iphone6,7,8,X,12 Pro 等等），点击播放都会报错：`VIDEOJS: ERROR: (CODE:4 MEDIA_ERR_SRC_NOT_SUPPORTED) The media could not be loaded, either because the server or network failed or because the format is not supported.`
 
@@ -116,7 +171,7 @@ Safari 版本：版本 16.5.1 (18615.2.9.11.7)，开发===>响应式设计模式
 
 <div>
   <img
-    src="https://resource.hsslive.cn/image/1443d854f04cd03980343ef3d003a427.webp" 
+    src="https://resource.hsslive.cn/image/c582d500f460939a97882ce503f8b6b3.png" 
     style="height:300px"
     />
   <img
