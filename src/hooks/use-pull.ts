@@ -696,6 +696,7 @@ export function usePull({
     userName,
     userAvatar,
     currentLiveRoom,
+    hlsurl,
     coverImg,
     roomNoLive,
     damuList,

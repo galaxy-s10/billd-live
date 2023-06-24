@@ -111,6 +111,7 @@ export function useHlsPlay() {
           // @ts-ignore
           this.play();
           resolve('ok');
+
           setTimeout(() => {
             newVideo.muted = false;
             appStore.setMuted(false);

@@ -1,9 +1,17 @@
 <template>
   <div class="dropdown-wrap">
-    <div class="btn">
+    <div
+      class="btn"
+      @click="emits('update:modelValue', !modelValue)"
+    >
       <slot name="btn"></slot>
     </div>
-    <div class="container">
+    <div
+      class="container"
+      :style="{
+        display: !isMobile() ? 'auto' : modelValue ? 'block' : 'none',
+      }"
+    >
       <div class="wrap">
         <slot name="list"></slot>
       </div>
@@ -11,7 +19,15 @@
   </div>
 </template>
 
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+import { isMobile } from 'billd-utils';
+import { defineProps } from 'vue';
+
+const props = defineProps({
+  modelValue: { type: Boolean, default: false },
+});
+const emits = defineEmits(['update:modelValue']);
+</script>
 
 <style lang="scss" scoped>
 .dropdown-wrap {
@@ -23,6 +39,7 @@
   }
   .btn {
     cursor: pointer;
+    user-select: none;
   }
   .container {
     position: absolute;

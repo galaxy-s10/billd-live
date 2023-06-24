@@ -187,9 +187,6 @@ async function startPull() {
     hlsurl: liveRoomInfo.value!.hls_url!,
     videoEl: remoteVideoRef.value!,
   });
-  // setTimeout(() => {
-  //   appStore.setMuted(false);
-  // }, 0);
 }
 
 onMounted(() => {

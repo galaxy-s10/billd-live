@@ -62,7 +62,10 @@
       </div>
     </div>
     <div class="right">
-      <Dropdown class="doc">
+      <Dropdown
+        v-model="dropdownDoc"
+        class="doc"
+      >
         <template #btn>
           <div class="btn">
             文档<VPIconChevronDown class="icon"></VPIconChevronDown>
@@ -87,7 +90,10 @@
         </template>
       </Dropdown>
 
-      <Dropdown class="ecosystem">
+      <Dropdown
+        v-model="dropdownSys"
+        class="ecosystem"
+      >
         <template #btn>
           <div class="btn">
             生态系统<VPIconChevronDown class="icon"></VPIconChevronDown>
@@ -128,7 +134,10 @@
         </template>
       </Dropdown>
 
-      <Dropdown class="about">
+      <Dropdown
+        v-model="dropdownAbout"
+        class="about"
+      >
         <template #btn>
           <div class="btn">
             关于<VPIconChevronDown class="icon"></VPIconChevronDown>
@@ -256,6 +265,9 @@ import { useUserStore } from '@/store/user';
 const router = useRouter();
 const userStore = useUserStore();
 const githubStar = ref('');
+const dropdownDoc = ref(false);
+const dropdownSys = ref(false);
+const dropdownAbout = ref(false);
 
 const about = ref([
   {

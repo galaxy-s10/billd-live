@@ -52,6 +52,17 @@
               @click="showControls = !showControls"
             ></video>
             <div
+              v-if="
+                route.query.liveType === liveTypeEnum.srsHlsPull &&
+                hlsurl &&
+                showPlayBtn
+              "
+              class="tip-btn"
+              @click="startPull"
+            >
+              点击播放
+            </div>
+            <div
               class="controls"
               :style="{
                 display: !isMobile() ? 'none' : showControls ? 'block' : 'none',
@@ -223,6 +234,7 @@ import { useRoute } from 'vue-router';
 
 import { fetchGoodsList } from '@/api/goods';
 import { loginTip } from '@/hooks/use-login';
+import { useHlsPlay } from '@/hooks/use-play';
 import { usePull } from '@/hooks/use-pull';
 import {
   DanmuMsgTypeEnum,
@@ -270,6 +282,7 @@ const {
   userName,
   userAvatar,
   currentLiveRoom,
+  hlsurl,
   coverImg,
   roomNoLive,
   damuList,
@@ -285,6 +298,17 @@ const {
   isFlv: route.query.liveType === liveTypeEnum.srsFlvPull,
   isSRS: route.query.liveType === liveTypeEnum.srsWebrtcPull,
 });
+const showPlayBtn = ref(true);
+
+const { startHlsPlay } = useHlsPlay();
+
+async function startPull() {
+  showPlayBtn.value = false;
+  await startHlsPlay({
+    hlsurl: hlsurl.value,
+    videoEl: remoteVideoRef.value!,
+  });
+}
 
 async function getGoodsList() {
   try {
@@ -349,7 +373,11 @@ onMounted(() => {
         topRef.value.getBoundingClientRect().height);
     containerRef.value.style.height = `${res}px`;
   }
-  initPull();
+  if (route.query.liveType === liveTypeEnum.srsHlsPull) {
+    initPull(false);
+  } else {
+    initPull();
+  }
 });
 </script>
 
