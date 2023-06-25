@@ -101,7 +101,7 @@ async function getLiveRoomList() {
 function showAll(item: IArea) {
   router.push({
     name: mobileRouterName.h5Area,
-    params: { areaId: item.id },
+    params: { id: item.id },
     query: { name: item.name },
   });
 }

@@ -20,26 +20,18 @@
           首页
         </a>
         <a
+          v-for="(item, index) in areaList"
+          :key="index"
           class="item"
           :class="{
-            active: router.currentRoute.value.name === routerName.shop,
+            active: router.currentRoute.value.name === routerName.ad,
           }"
-          href="/shop"
-          @click.prevent="router.push({ name: routerName.shop })"
+          href="/ad"
+          @click.prevent="changeArea(item)"
         >
-          商店
+          {{ item.name }}
         </a>
-        <a
-          class="item"
-          :class="{
-            active: router.currentRoute.value.name === routerName.order,
-          }"
-          href="/order"
-          @click.prevent="router.push({ name: routerName.order })"
-        >
-          订单
-        </a>
-        <a
+        <!-- <a
           class="item"
           :class="{
             active: router.currentRoute.value.name === routerName.ad,
@@ -48,17 +40,7 @@
           @click.prevent="router.push({ name: routerName.ad })"
         >
           广告
-        </a>
-        <a
-          class="item"
-          :class="{
-            active: router.currentRoute.value.name === routerName.rank,
-          }"
-          href="/rank"
-          @click.prevent="router.push({ name: routerName.rank })"
-        >
-          排行榜
-        </a>
+        </a> -->
       </div>
     </div>
     <div class="right">
@@ -253,12 +235,13 @@ import { openToTarget, windowReload } from 'billd-utils';
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
+import { fetchAreaList } from '@/api/area';
 import Dropdown from '@/components/Dropdown/index.vue';
 import VPIconChevronDown from '@/components/icons/VPIconChevronDown.vue';
 import VPIconExternalLink from '@/components/icons/VPIconExternalLink.vue';
 import { APIFOX_URL } from '@/constant';
 import { loginTip, useQQLogin } from '@/hooks/use-login';
-import { liveTypeEnum } from '@/interface';
+import { IArea, liveTypeEnum } from '@/interface';
 import { routerName } from '@/router';
 import { useUserStore } from '@/store/user';
 
@@ -268,6 +251,7 @@ const githubStar = ref('');
 const dropdownDoc = ref(false);
 const dropdownSys = ref(false);
 const dropdownAbout = ref(false);
+const areaList = ref<IArea[]>([]);
 
 const about = ref([
   {
@@ -330,6 +314,17 @@ function handleLogout() {
   }, 500);
 }
 
+async function getAreaList() {
+  const res = await fetchAreaList();
+  if (res.code === 200) {
+    areaList.value = res.data.rows;
+  }
+}
+
+function changeArea(item: IArea) {
+  router.push({ name: routerName.area, params: { id: item.id } });
+}
+
 function handleJump(item) {
   if (item.url) {
     openToTarget(item.url);
@@ -341,6 +336,7 @@ function handleJump(item) {
 onMounted(() => {
   githubStar.value =
     'https://img.shields.io/github/stars/galaxy-s10/billd-live?label=Star&logo=GitHub&labelColor=white&logoColor=black&style=social&cacheSeconds=3600';
+  getAreaList();
 });
 
 function quickStart() {

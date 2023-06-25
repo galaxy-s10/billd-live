@@ -1,7 +1,9 @@
 <template>
-  <div class="h5-area-wrap">
-    <div class="title">{{ route.query.name }}</div>
-    <div class="live-room-list">
+  <div class="area-wrap">
+    <div
+      v-loading="loading"
+      class="live-room-list"
+    >
       <div
         v-for="(iten, indey) in liveRoomList"
         :key="indey"
@@ -31,7 +33,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchLiveRoomList } from '@/api/area';
@@ -41,16 +43,27 @@ import router, { routerName } from '@/router';
 const liveRoomList = ref<ILiveRoom[]>([]);
 
 const route = useRoute();
+
+const loading = ref(false);
+
+watch(
+  () => route.params.id,
+  (newVal) => {
+    if (!newVal) return;
+    getData();
+  }
+);
+
 function goRoom(item: ILiveRoom) {
   if (!item.live) {
     window.$message.info('该直播间没在直播~');
     return;
   }
   router.push({
-    name: routerName.h5Room,
+    name: routerName.pull,
     params: { roomId: item.id },
     query: {
-      liveType: liveTypeEnum.srsHlsPull,
+      liveType: liveTypeEnum.srsFlvPull,
     },
   });
 }
@@ -60,18 +73,25 @@ onMounted(() => {
 });
 
 async function getData() {
-  const res = await fetchLiveRoomList({
-    id: Number(route.params.id),
-  });
-  if (res.code === 200) {
-    liveRoomList.value = res.data.rows;
+  try {
+    loading.value = true;
+    const res = await fetchLiveRoomList({
+      id: Number(route.params.id),
+    });
+    if (res.code === 200) {
+      liveRoomList.value = res.data.rows;
+    }
+  } catch (error) {
+    console.log(error);
+  } finally {
+    loading.value = false;
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.h5-area-wrap {
-  padding: 0 20px;
+.area-wrap {
+  padding: 20px;
   .title {
     margin-bottom: 10px;
   }
@@ -79,16 +99,17 @@ async function getData() {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    justify-content: space-between;
     .live-room {
       display: inline-block;
+      margin-right: 35px;
       margin-bottom: 10px;
-      width: 48%;
+      width: 300px;
+      cursor: pointer;
       .cover {
         position: relative;
         overflow: hidden;
         width: 100%;
-        height: 100px;
+        height: 150px;
         border-radius: 8px;
         background-position: center center;
         background-size: cover;
@@ -114,8 +135,9 @@ async function getData() {
         }
       }
       .desc {
-        font-size: 14px;
         margin-top: 4px;
+        font-size: 14px;
+
         @extend %singleEllipsis;
       }
     }

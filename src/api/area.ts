@@ -1,5 +1,11 @@
 import request from '@/utils/request';
 
+export function fetchAreaList() {
+  return request.instance({
+    url: '/area/list',
+    method: 'get',
+  });
+}
 export function fetchAreaLiveRoomList(params: {
   orderName: string;
   orderBy: string;
