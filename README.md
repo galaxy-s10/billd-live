@@ -43,28 +43,28 @@ billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://
 > 首页
 
 <img
-  src="https://resource.hsslive.cn/image/c988f43fa1a62423957511c7e0c9f0b7.png" 
+  src="https://github.com/galaxy-s10/billd-live/assets/61055341/68543c4c-ef8c-42ce-af06-cfd3880199e6" 
   style="width:800px"
 />
 
 > 进入直播间
 
 <img
-  src="https://resource.hsslive.cn/image/9663a5c5b95f08df15e7c3eda96149f6.png" 
+  src="https://github.com/galaxy-s10/billd-live/assets/61055341/99cac75d-76ff-4644-a686-8238390c2c25" 
   style="width:800px"
 />
 
 > 发起直播
 
 <img
-  src="https://resource.hsslive.cn/image/58e6b03f0e4d1b604ee9738c9f0314f3.png" 
+  src="https://github.com/galaxy-s10/billd-live/assets/61055341/40dd55ac-d998-4617-81d0-0c86b6332a19" 
   style="width:800px"
 />
 
 > 排行榜
 
 <img
-  src="https://resource.hsslive.cn/image/4921bb840f2ecbe7b358ca1f705afbc9.png" 
+  src="https://github.com/galaxy-s10/billd-live/assets/61055341/35a81bea-b428-4fe1-a184-a9b8c0ef6ca6" 
   style="width:800px"
 />
 
@@ -73,21 +73,21 @@ billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://
 > 首页
 
 <img
-  src="https://resource.hsslive.cn/image/9ea876ab32954d25d27bb7d2e30b6df1.png" 
+  src="https://github.com/galaxy-s10/billd-live/assets/61055341/3253cb33-69a4-44f7-b23f-2ef7f9e4dc8c" 
   style="height:500px"
 />
 
 > 分页列表
 
 <img
-  src="https://resource.hsslive.cn/image/a250a90ea15b04c23e0f4ab7604a3f82.png" 
+  src="https://github.com/galaxy-s10/billd-live/assets/61055341/5a29c965-9979-4ba8-b120-ab2a164d0bf2" 
   style="height:500px"
 />
 
 > 进入直播间
 
 <img
-  src="https://resource.hsslive.cn/image/524cb6e6858285972a72fdfffcc53c27.png" 
+  src="https://github.com/galaxy-s10/billd-live/assets/61055341/e52f1676-2d76-4203-b2fa-c094e7ef02fe" 
   style="height:500px"
 />
 
