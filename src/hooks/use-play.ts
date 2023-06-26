@@ -1,16 +1,17 @@
 import '@/assets/css/videojs.scss';
-
+import { useAppStore } from '@/store/app';
+import flvJs from 'flv.js';
 import videoJs from 'video.js';
 import Player from 'video.js/dist/types/player';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 
-import { useAppStore } from '@/store/app';
+export * as flvJs from 'flv.js';
 
 // @ts-ignore
-export const flvJs = window.flvjs;
+// export const flvJs = window.flvjs as flvJs;
 
 export function useFlvPlay() {
-  const flvPlayer = ref();
+  const flvPlayer = ref<flvJs.Player>();
 
   onMounted(() => {});
 
@@ -48,7 +49,7 @@ export function useFlvPlay() {
     }
   }
 
-  return { startFlvPlay, destroyFlv };
+  return { flvPlayer, startFlvPlay, destroyFlv };
 }
 
 export function useHlsPlay() {

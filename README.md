@@ -77,7 +77,7 @@ billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://
   style="height:500px"
 />
 
-> 分页列表
+> 分区列表
 
 <img
   src="https://github.com/galaxy-s10/billd-live/assets/61055341/5a29c965-9979-4ba8-b120-ab2a164d0bf2" 

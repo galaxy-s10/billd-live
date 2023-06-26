@@ -30,15 +30,18 @@ import {
 } from '@/network/webSocket';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
+import { videoToCanvas } from '@/utils';
 
 export function usePull({
   localVideoRef,
   remoteVideoRef,
+  canvasRef,
   isSRS,
   isFlv,
 }: {
   localVideoRef: Ref<HTMLVideoElement[]>;
   remoteVideoRef: Ref<HTMLVideoElement | undefined>;
+  canvasRef: Ref<HTMLDivElement | undefined>;
   isSRS?: boolean;
   isFlv?: boolean;
 }) {
@@ -71,7 +74,7 @@ export function usePull({
     }[]
   >([]);
 
-  const { startFlvPlay } = useFlvPlay();
+  const { flvPlayer, startFlvPlay } = useFlvPlay();
   const { startHlsPlay } = useHlsPlay();
 
   const track = reactive({
@@ -479,6 +482,12 @@ export function usePull({
             flvurl: flvurl.value,
             videoEl: remoteVideoRef.value!,
           });
+          videoToCanvas(
+            remoteVideoRef.value!,
+            canvasRef.value!,
+            flvPlayer.value?.mediaInfo.width,
+            flvPlayer.value?.mediaInfo.height
+          );
         } else if (route.query.liveType === liveTypeEnum.srsHlsPull) {
           if (!autoplayVal.value) return;
           await startHlsPlay({
@@ -502,6 +511,12 @@ export function usePull({
               flvurl: flvurl.value,
               videoEl: remoteVideoRef.value!,
             });
+            videoToCanvas(
+              remoteVideoRef.value!,
+              canvasRef.value!,
+              flvPlayer.value?.mediaInfo.width,
+              flvPlayer.value?.mediaInfo.height
+            );
           }
         }
       }
@@ -690,6 +705,7 @@ export function usePull({
     startGetDisplayMedia,
     addTrack,
     addVideo,
+    flvPlayer,
     videoLoading,
     balance,
     roomName,

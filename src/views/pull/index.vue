@@ -38,7 +38,7 @@
                 })`,
               }"
             ></div>
-            <video
+            <!-- <video
               id="remoteVideo"
               ref="remoteVideoRef"
               autoplay
@@ -50,7 +50,8 @@
               x5-video-orientation="portraint"
               :muted="appStore.muted"
               @click="showControls = !showControls"
-            ></video>
+            ></video> -->
+            <div ref="canvasRef"></div>
             <div
               v-if="
                 route.query.liveType === liveTypeEnum.srsHlsPull &&
@@ -219,6 +220,7 @@
             @click="sendDanmu"
           >
             发送
+            <span @click="aaa">222</span>
           </div>
         </div>
       </div>
@@ -260,10 +262,14 @@ const showSidebar = ref(true);
 const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
 const danmuListRef = ref<HTMLDivElement>();
+const canvasRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
-const remoteVideoRef = ref<HTMLVideoElement>();
 const localVideoRef = ref<HTMLVideoElement[]>([]);
-
+const videoEl = document.createElement('video');
+videoEl.muted = true;
+videoEl.playsInline = true;
+videoEl.setAttribute('webkit-playsinline', 'true');
+const remoteVideoRef = ref(videoEl);
 const {
   initPull,
   closeWs,
@@ -276,6 +282,7 @@ const {
   startGetDisplayMedia,
   addTrack,
   addVideo,
+  flvPlayer,
   videoLoading,
   balance,
   roomName,
@@ -295,12 +302,25 @@ const {
 } = usePull({
   localVideoRef,
   remoteVideoRef,
+  canvasRef,
   isFlv: route.query.liveType === liveTypeEnum.srsFlvPull,
   isSRS: route.query.liveType === liveTypeEnum.srsWebrtcPull,
 });
 const showPlayBtn = ref(true);
 
 const { startHlsPlay } = useHlsPlay();
+
+watch(
+  () => videoLoading.value,
+  (newVal) => {
+    if (newVal) return;
+    // remoteVideoRef.value.style.width = flvPlayer.value?.mediaInfo.width! + 'px';
+    // remoteVideoRef.value.style.height =
+    //   flvPlayer.value?.mediaInfo.height! + 'px';
+    // console.log(flvPlayer.value?.mediaInfo.width, 888);
+    // videoToCanvas(remoteVideoRef.value, canvasRef.value!);
+  }
+);
 
 async function startPull() {
   showPlayBtn.value = false;
@@ -470,11 +490,10 @@ onMounted(() => {
 
           inset: 0;
         }
-        :deep(video) {
+        :deep(canvas) {
           position: absolute;
           top: 0;
           left: 50%;
-          width: 100%;
           height: 100%;
           transform: translate(-50%);
         }
