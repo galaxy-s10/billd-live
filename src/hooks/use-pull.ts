@@ -34,13 +34,11 @@ import { videoToCanvas } from '@/utils';
 
 export function usePull({
   localVideoRef,
-  remoteVideoRef,
   canvasRef,
   isSRS,
   isFlv,
 }: {
   localVideoRef: Ref<HTMLVideoElement[]>;
-  remoteVideoRef: Ref<HTMLVideoElement | undefined>;
   canvasRef: Ref<HTMLDivElement | undefined>;
   isSRS?: boolean;
   isFlv?: boolean;
@@ -48,7 +46,11 @@ export function usePull({
   const route = useRoute();
   const userStore = useUserStore();
   const networkStore = useNetworkStore();
-
+  const videoEl = document.createElement('video');
+  videoEl.muted = true;
+  videoEl.playsInline = true;
+  videoEl.setAttribute('webkit-playsinline', 'true');
+  const remoteVideoRef = ref(videoEl);
   const heartbeatTimer = ref();
   const roomId = ref(route.params.roomId as string);
   const roomName = ref('');
@@ -482,17 +484,22 @@ export function usePull({
             flvurl: flvurl.value,
             videoEl: remoteVideoRef.value!,
           });
-          videoToCanvas(
-            remoteVideoRef.value!,
-            canvasRef.value!,
-            flvPlayer.value?.mediaInfo.width,
-            flvPlayer.value?.mediaInfo.height
-          );
+          videoToCanvas({
+            videoEl: remoteVideoRef.value!,
+            targetEl: canvasRef.value!,
+            width: flvPlayer.value?.mediaInfo.width!,
+            height: flvPlayer.value?.mediaInfo.height!,
+          });
         } else if (route.query.liveType === liveTypeEnum.srsHlsPull) {
           if (!autoplayVal.value) return;
           await startHlsPlay({
             hlsurl: hlsurl.value,
+          });
+          videoToCanvas({
             videoEl: remoteVideoRef.value!,
+            targetEl: canvasRef.value!,
+            width: flvPlayer.value?.mediaInfo.width!,
+            height: flvPlayer.value?.mediaInfo.height!,
           });
           videoLoading.value = false;
         } else if (
@@ -503,7 +510,12 @@ export function usePull({
           if (judgeDevice().isIphone) {
             await startHlsPlay({
               hlsurl: flvurl.value,
+            });
+            videoToCanvas({
               videoEl: remoteVideoRef.value!,
+              targetEl: canvasRef.value!,
+              width: flvPlayer.value?.mediaInfo.width!,
+              height: flvPlayer.value?.mediaInfo.height!,
             });
             videoLoading.value = false;
           } else {
@@ -511,12 +523,12 @@ export function usePull({
               flvurl: flvurl.value,
               videoEl: remoteVideoRef.value!,
             });
-            videoToCanvas(
-              remoteVideoRef.value!,
-              canvasRef.value!,
-              flvPlayer.value?.mediaInfo.width,
-              flvPlayer.value?.mediaInfo.height
-            );
+            videoToCanvas({
+              videoEl: remoteVideoRef.value!,
+              targetEl: canvasRef.value!,
+              width: flvPlayer.value?.mediaInfo.width!,
+              height: flvPlayer.value?.mediaInfo.height!,
+            });
           }
         }
       }

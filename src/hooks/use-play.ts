@@ -1,9 +1,11 @@
 import '@/assets/css/videojs.scss';
-import { useAppStore } from '@/store/app';
 import flvJs from 'flv.js';
+import * as m3u8Parser from 'm3u8-parser';
 import videoJs from 'video.js';
 import Player from 'video.js/dist/types/player';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
+
+import { useAppStore } from '@/store/app';
 
 export * as flvJs from 'flv.js';
 
@@ -54,9 +56,10 @@ export function useFlvPlay() {
 
 export function useHlsPlay() {
   const hlsPlayer = ref<Player>();
-  const videoEl = ref<HTMLVideoElement>();
+  const hlsVideoEl = ref<HTMLVideoElement>();
   const appStore = useAppStore();
-
+  const parser = new m3u8Parser.Parser();
+  console.log(parser, '====');
   onMounted(() => {});
 
   onUnmounted(() => {
@@ -66,12 +69,13 @@ export function useHlsPlay() {
   function destroyHls() {
     if (hlsPlayer.value) {
       hlsPlayer.value.dispose();
-      videoEl.value?.remove();
+      hlsVideoEl.value?.remove();
     }
   }
+
   function setMuted(val) {
-    if (videoEl.value) {
-      videoEl.value.muted = val;
+    if (hlsVideoEl.value) {
+      hlsVideoEl.value.muted = val;
     }
     if (hlsPlayer.value) {
       hlsPlayer.value.muted(val);
@@ -85,17 +89,16 @@ export function useHlsPlay() {
     }
   );
 
-  function startHlsPlay(data: { hlsurl: string; videoEl: HTMLVideoElement }) {
+  function startHlsPlay(data: { hlsurl: string }) {
     destroyHls();
-    const newVideo = document.createElement('video');
-    newVideo.muted = true;
-    newVideo.playsInline = true;
-    newVideo.setAttribute('webkit-playsinline', 'true');
-    videoEl.value = newVideo;
-    data.videoEl.parentElement?.appendChild(newVideo);
-    return new Promise((resolve) => {
+    const videoEl = document.createElement('video');
+    videoEl.muted = true;
+    videoEl.playsInline = true;
+    videoEl.setAttribute('webkit-playsinline', 'true');
+    hlsVideoEl.value = videoEl;
+    return new Promise<{ width: number; height: number }>((resolve) => {
       hlsPlayer.value = videoJs(
-        newVideo,
+        videoEl,
         {
           sources: [
             {
@@ -103,29 +106,34 @@ export function useHlsPlay() {
               type: 'application/x-mpegURL',
             },
           ],
-          controls: false,
-          preload: 'auto',
         },
-        function onPlayerReady() {
-          console.log('Your player is ready!');
+        function () {
+          console.log('开始播放hls');
+          hlsPlayer.value?.play();
 
-          // @ts-ignore
-          this.play();
-          resolve('ok');
+          hlsPlayer.value?.on('play', () => {
+            console.log('play', hlsPlayer.value?.videoHeight()); // 获取到的是0！
+          });
 
-          setTimeout(() => {
-            newVideo.muted = false;
-            appStore.setMuted(false);
-          }, 0);
+          hlsPlayer.value?.on('playing', () => {
+            console.log('playing', hlsPlayer.value?.videoHeight()); // 获取到的是正确的！
+            setTimeout(() => {
+              videoEl.muted = false;
+              appStore.setMuted(false);
+            }, 0);
+            resolve({
+              width: hlsPlayer.value?.videoWidth() || 0,
+              height: hlsPlayer.value?.videoHeight() || 0,
+            });
+          });
 
-          // @ts-ignore
-          this.on('ended', function () {
-            console.log('Awww...over so soon?!');
+          hlsPlayer.value?.on('loadedmetadata', (e) => {
+            console.log('loadedmetadata', e);
           });
         }
       );
     });
   }
 
-  return { startHlsPlay, destroyHls };
+  return { hlsVideoEl, startHlsPlay, destroyHls };
 }

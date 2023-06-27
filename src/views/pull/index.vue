@@ -38,19 +38,6 @@
                 })`,
               }"
             ></div>
-            <!-- <video
-              id="remoteVideo"
-              ref="remoteVideoRef"
-              autoplay
-              webkit-playsinline="true"
-              playsinline
-              x-webkit-airplay="allow"
-              x5-video-player-type="h5"
-              x5-video-player-fullscreen="true"
-              x5-video-orientation="portraint"
-              :muted="appStore.muted"
-              @click="showControls = !showControls"
-            ></video> -->
             <div ref="canvasRef"></div>
             <div
               v-if="
@@ -220,7 +207,6 @@
             @click="sendDanmu"
           >
             发送
-            <span @click="aaa">222</span>
           </div>
         </div>
       </div>
@@ -244,14 +230,13 @@ import {
   IGoods,
   liveTypeEnum,
 } from '@/interface';
-import { useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
+import { videoToCanvas } from '@/utils';
 
 import RechargeCpt from './recharge/index.vue';
 
 const route = useRoute();
 const userStore = useUserStore();
-const appStore = useAppStore();
 
 const giftGoodsList = ref<IGoods[]>([]);
 const showControls = ref(false);
@@ -265,11 +250,6 @@ const danmuListRef = ref<HTMLDivElement>();
 const canvasRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
 const localVideoRef = ref<HTMLVideoElement[]>([]);
-const videoEl = document.createElement('video');
-videoEl.muted = true;
-videoEl.playsInline = true;
-videoEl.setAttribute('webkit-playsinline', 'true');
-const remoteVideoRef = ref(videoEl);
 const {
   initPull,
   closeWs,
@@ -301,32 +281,29 @@ const {
   sidebarList,
 } = usePull({
   localVideoRef,
-  remoteVideoRef,
   canvasRef,
   isFlv: route.query.liveType === liveTypeEnum.srsFlvPull,
   isSRS: route.query.liveType === liveTypeEnum.srsWebrtcPull,
 });
 const showPlayBtn = ref(true);
 
-const { startHlsPlay } = useHlsPlay();
+const { hlsVideoEl, startHlsPlay } = useHlsPlay();
 
 watch(
   () => videoLoading.value,
-  (newVal) => {
-    if (newVal) return;
-    // remoteVideoRef.value.style.width = flvPlayer.value?.mediaInfo.width! + 'px';
-    // remoteVideoRef.value.style.height =
-    //   flvPlayer.value?.mediaInfo.height! + 'px';
-    // console.log(flvPlayer.value?.mediaInfo.width, 888);
-    // videoToCanvas(remoteVideoRef.value, canvasRef.value!);
-  }
+  (newVal) => {}
 );
 
 async function startPull() {
   showPlayBtn.value = false;
-  await startHlsPlay({
+  const res = await startHlsPlay({
     hlsurl: hlsurl.value,
-    videoEl: remoteVideoRef.value!,
+  });
+  videoToCanvas({
+    videoEl: hlsVideoEl.value!,
+    targetEl: canvasRef.value!,
+    width: res.width,
+    height: res.height,
   });
 }
 
@@ -380,9 +357,11 @@ watch(
 onMounted(() => {
   getGoodsList();
   if (
-    [liveTypeEnum.srsFlvPull, liveTypeEnum.srsWebrtcPull].includes(
-      route.query.liveType as liveTypeEnum
-    )
+    [
+      liveTypeEnum.srsHlsPull,
+      liveTypeEnum.srsFlvPull,
+      liveTypeEnum.srsWebrtcPull,
+    ].includes(route.query.liveType as liveTypeEnum)
   ) {
     showSidebar.value = false;
   }

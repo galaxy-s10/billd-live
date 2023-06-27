@@ -19,70 +19,36 @@ export const getRandomString = (length: number): string => {
   return res;
 };
 
-export function videoToCanvas(
-  videoElement: HTMLVideoElement,
-  targetEl: HTMLElement,
-  width: number,
-  height
-) {
-  if (!videoElement || !targetEl) {
+export function videoToCanvas(data: {
+  videoEl: HTMLVideoElement;
+  targetEl: HTMLElement;
+  width: number;
+  height: number;
+}) {
+  // const { videoEl, targetEl, width = 572, height = 322 } = data;
+  const { videoEl, targetEl, width, height } = data;
+  console.log(videoEl.videoWidth);
+  if (!videoEl || !targetEl) {
     return;
   }
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
   const ctx = canvas.getContext('2d')!;
-  const newVideo = videoElement.cloneNode(false);
 
-  const requestAnimationFrame = window.requestAnimationFrame;
-  const cancelAnimationFrame = window.cancelAnimationFrame;
   let timer;
 
   function drawCanvas() {
-    ctx.drawImage(videoElement, 0, 0);
+    ctx.drawImage(videoEl, 0, 0, width, height);
     timer = requestAnimationFrame(drawCanvas);
   }
 
   function stopDrawing() {
     cancelAnimationFrame(timer);
   }
-
-  newVideo.addEventListener(
-    'play',
-    function () {
-      drawCanvas();
-    },
-    false
-  );
-  newVideo.addEventListener('pause', stopDrawing, false);
-  newVideo.addEventListener('ended', stopDrawing, false);
-
   targetEl.parentNode?.replaceChild(canvas, targetEl);
 
   drawCanvas();
 
-  // this.play = function () {
-  //   newVideo.play();
-  // };
-
-  // this.pause = function () {
-  //   newVideo.pause();
-  // };
-
-  // this.playPause = function () {
-  //   if (newVideo.paused) {
-  //     this.play();
-  //   } else {
-  //     this.pause();
-  //   }
-  // };
-
-  // this.change = function (src) {
-  //   if (!src) {
-  //     return;
-  //   }
-  //   newVideo.src = src;
-  // };
-
-  // this.drawFrame = drawCanvas;
+  return { drawCanvas, stopDrawing };
 }
