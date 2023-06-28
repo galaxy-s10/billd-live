@@ -25,15 +25,14 @@
       v-loading="videoLoading"
       class="video-wrap"
     >
-      <div
+      <!-- <div
         class="cover"
         :style="{
           backgroundImage: `url(${liveRoomInfo?.cover_img})`,
         }"
-      ></div>
-      <video
-        id="remoteVideo"
-        ref="remoteVideoRef"
+      ></div> -->
+      <!-- <video
+        ref="canvasRef"
         autoplay
         webkit-playsinline="true"
         playsinline
@@ -42,7 +41,8 @@
         x5-video-player-fullscreen="true"
         x5-video-orientation="portraint"
         :muted="appStore.muted"
-      ></video>
+      ></video> -->
+      <div ref="canvasRef"></div>
       <div
         v-if="showPlayBtn"
         class="tip-btn"
@@ -115,17 +115,18 @@ import { usePull } from '@/hooks/use-pull';
 import { DanmuMsgTypeEnum, ILiveRoom, liveTypeEnum } from '@/interface';
 import router, { mobileRouterName } from '@/router';
 import { useAppStore } from '@/store/app';
+import { videoToCanvas } from '@/utils';
 
 const route = useRoute();
 const appStore = useAppStore();
 
 const bottomRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
-const remoteVideoRef = ref<HTMLVideoElement>();
+const canvasRef = ref<HTMLVideoElement>();
 const localVideoRef = ref<HTMLVideoElement[]>([]);
 const showPlayBtn = ref(true);
 
-const { startHlsPlay } = useHlsPlay();
+const { hlsVideoEl, startHlsPlay } = useHlsPlay();
 
 const {
   initPull,
@@ -156,8 +157,8 @@ const {
   sidebarList,
 } = usePull({
   localVideoRef,
-  remoteVideoRef,
-  isFlv: route.query.liveType === liveTypeEnum.srsFlvPull,
+  canvasRef,
+  liveType: route.query.liveType as liveTypeEnum,
   isSRS: route.query.liveType === liveTypeEnum.srsWebrtcPull,
 });
 
@@ -183,9 +184,14 @@ async function getLiveRoomInfo() {
 
 async function startPull() {
   showPlayBtn.value = false;
-  await startHlsPlay({
+  const { width, height } = await startHlsPlay({
     hlsurl: liveRoomInfo.value!.hls_url!,
-    videoEl: remoteVideoRef.value!,
+  });
+  videoToCanvas({
+    videoEl: hlsVideoEl.value!,
+    targetEl: canvasRef.value!,
+    width,
+    height,
   });
 }
 
@@ -246,11 +252,18 @@ onMounted(() => {
 
       inset: 0;
     }
-    :deep(video) {
+    // :deep(video) {
+    //   position: absolute;
+    //   top: 0;
+    //   left: 50%;
+    //   width: 100%;
+    //   height: 100%;
+    //   transform: translate(-50%);
+    // }
+    :deep(canvas) {
       position: absolute;
       top: 0;
       left: 50%;
-      width: 100%;
       height: 100%;
       transform: translate(-50%);
     }

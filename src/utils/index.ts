@@ -21,13 +21,13 @@ export const getRandomString = (length: number): string => {
 
 export function videoToCanvas(data: {
   videoEl: HTMLVideoElement;
-  targetEl: HTMLElement;
+  targetEl: Element;
   width: number;
   height: number;
 }) {
-  // const { videoEl, targetEl, width = 572, height = 322 } = data;
   const { videoEl, targetEl, width, height } = data;
-  console.log(videoEl.videoWidth);
+  console.warn('videoToCanvas', videoEl, targetEl, width, height);
+
   if (!videoEl || !targetEl) {
     return;
   }
@@ -46,7 +46,8 @@ export function videoToCanvas(data: {
   function stopDrawing() {
     cancelAnimationFrame(timer);
   }
-  targetEl.parentNode?.replaceChild(canvas, targetEl);
+  targetEl.appendChild(canvas);
+  // targetEl.parentNode?.replaceChild(canvas, targetEl);
 
   drawCanvas();
 

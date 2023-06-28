@@ -30,14 +30,14 @@
             v-loading="videoLoading"
             class="video-wrap"
           >
-            <div
+            <!-- <div
               class="cover"
               :style="{
                 backgroundImage: `url(${
                   coverImg || currentLiveRoom?.user?.avatar
                 })`,
               }"
-            ></div>
+            ></div> -->
             <div ref="canvasRef"></div>
             <div
               v-if="
@@ -262,7 +262,6 @@ const {
   startGetDisplayMedia,
   addTrack,
   addVideo,
-  flvPlayer,
   videoLoading,
   balance,
   roomName,
@@ -282,17 +281,12 @@ const {
 } = usePull({
   localVideoRef,
   canvasRef,
-  isFlv: route.query.liveType === liveTypeEnum.srsFlvPull,
+  liveType: route.query.liveType as liveTypeEnum,
   isSRS: route.query.liveType === liveTypeEnum.srsWebrtcPull,
 });
 const showPlayBtn = ref(true);
 
 const { hlsVideoEl, startHlsPlay } = useHlsPlay();
-
-watch(
-  () => videoLoading.value,
-  (newVal) => {}
-);
 
 async function startPull() {
   showPlayBtn.value = false;
@@ -469,6 +463,13 @@ onMounted(() => {
 
           inset: 0;
         }
+        :deep(video) {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+        }
         :deep(canvas) {
           position: absolute;
           top: 0;
@@ -476,11 +477,6 @@ onMounted(() => {
           height: 100%;
           transform: translate(-50%);
         }
-        // #remoteVideo {
-        //   position: relative;
-        //   width: 100%;
-        //   height: 100%;
-        // }
         .controls {
           display: none;
         }

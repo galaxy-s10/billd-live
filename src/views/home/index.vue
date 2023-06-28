@@ -17,20 +17,10 @@
         <!-- x5-video-player-type 启用H5播放器，是wechat安卓版特性 -->
         <!-- x5-video-player-fullscreen 全屏设置 -->
         <!-- x5-video-orientation 声明播放器支持的方向，可选值landscape横屏，portraint竖屏。默认值portraint。 -->
-        <video
+        <div
           v-if="currentLiveRoom?.live_room?.flv_url"
-          id="localVideo"
-          ref="localVideoRef"
-          autoplay
-          playsinline
-          webkit-playsinline="true"
-          x-webkit-airplay="allow"
-          x5-video-player-type="h5"
-          x5-video-player-fullscreen="true"
-          x5-video-orientation="portraint"
-          :muted="appStore.muted"
-          @click="showControls = !showControls"
-        ></video>
+          ref="canvasRef"
+        ></div>
         <template v-if="currentLiveRoom">
           <div
             class="controls"
@@ -134,52 +124,48 @@ import { flvJs, useFlvPlay, useHlsPlay } from '@/hooks/use-play';
 import { ILive, LiveRoomTypeEnum, liveTypeEnum } from '@/interface';
 import { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
+import { videoToCanvas } from '@/utils';
 
+const canvasRef = ref<Element>();
 const appStore = useAppStore();
 const router = useRouter();
 const showControls = ref(false);
 const liveRoomList = ref<ILive[]>([]);
 const currentLiveRoom = ref<ILive>();
-const localVideoRef = ref<HTMLVideoElement>();
 
-const { startFlvPlay, destroyFlv } = useFlvPlay();
-const { startHlsPlay, destroyHls } = useHlsPlay();
+const { flvVideoEl, startFlvPlay, destroyFlv } = useFlvPlay();
+const { hlsVideoEl, startHlsPlay, destroyHls } = useHlsPlay();
 
-async function handleTipBtn() {
-  if (currentLiveRoom.value) {
-    await startHlsPlay({
-      hlsurl: currentLiveRoom.value.live_room!.hls_url!,
-      videoEl: localVideoRef.value!,
-    });
-  }
-}
-
-function changeLiveRoom(item: ILive) {
+async function changeLiveRoom(item: ILive) {
   if (item.id === currentLiveRoom.value?.id) return;
   currentLiveRoom.value = item;
-
-  nextTick(async () => {
-    if (
-      item.live_room?.type === LiveRoomTypeEnum.user_srs ||
-      item.live_room?.type === LiveRoomTypeEnum.user_obs ||
-      item.live_room?.type === LiveRoomTypeEnum.system
-    ) {
-      if (flvJs.isSupported()) {
-        await startFlvPlay({
-          flvurl: item.live_room.flv_url!,
-          videoEl: localVideoRef.value!,
-        });
-      } else {
-        destroyHls();
-        await startHlsPlay({
-          hlsurl: item.live_room.hls_url!,
-          videoEl: localVideoRef.value!,
-        });
-      }
-    } else {
-      destroyFlv();
-    }
+  canvasRef.value?.childNodes?.forEach((item) => {
+    item.remove();
   });
+  if (
+    item.live_room?.type === LiveRoomTypeEnum.user_srs ||
+    item.live_room?.type === LiveRoomTypeEnum.user_obs ||
+    item.live_room?.type === LiveRoomTypeEnum.system
+  ) {
+    if (flvJs.isSupported()) {
+      const { width, height } = await startFlvPlay({
+        flvurl: item.live_room.flv_url!,
+      });
+      videoToCanvas({
+        videoEl: flvVideoEl.value!,
+        targetEl: canvasRef.value!,
+        width,
+        height,
+      });
+    } else {
+      destroyHls();
+      await startHlsPlay({
+        hlsurl: item.live_room.hls_url!,
+      });
+    }
+  } else {
+    destroyFlv();
+  }
 }
 
 async function getLiveRoomList() {
@@ -203,12 +189,16 @@ async function getLiveRoomList() {
             if (judgeDevice().isIphone) {
               await startHlsPlay({
                 hlsurl: currentLiveRoom.value.live_room.hls_url!,
-                videoEl: localVideoRef.value!,
               });
             } else {
-              await startFlvPlay({
+              const { width, height } = await startFlvPlay({
                 flvurl: currentLiveRoom.value.live_room.flv_url!,
-                videoEl: localVideoRef.value!,
+              });
+              videoToCanvas({
+                videoEl: flvVideoEl.value!,
+                targetEl: canvasRef.value!,
+                width,
+                height,
               });
             }
           } else {
@@ -299,6 +289,13 @@ function joinHlsRoom() {
 
         inset: 0;
       }
+      :deep(canvas) {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        height: 100%;
+        transform: translate(-50%);
+      }
       :deep(video) {
         position: absolute;
         top: 0;
@@ -307,14 +304,6 @@ function joinHlsRoom() {
         height: 100%;
         transform: translate(-50%);
       }
-      // #localVideo {
-      //   position: relative;
-      //   width: 100%;
-      //   height: 100%;
-      //   video {
-      //     height: 100%;
-      //   }
-      // }
       .controls {
         display: none;
       }

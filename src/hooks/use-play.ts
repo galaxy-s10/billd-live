@@ -1,6 +1,5 @@
 import '@/assets/css/videojs.scss';
 import flvJs from 'flv.js';
-import * as m3u8Parser from 'm3u8-parser';
 import videoJs from 'video.js';
 import Player from 'video.js/dist/types/player';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
@@ -9,11 +8,10 @@ import { useAppStore } from '@/store/app';
 
 export * as flvJs from 'flv.js';
 
-// @ts-ignore
-// export const flvJs = window.flvjs as flvJs;
-
 export function useFlvPlay() {
   const flvPlayer = ref<flvJs.Player>();
+  const flvVideoEl = ref<HTMLVideoElement>();
+  const appStore = useAppStore();
 
   onMounted(() => {});
 
@@ -25,41 +23,71 @@ export function useFlvPlay() {
     if (flvPlayer.value) {
       flvPlayer.value.destroy();
     }
+    flvVideoEl.value?.remove();
   }
 
-  async function startFlvPlay(data: {
-    flvurl: string;
-    videoEl: HTMLVideoElement;
-  }) {
-    destroyFlv();
-    if (flvJs.isSupported()) {
-      const player = flvJs.createPlayer({
-        type: 'flv',
-        url: data.flvurl,
-      });
-      player.attachMediaElement(data.videoEl);
-      player.load();
-      try {
-        await player.play();
-        flvPlayer.value = player;
-      } catch (err) {
-        console.error('flv播放失败');
-        console.log(err);
-      }
-    } else {
-      console.error('不支持flv');
+  watch(
+    () => appStore.muted,
+    (newVal) => {
+      setMuted(newVal);
+    }
+  );
+
+  function setMuted(val) {
+    if (flvPlayer.value) {
+      flvPlayer.value.muted = val;
+    }
+    if (flvVideoEl.value) {
+      flvVideoEl.value.muted = val;
     }
   }
 
-  return { flvPlayer, startFlvPlay, destroyFlv };
+  function startFlvPlay(data: { flvurl: string }) {
+    destroyFlv();
+    return new Promise<{ width: number; height: number }>((resolve) => {
+      if (flvJs.isSupported()) {
+        flvPlayer.value = flvJs.createPlayer({
+          type: 'flv',
+          url: data.flvurl,
+        });
+        const videoEl = document.createElement('video');
+        videoEl.muted = true;
+        videoEl.playsInline = true;
+        videoEl.setAttribute('webkit-playsinline', 'true');
+        flvVideoEl.value = videoEl;
+        flvVideoEl.value.addEventListener('play', () => {
+          console.log('flv-play');
+        });
+        flvVideoEl.value.addEventListener('playing', () => {
+          console.log('flv-playing');
+          resolve({
+            width: flvVideoEl.value?.videoWidth || 0,
+            height: flvVideoEl.value?.videoHeight || 0,
+          });
+        });
+        flvPlayer.value.attachMediaElement(flvVideoEl.value);
+        flvPlayer.value.load();
+        try {
+          console.log('开始播放flv播放');
+          flvPlayer.value.play();
+        } catch (err) {
+          console.error('flv播放失败');
+          console.log(err);
+        }
+      } else {
+        console.error('不支持flv');
+      }
+    });
+  }
+
+  return { flvVideoEl, startFlvPlay, destroyFlv };
 }
 
 export function useHlsPlay() {
   const hlsPlayer = ref<Player>();
   const hlsVideoEl = ref<HTMLVideoElement>();
   const appStore = useAppStore();
-  const parser = new m3u8Parser.Parser();
-  console.log(parser, '====');
+
   onMounted(() => {});
 
   onUnmounted(() => {
@@ -69,8 +97,8 @@ export function useHlsPlay() {
   function destroyHls() {
     if (hlsPlayer.value) {
       hlsPlayer.value.dispose();
-      hlsVideoEl.value?.remove();
     }
+    hlsVideoEl.value?.remove();
   }
 
   function setMuted(val) {
@@ -110,25 +138,30 @@ export function useHlsPlay() {
         function () {
           console.log('开始播放hls');
           hlsPlayer.value?.play();
-
           hlsPlayer.value?.on('play', () => {
-            console.log('play', hlsPlayer.value?.videoHeight()); // 获取到的是0！
+            console.log('hls-play');
+            // console.log(hlsPlayer.value?.videoHeight()); // 获取到的是0！
           });
-
           hlsPlayer.value?.on('playing', () => {
-            console.log('playing', hlsPlayer.value?.videoHeight()); // 获取到的是正确的！
-            setTimeout(() => {
-              videoEl.muted = false;
-              appStore.setMuted(false);
-            }, 0);
+            console.log('hls-playing');
+            appStore.setMuted(false);
+            // console.log(hlsPlayer.value?.videoHeight()); // 获取到的是正确的！
+            const childNodes = hlsPlayer.value?.el().childNodes;
+            if (childNodes) {
+              childNodes.forEach((item) => {
+                if (item.nodeName.toLowerCase() === 'video') {
+                  // @ts-ignore
+                  hlsVideoEl.value = item;
+                }
+              });
+            }
             resolve({
               width: hlsPlayer.value?.videoWidth() || 0,
               height: hlsPlayer.value?.videoHeight() || 0,
             });
           });
-
-          hlsPlayer.value?.on('loadedmetadata', (e) => {
-            console.log('loadedmetadata', e);
+          hlsPlayer.value?.on('loadedmetadata', () => {
+            console.log('hls-loadedmetadata');
           });
         }
       );

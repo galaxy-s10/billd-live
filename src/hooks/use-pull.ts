@@ -36,12 +36,12 @@ export function usePull({
   localVideoRef,
   canvasRef,
   isSRS,
-  isFlv,
+  liveType,
 }: {
   localVideoRef: Ref<HTMLVideoElement[]>;
-  canvasRef: Ref<HTMLDivElement | undefined>;
+  canvasRef: Ref<Element | undefined>;
   isSRS?: boolean;
-  isFlv?: boolean;
+  liveType?: liveTypeEnum;
 }) {
   const route = useRoute();
   const userStore = useUserStore();
@@ -49,20 +49,25 @@ export function usePull({
   const videoEl = document.createElement('video');
   videoEl.muted = true;
   videoEl.playsInline = true;
+  videoEl.autoplay = true;
+  // videoEl.controls = true; // 调试用
   videoEl.setAttribute('webkit-playsinline', 'true');
+  videoEl.oncontextmenu = (e) => {
+    e.preventDefault();
+  };
   const remoteVideoRef = ref(videoEl);
   const heartbeatTimer = ref();
   const roomId = ref(route.params.roomId as string);
   const roomName = ref('');
   const userName = ref('');
   const userAvatar = ref('');
-  const currentLiveRoom = ref<ILive>();
   const streamurl = ref('');
   const flvurl = ref('');
   const hlsurl = ref('');
   const coverImg = ref('');
   const danmuStr = ref('');
   const balance = ref('0.00');
+  const currentLiveRoom = ref<ILive>();
   const damuList = ref<IDanmu[]>([]);
   const liveUserList = ref<ILiveUser[]>([]);
   const autoplayVal = ref(false);
@@ -76,13 +81,11 @@ export function usePull({
     }[]
   >([]);
 
-  const { flvPlayer, startFlvPlay } = useFlvPlay();
-  const { startHlsPlay } = useHlsPlay();
-
   const track = reactive({
     audio: 1,
     video: 1,
   });
+
   const giftList = ref([
     { name: '鲜花', ico: '', price: '免费' },
     { name: '肥宅水', ico: '', price: '2元' },
@@ -104,16 +107,21 @@ export function usePull({
       txt: '窗口',
     },
   };
+
   const currMediaTypeList = ref<
     {
       type: MediaTypeEnum;
-      txt: string;
+      txt: String;
     }[]
   >([]);
+
   const currMediaType = ref<{
     type: MediaTypeEnum;
-    txt: string;
+    txt: String;
   }>();
+
+  const { flvVideoEl, startFlvPlay } = useFlvPlay();
+  const { hlsVideoEl, startHlsPlay } = useHlsPlay();
 
   onUnmounted(() => {
     clearInterval(heartbeatTimer.value);
@@ -196,6 +204,7 @@ export function usePull({
     });
     ws.update();
     initReceive();
+
     remoteVideoRef.value?.addEventListener('loadstart', () => {
       console.warn('视频流-loadstart');
       const rtc = networkStore.getRtcMap(roomId.value);
@@ -206,6 +215,9 @@ export function usePull({
 
     remoteVideoRef.value?.addEventListener('loadedmetadata', () => {
       console.warn('视频流-loadedmetadata');
+      if (liveType === liveTypeEnum.webrtcPull) {
+        canvasRef.value?.appendChild(remoteVideoRef.value);
+      }
       videoLoading.value = false;
       const rtc = networkStore.getRtcMap(roomId.value);
       if (!rtc) return;
@@ -322,9 +334,12 @@ export function usePull({
 
   function addVideo() {
     sidebarList.value.push({ socketId: getSocketId() });
+    console.log(sidebarList.value, 111);
     nextTick(() => {
+      console.log(liveUserList.value, 222);
       liveUserList.value.forEach(async (item) => {
         const socketId = item.id;
+        console.log(item, 333);
         if (socketId === getSocketId()) {
           localVideoRef.value[getSocketId()].srcObject = localStream.value;
         }
@@ -333,7 +348,6 @@ export function usePull({
             await startNewWebRtc({
               receiver: socketId,
               videoEl: localVideoRef.value[socketId],
-              // videoEl: localVideoRef.value[sender.value],
             })
           );
           await addTransceiver(socketId);
@@ -480,26 +494,28 @@ export function usePull({
           instance.send({ msgType: WsMsgTypeEnum.getLiveUser });
         } else if (route.query.liveType === liveTypeEnum.srsFlvPull) {
           if (!autoplayVal.value) return;
-          await startFlvPlay({
+          const { width, height } = await startFlvPlay({
             flvurl: flvurl.value,
-            videoEl: remoteVideoRef.value!,
           });
           videoToCanvas({
-            videoEl: remoteVideoRef.value!,
+            videoEl: flvVideoEl.value!,
             targetEl: canvasRef.value!,
-            width: flvPlayer.value?.mediaInfo.width!,
-            height: flvPlayer.value?.mediaInfo.height!,
+            width,
+            height,
+            // width: flvPlayer.value?.mediaInfo.width!,
+            // height: flvPlayer.value?.mediaInfo.height!,
           });
+          videoLoading.value = false;
         } else if (route.query.liveType === liveTypeEnum.srsHlsPull) {
           if (!autoplayVal.value) return;
-          await startHlsPlay({
+          const { width, height } = await startHlsPlay({
             hlsurl: hlsurl.value,
           });
           videoToCanvas({
-            videoEl: remoteVideoRef.value!,
+            videoEl: hlsVideoEl.value!,
             targetEl: canvasRef.value!,
-            width: flvPlayer.value?.mediaInfo.width!,
-            height: flvPlayer.value?.mediaInfo.height!,
+            width,
+            height,
           });
           videoLoading.value = false;
         } else if (
@@ -508,28 +524,27 @@ export function usePull({
         ) {
           if (!autoplayVal.value) return;
           if (judgeDevice().isIphone) {
-            await startHlsPlay({
+            const { width, height } = await startHlsPlay({
               hlsurl: flvurl.value,
             });
             videoToCanvas({
-              videoEl: remoteVideoRef.value!,
+              videoEl: hlsVideoEl.value!,
               targetEl: canvasRef.value!,
-              width: flvPlayer.value?.mediaInfo.width!,
-              height: flvPlayer.value?.mediaInfo.height!,
+              width,
+              height,
             });
-            videoLoading.value = false;
           } else {
-            await startFlvPlay({
+            const { width, height } = await startFlvPlay({
               flvurl: flvurl.value,
-              videoEl: remoteVideoRef.value!,
             });
             videoToCanvas({
-              videoEl: remoteVideoRef.value!,
+              videoEl: flvVideoEl.value!,
               targetEl: canvasRef.value!,
-              width: flvPlayer.value?.mediaInfo.width!,
-              height: flvPlayer.value?.mediaInfo.height!,
+              width,
+              height,
             });
           }
+          videoLoading.value = false;
         }
       }
     );
@@ -632,7 +647,7 @@ export function usePull({
     // 管理员正在直播
     instance.socketIo.on(WsMsgTypeEnum.roomLiveing, (data) => {
       prettierReceiveWebsocket(WsMsgTypeEnum.roomLiveing, data);
-      if (isSRS && !isFlv) {
+      if (isSRS && liveType !== liveTypeEnum.srsFlvPull) {
         startNewWebRtc({});
       }
     });
@@ -717,7 +732,6 @@ export function usePull({
     startGetDisplayMedia,
     addTrack,
     addVideo,
-    flvPlayer,
     videoLoading,
     balance,
     roomName,
