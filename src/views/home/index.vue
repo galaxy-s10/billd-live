@@ -22,14 +22,7 @@
           ref="canvasRef"
         ></div>
         <template v-if="currentLiveRoom">
-          <div
-            class="controls"
-            :style="{
-              display: !isMobile() ? 'none' : showControls ? 'block' : 'none',
-            }"
-          >
-            <VideoControls></VideoControls>
-          </div>
+          <VideoControls></VideoControls>
           <div
             class="join-btn"
             :style="{
@@ -216,7 +209,7 @@ onMounted(() => {
   getLiveRoomList();
 });
 
-function joinRoom() {
+async function joinRoom() {
   if (currentLiveRoom.value?.live_room?.type === LiveRoomTypeEnum.user_srs) {
     router.push({
       name: routerName.pull,
@@ -295,6 +288,7 @@ function joinHlsRoom() {
         left: 50%;
         height: 100%;
         transform: translate(-50%);
+        user-select: none;
       }
       :deep(video) {
         position: absolute;
@@ -303,6 +297,7 @@ function joinHlsRoom() {
         width: 100%;
         height: 100%;
         transform: translate(-50%);
+        user-select: none;
       }
       .controls {
         display: none;
@@ -312,15 +307,16 @@ function joinHlsRoom() {
         .join-btn {
           display: inline-flex !important;
         }
-        .controls {
-          display: block !important;
-        }
       }
       .join-btn {
         position: absolute;
         top: 50%;
         left: 50%;
         z-index: 1;
+        width: 100%;
+        box-sizing: border-box;
+        align-items: center;
+        justify-content: center;
         display: none;
         align-items: center;
         transform: translate(-50%, -50%);

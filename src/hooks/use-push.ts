@@ -15,6 +15,7 @@ import {
   fetchCreateUserLiveRoom,
   fetchUserHasLiveRoom,
 } from '@/api/userLiveRoom';
+import { SRS_STREAM_URL, WEBSOCKET_URL } from '@/constant';
 import {
   DanmuMsgTypeEnum,
   IAnswer,
@@ -71,7 +72,6 @@ export function usePush({
     video: 1,
   });
   const streamurl = ref('');
-  const flvurl = ref('');
 
   const damuList = ref<IDanmu[]>([]);
   const liveUserList = ref<ILiveUser[]>([]);
@@ -118,11 +118,6 @@ export function usePush({
 
   onMounted(() => {
     roomId.value = route.query.roomId as string;
-    flvurl.value = `${
-      process.env.NODE_ENV === 'development'
-        ? 'http://localhost:5001'
-        : 'https://live.hsslive.cn/srsflv'
-    }/livestream/roomId___${roomId.value}.flv`;
     if (!loginTip()) return;
   });
 
@@ -184,10 +179,7 @@ export function usePush({
     disabled.value = true;
     const instance = new WebSocketClass({
       roomId: roomId.value,
-      url:
-        process.env.NODE_ENV === 'development'
-          ? 'ws://localhost:4300'
-          : 'wss://live.hsslive.cn',
+      url: WEBSOCKET_URL,
       isAnchor: true,
     });
     instance.update();
@@ -220,11 +212,7 @@ export function usePush({
         if (!offer) return;
         await rtc.setLocalDescription(offer);
         const res: any = await fetchRtcV1Publish({
-          api: `${
-            process.env.NODE_ENV === 'development'
-              ? 'http://localhost:1985'
-              : 'https://live.hsslive.cn/srs'
-          }/rtc/v1/publish/`,
+          api: `${SRS_STREAM_URL}/rtc/v1/publish/`,
           clientip: null,
           sdp: offer.sdp!,
           streamurl: userStore.userInfo!.live_rooms![0]!.rtmp_url!.replace(

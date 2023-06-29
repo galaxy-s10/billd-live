@@ -50,14 +50,7 @@
             >
               点击播放
             </div>
-            <div
-              class="controls"
-              :style="{
-                display: !isMobile() ? 'none' : showControls ? 'block' : 'none',
-              }"
-            >
-              <VideoControls></VideoControls>
-            </div>
+            <VideoControls></VideoControls>
           </div>
 
           <div
@@ -216,7 +209,6 @@
 </template>
 
 <script lang="ts" setup>
-import { isMobile } from 'billd-utils';
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -290,6 +282,7 @@ const { hlsVideoEl, startHlsPlay } = useHlsPlay();
 
 async function startPull() {
   showPlayBtn.value = false;
+  videoLoading.value = true;
   const res = await startHlsPlay({
     hlsurl: hlsurl.value,
   });
@@ -299,6 +292,7 @@ async function startPull() {
     width: res.width,
     height: res.height,
   });
+  videoLoading.value = false;
 }
 
 async function getGoodsList() {
@@ -463,20 +457,25 @@ onMounted(() => {
 
           inset: 0;
         }
-        :deep(video) {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-        }
         :deep(canvas) {
           position: absolute;
           top: 0;
           left: 50%;
           height: 100%;
           transform: translate(-50%);
+
+          user-select: none;
         }
+        :deep(video) {
+          position: absolute;
+          top: 0;
+          left: 50%;
+          height: 100%;
+          transform: translate(-50%);
+
+          user-select: none;
+        }
+
         .controls {
           display: none;
         }
@@ -496,12 +495,6 @@ onMounted(() => {
           &:hover {
             background-color: rgba($color: papayawhip, $alpha: 0.5);
             color: white;
-          }
-        }
-
-        &:hover {
-          .controls {
-            display: block !important;
           }
         }
       }

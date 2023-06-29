@@ -29,11 +29,10 @@
 import { openToTarget } from 'billd-utils';
 import { ref } from 'vue';
 
-import router, { routerName } from '@/router';
 // const showModal = ref(process.env.NODE_ENV === 'production');
-// const showModal = ref(false);
+const showModal = ref(false);
 // const showModal = ref(true);
-const showModal = ref(router.currentRoute.value.name === routerName.home);
+// const showModal = ref(router.currentRoute.value.name === routerName.home);
 </script>
 
 <style lang="scss" scoped>

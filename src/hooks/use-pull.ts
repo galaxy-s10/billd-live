@@ -3,6 +3,7 @@ import { Ref, nextTick, onUnmounted, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchRtcV1Play } from '@/api/srs';
+import { SRS_STREAM_URL, WEBSOCKET_URL } from '@/constant';
 import { useFlvPlay, useHlsPlay } from '@/hooks/use-play';
 import {
   DanmuMsgTypeEnum,
@@ -196,10 +197,7 @@ export function usePull({
     console.warn('开始new WebSocketClass');
     const ws = new WebSocketClass({
       roomId: roomId.value,
-      url:
-        process.env.NODE_ENV === 'development'
-          ? 'ws://localhost:4300'
-          : 'wss://live.hsslive.cn',
+      url: WEBSOCKET_URL,
       isAnchor: false,
     });
     ws.update();
@@ -215,7 +213,10 @@ export function usePull({
 
     remoteVideoRef.value?.addEventListener('loadedmetadata', () => {
       console.warn('视频流-loadedmetadata');
-      if (liveType === liveTypeEnum.webrtcPull) {
+      if (
+        liveType === liveTypeEnum.webrtcPull ||
+        liveType === liveTypeEnum.srsWebrtcPull
+      ) {
         canvasRef.value?.appendChild(remoteVideoRef.value);
       }
       videoLoading.value = false;
@@ -390,11 +391,7 @@ export function usePull({
         if (!offer) return;
         await rtc.setLocalDescription(offer);
         const res: any = await fetchRtcV1Play({
-          api: `${
-            process.env.NODE_ENV === 'development'
-              ? 'http://localhost:1985'
-              : 'https://live.hsslive.cn/srs'
-          }/rtc/v1/play/`,
+          api: `${SRS_STREAM_URL}/rtc/v1/play/`,
           clientip: null,
           sdp: offer.sdp!,
           streamurl: streamurl.value,

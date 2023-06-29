@@ -26,8 +26,6 @@ export function videoToCanvas(data: {
   height: number;
 }) {
   const { videoEl, targetEl, width, height } = data;
-  console.warn('videoToCanvas', videoEl, targetEl, width, height);
-
   if (!videoEl || !targetEl) {
     return;
   }

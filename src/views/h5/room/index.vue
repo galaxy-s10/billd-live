@@ -184,6 +184,8 @@ async function getLiveRoomInfo() {
 
 async function startPull() {
   showPlayBtn.value = false;
+  videoLoading.value = true;
+
   const { width, height } = await startHlsPlay({
     hlsurl: liveRoomInfo.value!.hls_url!,
   });
@@ -193,6 +195,7 @@ async function startPull() {
     width,
     height,
   });
+  videoLoading.value = false;
 }
 
 onMounted(() => {
@@ -252,20 +255,14 @@ onMounted(() => {
 
       inset: 0;
     }
-    // :deep(video) {
-    //   position: absolute;
-    //   top: 0;
-    //   left: 50%;
-    //   width: 100%;
-    //   height: 100%;
-    //   transform: translate(-50%);
-    // }
     :deep(canvas) {
       position: absolute;
       top: 0;
       left: 50%;
       height: 100%;
       transform: translate(-50%);
+
+      user-select: nones;
     }
     .tip-btn {
       position: absolute;

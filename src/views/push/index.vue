@@ -21,12 +21,7 @@
             x5-video-orientation="portraint"
             muted
           ></video>
-          <div
-            v-if="currMediaTypeList.length > 0"
-            class="controls"
-          >
-            <VideoControls></VideoControls>
-          </div>
+          <VideoControls v-if="currMediaTypeList.length > 0"></VideoControls>
           <div
             v-if="!currMediaTypeList || currMediaTypeList.length <= 0"
             class="add-wrap"
@@ -300,14 +295,6 @@ onMounted(() => {
         #localVideo {
           max-width: 100%;
           max-height: 100%;
-        }
-        .controls {
-          display: none;
-        }
-        &:hover {
-          .controls {
-            display: block;
-          }
         }
         .add-wrap {
           position: absolute;
