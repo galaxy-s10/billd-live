@@ -16,6 +16,12 @@
             }')`,
           }"
         >
+          <div
+            v-if="iten?.cdn === 1"
+            class="cdn-ico"
+          >
+            <div class="txt">CDN</div>
+          </div>
           <div class="txt">{{ iten?.users?.[0].username }}</div>
         </div>
         <div class="desc">{{ iten?.name }}</div>
@@ -92,6 +98,25 @@ async function getData() {
         border-radius: 8px;
         background-position: center center;
         background-size: cover;
+        .cdn-ico {
+          position: absolute;
+          top: -12px;
+          right: -12px;
+          z-index: 2;
+          width: 70px;
+          height: 22px;
+          background-color: #f87c48;
+          transform: rotate(45deg);
+          transform-origin: bottom;
+
+          .txt {
+            margin-left: 18px;
+            background-image: initial !important;
+            color: white;
+            font-size: 10px;
+            transform: scale(0.83333) translate(2px, 3px);
+          }
+        }
 
         .txt {
           position: absolute;
@@ -114,8 +139,9 @@ async function getData() {
         }
       }
       .desc {
-        font-size: 14px;
         margin-top: 4px;
+        font-size: 14px;
+
         @extend %singleEllipsis;
       }
     }

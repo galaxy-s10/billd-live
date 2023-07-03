@@ -1,8 +1,14 @@
 <template>
   <div class="home-wrap">
     <div class="banner"></div>
-    <div class="container">
+    <div class="play-container">
       <div class="left">
+        <div
+          v-if="currentLiveRoom?.live_room?.cdn === 1"
+          class="cdn-ico"
+        >
+          <div class="txt">CDN</div>
+        </div>
         <div
           class="cover"
           :style="{
@@ -63,11 +69,11 @@
       </div>
       <div class="right">
         <div
-          v-if="liveRoomList.length"
+          v-if="topLiveRoomList.length"
           class="list"
         >
           <div
-            v-for="(item, index) in liveRoomList"
+            v-for="(item, index) in topLiveRoomList"
             :key="index"
             :class="{
               item: 1,
@@ -102,6 +108,43 @@
         </div>
       </div>
     </div>
+    <div class="area-container">
+      <div class="area-item">
+        <div class="title">推荐直播</div>
+        <div class="live-room-list">
+          <div
+            v-for="(iten, indey) in otherLiveRoomList"
+            :key="indey"
+            class="live-room"
+            @click="goRoom(iten.live_room)"
+          >
+            <div
+              class="cover"
+              :style="{
+                backgroundImage: `url('${
+                  iten?.live_room?.cover_img || iten?.user?.avatar
+                }')`,
+              }"
+            >
+              <div
+                v-if="iten?.live_room?.cdn === 1"
+                class="cdn-ico"
+              >
+                <div class="txt">CDN</div>
+              </div>
+              <div class="txt">{{ iten?.user?.username }}</div>
+            </div>
+            <div class="desc">{{ iten?.live_room?.name }}</div>
+          </div>
+          <div
+            v-if="!otherLiveRoomList.length"
+            class="null"
+          >
+            暂无数据
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div class="foot">*部分内容来源网络，如有侵权，请联系我删除~</div>
   </div>
@@ -114,20 +157,19 @@ import { useRouter } from 'vue-router';
 
 import { fetchLiveList } from '@/api/live';
 import { flvJs, useFlvPlay, useHlsPlay } from '@/hooks/use-play';
-import { ILive, LiveRoomTypeEnum, liveTypeEnum } from '@/interface';
+import { ILive, ILiveRoom, LiveRoomTypeEnum, liveTypeEnum } from '@/interface';
 import { routerName } from '@/router';
-import { useAppStore } from '@/store/app';
 import { videoToCanvas } from '@/utils';
 
 const canvasRef = ref<Element>();
-const appStore = useAppStore();
 const router = useRouter();
 const showControls = ref(false);
-const liveRoomList = ref<ILive[]>([]);
+const topLiveRoomList = ref<ILive[]>([]);
+const otherLiveRoomList = ref<ILive[]>([]);
 const currentLiveRoom = ref<ILive>();
 
 const { flvVideoEl, startFlvPlay, destroyFlv } = useFlvPlay();
-const { hlsVideoEl, startHlsPlay, destroyHls } = useHlsPlay();
+const { startHlsPlay, destroyHls } = useHlsPlay();
 
 async function changeLiveRoom(item: ILive) {
   if (item.id === currentLiveRoom.value?.id) return;
@@ -168,9 +210,11 @@ async function getLiveRoomList() {
       orderBy: 'desc',
     });
     if (res.code === 200) {
-      liveRoomList.value = res.data.rows;
+      const top = 6;
+      topLiveRoomList.value = res.data.rows.slice(0, top);
+      otherLiveRoomList.value = res.data.rows.slice(top);
       if (res.data.total) {
-        currentLiveRoom.value = res.data.rows[0];
+        currentLiveRoom.value = topLiveRoomList.value[0];
         nextTick(async () => {
           if (
             currentLiveRoom.value?.live_room?.type ===
@@ -209,7 +253,7 @@ onMounted(() => {
   getLiveRoomList();
 });
 
-async function joinRoom() {
+function joinRoom() {
   if (currentLiveRoom.value?.live_room?.type === LiveRoomTypeEnum.user_srs) {
     router.push({
       name: routerName.pull,
@@ -231,6 +275,16 @@ async function joinRoom() {
       },
     });
   }
+}
+
+function goRoom(item: ILiveRoom) {
+  router.push({
+    name: routerName.pull,
+    params: { roomId: item.id },
+    query: {
+      liveType: liveTypeEnum.srsFlvPull,
+    },
+  });
 }
 
 function joinFlvRoom() {
@@ -256,11 +310,15 @@ function joinHlsRoom() {
 
 <style lang="scss" scoped>
 .home-wrap {
-  .container {
+  .play-container {
     padding: 20px 0;
-    min-width: $large-width;
+    // min-width: $large-width;
     background-color: papayawhip;
     text-align: center;
+    white-space: nowrap;
+    &.area {
+      text-align: initial;
+    }
     .left {
       position: relative;
       display: inline-block;
@@ -273,6 +331,25 @@ function joinHlsRoom() {
       vertical-align: top;
 
       @extend %coverBg;
+
+      .cdn-ico {
+        position: absolute;
+        right: -10px;
+        top: -9px;
+        background-color: #f87c48;
+        color: white;
+        z-index: 2;
+        height: 32px;
+        width: 70px;
+        transform-origin: bottom;
+        transform: rotate(45deg);
+        .txt {
+          margin-top: 11px;
+          margin-left: 2px;
+          font-size: 14px;
+          background-image: initial !important;
+        }
+      }
 
       .cover {
         position: absolute;
@@ -436,6 +513,76 @@ function joinHlsRoom() {
       }
     }
   }
+  .area-container {
+    width: 1336px;
+    margin: 10px auto;
+    .area-item {
+      .title {
+        padding: 10px 0;
+        font-size: 26px;
+      }
+      .live-room {
+        display: inline-block;
+        margin-right: 32px;
+        margin-bottom: 10px;
+        width: 300px;
+        cursor: pointer;
+
+        .cover {
+          position: relative;
+          overflow: hidden;
+          width: 100%;
+          height: 150px;
+          border-radius: 8px;
+          background-position: center center;
+          background-size: cover;
+          .cdn-ico {
+            position: absolute;
+            right: -10px;
+            top: -10px;
+            background-color: #f87c48;
+            color: white;
+            z-index: 2;
+            height: 28px;
+            width: 70px;
+            transform-origin: bottom;
+            transform: rotate(45deg);
+            .txt {
+              margin-left: 18px;
+              font-size: 13px;
+              background-image: initial !important;
+            }
+          }
+
+          .txt {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            box-sizing: border-box;
+            padding: 4px 8px;
+            width: 100%;
+            border-radius: 0 0 4px 4px;
+            background-image: linear-gradient(
+              -180deg,
+              rgba(0, 0, 0, 0),
+              rgba(0, 0, 0, 0.6)
+            );
+            color: white;
+            text-align: initial;
+            font-size: 13px;
+
+            @extend %singleEllipsis;
+          }
+        }
+        .desc {
+          margin-top: 4px;
+          font-size: 14px;
+
+          @extend %singleEllipsis;
+        }
+      }
+    }
+  }
   .foot {
     margin-top: 10px;
     text-align: center;
@@ -445,7 +592,7 @@ function joinHlsRoom() {
 // 屏幕宽度小于$large-width的时候
 @media screen and (max-width: $large-width) {
   .home-wrap {
-    .container {
+    .play-container {
       .left {
         width: $medium-left-width;
         height: 460px;
@@ -460,6 +607,9 @@ function joinHlsRoom() {
           }
         }
       }
+    }
+    .area-container {
+      width: 1085px;
     }
   }
 }

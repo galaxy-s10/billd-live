@@ -34,6 +34,12 @@ billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://
 - [x] 适配移动端
 - [ ] 在线后台
 
+## 设备兼容
+
+- [x] iphone 14
+- [x] 三星 s10
+- [x] ipad air 3
+
 ## 预览
 
 线上地址：[https://live.hsslive.cn](https://live.hsslive.cn)

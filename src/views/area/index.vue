@@ -18,6 +18,12 @@
             }')`,
           }"
         >
+          <div
+            v-if="iten?.cdn === 1"
+            class="cdn-ico"
+          >
+            <div class="txt">CDN</div>
+          </div>
           <div class="txt">{{ iten?.users?.[0].username }}</div>
         </div>
         <div class="desc">{{ iten?.name }}</div>
@@ -101,8 +107,8 @@ async function getData() {
     flex-wrap: wrap;
     .live-room {
       display: inline-block;
-      margin-right: 35px;
-      margin-bottom: 10px;
+      margin-right: 25px;
+      margin-bottom: 12px;
       width: 300px;
       cursor: pointer;
       .cover {
@@ -113,6 +119,23 @@ async function getData() {
         border-radius: 8px;
         background-position: center center;
         background-size: cover;
+        .cdn-ico {
+          position: absolute;
+          right: -10px;
+          top: -10px;
+          background-color: #f87c48;
+          color: white;
+          z-index: 2;
+          height: 28px;
+          width: 70px;
+          transform-origin: bottom;
+          transform: rotate(45deg);
+          .txt {
+            margin-left: 18px;
+            font-size: 13px;
+            background-image: initial !important;
+          }
+        }
 
         .txt {
           position: absolute;

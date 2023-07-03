@@ -45,7 +45,7 @@ const emits = defineEmits(['update:modelValue']);
     position: absolute;
     top: 100%;
     right: 0;
-    z-index: 2;
+    z-index: 3;
     display: none;
     .wrap {
       box-sizing: border-box;

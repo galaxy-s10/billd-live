@@ -35,9 +35,8 @@ export function useFlvPlay() {
   );
 
   function setMuted(val) {
-    console.log(val, '--------');
     if (flvPlayer.value) {
-      // flvPlayer.value.muted = val;
+      flvPlayer.value.muted = val;
     }
     if (flvVideoEl.value) {
       flvVideoEl.value.muted = val;
@@ -64,8 +63,8 @@ export function useFlvPlay() {
           });
           flvVideoEl.value.addEventListener('playing', () => {
             console.log('flv-playing', isSafari());
+            // setMuted(false);
             setMuted(appStore.muted);
-
             resolve({
               width: flvVideoEl.value?.videoWidth || 0,
               height: flvVideoEl.value?.videoHeight || 0,
@@ -128,7 +127,7 @@ export function useHlsPlay() {
     destroyHls();
     const videoEl = document.createElement('video');
     videoEl.autoplay = true;
-    videoEl.muted = true;
+    videoEl.muted = appStore.muted;
     videoEl.playsInline = true;
     videoEl.setAttribute('webkit-playsinline', 'true');
     hlsVideoEl.value = videoEl;
@@ -152,7 +151,7 @@ export function useHlsPlay() {
           });
           hlsPlayer.value?.on('playing', () => {
             console.log('hls-playing');
-            appStore.setMuted(false);
+            appStore.setMuted(hlsVideoEl.value?.muted || false);
             // console.log(hlsPlayer.value?.videoHeight()); // 获取到的是正确的！
             const childNodes = hlsPlayer.value?.el().childNodes;
             if (childNodes) {

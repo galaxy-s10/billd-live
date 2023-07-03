@@ -25,12 +25,12 @@
       v-loading="videoLoading"
       class="video-wrap"
     >
-      <!-- <div
+      <div
         class="cover"
         :style="{
           backgroundImage: `url(${liveRoomInfo?.cover_img})`,
         }"
-      ></div> -->
+      ></div>
       <!-- <video
         ref="canvasRef"
         autoplay
@@ -199,6 +199,7 @@ async function startPull() {
 }
 
 onMounted(() => {
+  scrollTo({ top: 0 });
   getLiveRoomInfo();
   initPull(false);
   if (containerRef.value && bottomRef.value) {

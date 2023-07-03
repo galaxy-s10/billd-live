@@ -157,6 +157,8 @@ export interface ILiveRoom {
   live?: ILive;
   user_live_room?: IUserLiveRoom & { user: IUser };
   name?: string;
+  /** 1:使用cdn;2:不使用cdn */
+  cdn?: number;
   /** 权重 */
   weight?: number;
   key?: string;

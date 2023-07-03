@@ -30,16 +30,16 @@
             v-loading="videoLoading"
             class="video-wrap"
           >
-            <!-- <div
+            <div
               class="cover"
               :style="{
                 backgroundImage: `url(${
                   coverImg || currentLiveRoom?.user?.avatar
                 })`,
               }"
-            ></div> -->
+            ></div>
             <div ref="canvasRef"></div>
-            <div
+            <!-- <div
               v-if="
                 route.query.liveType === liveTypeEnum.srsHlsPull &&
                 hlsurl &&
@@ -49,7 +49,7 @@
               @click="startPull"
             >
               点击播放
-            </div>
+            </div> -->
             <VideoControls></VideoControls>
           </div>
 
@@ -361,7 +361,7 @@ onMounted(() => {
     containerRef.value.style.height = `${res}px`;
   }
   if (route.query.liveType === liveTypeEnum.srsHlsPull) {
-    initPull(false);
+    initPull();
   } else {
     initPull();
   }

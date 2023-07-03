@@ -41,6 +41,12 @@
                 }')`,
               }"
             >
+              <div
+                v-if="iten.live_room?.cdn === 1"
+                class="cdn-ico"
+              >
+                <div class="txt">CDN</div>
+              </div>
               <div class="txt">{{ iten.live_room?.users?.[0].username }}</div>
             </div>
             <div class="desc">{{ iten.live_room?.name }}</div>
@@ -63,9 +69,6 @@ import { onMounted, ref } from 'vue';
 import { fetchAreaLiveRoomList } from '@/api/area';
 import { IArea, IAreaLiveRoom, liveTypeEnum } from '@/interface';
 import router, { mobileRouterName, routerName } from '@/router';
-import { useAppStore } from '@/store/app';
-
-const appStore = useAppStore();
 
 const navList = ref([
   { id: 1, name: '频道' },
@@ -73,7 +76,6 @@ const navList = ref([
   { id: 3, name: '我的' },
 ]);
 
-const currentNav = ref(navList.value[0]);
 const liveRoomList = ref<IArea[]>([]);
 
 const swiperList = ref([
@@ -107,6 +109,10 @@ function showAll(item: IArea) {
 }
 
 function goRoom(item: IAreaLiveRoom) {
+  if (!item.live_room?.live) {
+    window.$message.info('该直播间没在直播~');
+    return;
+  }
   router.push({
     name: routerName.h5Room,
     params: { roomId: item.live_room_id },
@@ -205,6 +211,8 @@ onMounted(() => {
           display: inline-block;
           margin-bottom: 10px;
           width: 48%;
+          height: 130px;
+
           .cover {
             position: relative;
             overflow: hidden;
@@ -213,6 +221,25 @@ onMounted(() => {
             border-radius: 8px;
             background-position: center center;
             background-size: cover;
+            .cdn-ico {
+              position: absolute;
+              top: -12px;
+              right: -12px;
+              z-index: 2;
+              width: 70px;
+              height: 22px;
+              background-color: #f87c48;
+              transform: rotate(45deg);
+              transform-origin: bottom;
+
+              .txt {
+                margin-left: 18px;
+                background-image: initial !important;
+                color: white;
+                font-size: 10px;
+                transform: scale(0.83333) translate(2px, 3px);
+              }
+            }
 
             .txt {
               position: absolute;
