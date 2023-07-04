@@ -5,11 +5,6 @@ export const QQ_REDIRECT_URI = 'https://live.hsslive.cn/oauth/qq_login';
 export const AUTHOR_GITHUB = 'https://github.com/galaxy-s10';
 export const LIVE_CLIENT_URL = 'https://live.hsslive.cn';
 
-export const SRS_STREAM_URL =
-  process.env.NODE_ENV === 'development'
-    ? 'http://localhost:1985'
-    : 'https://srs-pull.hsslive.cn/srs';
-
 export const WEBSOCKET_URL =
   process.env.NODE_ENV === 'development'
     ? 'ws://localhost:4300'

@@ -3,7 +3,7 @@ import { Ref, nextTick, onUnmounted, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchRtcV1Play } from '@/api/srs';
-import { SRS_STREAM_URL, WEBSOCKET_URL } from '@/constant';
+import { WEBSOCKET_URL } from '@/constant';
 import { useFlvPlay, useHlsPlay } from '@/hooks/use-play';
 import {
   DanmuMsgTypeEnum,
@@ -390,15 +390,15 @@ export function usePull({
         const offer = await rtc.createOffer();
         if (!offer) return;
         await rtc.setLocalDescription(offer);
-        const res: any = await fetchRtcV1Play({
-          api: `${SRS_STREAM_URL}/rtc/v1/play/`,
+        const res = await fetchRtcV1Play({
+          api: `/rtc/v1/play/`,
           clientip: null,
           sdp: offer.sdp!,
           streamurl: streamurl.value,
           tid: getRandomString(10),
         });
         await rtc.setRemoteDescription(
-          new RTCSessionDescription({ type: 'answer', sdp: res.sdp })
+          new RTCSessionDescription({ type: 'answer', sdp: res.data.sdp })
         );
       } catch (error) {
         console.log(error);

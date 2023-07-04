@@ -1,4 +1,3 @@
-import { SRS_STREAM_URL } from '@/constant';
 import request from '@/utils/request';
 
 export function fetchRtcV1Publish(data: {
@@ -9,8 +8,7 @@ export function fetchRtcV1Publish(data: {
   tid: string;
 }) {
   return request.instance({
-    baseURL: SRS_STREAM_URL,
-    url: `/rtc/v1/publish/`,
+    url: `/srs/rtcV1Publish`,
     method: 'post',
     data,
   });
@@ -23,8 +21,7 @@ export function fetchRtcV1Play(data: {
   tid: string;
 }) {
   return request.instance({
-    baseURL: SRS_STREAM_URL,
-    url: '/rtc/v1/play/',
+    url: `/srs/rtcV1Play`,
     method: 'post',
     data,
   });

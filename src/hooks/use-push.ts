@@ -15,7 +15,7 @@ import {
   fetchCreateUserLiveRoom,
   fetchUserHasLiveRoom,
 } from '@/api/userLiveRoom';
-import { SRS_STREAM_URL, WEBSOCKET_URL } from '@/constant';
+import { WEBSOCKET_URL } from '@/constant';
 import {
   DanmuMsgTypeEnum,
   IAnswer,
@@ -211,8 +211,8 @@ export function usePush({
         const offer = await rtc.createOffer();
         if (!offer) return;
         await rtc.setLocalDescription(offer);
-        const res: any = await fetchRtcV1Publish({
-          api: `${SRS_STREAM_URL}/rtc/v1/publish/`,
+        const res = await fetchRtcV1Publish({
+          api: `/rtc/v1/publish/`,
           clientip: null,
           sdp: offer.sdp!,
           streamurl: userStore.userInfo!.live_rooms![0]!.rtmp_url!.replace(
@@ -222,7 +222,7 @@ export function usePush({
           tid: getRandomString(10),
         });
         await rtc.setRemoteDescription(
-          new RTCSessionDescription({ type: 'answer', sdp: res.sdp })
+          new RTCSessionDescription({ type: 'answer', sdp: res.data.sdp })
         );
       } catch (error) {
         console.log(error);
