@@ -116,7 +116,7 @@
             v-for="(iten, indey) in otherLiveRoomList"
             :key="indey"
             class="live-room"
-            @click="goRoom(iten.live_room)"
+            @click="goRoom(iten.live_room!)"
           >
             <div
               class="cover"
@@ -182,6 +182,7 @@ async function changeLiveRoom(item: ILive) {
     item.live_room?.type === LiveRoomTypeEnum.user_obs ||
     item.live_room?.type === LiveRoomTypeEnum.system
   ) {
+    // @ts-ignore
     if (flvJs.isSupported()) {
       const { width, height } = await startFlvPlay({
         flvurl: item.live_room.flv_url!,
@@ -334,20 +335,20 @@ function joinHlsRoom() {
 
       .cdn-ico {
         position: absolute;
-        right: -10px;
         top: -9px;
+        right: -10px;
+        z-index: 2;
+        width: 70px;
+        height: 32px;
         background-color: #f87c48;
         color: white;
-        z-index: 2;
-        height: 32px;
-        width: 70px;
-        transform-origin: bottom;
         transform: rotate(45deg);
+        transform-origin: bottom;
         .txt {
           margin-top: 11px;
           margin-left: 2px;
-          font-size: 14px;
           background-image: initial !important;
+          font-size: 14px;
         }
       }
 
@@ -365,6 +366,7 @@ function joinHlsRoom() {
         left: 50%;
         height: 100%;
         transform: translate(-50%);
+
         user-select: none;
       }
       :deep(video) {
@@ -374,6 +376,7 @@ function joinHlsRoom() {
         width: 100%;
         height: 100%;
         transform: translate(-50%);
+
         user-select: none;
       }
       .controls {
@@ -390,12 +393,12 @@ function joinHlsRoom() {
         top: 50%;
         left: 50%;
         z-index: 1;
-        width: 100%;
-        box-sizing: border-box;
-        align-items: center;
-        justify-content: center;
         display: none;
         align-items: center;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        width: 80%;
         transform: translate(-50%, -50%);
 
         .btn {
@@ -429,6 +432,8 @@ function joinHlsRoom() {
       border-radius: 4px;
       background-color: rgba($color: #000000, $alpha: 0.3);
       vertical-align: top;
+
+      @extend %hideScrollbar;
 
       .list {
         .item {
@@ -514,8 +519,8 @@ function joinHlsRoom() {
     }
   }
   .area-container {
-    width: 1336px;
     margin: 10px auto;
+    width: 1336px;
     .area-item {
       .title {
         padding: 10px 0;
@@ -538,19 +543,19 @@ function joinHlsRoom() {
           background-size: cover;
           .cdn-ico {
             position: absolute;
-            right: -10px;
             top: -10px;
+            right: -10px;
+            z-index: 2;
+            width: 70px;
+            height: 28px;
             background-color: #f87c48;
             color: white;
-            z-index: 2;
-            height: 28px;
-            width: 70px;
-            transform-origin: bottom;
             transform: rotate(45deg);
+            transform-origin: bottom;
             .txt {
               margin-left: 18px;
-              font-size: 13px;
               background-image: initial !important;
+              font-size: 13px;
             }
           }
 

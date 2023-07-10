@@ -66,6 +66,70 @@ export function usePush({
   const disabled = ref(false);
   const localStream = ref();
   const offerSended = ref(new Set());
+  const webRTC = ref<WebRTCClass | SRSWebRTCClass>();
+  const maxBitrate = ref([
+    {
+      label: '1000',
+      value: 1000,
+    },
+    {
+      label: '2000',
+      value: 2000,
+    },
+    {
+      label: '3000',
+      value: 3000,
+    },
+    {
+      label: '4000',
+      value: 4000,
+    },
+    {
+      label: '5000',
+      value: 5000,
+    },
+    {
+      label: '6000',
+      value: 6000,
+    },
+    {
+      label: '7000',
+      value: 7000,
+    },
+    {
+      label: '8000',
+      value: 8000,
+    },
+    {
+      label: '9000',
+      value: 9000,
+    },
+    {
+      label: '10000',
+      value: 10000,
+    },
+  ]);
+  const currentMaxBitrate = ref(maxBitrate.value[0].value);
+
+  const resolutionRatio = ref([
+    {
+      label: '1440P',
+      value: 1440,
+    },
+    {
+      label: '1080P',
+      value: 1080,
+    },
+    {
+      label: '720P',
+      value: 720,
+    },
+    {
+      label: '360P',
+      value: 360,
+    },
+  ]);
+  const currentResolutionRatio = ref(resolutionRatio.value[1].value);
 
   const track = reactive({
     audio: 1,
@@ -98,6 +162,30 @@ export function usePush({
   }>();
 
   watch(
+    () => currentMaxBitrate.value,
+    async (newVal) => {
+      const res = await webRTC.value?.setMaxBitrate(newVal);
+      if (res === 1) {
+        window.$message.success('切换码率成功！');
+      } else {
+        window.$message.success('切换码率失败！');
+      }
+    }
+  );
+
+  watch(
+    () => currentResolutionRatio.value,
+    async (newVal) => {
+      const res = await webRTC.value?.setResolutionRatio(newVal);
+      if (res === 1) {
+        window.$message.success('切换分辨率成功！');
+      } else {
+        window.$message.success('切换分辨率失败！');
+      }
+    }
+  );
+
+  watch(
     () => userStore.userInfo,
     async (newVal) => {
       if (newVal) {
@@ -113,7 +201,8 @@ export function usePush({
           streamurl.value = rtmpUrl;
         }
       }
-    }
+    },
+    { immediate: true }
   );
 
   onMounted(() => {
@@ -199,12 +288,14 @@ export function usePush({
       const rtc = new SRSWebRTCClass({
         roomId: `${roomId.value}___${getSocketId()}`,
         videoEl,
+        maxBitrate: currentMaxBitrate.value,
+        resolutionRatio: currentResolutionRatio.value,
       });
+      webRTC.value = rtc;
       localStream.value.getTracks().forEach((track) => {
-        rtc.addTransceiver({
+        rtc.addTrack({
           track,
           stream: localStream.value,
-          direction: 'sendonly',
         });
       });
       try {
@@ -221,9 +312,7 @@ export function usePush({
           ),
           tid: getRandomString(10),
         });
-        await rtc.setRemoteDescription(
-          new RTCSessionDescription({ type: 'answer', sdp: res.data.sdp })
-        );
+        await rtc.setRemoteDescription(res.data.sdp);
       } catch (error) {
         console.log(error);
       }
@@ -233,6 +322,7 @@ export function usePush({
         roomId: `${roomId.value}___${receiver!}`,
         videoEl,
       });
+      webRTC.value = rtc;
       return rtc;
     }
   }
@@ -274,7 +364,8 @@ export function usePush({
       if (item.id !== getSocketId()) {
         localStream.value.getTracks().forEach((track) => {
           const rtc = networkStore.getRtcMap(`${roomId.value}___${item.id}`);
-          rtc?.addTransceiver(track, localStream.value);
+          // rtc?.addTransceiver(track, localStream.value);
+          rtc?.addTrack(track, localStream.value);
         });
       }
     });
@@ -505,14 +596,15 @@ export function usePush({
       prettierReceiveWebsocket(WsMsgTypeEnum.otherJoin, data);
       liveUserList.value.push({
         id: data.data.join_socket_id,
-        userInfo: data.data.user,
+        userInfo: data.data.liveRoom.user,
       });
-      damuList.value.push({
+      const danmu: IDanmu = {
         msgType: DanmuMsgTypeEnum.otherJoin,
         socket_id: data.data.join_socket_id,
-        userInfo: data.data.user,
+        userInfo: data.data.liveRoom.user,
         msg: '',
-      });
+      };
+      damuList.value.push(danmu);
       if (isSRS) return;
       if (joined.value) {
         batchSendOffer();
@@ -532,6 +624,9 @@ export function usePush({
     // 用户离开房间完成
     instance.socketIo.on(WsMsgTypeEnum.leaved, (data) => {
       prettierReceiveWebsocket(WsMsgTypeEnum.leaved, data);
+      networkStore.rtcMap
+        .get(`${roomId.value}___${data.socketId as string}`)
+        ?.close();
       const res = liveUserList.value.filter(
         (item) => item.id !== data.socketId
       );
@@ -561,7 +656,11 @@ export function usePush({
     if (!localStream.value) {
       // WARN navigator.mediaDevices在localhost和https才能用，http://192.168.1.103:8000局域网用不了
       const event = await navigator.mediaDevices.getUserMedia({
-        video: true,
+        video: {
+          height: currentResolutionRatio.value,
+          // frameRate: 30,
+        },
+        // video: true,
         audio: true,
       });
       const audio = event.getAudioTracks();
@@ -582,7 +681,11 @@ export function usePush({
     if (!localStream.value) {
       // WARN navigator.mediaDevices.getDisplayMedia在localhost和https才能用，http://192.168.1.103:8000局域网用不了
       const event = await navigator.mediaDevices.getDisplayMedia({
-        video: true,
+        video: {
+          height: currentResolutionRatio.value,
+          // frameRate: 30,
+        },
+        // video: true,
         audio: true,
       });
       const audio = event.getAudioTracks();
@@ -706,6 +809,10 @@ export function usePush({
     endLive,
     sendDanmu,
     keydownDanmu,
+    currentResolutionRatio,
+    currentMaxBitrate,
+    resolutionRatio,
+    maxBitrate,
     disabled,
     danmuStr,
     roomName,

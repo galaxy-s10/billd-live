@@ -102,6 +102,26 @@
             </div>
           </div>
         </div>
+        <div class="rtc">
+          <div class="item">
+            <div class="txt">码率设置</div>
+            <div class="down">
+              <n-select
+                v-model:value="currentMaxBitrate"
+                :options="maxBitrate"
+              />
+            </div>
+          </div>
+          <div class="item">
+            <div class="txt">分辨率设置</div>
+            <div class="down">
+              <n-select
+                v-model:value="currentResolutionRatio"
+                :options="resolutionRatio"
+              />
+            </div>
+          </div>
+        </div>
         <div class="other">
           <div class="top">
             <span class="item">
@@ -229,6 +249,10 @@ const {
   endLive,
   sendDanmu,
   keydownDanmu,
+  currentResolutionRatio,
+  currentMaxBitrate,
+  resolutionRatio,
+  maxBitrate,
   disabled,
   danmuStr,
   roomName,
@@ -311,9 +335,12 @@ onMounted(() => {
         }
       }
       .sidebar {
+        overflow: scroll;
         width: 130px;
         height: 100%;
         background-color: rgba($color: #000000, $alpha: 0.3);
+
+        @extend %hideScrollbar;
         .title {
           color: white;
         }
@@ -352,16 +379,33 @@ onMounted(() => {
         .detail {
           display: flex;
           flex-direction: column;
+          flex-shrink: 0;
+          width: 200px;
           text-align: initial;
           .top {
             margin-bottom: 10px;
             color: #18191c;
-            .btn {
-              margin-left: 10px;
-            }
           }
           .bottom {
             font-size: 14px;
+          }
+        }
+      }
+      .rtc {
+        display: flex;
+        align-items: center;
+        flex: 1;
+        font-size: 14px;
+        .item {
+          display: flex;
+          align-items: center;
+          flex: 1;
+          .txt {
+            flex-shrink: 0;
+            width: 80px;
+          }
+          .down {
+            width: 80px;
           }
         }
       }
@@ -438,6 +482,8 @@ onMounted(() => {
         overflow: scroll;
         margin-bottom: 10px;
         height: 300px;
+
+        @extend %hideScrollbar;
 
         .item {
           margin-bottom: 10px;

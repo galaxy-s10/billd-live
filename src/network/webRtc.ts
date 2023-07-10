@@ -5,20 +5,6 @@ import { useNetworkStore } from '@/store/network';
 
 import { WsMsgTypeEnum } from './webSocket';
 
-function prettierInfo(
-  str: string,
-  data: {
-    browser: string;
-  },
-  type?: 'log' | 'warn' | 'error',
-  ...args
-) {
-  console[type || 'log'](
-    `${new Date().toLocaleString()}，${data.browser}浏览器，${str}`,
-    ...args
-  );
-}
-
 export const frontendErrorCode = {
   rtcStatusErr: {
     // rtcStatus没有100%
@@ -78,6 +64,11 @@ export class WebRTCClass {
 
   preFramesDecoded = -1; // 上一帧
 
+  maxBitrate: number; // 当前码率
+  resolutionRatio: number; // 当前分辨率
+
+  localStream?: MediaStream;
+
   browser: {
     device: string;
     language: string;
@@ -108,30 +99,92 @@ export class WebRTCClass {
   constructor({
     roomId,
     videoEl,
+    maxBitrate,
+    resolutionRatio,
   }: {
     roomId: string;
     videoEl: HTMLVideoElement;
+    maxBitrate?: number;
+    resolutionRatio?: number;
   }) {
     this.roomId = roomId;
     this.videoEl = videoEl;
+    this.maxBitrate = maxBitrate || 1000;
+    this.resolutionRatio = resolutionRatio || 1080;
     this.browser = browserTool();
     this.createPeerConnection();
     this.update();
     // this.handleWebRtcError();
   }
 
-  addTransceiver = (track, stream) => {
-    console.warn('addTransceiveraddTransceiver', track, stream);
-    this.sender = this.peerConnection?.addTransceiver(track, {
-      streams: [stream],
-      direction: 'sendonly',
-    });
-    // this.peerConnection?.addTrack(track, stream);
+  prettierLog = (msg: string, type?: 'log' | 'warn' | 'error', ...args) => {
+    console[type || 'log'](
+      `${new Date().toLocaleString()}，${this.roomId}，${
+        this.browser.browser
+      }浏览器，${msg}`,
+      ...args
+    );
   };
 
   addTrack = (track, stream) => {
-    console.warn('addTrackaddTrack', track, stream);
-    this.peerConnection?.addTrack(track, stream);
+    const sender = this.peerConnection
+      ?.getSenders()
+      .find((s) => s.track === track);
+    if (!sender) {
+      console.warn('开始addTrack', this.roomId, track, stream);
+      this.peerConnection?.addTrack(track, stream);
+      this.localStream = stream;
+      this.setMaxBitrate(this.maxBitrate);
+      this.setResolutionRatio(this.resolutionRatio);
+    } else {
+      console.warn('不addTrack了', this.roomId, track, stream);
+    }
+  };
+
+  setResolutionRatio = (height: number) => {
+    console.log('开始设置分辨率', height);
+    return new Promise((resolve) => {
+      this.localStream?.getTracks().forEach((track) => {
+        if (track.kind === 'video') {
+          track
+            .applyConstraints({
+              height,
+            })
+            .then(() => {
+              console.log('设置分辨率成功');
+              resolve(1);
+            })
+            .catch((error) => {
+              console.error('设置分辨率失败', error);
+              resolve(0);
+            });
+        }
+      });
+    });
+  };
+
+  setMaxBitrate = (maxBitrate: number) => {
+    console.log('开始设置码率', maxBitrate);
+    return new Promise<number>((resolve) => {
+      this.peerConnection?.getSenders().forEach((sender) => {
+        if (sender.track?.kind === 'video') {
+          const parameters = { ...sender.getParameters() };
+          if (parameters.encodings[0]) {
+            parameters.encodings[0].maxBitrate = 1000 * maxBitrate;
+            sender
+              .setParameters(parameters)
+              .then(() => {
+                console.log('设置码率成功');
+                resolve(1);
+              })
+              .catch((error) => {
+                console.error('设置码率失败', error);
+                resolve(0);
+              });
+          }
+        }
+      });
+    });
   };
 
   handleWebRtcError = () => {
@@ -176,17 +229,12 @@ export class WebRTCClass {
             // );
             if (this.preFramesDecoded === currFramesDecoded) {
               if (this.forceINums >= this.forceINumsMax) {
-                prettierInfo(
-                  '超过forceI次数，提示更换网络',
-                  { browser: this.browser.browser },
-                  'warn'
-                );
+                this.prettierLog('超过forceI次数，提示更换网络', 'warn');
                 this.forceINums = 0;
               } else {
                 this.forceINums += 1;
-                prettierInfo(
+                this.prettierLog(
                   `当前视频流卡主了，主动刷新云手机（${this.forceINums}/${this.forceINumsMax}）`,
-                  { browser: this.browser.browser },
                   'warn'
                 );
               }
@@ -199,11 +247,7 @@ export class WebRTCClass {
           /** 处理黑屏 */
           const handleBlackScreen = () => {
             if (isBlack) {
-              prettierInfo(
-                '黑屏了',
-                { browser: this.browser.browser },
-                'error'
-              );
+              this.prettierLog('黑屏了', 'error');
             }
             // else {
             //   console.warn('没有黑屏');
@@ -214,9 +258,8 @@ export class WebRTCClass {
             const res = this.rtcStatusIsOk();
             const length = Object.keys(res).length;
             if (length) {
-              prettierInfo(
+              this.prettierLog(
                 `rtcStatus错误：${Object.keys(res).join()}`,
-                { browser: this.browser.browser },
                 'error'
               );
             }
@@ -326,7 +369,7 @@ export class WebRTCClass {
   // 创建offer
   createOffer = async () => {
     if (!this.peerConnection) return;
-    prettierInfo('createOffer开始', { browser: this.browser.browser }, 'warn');
+    this.prettierLog('createOffer开始', 'warn');
     try {
       const description = await this.peerConnection.createOffer({
         iceRestart: true,
@@ -339,19 +382,11 @@ export class WebRTCClass {
       this.localDescription = description;
       this.rtcStatus.createOffer = true;
       this.update();
-      prettierInfo(
-        'createOffer成功',
-        { browser: this.browser.browser },
-        'warn'
-      );
+      this.prettierLog('createOffer成功', 'warn');
       console.log('createOffer', description);
       return description;
     } catch (error) {
-      prettierInfo(
-        'createOffer失败',
-        { browser: this.browser.browser },
-        'error'
-      );
+      this.prettierLog('createOffer失败', 'error');
       console.log(error);
     }
   };
@@ -359,27 +394,15 @@ export class WebRTCClass {
   // 设置本地描述
   setLocalDescription = async (description) => {
     if (!this.peerConnection) return;
-    prettierInfo(
-      'setLocalDescription开始',
-      { browser: this.browser.browser },
-      'warn'
-    );
+    this.prettierLog('setLocalDescription开始', 'warn');
     try {
       await this.peerConnection.setLocalDescription(description);
       this.rtcStatus.setLocalDescription = true;
       this.update();
-      prettierInfo(
-        'setLocalDescription成功',
-        { browser: this.browser.browser },
-        'warn'
-      );
+      this.prettierLog('setLocalDescription成功', 'warn');
       console.log(description);
     } catch (error) {
-      prettierInfo(
-        'setLocalDescription失败',
-        { browser: this.browser.browser },
-        'error'
-      );
+      this.prettierLog('setLocalDescription失败', 'error');
       console.log('setLocalDescription', description);
       console.log(error);
     }
@@ -388,23 +411,15 @@ export class WebRTCClass {
   // 创建answer
   createAnswer = async () => {
     if (!this.peerConnection) return;
-    prettierInfo('createAnswer开始', { browser: this.browser.browser }, 'warn');
+    this.prettierLog('createAnswer开始', 'warn');
     try {
       const description = await this.peerConnection.createAnswer();
       this.update();
-      prettierInfo(
-        'createAnswer成功',
-        { browser: this.browser.browser },
-        'warn'
-      );
+      this.prettierLog('createAnswer成功', 'warn');
       console.log(description);
       return description;
     } catch (error) {
-      prettierInfo(
-        'createAnswer失败',
-        { browser: this.browser.browser },
-        'error'
-      );
+      this.prettierLog('createAnswer失败', 'error');
       console.log(error);
     }
   };
@@ -412,29 +427,17 @@ export class WebRTCClass {
   // 设置远端描述
   setRemoteDescription = async (description) => {
     if (!this.peerConnection) return;
-    prettierInfo(
-      `setRemoteDescription开始`,
-      { browser: this.browser.browser },
-      'warn'
-    );
+    this.prettierLog(`setRemoteDescription开始`, 'warn');
     try {
       await this.peerConnection.setRemoteDescription(
         new RTCSessionDescription(description)
       );
       this.rtcStatus.setRemoteDescription = true;
       this.update();
-      prettierInfo(
-        'setRemoteDescription成功',
-        { browser: this.browser.browser },
-        'warn'
-      );
+      this.prettierLog('setRemoteDescription成功', 'warn');
       console.log(description);
     } catch (error) {
-      prettierInfo(
-        'setRemoteDescription失败',
-        { browser: this.browser.browser },
-        'error'
-      );
+      this.prettierLog('setRemoteDescription失败', 'error');
       console.log('setRemoteDescription', description);
       console.log(error);
     }
@@ -442,12 +445,11 @@ export class WebRTCClass {
 
   addStream = (stream) => {
     if (!this.peerConnection) return;
-    // if (!this.peerConnection || this.rtcStatus.addStream) return;
     this.rtcStatus.addStream = true;
     this.update();
-    console.log('addStreamaddStreamaddStream', this.videoEl, stream);
+    console.log('开始addStream', this.videoEl, stream, this.roomId);
     this.videoEl.srcObject = stream;
-    prettierInfo('addStream成功', { browser: this.browser.browser }, 'warn');
+    this.prettierLog('addStream成功', 'warn');
   };
 
   handleStream = () => {
@@ -478,13 +480,10 @@ export class WebRTCClass {
   // 创建连接
   startConnect = () => {
     if (!this.peerConnection) return;
+    this.handleStream();
     console.warn(`${this.roomId}，开始监听pc的icecandidate`);
     this.peerConnection.addEventListener('icecandidate', (event) => {
-      prettierInfo(
-        'pc收到icecandidate',
-        { browser: this.browser.browser },
-        'warn'
-      );
+      this.prettierLog('pc收到icecandidate', 'warn');
       this.rtcStatus.icecandidate = true;
       this.update();
       if (event.candidate) {
@@ -509,33 +508,71 @@ export class WebRTCClass {
       }
     });
 
-    this.handleStream();
+    console.warn(`${this.roomId}，开始监听pc的iceconnectionstatechange`);
+    // iceconnectionstatechange
+    this.peerConnection.addEventListener(
+      'iceconnectionstatechange',
+      (event: any) => {
+        // https://developer.mozilla.org/zh-CN/docs/Web/API/RTCPeerConnection/connectionState
+        const iceConnectionState = event.currentTarget.iceConnectionState;
+        console.log(
+          this.roomId,
+          'pc收到iceconnectionstatechange',
+          // eslint-disable-next-line
+          `iceConnectionState:${iceConnectionState}`,
+          event
+        );
+        if (iceConnectionState === 'connected') {
+          // ICE 代理至少对每个候选发现了一个可用的连接，此时仍然会继续测试远程候选以便发现更优的连接。同时可能在继续收集候选。
+          console.warn(this.roomId, 'iceConnectionState:connected', event);
+        }
+        if (iceConnectionState === 'completed') {
+          // ICE 代理已经发现了可用的连接，不再测试远程候选。
+          console.warn(this.roomId, 'iceConnectionState:completed', event);
+        }
+        if (iceConnectionState === 'failed') {
+          // ICE 候选测试了所有远程候选没有发现匹配的候选。也可能有些候选中发现了一些可用连接。
+          console.error(this.roomId, 'iceConnectionState:failed', event);
+        }
+        if (iceConnectionState === 'disconnected') {
+          // 测试不再活跃，这可能是一个暂时的状态，可以自我恢复。
+          console.error(this.roomId, 'iceConnectionState:disconnected', event);
+        }
+        if (iceConnectionState === 'closed') {
+          // ICE 代理关闭，不再应答任何请求。
+          console.error(this.roomId, 'iceConnectionState:closed', event);
+        }
+      }
+    );
 
+    console.warn(`${this.roomId}，开始监听pc的connectionstatechange`);
     // connectionstatechange
     this.peerConnection.addEventListener(
       'connectionstatechange',
       (event: any) => {
-        prettierInfo(
-          'pc收到connectionstatechange',
-          { browser: this.browser.browser },
-          'warn'
-        );
         const connectionState = event.currentTarget.connectionState;
-        const iceConnectionState = event.currentTarget.iceConnectionState;
         console.log(
+          this.roomId,
+          'pc收到connectionstatechange',
           // eslint-disable-next-line
-          `connectionState:${connectionState}, iceConnectionState:${iceConnectionState}`
+          `connectionState:${connectionState}`,
+          event
         );
         if (connectionState === 'connected') {
-          console.warn('connectionState:connected');
+          // 表示每一个 ICE 连接要么正在使用（connected 或 completed 状态），要么已被关闭（closed 状态）；并且，至少有一个连接处于 connected 或 completed 状态。
+          console.warn(this.roomId, 'connectionState:connected');
+        }
+        if (connectionState === 'disconnected') {
+          // 表示至少有一个 ICE 连接处于 disconnected 状态，并且没有连接处于 failed、connecting 或 checking 状态。
+          console.error(this.roomId, 'connectionState:disconnected');
+        }
+        if (connectionState === 'closed') {
+          // 表示 RTCPeerConnection 已关闭。
+          console.error(this.roomId, 'connectionState:closed');
         }
         if (connectionState === 'failed') {
-          // 失败
-          console.error('connectionState:failed', event);
-        }
-        if (iceConnectionState === 'disconnected') {
-          // 已断开，请重新连接
-          console.error('iceConnectionState:disconnected', event);
+          // 表示至少有一个 ICE 连接处于 failed 的状态。
+          console.error(this.roomId, 'connectionState:failed');
         }
       }
     );
@@ -573,8 +610,6 @@ export class WebRTCClass {
       // this.dataChannel.onmessage = (event) => {
       //   console.log('dataChannel---onmessage', event);
       // };
-      // this.peerConnection.addTransceiver('video', { direction: 'recvonly' });
-      // this.peerConnection.addTransceiver('audio', { direction: 'recvonly' });
       this.startConnect();
       this.update();
     }

@@ -363,6 +363,7 @@ function handleStartLive(key) {
   padding: 0 30px;
   min-width: $medium-width;
   height: 64px;
+  font-size: 14px;
   background-color: #fff;
   box-shadow: inset 0 -1px #f1f2f3 !important;
   .hr {

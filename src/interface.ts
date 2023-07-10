@@ -364,11 +364,11 @@ export interface IMessage {
 }
 
 export type IOtherJoin = {
-  data: IUserLiveRoom & {
+  data: {
+    liveRoom: IUserLiveRoom;
     join_socket_id: string;
   };
 };
-
 export interface IJoin {
   socket_id: string;
   is_anchor: boolean;

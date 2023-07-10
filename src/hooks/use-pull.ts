@@ -269,22 +269,14 @@ export function usePull({
     });
   }
 
-  function addTransceiver(socketId: string) {
-    if (!localStream.value) return;
-    if (socketId !== getSocketId()) {
-      localStream.value.getTracks().forEach((track) => {
-        const rtc = networkStore.getRtcMap(`${roomId.value}___${socketId}`);
-        rtc?.addTransceiver(track, localStream.value);
-      });
-    }
-  }
-
   function addTrack() {
     if (!localStream.value) return;
     liveUserList.value.forEach((item) => {
+      console.log(item, item.id, 1111113223431);
       if (item.id !== getSocketId()) {
         localStream.value.getTracks().forEach((track) => {
           const rtc = networkStore.getRtcMap(`${roomId.value}___${item.id}`);
+          console.log('pull-addTrack', `${roomId.value}___${item.id}`);
           rtc?.addTrack(track, localStream.value);
         });
       }
@@ -322,7 +314,7 @@ export function usePull({
     await nextTick(async () => {
       if (!offerSended.value.has(socketId) && socketId !== getSocketId()) {
         hooksRtcMap.value.add(await startNewWebRtc({ receiver: socketId }));
-        await addTransceiver(socketId);
+        await addTrack();
         console.log('执行sendOffer', {
           sender: getSocketId(),
           receiver: socketId,
@@ -335,7 +327,7 @@ export function usePull({
 
   function addVideo() {
     sidebarList.value.push({ socketId: getSocketId() });
-    console.log(sidebarList.value, 111);
+    console.log(sidebarList.value, 111, getSocketId());
     nextTick(() => {
       console.log(liveUserList.value, 222);
       liveUserList.value.forEach(async (item) => {
@@ -351,7 +343,7 @@ export function usePull({
               videoEl: localVideoRef.value[socketId],
             })
           );
-          await addTransceiver(socketId);
+          await addTrack();
           console.log('执行sendOffer', {
             sender: getSocketId(),
             receiver: socketId,
@@ -397,9 +389,7 @@ export function usePull({
           streamurl: streamurl.value,
           tid: getRandomString(10),
         });
-        await rtc.setRemoteDescription(
-          new RTCSessionDescription({ type: 'answer', sdp: res.data.sdp })
-        );
+        await rtc.setRemoteDescription(res.data.sdp);
       } catch (error) {
         console.log(error);
       }
@@ -543,6 +533,9 @@ export function usePull({
           }
           videoLoading.value = false;
         }
+        instance.send({
+          msgType: WsMsgTypeEnum.getLiveUser,
+        });
       }
     );
 
@@ -683,9 +676,14 @@ export function usePull({
       const danmu: IDanmu = {
         msgType: DanmuMsgTypeEnum.otherJoin,
         socket_id: data.data.join_socket_id,
+        userInfo: data.data.liveRoom.user,
         msg: '',
       };
       damuList.value.push(danmu);
+      liveUserList.value.push({
+        id: data.data.join_socket_id,
+        userInfo: data.data.liveRoom.user,
+      });
       batchSendOffer(data.data.join_socket_id);
     });
 
@@ -702,6 +700,9 @@ export function usePull({
     // 用户离开房间完成
     instance.socketIo.on(WsMsgTypeEnum.leaved, (data) => {
       prettierReceiveWebsocket(WsMsgTypeEnum.leaved, data);
+      networkStore.rtcMap
+        .get(`${roomId.value}___${data.socketId as string}`)
+        ?.close();
       if (!instance) return;
       const res = liveUserList.value.filter(
         (item) => item.id !== data.socketId

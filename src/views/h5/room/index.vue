@@ -114,11 +114,9 @@ import { useHlsPlay } from '@/hooks/use-play';
 import { usePull } from '@/hooks/use-pull';
 import { DanmuMsgTypeEnum, ILiveRoom, liveTypeEnum } from '@/interface';
 import router, { mobileRouterName } from '@/router';
-import { useAppStore } from '@/store/app';
 import { videoToCanvas } from '@/utils';
 
 const route = useRoute();
-const appStore = useAppStore();
 
 const bottomRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
@@ -299,6 +297,8 @@ onMounted(() => {
     .list {
       overflow-y: scroll;
       height: 100vh;
+
+      @extend %hideScrollbar;
     }
     .item {
       margin-bottom: 10px;

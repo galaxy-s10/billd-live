@@ -18,6 +18,7 @@
               <div class="top">{{ userName || '-' }}</div>
               <div class="bottom">
                 <span>{{ roomName }}</span>
+                <span>socketId:{{ getSocketId() }}</span>
               </div>
             </div>
           </div>
@@ -74,7 +75,7 @@
                 x5-video-orientation="portraint"
                 muted
               ></video>
-              <div>{{ item.socketId }}</div>
+              <div class="name">{{ item.socketId }}</div>
             </div>
 
             <div
@@ -214,7 +215,6 @@ import { useRoute } from 'vue-router';
 
 import { fetchGoodsList } from '@/api/goods';
 import { loginTip } from '@/hooks/use-login';
-import { useHlsPlay } from '@/hooks/use-play';
 import { usePull } from '@/hooks/use-pull';
 import {
   DanmuMsgTypeEnum,
@@ -223,7 +223,6 @@ import {
   liveTypeEnum,
 } from '@/interface';
 import { useUserStore } from '@/store/user';
-import { videoToCanvas } from '@/utils';
 
 import RechargeCpt from './recharge/index.vue';
 
@@ -231,7 +230,6 @@ const route = useRoute();
 const userStore = useUserStore();
 
 const giftGoodsList = ref<IGoods[]>([]);
-const showControls = ref(false);
 const giftLoading = ref(false);
 const showRecharge = ref(false);
 const showJoin = ref(true);
@@ -276,24 +274,6 @@ const {
   liveType: route.query.liveType as liveTypeEnum,
   isSRS: route.query.liveType === liveTypeEnum.srsWebrtcPull,
 });
-const showPlayBtn = ref(true);
-
-const { hlsVideoEl, startHlsPlay } = useHlsPlay();
-
-async function startPull() {
-  showPlayBtn.value = false;
-  videoLoading.value = true;
-  const res = await startHlsPlay({
-    hlsurl: hlsurl.value,
-  });
-  videoToCanvas({
-    videoEl: hlsVideoEl.value!,
-    targetEl: canvasRef.value!,
-    width: res.width,
-    height: res.height,
-  });
-  videoLoading.value = false;
-}
 
 async function getGoodsList() {
   try {
@@ -499,15 +479,21 @@ onMounted(() => {
         }
       }
       .sidebar {
+        overflow: scroll;
         width: 120px;
         height: 100%;
         background-color: rgba($color: #000000, $alpha: 0.3);
+
+        @extend %hideScrollbar;
         .join {
           color: white;
           cursor: pointer;
         }
         video {
           max-width: 100%;
+        }
+        .name {
+          word-wrap: break-word;
         }
       }
     }
@@ -597,6 +583,8 @@ onMounted(() => {
       padding: 0 15px;
       height: 100px;
       background-color: papayawhip;
+
+      @extend %hideScrollbar;
       .item {
         display: flex;
         align-items: center;
@@ -625,6 +613,8 @@ onMounted(() => {
       padding: 0 15px;
       height: 450px;
       text-align: initial;
+
+      @extend %hideScrollbar;
       .item {
         margin-bottom: 10px;
         font-size: 12px;

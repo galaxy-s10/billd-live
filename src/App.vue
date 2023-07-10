@@ -29,7 +29,7 @@ onMounted(() => {
 </script>
 
 <style lang="scss">
-#app {
+body {
   font-size: 16px;
   // naive的message会影响全局line-height
   line-height: initial;

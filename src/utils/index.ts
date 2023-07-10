@@ -45,6 +45,7 @@ export function videoToCanvas(data: {
     cancelAnimationFrame(timer);
   }
   targetEl.appendChild(canvas);
+  // document.body.appendChild(videoEl);
   // targetEl.parentNode?.replaceChild(canvas, targetEl);
 
   drawCanvas();
