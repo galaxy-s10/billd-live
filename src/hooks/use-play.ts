@@ -124,13 +124,22 @@ export function useHlsPlay() {
   );
 
   function startHlsPlay(data: { hlsurl: string }) {
+    console.error('startHlsPlay');
     destroyHls();
     const videoEl = document.createElement('video');
     videoEl.autoplay = true;
-    videoEl.muted = appStore.muted;
+    videoEl.muted = true;
+    // videoEl.muted = appStore.muted;
     videoEl.playsInline = true;
     videoEl.setAttribute('webkit-playsinline', 'true');
     hlsVideoEl.value = videoEl;
+    videoEl.onplay = () => {
+      console.log('onplayonplay');
+    };
+    videoEl.onplaying = () => {
+      console.log('onplayingonplaying');
+    };
+    document.body.appendChild(videoEl);
     return new Promise<{ width: number; height: number }>((resolve) => {
       hlsPlayer.value = videoJs(
         videoEl,
@@ -143,7 +152,7 @@ export function useHlsPlay() {
           ],
         },
         function () {
-          console.log('开始播放hls');
+          console.log('开始播放hls', data.hlsurl);
           hlsPlayer.value?.play();
           hlsPlayer.value?.on('play', () => {
             console.log('hls-play');

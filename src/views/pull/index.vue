@@ -192,6 +192,12 @@
           ></textarea>
           <div
             class="btn"
+            @click="startTestPlay"
+          >
+            播放
+          </div>
+          <div
+            class="btn"
             @click="sendDanmu"
           >
             发送
@@ -246,6 +252,7 @@ const {
   startGetDisplayMedia,
   addTrack,
   addVideo,
+  autoplayVal,
   videoLoading,
   balance,
   roomName,
@@ -315,6 +322,11 @@ watch(
     }, 0);
   }
 );
+function startTestPlay() {
+  autoplayVal.value = true;
+  console.log('1111');
+  initPull(true);
+}
 
 onMounted(() => {
   getGoodsList();
@@ -335,9 +347,9 @@ onMounted(() => {
     containerRef.value.style.height = `${res}px`;
   }
   if (route.query.liveType === liveTypeEnum.srsHlsPull) {
-    initPull();
+    initPull(false);
   } else {
-    initPull();
+    initPull(false);
   }
 });
 </script>
