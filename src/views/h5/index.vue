@@ -67,7 +67,7 @@
 import { onMounted, ref } from 'vue';
 
 import { fetchAreaLiveRoomList } from '@/api/area';
-import { IArea, IAreaLiveRoom, liveTypeEnum } from '@/interface';
+import { IArea, IAreaLiveRoom } from '@/interface';
 import router, { mobileRouterName, routerName } from '@/router';
 
 const navList = ref([
@@ -116,9 +116,6 @@ function goRoom(item: IAreaLiveRoom) {
   router.push({
     name: routerName.h5Room,
     params: { roomId: item.live_room_id },
-    query: {
-      liveType: liveTypeEnum.srsHlsPull,
-    },
   });
 }
 

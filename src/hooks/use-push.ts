@@ -61,9 +61,9 @@ export function usePush({
   const roomId = ref('-1');
   const roomName = ref('');
   const danmuStr = ref('');
+  const isLiving = ref(false);
   const isDone = ref(false);
   const joined = ref(false);
-  const disabled = ref(false);
   const localStream = ref();
   const offerSended = ref(new Set());
   const webRTC = ref<WebRTCClass | SRSWebRTCClass>();
@@ -164,6 +164,9 @@ export function usePush({
   watch(
     () => currentMaxBitrate.value,
     async (newVal) => {
+      if (!webRTC.value) {
+        return;
+      }
       const res = await webRTC.value?.setMaxBitrate(newVal);
       if (res === 1) {
         window.$message.success('切换码率成功！');
@@ -176,7 +179,10 @@ export function usePush({
   watch(
     () => currentResolutionRatio.value,
     async (newVal) => {
-      const res = await webRTC.value?.setResolutionRatio(newVal);
+      if (!webRTC.value) {
+        return;
+      }
+      const res = await webRTC.value.setResolutionRatio(newVal);
       if (res === 1) {
         window.$message.success('切换分辨率成功！');
       } else {
@@ -265,14 +271,34 @@ export function usePush({
       window.$message.warning('请选择一个素材！');
       return;
     }
-    disabled.value = true;
     const instance = new WebSocketClass({
       roomId: roomId.value,
       url: WEBSOCKET_URL,
       isAnchor: true,
     });
+    isLiving.value = true;
     instance.update();
     initReceive();
+  }
+
+  /** 结束直播 */
+  function endLive() {
+    isLiving.value = false;
+    currMediaTypeList.value = [];
+    localStream.value = null;
+    localVideoRef.value!.srcObject = null;
+    clearInterval(heartbeatTimer.value);
+    const instance = networkStore.wsMap.get(roomId.value);
+    if (instance) {
+      instance.send({
+        msgType: WsMsgTypeEnum.roomNoLive,
+        data: {},
+      });
+    }
+    setTimeout(() => {
+      closeWs();
+      closeRtc();
+    }, 500);
   }
 
   /** 原生的webrtc时，receiver必传 */
@@ -417,7 +443,6 @@ export function usePush({
   function batchSendOffer() {
     console.log('batchSendOffer');
     liveUserList.value.forEach(async (item) => {
-      console.log(item, 'liveUserList');
       const socketId = item.id;
       if (!offerSended.value.has(socketId) && socketId !== getSocketId()) {
         const rtc = networkStore.getRtcMap(`${roomId.value}___${socketId}`);
@@ -711,7 +736,6 @@ export function usePush({
 
   function confirmRoomName() {
     if (!roomNameIsOk()) return;
-    disabled.value = true;
   }
 
   function sendDanmu() {
@@ -742,25 +766,6 @@ export function usePush({
     danmuStr.value = '';
   }
 
-  /** 结束直播 */
-  function endLive() {
-    disabled.value = false;
-    currMediaTypeList.value = [];
-    localStream.value = null;
-    localVideoRef.value!.srcObject = null;
-    clearInterval(heartbeatTimer.value);
-    const instance = networkStore.wsMap.get(roomId.value);
-    if (instance) {
-      instance.send({
-        msgType: WsMsgTypeEnum.roomNoLive,
-        data: {},
-      });
-    }
-    setTimeout(() => {
-      closeWs();
-      closeRtc();
-    }, 500);
-  }
   async function getAllMediaDevices() {
     const res = await navigator.mediaDevices.enumerateDevices();
     // const audioInput = res.filter(
@@ -801,6 +806,7 @@ export function usePush({
 
   return {
     initPush,
+    isLiving,
     confirmRoomName,
     getSocketId,
     startGetDisplayMedia,
@@ -813,7 +819,6 @@ export function usePush({
     currentMaxBitrate,
     resolutionRatio,
     maxBitrate,
-    disabled,
     danmuStr,
     roomName,
     damuList,

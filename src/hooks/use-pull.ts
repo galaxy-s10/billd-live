@@ -42,7 +42,7 @@ export function usePull({
   localVideoRef: Ref<HTMLVideoElement[]>;
   canvasRef: Ref<Element | undefined>;
   isSRS?: boolean;
-  liveType?: liveTypeEnum;
+  liveType: liveTypeEnum;
 }) {
   const route = useRoute();
   const userStore = useUserStore();
@@ -59,7 +59,9 @@ export function usePull({
   const remoteVideoRef = ref(videoEl);
   const heartbeatTimer = ref();
   const roomId = ref(route.params.roomId as string);
+  const roomLiveType = ref<liveTypeEnum>(liveType);
   const roomName = ref('');
+  const roomSocketId = ref('');
   const userName = ref('');
   const userAvatar = ref('');
   const streamurl = ref('');
@@ -214,8 +216,8 @@ export function usePull({
     remoteVideoRef.value?.addEventListener('loadedmetadata', () => {
       console.warn('视频流-loadedmetadata');
       if (
-        liveType === liveTypeEnum.webrtcPull ||
-        liveType === liveTypeEnum.srsWebrtcPull
+        roomLiveType.value === liveTypeEnum.webrtcPull ||
+        roomLiveType.value === liveTypeEnum.srsWebrtcPull
       ) {
         canvasRef.value?.appendChild(remoteVideoRef.value);
       }
@@ -290,10 +292,14 @@ export function usePull({
     sender: string;
     receiver: string;
   }) {
+    console.log(isDone.value);
     if (isDone.value) return;
     const instance = networkStore.wsMap.get(roomId.value);
+    console.log(instance, roomId.value);
     if (!instance) return;
     const rtc = networkStore.getRtcMap(`${roomId.value}___${receiver}`);
+    console.log(rtc, `${roomId.value}___${receiver}`, 222);
+
     if (!rtc) return;
     const sdp = await rtc.createOffer();
     await rtc.setLocalDescription(sdp);
@@ -464,6 +470,7 @@ export function usePull({
       WsMsgTypeEnum.joined,
       async (data: { data: ILive }) => {
         prettierReceiveWebsocket(WsMsgTypeEnum.joined, data);
+        roomSocketId.value = data.data.socket_id!;
         roomName.value = data.data.live_room?.name!;
         userName.value = data.data.user?.username!;
         userAvatar.value = data.data.user?.avatar!;
@@ -477,9 +484,9 @@ export function usePull({
           'webrtc'
         );
         currentLiveRoom.value = data.data;
-        if (route.query.liveType === liveTypeEnum.srsWebrtcPull) {
+        if (roomLiveType.value === liveTypeEnum.srsWebrtcPull) {
           instance.send({ msgType: WsMsgTypeEnum.getLiveUser });
-        } else if (route.query.liveType === liveTypeEnum.srsFlvPull) {
+        } else if (roomLiveType.value === liveTypeEnum.srsFlvPull) {
           if (!autoplayVal.value) return;
           const { width, height } = await startFlvPlay({
             flvurl: flvurl.value,
@@ -493,7 +500,7 @@ export function usePull({
             // height: flvPlayer.value?.mediaInfo.height!,
           });
           videoLoading.value = false;
-        } else if (route.query.liveType === liveTypeEnum.srsHlsPull) {
+        } else if (roomLiveType.value === liveTypeEnum.srsHlsPull) {
           if (!autoplayVal.value) return;
           const { width, height } = await startHlsPlay({
             hlsurl: hlsurl.value,
@@ -637,7 +644,7 @@ export function usePull({
     // 管理员正在直播
     instance.socketIo.on(WsMsgTypeEnum.roomLiveing, (data) => {
       prettierReceiveWebsocket(WsMsgTypeEnum.roomLiveing, data);
-      if (isSRS && liveType !== liveTypeEnum.srsFlvPull) {
+      if (isSRS && roomLiveType.value !== liveTypeEnum.srsFlvPull) {
         startNewWebRtc({});
       }
     });
@@ -730,8 +737,11 @@ export function usePull({
     startGetDisplayMedia,
     addTrack,
     addVideo,
+    autoplayVal,
     videoLoading,
     balance,
+    roomLiveType,
+    roomSocketId,
     roomName,
     userName,
     userAvatar,

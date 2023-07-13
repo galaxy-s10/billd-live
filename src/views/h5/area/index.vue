@@ -41,7 +41,7 @@ import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchLiveRoomList } from '@/api/area';
-import { ILiveRoom, liveTypeEnum } from '@/interface';
+import { ILiveRoom } from '@/interface';
 import router, { routerName } from '@/router';
 
 const liveRoomList = ref<ILiveRoom[]>([]);
@@ -55,9 +55,6 @@ function goRoom(item: ILiveRoom) {
   router.push({
     name: routerName.h5Room,
     params: { roomId: item.id },
-    query: {
-      liveType: liveTypeEnum.srsHlsPull,
-    },
   });
 }
 

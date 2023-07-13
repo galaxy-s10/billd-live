@@ -31,17 +31,6 @@
           backgroundImage: `url(${liveRoomInfo?.cover_img})`,
         }"
       ></div>
-      <!-- <video
-        ref="canvasRef"
-        autoplay
-        webkit-playsinline="true"
-        playsinline
-        x-webkit-airplay="allow"
-        x5-video-player-type="h5"
-        x5-video-player-fullscreen="true"
-        x5-video-orientation="portraint"
-        :muted="appStore.muted"
-      ></video> -->
       <div ref="canvasRef"></div>
       <div
         v-if="showPlayBtn"
@@ -112,7 +101,12 @@ import { useRoute } from 'vue-router';
 import { fetchFindLiveRoom } from '@/api/liveRoom';
 import { useHlsPlay } from '@/hooks/use-play';
 import { usePull } from '@/hooks/use-pull';
-import { DanmuMsgTypeEnum, ILiveRoom, liveTypeEnum } from '@/interface';
+import {
+  DanmuMsgTypeEnum,
+  ILiveRoom,
+  LiveRoomTypeEnum,
+  liveTypeEnum,
+} from '@/interface';
 import router, { mobileRouterName } from '@/router';
 import { videoToCanvas } from '@/utils';
 
@@ -122,7 +116,7 @@ const bottomRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
 const canvasRef = ref<HTMLVideoElement>();
 const localVideoRef = ref<HTMLVideoElement[]>([]);
-const showPlayBtn = ref(true);
+const showPlayBtn = ref(false);
 
 const { hlsVideoEl, startHlsPlay } = useHlsPlay();
 
@@ -138,12 +132,16 @@ const {
   startGetDisplayMedia,
   addTrack,
   addVideo,
+  autoplayVal,
   videoLoading,
   balance,
+  roomLiveType,
+  roomSocketId,
   roomName,
   userName,
   userAvatar,
   currentLiveRoom,
+  hlsurl,
   coverImg,
   roomNoLive,
   damuList,
@@ -156,8 +154,8 @@ const {
 } = usePull({
   localVideoRef,
   canvasRef,
-  liveType: route.query.liveType as liveTypeEnum,
-  isSRS: route.query.liveType === liveTypeEnum.srsWebrtcPull,
+  liveType: liveTypeEnum.srsHlsPull,
+  isSRS: false,
 });
 
 const liveRoomInfo = ref<ILiveRoom>();
@@ -174,16 +172,31 @@ watch(
 );
 
 async function getLiveRoomInfo() {
-  const res = await fetchFindLiveRoom(route.params.roomId as string);
-  if (res.code === 200) {
-    liveRoomInfo.value = res.data;
+  try {
+    videoLoading.value = true;
+    const res = await fetchFindLiveRoom(route.params.roomId as string);
+    if (res.code === 200) {
+      liveRoomInfo.value = res.data;
+      if (res.data.type === LiveRoomTypeEnum.user_wertc) {
+        roomLiveType.value = liveTypeEnum.webrtcPull;
+        autoplayVal.value = true;
+        showPlayBtn.value = false;
+      } else {
+        autoplayVal.value = false;
+        showPlayBtn.value = true;
+      }
+      initPull(autoplayVal.value);
+    }
+  } catch (error) {
+    console.error(error);
+  } finally {
+    videoLoading.value = false;
   }
 }
 
 async function startPull() {
   showPlayBtn.value = false;
   videoLoading.value = true;
-
   const { width, height } = await startHlsPlay({
     hlsurl: liveRoomInfo.value!.hls_url!,
   });
@@ -199,7 +212,6 @@ async function startPull() {
 onMounted(() => {
   scrollTo({ top: 0 });
   getLiveRoomInfo();
-  initPull(false);
   if (containerRef.value && bottomRef.value) {
     const res =
       bottomRef.value.getBoundingClientRect().top -
@@ -253,6 +265,15 @@ onMounted(() => {
       filter: blur(10px);
 
       inset: 0;
+    }
+    :deep(video) {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      height: 100%;
+      transform: translate(-50%);
+
+      user-select: nones;
     }
     :deep(canvas) {
       position: absolute;

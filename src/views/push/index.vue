@@ -130,22 +130,22 @@
             </span>
           </div>
           <div class="bottom">
-            <n-space>
-              <n-button
-                type="info"
-                size="small"
-                @click="startLive"
-              >
-                开始直播
-              </n-button>
-              <n-button
-                type="info"
-                size="small"
-                @click="endLive"
-              >
-                结束直播
-              </n-button>
-            </n-space>
+            <n-button
+              v-if="!isLiving"
+              type="info"
+              size="small"
+              @click="startLive"
+            >
+              开始直播
+            </n-button>
+            <n-button
+              v-else
+              type="info"
+              size="small"
+              @click="endLive"
+            >
+              结束直播
+            </n-button>
           </div>
         </div>
       </div>
@@ -241,6 +241,7 @@ const remoteVideoRef = ref<HTMLVideoElement[]>([]);
 
 const {
   initPush,
+  isLiving,
   confirmRoomName,
   getSocketId,
   startGetDisplayMedia,
@@ -253,7 +254,6 @@ const {
   currentMaxBitrate,
   resolutionRatio,
   maxBitrate,
-  disabled,
   danmuStr,
   roomName,
   damuList,
@@ -406,6 +406,8 @@ onMounted(() => {
           }
           .down {
             width: 80px;
+
+            user-select: none;
           }
         }
       }
@@ -415,20 +417,6 @@ onMounted(() => {
         justify-content: center;
         font-size: 12px;
         .top {
-          display: flex;
-          align-items: center;
-          .item {
-            display: flex;
-            align-items: center;
-            margin-right: 20px;
-            .ico {
-              display: inline-block;
-              margin-right: 4px;
-              width: 10px;
-              height: 10px;
-              border-radius: 50%;
-            }
-          }
         }
         .bottom {
           margin-top: 10px;
