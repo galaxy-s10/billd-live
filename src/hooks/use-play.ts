@@ -124,21 +124,13 @@ export function useHlsPlay() {
   );
 
   function startHlsPlay(data: { hlsurl: string }) {
-    console.error('startHlsPlay');
     destroyHls();
     const videoEl = document.createElement('video');
     videoEl.autoplay = true;
-    videoEl.muted = true;
-    // videoEl.muted = appStore.muted;
+    videoEl.muted = appStore.muted;
     videoEl.playsInline = true;
     videoEl.setAttribute('webkit-playsinline', 'true');
     hlsVideoEl.value = videoEl;
-    videoEl.onplay = () => {
-      console.log('onplayonplay');
-    };
-    videoEl.onplaying = () => {
-      console.log('onplayingonplaying');
-    };
     document.body.appendChild(videoEl);
     return new Promise<{ width: number; height: number }>((resolve) => {
       hlsPlayer.value = videoJs(

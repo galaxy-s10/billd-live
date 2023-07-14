@@ -23,7 +23,7 @@ import router from '@/router';
   font-size: 30px;
   transform: translate(-50%, -50%);
   .click {
-    color: skyblue;
+    color: $theme-color-gold;
     text-decoration: underline;
     cursor: pointer;
   }

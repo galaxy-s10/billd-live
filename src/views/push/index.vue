@@ -85,12 +85,10 @@
                   size="small"
                   placeholder="输入房间名"
                   :style="{ width: '50%' }"
-                  :disabled="disabled"
                 />
                 <n-button
                   size="small"
                   type="primary"
-                  :disabled="disabled"
                   @click="confirmRoomName"
                 >
                   确定
@@ -109,6 +107,15 @@
               <n-select
                 v-model:value="currentMaxBitrate"
                 :options="maxBitrate"
+              />
+            </div>
+          </div>
+          <div class="item">
+            <div class="txt">帧率设置</div>
+            <div class="down">
+              <n-select
+                v-model:value="currentMaxFramerate"
+                :options="maxFramerate"
               />
             </div>
           </div>
@@ -252,8 +259,10 @@ const {
   keydownDanmu,
   currentResolutionRatio,
   currentMaxBitrate,
+  currentMaxFramerate,
   resolutionRatio,
   maxBitrate,
+  maxFramerate,
   danmuStr,
   roomName,
   damuList,

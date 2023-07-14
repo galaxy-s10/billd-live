@@ -21,8 +21,7 @@ import {
   MediaTypeEnum,
   liveTypeEnum,
 } from '@/interface';
-import { SRSWebRTCClass } from '@/network/srsWebRtc';
-import { WebRTCClass } from '@/network/webRtc';
+import { WebRTCClass } from '@/network/webRTC';
 import {
   WebSocketClass,
   WsConnectStatusEnum,
@@ -209,7 +208,6 @@ export function usePull({
       console.warn('视频流-loadstart');
       const rtc = networkStore.getRtcMap(roomId.value);
       if (!rtc) return;
-      rtc.rtcStatus.loadstart = true;
       rtc.update();
     });
 
@@ -224,7 +222,6 @@ export function usePull({
       videoLoading.value = false;
       const rtc = networkStore.getRtcMap(roomId.value);
       if (!rtc) return;
-      rtc.rtcStatus.loadedmetadata = true;
       rtc.update();
     });
   }
@@ -298,11 +295,9 @@ export function usePull({
     console.log(instance, roomId.value);
     if (!instance) return;
     const rtc = networkStore.getRtcMap(`${roomId.value}___${receiver}`);
-    console.log(rtc, `${roomId.value}___${receiver}`, 222);
-
     if (!rtc) return;
     const sdp = await rtc.createOffer();
-    await rtc.setLocalDescription(sdp);
+    await rtc.setLocalDescription(sdp!);
     const offerData = {
       sdp,
       sender,
@@ -372,11 +367,11 @@ export function usePull({
     if (isSRS) {
       if (!autoplayVal.value) return;
       console.warn('开始new SRSWebRTCClass', getSocketId());
-      const rtc = new SRSWebRTCClass({
+      const rtc = new WebRTCClass({
         roomId: `${roomId.value}___${getSocketId()}`,
         videoEl,
+        isSRS: true,
       });
-      rtc.rtcStatus.joined = true;
       rtc.update();
       if (track.video === 1) {
         rtc.peerConnection?.addTransceiver('video', { direction: 'recvonly' });
@@ -395,7 +390,9 @@ export function usePull({
           streamurl: streamurl.value,
           tid: getRandomString(10),
         });
-        await rtc.setRemoteDescription(res.data.sdp);
+        await rtc.setRemoteDescription(
+          new RTCSessionDescription({ type: 'answer', sdp: res.data.sdp })
+        );
       } catch (error) {
         console.log(error);
       }
@@ -405,6 +402,7 @@ export function usePull({
       const rtc = new WebRTCClass({
         roomId: `${roomId.value}___${receiver!}`,
         videoEl,
+        isSRS: false,
       });
       return rtc;
     }
@@ -560,7 +558,7 @@ export function usePull({
           sidebarList.value.push({ socketId: data.data.sender });
         }
         await nextTick(async () => {
-          console.log('收到offer，这个offer是发给我的');
+          console.log('收到offer，这个offer是发给我的', data);
           sender.value = data.data.sender;
           const rtc = await startNewWebRtc({
             receiver: data.data.sender,
@@ -571,7 +569,7 @@ export function usePull({
           if (rtc) {
             await rtc.setRemoteDescription(data.data.sdp);
             const sdp = await rtc.createAnswer();
-            await rtc.setLocalDescription(sdp);
+            await rtc.setLocalDescription(sdp!);
             const answerData: IAnswer = {
               sdp,
               sender: getSocketId(),
@@ -600,7 +598,6 @@ export function usePull({
       if (!instance) return;
       const rtc = networkStore.getRtcMap(`${roomId.value}___${data.socket_id}`);
       if (!rtc) return;
-      rtc.rtcStatus.answer = true;
       rtc.update();
       if (data.data.receiver === getSocketId()) {
         console.log('收到answer，这个answer是发给我的');

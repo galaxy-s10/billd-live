@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 
-import { WebRTCClass } from '@/network/webRtc';
+import { WebRTCClass } from '@/network/webRTC';
 import { WebSocketClass } from '@/network/webSocket';
 
 type NetworkRootState = {

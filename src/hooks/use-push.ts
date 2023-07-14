@@ -30,8 +30,7 @@ import {
   LiveRoomTypeEnum,
   MediaTypeEnum,
 } from '@/interface';
-import { SRSWebRTCClass } from '@/network/srsWebRtc';
-import { WebRTCClass } from '@/network/webRtc';
+import { WebRTCClass } from '@/network/webRTC';
 import {
   WebSocketClass,
   WsConnectStatusEnum,
@@ -64,9 +63,9 @@ export function usePush({
   const isLiving = ref(false);
   const isDone = ref(false);
   const joined = ref(false);
-  const localStream = ref();
+  const localStream = ref<MediaStream>();
   const offerSended = ref(new Set());
-  const webRTC = ref<WebRTCClass | SRSWebRTCClass>();
+  const webRTC = ref<WebRTCClass>();
   const maxBitrate = ref([
     {
       label: '1000',
@@ -131,6 +130,26 @@ export function usePush({
   ]);
   const currentResolutionRatio = ref(resolutionRatio.value[1].value);
 
+  const maxFramerate = ref([
+    {
+      label: '10帧',
+      value: 10,
+    },
+    {
+      label: '24帧',
+      value: 24,
+    },
+    {
+      label: '30帧',
+      value: 30,
+    },
+    {
+      label: '60帧',
+      value: 60,
+    },
+  ]);
+  const currentMaxFramerate = ref(maxFramerate.value[1].value);
+
   const track = reactive({
     audio: 1,
     video: 1,
@@ -162,12 +181,26 @@ export function usePush({
   }>();
 
   watch(
+    () => currentMaxFramerate.value,
+    async (newVal) => {
+      if (!webRTC.value) {
+        return;
+      }
+      const res = await webRTC.value.setMaxFramerate(newVal);
+      if (res === 1) {
+        window.$message.success('切换帧率成功！');
+      } else {
+        window.$message.success('切换帧率失败！');
+      }
+    }
+  );
+  watch(
     () => currentMaxBitrate.value,
     async (newVal) => {
       if (!webRTC.value) {
         return;
       }
-      const res = await webRTC.value?.setMaxBitrate(newVal);
+      const res = await webRTC.value.setMaxBitrate(newVal);
       if (res === 1) {
         window.$message.success('切换码率成功！');
       } else {
@@ -285,7 +318,7 @@ export function usePush({
   function endLive() {
     isLiving.value = false;
     currMediaTypeList.value = [];
-    localStream.value = null;
+    localStream.value = undefined;
     localVideoRef.value!.srcObject = null;
     clearInterval(heartbeatTimer.value);
     const instance = networkStore.wsMap.get(roomId.value);
@@ -311,18 +344,17 @@ export function usePush({
   }) {
     if (isSRS) {
       console.warn('开始new SRSWebRTCClass', `${roomId.value}___${receiver!}`);
-      const rtc = new SRSWebRTCClass({
+      const rtc = new WebRTCClass({
+        maxBitrate: currentMaxBitrate.value,
+        maxFramerate: currentMaxFramerate.value,
+        resolutionRatio: currentResolutionRatio.value,
         roomId: `${roomId.value}___${getSocketId()}`,
         videoEl,
-        maxBitrate: currentMaxBitrate.value,
-        resolutionRatio: currentResolutionRatio.value,
+        isSRS: true,
       });
       webRTC.value = rtc;
-      localStream.value.getTracks().forEach((track) => {
-        rtc.addTrack({
-          track,
-          stream: localStream.value,
-        });
+      localStream.value?.getTracks().forEach((track) => {
+        rtc.addTrack(track, localStream.value);
       });
       try {
         const offer = await rtc.createOffer();
@@ -338,15 +370,21 @@ export function usePush({
           ),
           tid: getRandomString(10),
         });
-        await rtc.setRemoteDescription(res.data.sdp);
+        await rtc.setRemoteDescription(
+          new RTCSessionDescription({ type: 'answer', sdp: res.data.sdp })
+        );
       } catch (error) {
         console.log(error);
       }
     } else {
       console.warn('开始new WebRTCClass', `${roomId.value}___${receiver!}`);
       const rtc = new WebRTCClass({
+        maxBitrate: currentMaxBitrate.value,
+        maxFramerate: currentMaxFramerate.value,
+        resolutionRatio: currentResolutionRatio.value,
         roomId: `${roomId.value}___${receiver!}`,
         videoEl,
+        isSRS: false,
       });
       webRTC.value = rtc;
       return rtc;
@@ -388,9 +426,8 @@ export function usePush({
     if (!localStream.value) return;
     liveUserList.value.forEach((item) => {
       if (item.id !== getSocketId()) {
-        localStream.value.getTracks().forEach((track) => {
+        localStream.value?.getTracks().forEach((track) => {
           const rtc = networkStore.getRtcMap(`${roomId.value}___${item.id}`);
-          // rtc?.addTransceiver(track, localStream.value);
           rtc?.addTrack(track, localStream.value);
         });
       }
@@ -428,7 +465,7 @@ export function usePush({
     const rtc = networkStore.getRtcMap(`${roomId.value}___${receiver}`);
     if (!rtc) return;
     const sdp = await rtc.createOffer();
-    await rtc.setLocalDescription(sdp);
+    await rtc.setLocalDescription(sdp!);
     instance.send({
       msgType: WsMsgTypeEnum.offer,
       data: {
@@ -506,7 +543,7 @@ export function usePush({
           if (rtc) {
             await rtc.setRemoteDescription(data.data.sdp);
             const sdp = await rtc.createAnswer();
-            await rtc.setLocalDescription(sdp);
+            await rtc.setLocalDescription(sdp!);
             const answerData: IAnswer = {
               sdp,
               sender: getSocketId(),
@@ -536,7 +573,6 @@ export function usePush({
       if (!instance) return;
       const rtc = networkStore.getRtcMap(`${roomId.value}___${data.socket_id}`);
       if (!rtc) return;
-      rtc.rtcStatus.answer = true;
       rtc.update();
       if (data.data.receiver === getSocketId()) {
         console.log('收到answer，这个answer是发给我的');
@@ -683,9 +719,8 @@ export function usePush({
       const event = await navigator.mediaDevices.getUserMedia({
         video: {
           height: currentResolutionRatio.value,
-          // frameRate: 30,
+          frameRate: { ideal: currentMaxFramerate.value, max: 90 },
         },
-        // video: true,
         audio: true,
       });
       const audio = event.getAudioTracks();
@@ -708,9 +743,8 @@ export function usePush({
       const event = await navigator.mediaDevices.getDisplayMedia({
         video: {
           height: currentResolutionRatio.value,
-          // frameRate: 30,
+          frameRate: { ideal: currentMaxFramerate.value, max: 90 },
         },
-        // video: true,
         audio: true,
       });
       const audio = event.getAudioTracks();
@@ -787,7 +821,6 @@ export function usePush({
       console.warn('视频流-loadstart');
       const rtc = networkStore.getRtcMap(roomId.value);
       if (!rtc) return;
-      rtc.rtcStatus.loadstart = true;
       rtc.update();
     });
 
@@ -795,7 +828,6 @@ export function usePush({
       console.warn('视频流-loadedmetadata');
       const rtc = networkStore.getRtcMap(roomId.value);
       if (!rtc) return;
-      rtc.rtcStatus.loadedmetadata = true;
       rtc.update();
       if (isSRS) return;
       if (joined.value) {
@@ -817,8 +849,10 @@ export function usePush({
     keydownDanmu,
     currentResolutionRatio,
     currentMaxBitrate,
+    currentMaxFramerate,
     resolutionRatio,
     maxBitrate,
+    maxFramerate,
     danmuStr,
     roomName,
     damuList,
