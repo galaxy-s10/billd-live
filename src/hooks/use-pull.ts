@@ -28,6 +28,7 @@ import {
   WsMsgTypeEnum,
   prettierReceiveWebsocket,
 } from '@/network/webSocket';
+import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 import { videoToCanvas } from '@/utils';
@@ -44,6 +45,7 @@ export function usePull({
   liveType: liveTypeEnum;
 }) {
   const route = useRoute();
+  const appStore = useAppStore();
   const userStore = useUserStore();
   const networkStore = useNetworkStore();
   const videoEl = document.createElement('video');
@@ -166,6 +168,12 @@ export function usePull({
       localStream.value = event;
     }
   }
+  watch(
+    () => appStore.muted,
+    (val) => {
+      remoteVideoRef.value.muted = val;
+    }
+  );
 
   watch(
     [

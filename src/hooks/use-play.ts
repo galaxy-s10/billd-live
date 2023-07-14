@@ -73,7 +73,7 @@ export function useFlvPlay() {
           flvPlayer.value.attachMediaElement(flvVideoEl.value);
           flvPlayer.value.load();
           try {
-            console.log('开始播放flv播放');
+            console.log('开始播放flv');
             flvPlayer.value.play();
           } catch (err) {
             console.error('flv播放失败');
@@ -131,7 +131,7 @@ export function useHlsPlay() {
     videoEl.playsInline = true;
     videoEl.setAttribute('webkit-playsinline', 'true');
     hlsVideoEl.value = videoEl;
-    document.body.appendChild(videoEl);
+    // document.body.appendChild(videoEl);
     return new Promise<{ width: number; height: number }>((resolve) => {
       hlsPlayer.value = videoJs(
         videoEl,
@@ -144,7 +144,7 @@ export function useHlsPlay() {
           ],
         },
         function () {
-          console.log('开始播放hls', data.hlsurl);
+          console.log('开始播放hls');
           hlsPlayer.value?.play();
           hlsPlayer.value?.on('play', () => {
             console.log('hls-play');

@@ -1,24 +1,5 @@
 <template>
   <div class="h5-room-wrap">
-    <video
-      width="400"
-      height="400"
-      src="http://localhost:5001/livestream/roomId___4.m3u8"
-      controls
-    ></video>
-    <br />
-    <br />
-    <video
-      ref="testRef"
-      autoplay
-      webkit-playsinline="true"
-      playsinline
-      x-webkit-airplay="allow"
-      x5-video-player-type="h5"
-      x5-video-player-fullscreen="true"
-      x5-video-orientation="portraint"
-      muted
-    ></video>
     <div class="head">
       <div class="left">
         <div
@@ -133,7 +114,6 @@ const route = useRoute();
 
 const bottomRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
-const testRef = ref<HTMLVideoElement>();
 const canvasRef = ref<HTMLVideoElement>();
 const localVideoRef = ref<HTMLVideoElement[]>([]);
 const showPlayBtn = ref(false);
@@ -182,9 +162,7 @@ const liveRoomInfo = ref<ILiveRoom>();
 
 watch(
   () => autoplayVal.value,
-  (v) => {
-    console.log(v, 1111111);
-  }
+  (v) => {}
 );
 watch(
   () => damuList.value.length,
@@ -226,17 +204,11 @@ async function startPull() {
     hlsurl: liveRoomInfo.value!.hls_url!,
   });
   videoToCanvas({
-    videoEl: testRef.value!,
+    videoEl: hlsVideoEl.value!,
     targetEl: canvasRef.value!,
     width,
     height,
   });
-  // videoToCanvas({
-  //   videoEl: hlsVideoEl.value!,
-  //   targetEl: canvasRef.value!,
-  //   width,
-  //   height,
-  // });
   videoLoading.value = false;
 }
 
