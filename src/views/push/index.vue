@@ -9,6 +9,7 @@
         class="container"
       >
         <div class="video-wrap">
+          <AudioRoomTip></AudioRoomTip>
           <video
             id="localVideo"
             ref="localVideoRef"
@@ -20,24 +21,20 @@
             x5-video-player-fullscreen="true"
             x5-video-orientation="portraint"
             muted
+            controls
           ></video>
-          <VideoControls v-if="currMediaTypeList.length > 0"></VideoControls>
           <div
-            v-if="!currMediaTypeList || currMediaTypeList.length <= 0"
+            v-if="!appStore.allTrack || appStore.allTrack.length <= 0"
             class="add-wrap"
           >
             <n-space>
               <n-button
+                v-for="(item, index) in allMediaTypeList"
+                :key="index"
                 class="item"
-                @click="startGetUserMedia"
+                @click="handleStartMedia(item)"
               >
-                摄像头
-              </n-button>
-              <n-button
-                class="item"
-                @click="startGetDisplayMedia"
-              >
-                窗口
+                {{ item.txt }}
               </n-button>
             </n-space>
           </div>
@@ -133,7 +130,13 @@
           <div class="top">
             <span class="item">
               <i class="ico"></i>
-              <span>正在观看：{{ liveUserList.length }}</span>
+              <span>
+                正在观看：
+                {{
+                  liveUserList.filter((item) => item.id !== getSocketId())
+                    .length
+                }}
+              </span>
             </span>
           </div>
           <div class="bottom">
@@ -163,12 +166,24 @@
         <div class="title">素材列表</div>
         <div class="list">
           <div
-            v-for="(item, index) in currMediaTypeList"
+            v-for="(item, index) in appStore.allTrack"
             :key="index"
             class="item"
           >
-            <span class="name">{{ item.txt }}</span>
+            <span class="name">
+              ({{ item.audio === 1 ? '音频' : ''
+              }}{{ item.video === 1 ? '视频' : '' }}){{ item.mediaName }}
+            </span>
           </div>
+        </div>
+        <div class="bottom">
+          <n-button
+            size="small"
+            type="primary"
+            @click="handleAddMedia"
+          >
+            添加音频
+          </n-button>
         </div>
       </div>
       <div class="danmu-card">
@@ -224,6 +239,13 @@
         </div>
       </div>
     </div>
+
+    <MediaModalCpt
+      v-if="showMediaModalCpt"
+      :media-type="currentMediaType"
+      @close="showMediaModalCpt = false"
+      @ok="selectMediaOk"
+    ></MediaModalCpt>
   </div>
 </template>
 
@@ -232,12 +254,17 @@ import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { usePush } from '@/hooks/use-push';
-import { DanmuMsgTypeEnum, liveTypeEnum } from '@/interface';
+import { DanmuMsgTypeEnum, MediaTypeEnum, liveTypeEnum } from '@/interface';
+import { useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
+
+import MediaModalCpt from './mediaModal/index.vue';
 
 const route = useRoute();
 const userStore = useUserStore();
-
+const appStore = useAppStore();
+const currentMediaType = ref(MediaTypeEnum.camera);
+const showMediaModalCpt = ref(false);
 const liveType = route.query.liveType;
 const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
@@ -248,15 +275,15 @@ const remoteVideoRef = ref<HTMLVideoElement[]>([]);
 
 const {
   initPush,
-  isLiving,
   confirmRoomName,
   getSocketId,
-  startGetDisplayMedia,
-  startGetUserMedia,
   startLive,
   endLive,
   sendDanmu,
   keydownDanmu,
+  localStream,
+  isLiving,
+  allMediaTypeList,
   currentResolutionRatio,
   currentMaxBitrate,
   currentMaxFramerate,
@@ -267,12 +294,13 @@ const {
   roomName,
   damuList,
   liveUserList,
-  currMediaTypeList,
+  userSelectMediaList,
 } = usePush({
   localVideoRef,
   remoteVideoRef,
   isSRS: liveType === liveTypeEnum.srsPush,
 });
+
 watch(
   () => damuList.value.length,
   () => {
@@ -283,7 +311,13 @@ watch(
     }, 0);
   }
 );
+
 onMounted(() => {
+  if (localVideoRef.value) {
+    // localVideoRef.value.oncontextmenu = (e) => {
+    //   e.preventDefault();
+    // };
+  }
   if (topRef.value && bottomRef.value && containerRef.value) {
     const res =
       bottomRef.value.getBoundingClientRect().top -
@@ -292,6 +326,129 @@ onMounted(() => {
   }
   initPush();
 });
+
+async function selectMediaOk(val: {
+  type: MediaTypeEnum;
+  deviceId: string;
+  mediaName: string;
+}) {
+  showMediaModalCpt.value = false;
+  if (val.type === MediaTypeEnum.screen) {
+    const event = await navigator.mediaDevices.getDisplayMedia({
+      video: {
+        deviceId: val.deviceId,
+        height: currentResolutionRatio.value,
+        frameRate: { ideal: currentMaxFramerate.value, max: 90 },
+      },
+      audio: true,
+    });
+    if (localStream.value) {
+      const mixedStream = new MediaStream();
+      localStream.value
+        ?.getVideoTracks()
+        .forEach((track) => mixedStream.addTrack(track));
+      localStream.value
+        ?.getAudioTracks()
+        .forEach((track) => mixedStream.addTrack(track));
+      event.getVideoTracks().forEach((track) => mixedStream.addTrack(track));
+      event.getAudioTracks().forEach((track) => mixedStream.addTrack(track));
+      localStream.value = mixedStream;
+    } else {
+      localStream.value = event;
+    }
+    const audio = event.getAudioTracks();
+    appStore.setAllTrack([
+      ...appStore.allTrack,
+      {
+        audio: audio.length > 0 ? 1 : 2,
+        video: 1,
+        mediaName: val.mediaName,
+        type: MediaTypeEnum.screen,
+        track: event.getVideoTracks()[0],
+        stream: event,
+      },
+    ]);
+    console.log('获取窗口成功');
+  } else if (val.type === MediaTypeEnum.camera) {
+    const event = await navigator.mediaDevices.getUserMedia({
+      video: {
+        deviceId: val.deviceId,
+        height: currentResolutionRatio.value,
+        frameRate: { ideal: currentMaxFramerate.value, max: 90 },
+      },
+      audio: false,
+    });
+    if (localStream.value) {
+      const mixedStream = new MediaStream();
+      localStream.value
+        ?.getVideoTracks()
+        .forEach((track) => mixedStream.addTrack(track));
+      localStream.value
+        ?.getAudioTracks()
+        .forEach((track) => mixedStream.addTrack(track));
+      event.getVideoTracks().forEach((track) => mixedStream.addTrack(track));
+      event.getAudioTracks().forEach((track) => mixedStream.addTrack(track));
+      localStream.value = mixedStream;
+    } else {
+      localStream.value = event;
+    }
+    appStore.setAllTrack([
+      ...appStore.allTrack,
+      {
+        audio: 2,
+        video: 1,
+        mediaName: val.mediaName,
+        type: MediaTypeEnum.camera,
+        track: event.getVideoTracks()[0],
+        stream: event,
+      },
+    ]);
+    console.log('获取摄像头成功');
+  } else if (val.type === MediaTypeEnum.microphone) {
+    const event = await navigator.mediaDevices.getUserMedia({
+      video: false,
+      audio: { deviceId: val.deviceId },
+    });
+    if (localStream.value) {
+      const mixedStream = new MediaStream();
+      localStream.value
+        ?.getVideoTracks()
+        .forEach((track) => mixedStream.addTrack(track));
+      localStream.value
+        ?.getAudioTracks()
+        .forEach((track) => mixedStream.addTrack(track));
+      event.getVideoTracks().forEach((track) => mixedStream.addTrack(track));
+      event.getAudioTracks().forEach((track) => mixedStream.addTrack(track));
+      localStream.value = mixedStream;
+    } else {
+      localStream.value = event;
+    }
+    console.log(localStream.value, event);
+    appStore.setAllTrack([
+      ...appStore.allTrack,
+      {
+        audio: 1,
+        video: 2,
+        mediaName: val.mediaName,
+        type: MediaTypeEnum.microphone,
+        track: event.getAudioTracks()[0],
+        stream: event,
+      },
+    ]);
+    console.log('获取麦克风成功');
+  }
+}
+
+function handleAddMedia() {
+  currentMediaType.value = MediaTypeEnum.microphone;
+  showMediaModalCpt.value = true;
+}
+
+function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
+  console.log(item);
+  currentMediaType.value = item.type;
+  showMediaModalCpt.value = true;
+}
 </script>
 
 <style lang="scss" scoped>
@@ -445,6 +602,7 @@ onMounted(() => {
     color: #9499a0;
 
     .resource-card {
+      position: relative;
       box-sizing: border-box;
       margin-bottom: 5%;
       margin-bottom: 10px;
@@ -462,6 +620,12 @@ onMounted(() => {
         justify-content: space-between;
         margin: 5px 0;
         font-size: 12px;
+      }
+      .bottom {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        padding: 10px;
       }
     }
     .danmu-card {

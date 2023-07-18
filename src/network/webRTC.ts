@@ -1,18 +1,22 @@
 import browserTool from 'browser-tool';
+import { NODE_ENV } from 'script/constant';
 
 import { ICandidate } from '@/interface';
 import { useNetworkStore } from '@/store/network';
 
 import { WsMsgTypeEnum } from './webSocket';
 
+export const audioElArr: HTMLVideoElement[] = [];
+
 export class WebRTCClass {
   roomId = '-1';
+  receiver = '';
 
   videoEl: HTMLVideoElement;
 
-  peerConnection: RTCPeerConnection | null = null;
+  direction: RTCRtpTransceiverDirection;
 
-  sender?: RTCRtpTransceiver;
+  peerConnection: RTCPeerConnection | null = null;
 
   /** 最大码率 */
   maxBitrate = -1;
@@ -38,35 +42,38 @@ export class WebRTCClass {
     version: string;
   };
 
-  constructor({
-    roomId,
-    videoEl,
-    maxBitrate,
-    maxFramerate,
-    resolutionRatio,
-    isSRS,
-  }: {
+  constructor(data: {
     roomId: string;
     videoEl: HTMLVideoElement;
     maxBitrate?: number;
     maxFramerate?: number;
     resolutionRatio?: number;
     isSRS: boolean;
+    direction: RTCRtpTransceiverDirection;
+    receiver: string;
   }) {
-    this.roomId = roomId;
-    this.videoEl = videoEl;
-    if (maxBitrate) {
-      this.maxBitrate = maxBitrate;
+    this.roomId = data.roomId;
+    this.videoEl = data.videoEl;
+    this.direction = data.direction;
+    this.receiver = data.receiver;
+    if (data.maxBitrate) {
+      this.maxBitrate = data.maxBitrate;
     }
-    if (resolutionRatio) {
-      this.resolutionRatio = resolutionRatio;
+    if (data.resolutionRatio) {
+      this.resolutionRatio = data.resolutionRatio;
     }
-    if (maxFramerate) {
-      this.maxFramerate = maxFramerate;
+    if (data.maxFramerate) {
+      this.maxFramerate = data.maxFramerate;
     }
-    this.isSRS = isSRS;
+    this.isSRS = data.isSRS;
+    console.warn('new webrtc参数:', data);
     this.browser = browserTool();
     this.createPeerConnection();
+    // setInterval(() => {
+    //   const getAudioTracks = this.localStream?.getAudioTracks().length;
+    //   const getVideoTracks = this.localStream?.getVideoTracks().length;
+    //   console.log(getAudioTracks, getVideoTracks, '----');
+    // }, 1000);
   }
 
   prettierLog = (msg: string, type?: 'log' | 'warn' | 'error', ...args) => {
@@ -78,18 +85,43 @@ export class WebRTCClass {
     );
   };
 
-  addTrack = (track, stream) => {
-    const sender = this.peerConnection
-      ?.getSenders()
-      .find((s) => s.track === track);
-    if (!sender) {
-      console.warn('开始addTrack', this.roomId, track, stream);
-      this.peerConnection?.addTrack(track, stream);
-      this.localStream = stream;
+  addTrack = (stream: MediaStream, isCb?: boolean) => {
+    console.log('开始addTrack,是否是pc的track回调', isCb);
+    console.log('收到新stream', stream);
+    console.log('收到新stream的视频轨', stream.getVideoTracks());
+    console.log('收到新stream的音频轨', stream.getAudioTracks());
+    console.log('原本旧stream的视频轨', this.localStream?.getVideoTracks());
+    console.log('原本旧stream的音频轨', this.localStream?.getAudioTracks());
+    const mixedStream = new MediaStream();
+    this.localStream
+      ?.getVideoTracks()
+      .forEach((track) => mixedStream.addTrack(track));
+    this.localStream
+      ?.getAudioTracks()
+      .forEach((track) => mixedStream.addTrack(track));
+    stream.getVideoTracks().forEach((track) => mixedStream.addTrack(track));
+    stream.getAudioTracks().forEach((track) => mixedStream.addTrack(track));
+    console.log('混流stream', stream);
+    console.log('混流stream的视频流', mixedStream.getVideoTracks());
+    console.log('混流stream的音频流', mixedStream.getAudioTracks());
+    // const sender = this.peerConnection
+    //   ?.getSenders()
+    //   .find((sender) => sender.track !== track);
+    // console.log('getSenders', this.peerConnection?.getSenders());
+    // console.log('sender', sender);
+    if (NODE_ENV === 'development') {
+      this.videoEl.controls = true;
+    }
+    this.videoEl.srcObject = mixedStream;
+    this.localStream = mixedStream;
+    if (this.maxBitrate !== -1) {
       this.setMaxBitrate(this.maxBitrate);
+    }
+    if (this.maxFramerate !== -1) {
+      this.setMaxFramerate(this.maxFramerate);
+    }
+    if (this.resolutionRatio !== -1) {
       this.setResolutionRatio(this.resolutionRatio);
-    } else {
-      console.warn('不addTrack了', this.roomId, track, stream);
     }
   };
 
@@ -228,42 +260,33 @@ export class WebRTCClass {
     }
   };
 
-  addStream = (stream) => {
-    if (!this.peerConnection) return;
-    console.log('开始addStream', this.videoEl, stream, this.roomId);
-    this.videoEl.srcObject = stream;
-    this.prettierLog('addStream成功', 'warn');
-  };
-
   handleStreamEvent = () => {
     if (!this.peerConnection) return;
+    // 废弃：https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/addStream
     console.warn(`${this.roomId}，开始监听pc的addstream`);
     this.peerConnection.addEventListener('addstream', (event: any) => {
-      console.warn(`${this.roomId}，pc收到addstream事件`, event, event.stream);
-      this.addStream(event.stream);
-    });
-
-    console.warn(`${this.roomId}，开始监听pc的ontrack`);
-    this.peerConnection.addEventListener('ontrack', (event: any) => {
-      console.warn(`${this.roomId}，pc收到ontrack事件`, event);
-      this.addStream(event.streams[0]);
-    });
-
-    console.warn(`${this.roomId}，开始监听pc的addtrack`);
-    this.peerConnection.addEventListener('addtrack', (event: any) => {
-      console.warn(`${this.roomId}，pc收到addtrack事件`, event);
+      console.warn(`${this.roomId}，pc收到addstream事件`, event);
+      console.log('addstream事件的stream', event.stream);
+      console.log('addstream事件的视频轨', event.stream.getVideoTracks());
+      console.log('addstream事件的音频轨', event.stream.getAudioTracks());
+      this.addTrack(event.stream, true);
     });
 
     console.warn(`${this.roomId}，开始监听pc的track`);
-    this.peerConnection.addEventListener('track', (event: any) => {
+    this.peerConnection.addEventListener('track', (event) => {
       console.warn(`${this.roomId}，pc收到track事件`, event);
-      this.addStream(event.streams[0]);
+      console.log('track事件的stream', event.streams[0]);
+      console.log('track事件的视频轨', event.streams[0].getVideoTracks());
+      console.log('track事件的音频轨', event.streams[0].getAudioTracks());
+      this.addTrack(event.streams[0], true);
     });
   };
 
   handleConnectionEvent = () => {
     if (!this.peerConnection) return;
+
     console.warn(`${this.roomId}，开始监听pc的icecandidate`);
+    // icecandidate
     this.peerConnection.addEventListener('icecandidate', (event) => {
       this.prettierLog('pc收到icecandidate', 'warn');
       if (event.candidate) {
@@ -389,9 +412,9 @@ export class WebRTCClass {
   // 手动关闭webrtc连接
   close = () => {
     console.warn(`${new Date().toLocaleString()}，手动关闭webrtc连接`);
-    if (this.sender?.sender) {
-      this.peerConnection?.removeTrack(this.sender?.sender);
-    }
+    this.peerConnection?.getSenders().forEach((sender) => {
+      this.peerConnection?.removeTrack(sender);
+    });
     this.peerConnection?.close();
     this.peerConnection = null;
   };

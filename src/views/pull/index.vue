@@ -40,6 +40,7 @@
               }"
             ></div>
             <div ref="canvasRef"></div>
+            <AudioRoomTip></AudioRoomTip>
             <VideoControls></VideoControls>
           </div>
 
@@ -436,6 +437,7 @@ onMounted(() => {
           position: absolute;
           top: 0;
           left: 50%;
+          width: 100%;
           height: 100%;
           transform: translate(-50%);
 
@@ -445,6 +447,7 @@ onMounted(() => {
           position: absolute;
           top: 0;
           left: 50%;
+          width: 100%;
           height: 100%;
           transform: translate(-50%);
 

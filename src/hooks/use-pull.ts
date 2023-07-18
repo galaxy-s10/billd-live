@@ -21,7 +21,7 @@ import {
   MediaTypeEnum,
   liveTypeEnum,
 } from '@/interface';
-import { WebRTCClass } from '@/network/webRTC';
+import { WebRTCClass, audioElArr } from '@/network/webRTC';
 import {
   WebSocketClass,
   WsConnectStatusEnum,
@@ -54,9 +54,9 @@ export function usePull({
   videoEl.autoplay = true;
   // videoEl.controls = true; // 调试用
   videoEl.setAttribute('webkit-playsinline', 'true');
-  videoEl.oncontextmenu = (e) => {
-    e.preventDefault();
-  };
+  // videoEl.oncontextmenu = (e) => {
+  //   e.preventDefault();
+  // };
   const remoteVideoRef = ref(videoEl);
   const heartbeatTimer = ref();
   const roomId = ref(route.params.roomId as string);
@@ -143,7 +143,7 @@ export function usePull({
       const video = event.getVideoTracks();
       track.audio = audio.length ? 1 : 2;
       track.video = video.length ? 1 : 2;
-      console.log('getUserMedia成功', event);
+      console.log('getUserMedia成功', event, audio, video);
       currMediaType.value = allMediaTypeList[MediaTypeEnum.camera];
       currMediaTypeList.value.push(allMediaTypeList[MediaTypeEnum.camera]);
       localStream.value = event;
@@ -162,16 +162,41 @@ export function usePull({
       const video = event.getVideoTracks();
       track.audio = audio.length ? 1 : 2;
       track.video = video.length ? 1 : 2;
-      console.log('getDisplayMedia成功', event);
+      console.log('getDisplayMedia成功', event, audio, video);
       currMediaType.value = allMediaTypeList[MediaTypeEnum.screen];
       currMediaTypeList.value.push(allMediaTypeList[MediaTypeEnum.screen]);
       localStream.value = event;
     }
   }
+
+  watch(
+    () => appStore.allTrack,
+    () => {
+      // networkStore.rtcMap.forEach((rtc) => {
+      //   if (appStore.getTrackInfo().audio > 0) {
+      //     rtc!.peerConnection?.addTransceiver('audio', {
+      //       direction: 'recvonly',
+      //     });
+      //   }
+      //   if (appStore.getTrackInfo().video > 0) {
+      //     rtc!.peerConnection?.addTransceiver('video', {
+      //       direction: 'recvonly',
+      //     });
+      //   }
+      // });
+    },
+    { deep: true }
+  );
+
   watch(
     () => appStore.muted,
     (val) => {
+      console.log(val, audioElArr, 2222);
       remoteVideoRef.value.muted = val;
+      audioElArr.forEach((el) => {
+        console.log(el, el.muted);
+        el.muted = val;
+      });
     }
   );
 
@@ -284,7 +309,7 @@ export function usePull({
         localStream.value.getTracks().forEach((track) => {
           const rtc = networkStore.getRtcMap(`${roomId.value}___${item.id}`);
           console.log('pull-addTrack', `${roomId.value}___${item.id}`);
-          rtc?.addTrack(track, localStream.value);
+          rtc?.addTrack(localStream.value);
         });
       }
     });
@@ -329,7 +354,7 @@ export function usePull({
           receiver: socketId,
         });
         sendOffer({ sender: getSocketId(), receiver: socketId });
-        offerSended.value.add(socketId);
+        // offerSended.value.add(socketId);
       }
     });
   }
@@ -369,24 +394,21 @@ export function usePull({
     receiver,
     videoEl = remoteVideoRef.value!,
   }: {
-    receiver?: string;
+    receiver: string;
     videoEl?: HTMLVideoElement;
   }) {
+    let rtc: WebRTCClass;
     if (isSRS) {
       if (!autoplayVal.value) return;
       console.warn('开始new SRSWebRTCClass', getSocketId());
-      const rtc = new WebRTCClass({
+      rtc = new WebRTCClass({
         roomId: `${roomId.value}___${getSocketId()}`,
         videoEl,
         isSRS: true,
+        direction: 'recvonly',
+        receiver,
       });
       rtc.update();
-      if (track.video === 1) {
-        rtc.peerConnection?.addTransceiver('video', { direction: 'recvonly' });
-      }
-      if (track.audio === 1) {
-        rtc.peerConnection?.addTransceiver('audio', { direction: 'recvonly' });
-      }
       try {
         const offer = await rtc.createOffer();
         if (!offer) return;
@@ -407,13 +429,15 @@ export function usePull({
     } else {
       if (!autoplayVal.value) return;
       console.warn('开始new WebRTCClass');
-      const rtc = new WebRTCClass({
+      rtc = new WebRTCClass({
         roomId: `${roomId.value}___${receiver!}`,
         videoEl,
         isSRS: false,
+        direction: 'recvonly',
+        receiver,
       });
-      return rtc;
     }
+    return rtc;
   }
 
   function keydownDanmu(event: KeyboardEvent) {
@@ -568,12 +592,23 @@ export function usePull({
         await nextTick(async () => {
           console.log('收到offer，这个offer是发给我的', data);
           sender.value = data.data.sender;
-          const rtc = await startNewWebRtc({
-            receiver: data.data.sender,
-            videoEl: data.is_anchor
-              ? remoteVideoRef.value
-              : localVideoRef.value[data.data.sender],
-          });
+          let rtc = networkStore.getRtcMap(
+            `${roomId.value}___${data.data.sender}`
+          );
+          if (!rtc) {
+            rtc = await startNewWebRtc({
+              receiver: data.data.sender,
+              videoEl: data.is_anchor
+                ? remoteVideoRef.value
+                : localVideoRef.value[data.data.sender],
+            });
+          }
+          // const rtc = await startNewWebRtc({
+          //   receiver: data.data.sender,
+          //   videoEl: data.is_anchor
+          //     ? remoteVideoRef.value
+          //     : localVideoRef.value[data.data.sender],
+          // });
           if (rtc) {
             await rtc.setRemoteDescription(data.data.sdp);
             const sdp = await rtc.createAnswer();
@@ -650,7 +685,7 @@ export function usePull({
     instance.socketIo.on(WsMsgTypeEnum.roomLiveing, (data) => {
       prettierReceiveWebsocket(WsMsgTypeEnum.roomLiveing, data);
       if (isSRS && roomLiveType.value !== liveTypeEnum.srsFlvPull) {
-        startNewWebRtc({});
+        startNewWebRtc({ receiver: getSocketId() });
       }
     });
 

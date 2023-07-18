@@ -62,8 +62,8 @@ const emits = defineEmits(['close']);
     left: 50%;
     box-sizing: border-box;
     padding: 20px;
+    // min-height: 200px;
     width: 320px;
-    height: 200px;
     border-radius: 10px;
     background-color: #fff;
     font-size: 14px;
@@ -86,11 +86,7 @@ const emits = defineEmits(['close']);
       margin-top: 10px;
     }
     .footer {
-      position: absolute;
-      right: 20px;
-      bottom: 20px;
-      left: 20px;
-
+      margin-top: 10px;
       .btn {
         width: 280px;
         height: 44px;
@@ -99,7 +95,6 @@ const emits = defineEmits(['close']);
           linear-gradient(270deg, #b3acff 4.71%, #3ccffd 103.24%),
           linear-gradient(270deg, #b3acff 4.71%, #3ccffd 103.24%);
         color: white;
-        text-align: center;
         font-weight: 600;
         font-size: 16px;
         line-height: 44px;

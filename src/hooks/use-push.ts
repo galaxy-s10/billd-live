@@ -27,6 +27,7 @@ import {
   IMessage,
   IOffer,
   IOtherJoin,
+  IUpdateJoinInfo,
   LiveRoomTypeEnum,
   MediaTypeEnum,
 } from '@/interface';
@@ -37,6 +38,7 @@ import {
   WsMsgTypeEnum,
   prettierReceiveWebsocket,
 } from '@/network/webSocket';
+import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 
@@ -54,6 +56,7 @@ export function usePush({
 }) {
   const route = useRoute();
   const router = useRouter();
+  const appStore = useAppStore();
   const userStore = useUserStore();
   const networkStore = useNetworkStore();
   const heartbeatTimer = ref();
@@ -61,11 +64,11 @@ export function usePush({
   const roomName = ref('');
   const danmuStr = ref('');
   const isLiving = ref(false);
-  const isDone = ref(false);
   const joined = ref(false);
   const localStream = ref<MediaStream>();
   const offerSended = ref(new Set());
   const webRTC = ref<WebRTCClass>();
+  const srsSdp = ref('');
   const maxBitrate = ref([
     {
       label: '1000',
@@ -112,28 +115,32 @@ export function usePush({
 
   const resolutionRatio = ref([
     {
-      label: '1440P',
-      value: 1440,
-    },
-    {
-      label: '1080P',
-      value: 1080,
+      label: '360P',
+      value: 360,
     },
     {
       label: '720P',
       value: 720,
     },
     {
-      label: '360P',
-      value: 360,
+      label: '1080P',
+      value: 1080,
+    },
+    {
+      label: '1440P',
+      value: 1440,
     },
   ]);
-  const currentResolutionRatio = ref(resolutionRatio.value[1].value);
+  const currentResolutionRatio = ref(resolutionRatio.value[2].value);
 
   const maxFramerate = ref([
     {
       label: '10帧',
       value: 10,
+    },
+    {
+      label: '20帧',
+      value: 20,
     },
     {
       label: '24帧',
@@ -159,7 +166,9 @@ export function usePush({
   const damuList = ref<IDanmu[]>([]);
   const liveUserList = ref<ILiveUser[]>([]);
 
-  const allMediaTypeList = {
+  const allMediaTypeList: {
+    [index: string]: { type: MediaTypeEnum; txt: string };
+  } = {
     [MediaTypeEnum.camera]: {
       type: MediaTypeEnum.camera,
       txt: '摄像头',
@@ -168,17 +177,85 @@ export function usePush({
       type: MediaTypeEnum.screen,
       txt: '窗口',
     },
+    [MediaTypeEnum.microphone]: {
+      type: MediaTypeEnum.microphone,
+      txt: '麦克风',
+    },
   };
-  const currMediaTypeList = ref<
+  const userSelectMediaList = ref<
     {
-      type: MediaTypeEnum;
-      txt: string;
+      mediaName: string;
+      audio: boolean;
+      video: boolean;
     }[]
   >([]);
-  const currMediaType = ref<{
-    type: MediaTypeEnum;
-    txt: string;
-  }>();
+
+  watch(
+    () => localStream.value,
+    (newStream) => {
+      console.log('localStream变了');
+      console.log('新的视频流', newStream?.getVideoTracks());
+      console.log('新的音频流', newStream?.getAudioTracks());
+      if (!localVideoRef.value || !newStream) return;
+      localVideoRef.value.srcObject = newStream;
+      if (isSRS) {
+        if (isLiving.value) {
+          networkStore.getRtcMap(`${roomId.value}___${getSocketId()}`)?.close();
+          networkStore.removeRtc(`${roomId.value}___${getSocketId()}`);
+          startNewWebRtc({
+            receiver: getSocketId(),
+            videoEl: localVideoRef.value,
+          });
+        }
+      } else {
+        networkStore.rtcMap.forEach((rtc) => {
+          newStream?.getTracks().forEach((track) => {
+            const sender = rtc.peerConnection
+              ?.getSenders()
+              .find((s) => s.track?.id === track.id);
+            if (!sender) {
+              console.warn('localStream变了，pc插入track');
+              // rtc.peerConnection?.addTransceiver(track, {
+              //   streams: [newStream],
+              //   direction: 'sendonly',
+              // });
+              rtc.peerConnection?.addTrack(track, newStream);
+            }
+          });
+        });
+      }
+    },
+    { deep: true }
+  );
+
+  watch(
+    () => appStore.allTrack,
+    () => {
+      console.log('allTrack变了');
+      const data: IUpdateJoinInfo['data'] = {
+        live_room_id: Number(roomId.value),
+        track: {
+          audio: appStore.getTrackInfo().audio > 0 ? 1 : 2,
+          video: appStore.getTrackInfo().video > 0 ? 1 : 2,
+        },
+      };
+      networkStore.wsMap.get(roomId.value)?.send({
+        msgType: WsMsgTypeEnum.updateJoinInfo,
+        data,
+      });
+    },
+    {
+      deep: true,
+    }
+  );
+
+  watch(
+    () => appStore.muted,
+    (newVal) => {
+      console.log(newVal);
+      // const rtc = networkStore.getRtcMap(`${roomId.value}___${item.id}`);
+    }
+  );
 
   watch(
     () => currentMaxFramerate.value,
@@ -194,6 +271,7 @@ export function usePush({
       }
     }
   );
+
   watch(
     () => currentMaxBitrate.value,
     async (newVal) => {
@@ -300,7 +378,7 @@ export function usePush({
       return;
     }
     if (!roomNameIsOk()) return;
-    if (currMediaTypeList.value.length <= 0) {
+    if (appStore.allTrack.length <= 0) {
       window.$message.warning('请选择一个素材！');
       return;
     }
@@ -317,8 +395,9 @@ export function usePush({
   /** 结束直播 */
   function endLive() {
     isLiving.value = false;
-    currMediaTypeList.value = [];
+    userSelectMediaList.value = [];
     localStream.value = undefined;
+
     localVideoRef.value!.srcObject = null;
     clearInterval(heartbeatTimer.value);
     const instance = networkStore.wsMap.get(roomId.value);
@@ -334,61 +413,83 @@ export function usePush({
     }, 500);
   }
 
+  function handleNegotiationneeded(data: { roomId: string; isSRS: boolean }) {
+    console.warn(`${data.roomId}，开始监听pc的negotiationneeded`);
+    const rtc = networkStore.getRtcMap(data.roomId);
+    if (!rtc) return;
+    rtc.peerConnection?.addEventListener('negotiationneeded', (event) => {
+      console.warn(`${data.roomId}，pc收到negotiationneeded`, event);
+      sendOffer({
+        sender: getSocketId(),
+        receiver: rtc.receiver,
+        isSRS: data.isSRS,
+      });
+    });
+  }
+
   /** 原生的webrtc时，receiver必传 */
-  async function startNewWebRtc({
+  function startNewWebRtc({
     receiver,
     videoEl = localVideoRef.value!,
   }: {
-    receiver?: string;
+    receiver: string;
     videoEl?: HTMLVideoElement;
   }) {
+    let rtc: WebRTCClass;
     if (isSRS) {
-      console.warn('开始new SRSWebRTCClass', `${roomId.value}___${receiver!}`);
-      const rtc = new WebRTCClass({
+      console.warn('SRS开始new WebRTCClass', `${roomId.value}___${receiver!}`);
+      rtc = new WebRTCClass({
         maxBitrate: currentMaxBitrate.value,
         maxFramerate: currentMaxFramerate.value,
         resolutionRatio: currentResolutionRatio.value,
         roomId: `${roomId.value}___${getSocketId()}`,
         videoEl,
         isSRS: true,
+        direction: 'sendonly',
+        receiver,
+      });
+      handleNegotiationneeded({
+        roomId: `${roomId.value}___${receiver}`,
+        isSRS: true,
+      });
+      rtc.localStream = localStream.value;
+      localStream.value?.getTracks().forEach((track) => {
+        console.warn('srs startNewWebRtc，pc插入track');
+        // rtc.peerConnection?.addTransceiver(track, {
+        //   streams: [localStream.value!],
+        //   direction: 'sendonly',
+        // });
+        rtc.peerConnection?.addTrack(track, localStream.value!);
       });
       webRTC.value = rtc;
-      localStream.value?.getTracks().forEach((track) => {
-        rtc.addTrack(track, localStream.value);
-      });
-      try {
-        const offer = await rtc.createOffer();
-        if (!offer) return;
-        await rtc.setLocalDescription(offer);
-        const res = await fetchRtcV1Publish({
-          api: `/rtc/v1/publish/`,
-          clientip: null,
-          sdp: offer.sdp!,
-          streamurl: userStore.userInfo!.live_rooms![0]!.rtmp_url!.replace(
-            'rtmp',
-            'webrtc'
-          ),
-          tid: getRandomString(10),
-        });
-        await rtc.setRemoteDescription(
-          new RTCSessionDescription({ type: 'answer', sdp: res.data.sdp })
-        );
-      } catch (error) {
-        console.log(error);
-      }
     } else {
       console.warn('开始new WebRTCClass', `${roomId.value}___${receiver!}`);
-      const rtc = new WebRTCClass({
+      rtc = new WebRTCClass({
         maxBitrate: currentMaxBitrate.value,
         maxFramerate: currentMaxFramerate.value,
         resolutionRatio: currentResolutionRatio.value,
         roomId: `${roomId.value}___${receiver!}`,
         videoEl,
         isSRS: false,
+        direction: 'sendonly',
+        receiver,
+      });
+      handleNegotiationneeded({
+        roomId: `${roomId.value}___${receiver}`,
+        isSRS: false,
+      });
+      rtc.localStream = localStream.value;
+      localStream.value?.getTracks().forEach((track) => {
+        console.warn('startNewWebRtc，pc插入track');
+        // rtc.peerConnection?.addTransceiver(track, {
+        //   streams: [localStream.value!],
+        //   direction: 'sendonly',
+        // });
+        rtc.peerConnection?.addTrack(track, localStream.value!);
       });
       webRTC.value = rtc;
-      return rtc;
     }
+    return rtc;
   }
 
   function handleCoverImg() {
@@ -428,7 +529,8 @@ export function usePush({
       if (item.id !== getSocketId()) {
         localStream.value?.getTracks().forEach((track) => {
           const rtc = networkStore.getRtcMap(`${roomId.value}___${item.id}`);
-          rtc?.addTrack(track, localStream.value);
+          console.log('4444444444');
+          rtc?.addTrack(localStream.value!);
         });
       }
     });
@@ -444,7 +546,10 @@ export function usePush({
         cover_img: handleCoverImg(),
         type: isSRS ? LiveRoomTypeEnum.user_srs : LiveRoomTypeEnum.user_wertc,
       },
-      track,
+      track: {
+        audio: appStore.getTrackInfo().audio > 0 ? 1 : 2,
+        video: appStore.getTrackInfo().video > 0 ? 1 : 2,
+      },
     };
     instance.send({
       msgType: WsMsgTypeEnum.join,
@@ -455,47 +560,69 @@ export function usePush({
   async function sendOffer({
     sender,
     receiver,
+    isSRS,
   }: {
     sender: string;
     receiver: string;
+    isSRS: boolean;
   }) {
-    if (isDone.value) return;
-    const instance = networkStore.wsMap.get(roomId.value);
-    if (!instance) return;
+    console.log('开始sendOffer');
+    const ws = networkStore.wsMap.get(roomId.value);
+    if (!ws) return;
     const rtc = networkStore.getRtcMap(`${roomId.value}___${receiver}`);
     if (!rtc) return;
-    const sdp = await rtc.createOffer();
-    await rtc.setLocalDescription(sdp!);
-    instance.send({
-      msgType: WsMsgTypeEnum.offer,
-      data: {
-        sdp,
-        sender,
-        receiver,
-        live_room_id: roomId.value,
-      },
-    });
+    if (!isSRS) {
+      const sdp = await rtc.createOffer();
+      await rtc.setLocalDescription(sdp!);
+      ws.send({
+        msgType: WsMsgTypeEnum.offer,
+        data: {
+          sdp,
+          sender,
+          receiver,
+          live_room_id: roomId.value,
+        },
+      });
+    } else {
+      const sdp = await rtc.createOffer();
+      console.log(sdp, 22);
+      await rtc.setLocalDescription(sdp!);
+      const res = await fetchRtcV1Publish({
+        api: `/rtc/v1/publish/`,
+        clientip: null,
+        sdp: sdp!.sdp!,
+        streamurl: userStore.userInfo!.live_rooms![0]!.rtmp_url!.replace(
+          'rtmp',
+          'webrtc'
+        ),
+        tid: getRandomString(10),
+      });
+      srsSdp.value = res.data.sdp;
+      await rtc.setRemoteDescription(
+        new RTCSessionDescription({ type: 'answer', sdp: srsSdp.value })
+      );
+    }
   }
 
   function batchSendOffer() {
-    console.log('batchSendOffer');
+    console.log('开始batchSendOffer');
     liveUserList.value.forEach(async (item) => {
       const socketId = item.id;
       if (!offerSended.value.has(socketId) && socketId !== getSocketId()) {
-        const rtc = networkStore.getRtcMap(`${roomId.value}___${socketId}`);
+        let rtc = networkStore.getRtcMap(`${roomId.value}___${socketId}`);
         if (!rtc) {
-          await startNewWebRtc({
+          rtc = await startNewWebRtc({
             receiver: socketId,
             videoEl: localVideoRef.value,
           });
         }
-        await addTrack();
+        // await addTrack();
         console.log('执行sendOffer', {
           sender: getSocketId(),
           receiver: socketId,
         });
-        sendOffer({ sender: getSocketId(), receiver: socketId });
-        offerSended.value.add(socketId);
+
+        sendOffer({ sender: getSocketId(), receiver: socketId, isSRS: false });
       }
     });
   }
@@ -569,7 +696,6 @@ export function usePush({
         data
       );
       if (isSRS) return;
-      if (isDone.value) return;
       if (!instance) return;
       const rtc = networkStore.getRtcMap(`${roomId.value}___${data.socket_id}`);
       if (!rtc) return;
@@ -590,7 +716,6 @@ export function usePush({
         data
       );
       if (isSRS) return;
-      if (isDone.value) return;
       if (!instance) return;
       const rtc = networkStore.getRtcMap(`${roomId.value}___${data.socket_id}`);
       if (!rtc) return;
@@ -646,9 +771,7 @@ export function usePush({
         userInfo: data.user_info,
       });
       if (isSRS) {
-        startNewWebRtc({});
-      } else {
-        batchSendOffer();
+        startNewWebRtc({ receiver: getSocketId() });
       }
     });
 
@@ -668,7 +791,10 @@ export function usePush({
       damuList.value.push(danmu);
       if (isSRS) return;
       if (joined.value) {
-        batchSendOffer();
+        startNewWebRtc({
+          receiver: data.data.join_socket_id,
+          videoEl: localVideoRef.value,
+        });
       }
     });
 
@@ -712,54 +838,6 @@ export function usePush({
     return true;
   }
 
-  /** 摄像头 */
-  async function startGetUserMedia() {
-    if (!localStream.value) {
-      // WARN navigator.mediaDevices在localhost和https才能用，http://192.168.1.103:8000局域网用不了
-      const event = await navigator.mediaDevices.getUserMedia({
-        video: {
-          height: currentResolutionRatio.value,
-          frameRate: { ideal: currentMaxFramerate.value, max: 90 },
-        },
-        audio: true,
-      });
-      const audio = event.getAudioTracks();
-      const video = event.getVideoTracks();
-      track.audio = audio.length ? 1 : 2;
-      track.video = video.length ? 1 : 2;
-      console.log('getUserMedia成功', event);
-      currMediaType.value = allMediaTypeList[MediaTypeEnum.camera];
-      currMediaTypeList.value.push(allMediaTypeList[MediaTypeEnum.camera]);
-      if (!localVideoRef.value) return;
-      localVideoRef.value.srcObject = event;
-      localStream.value = event;
-    }
-  }
-
-  /** 窗口 */
-  async function startGetDisplayMedia() {
-    if (!localStream.value) {
-      // WARN navigator.mediaDevices.getDisplayMedia在localhost和https才能用，http://192.168.1.103:8000局域网用不了
-      const event = await navigator.mediaDevices.getDisplayMedia({
-        video: {
-          height: currentResolutionRatio.value,
-          frameRate: { ideal: currentMaxFramerate.value, max: 90 },
-        },
-        audio: true,
-      });
-      const audio = event.getAudioTracks();
-      const video = event.getVideoTracks();
-      track.audio = audio.length ? 1 : 2;
-      track.video = video.length ? 1 : 2;
-      console.log('getDisplayMedia成功', event);
-      currMediaType.value = allMediaTypeList[MediaTypeEnum.screen];
-      currMediaTypeList.value.push(allMediaTypeList[MediaTypeEnum.screen]);
-      if (!localVideoRef.value) return;
-      localVideoRef.value.srcObject = event;
-      localStream.value = event;
-    }
-  }
-
   function keydownDanmu(event: KeyboardEvent) {
     const key = event.key.toLowerCase();
     if (key === 'enter') {
@@ -800,23 +878,7 @@ export function usePush({
     danmuStr.value = '';
   }
 
-  async function getAllMediaDevices() {
-    const res = await navigator.mediaDevices.enumerateDevices();
-    // const audioInput = res.filter(
-    //   (item) => item.kind === 'audioinput' && item.deviceId !== 'default'
-    // );
-    // const videoInput = res.filter(
-    //   (item) => item.kind === 'videoinput' && item.deviceId !== 'default'
-    // );
-    return res;
-  }
-
-  async function initPush() {
-    const all = await getAllMediaDevices();
-    allMediaTypeList[MediaTypeEnum.camera] = {
-      txt: all.find((item) => item.kind === 'videoinput')?.label || '摄像头',
-      type: MediaTypeEnum.camera,
-    };
+  function initPush() {
     localVideoRef.value?.addEventListener('loadstart', () => {
       console.warn('视频流-loadstart');
       const rtc = networkStore.getRtcMap(roomId.value);
@@ -831,22 +893,22 @@ export function usePush({
       rtc.update();
       if (isSRS) return;
       if (joined.value) {
-        batchSendOffer();
+        // batchSendOffer();
       }
     });
   }
 
   return {
     initPush,
-    isLiving,
     confirmRoomName,
     getSocketId,
-    startGetDisplayMedia,
-    startGetUserMedia,
     startLive,
     endLive,
     sendDanmu,
     keydownDanmu,
+    localStream,
+    isLiving,
+    allMediaTypeList,
     currentResolutionRatio,
     currentMaxBitrate,
     currentMaxFramerate,
@@ -857,6 +919,6 @@ export function usePush({
     roomName,
     damuList,
     liveUserList,
-    currMediaTypeList,
+    userSelectMediaList,
   };
 }
