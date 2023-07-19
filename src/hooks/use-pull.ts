@@ -1,4 +1,5 @@
 import { getRandomString, judgeDevice } from 'billd-utils';
+import { NODE_ENV } from 'script/constant';
 import { Ref, nextTick, onUnmounted, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -18,7 +19,6 @@ import {
   IOtherJoin,
   IUpdateJoinInfo,
   LiveRoomTypeEnum,
-  MediaTypeEnum,
   liveTypeEnum,
 } from '@/interface';
 import { WebRTCClass, audioElArr } from '@/network/webRTC';
@@ -52,11 +52,13 @@ export function usePull({
   videoEl.muted = true;
   videoEl.playsInline = true;
   videoEl.autoplay = true;
-  // videoEl.controls = true; // 调试用
   videoEl.setAttribute('webkit-playsinline', 'true');
-  // videoEl.oncontextmenu = (e) => {
-  //   e.preventDefault();
-  // };
+  videoEl.oncontextmenu = (e) => {
+    e.preventDefault();
+  };
+  if (NODE_ENV === 'development') {
+    videoEl.controls = true;
+  }
   const remoteVideoRef = ref(videoEl);
   const heartbeatTimer = ref();
   const roomId = ref(route.params.roomId as string);
@@ -101,73 +103,12 @@ export function usePull({
   const hooksRtcMap = ref(new Set());
   const sender = ref();
 
-  const allMediaTypeList = {
-    [MediaTypeEnum.camera]: {
-      type: MediaTypeEnum.camera,
-      txt: '摄像头',
-    },
-    [MediaTypeEnum.screen]: {
-      type: MediaTypeEnum.screen,
-      txt: '窗口',
-    },
-  };
-
-  const currMediaTypeList = ref<
-    {
-      type: MediaTypeEnum;
-      txt: String;
-    }[]
-  >([]);
-
-  const currMediaType = ref<{
-    type: MediaTypeEnum;
-    txt: String;
-  }>();
-
   const { flvVideoEl, startFlvPlay } = useFlvPlay();
   const { hlsVideoEl, startHlsPlay } = useHlsPlay();
 
   onUnmounted(() => {
     clearInterval(heartbeatTimer.value);
   });
-
-  /** 摄像头 */
-  async function startGetUserMedia() {
-    if (!localStream.value) {
-      // WARN navigator.mediaDevices在localhost和https才能用，http://192.168.1.103:8000局域网用不了
-      const event = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
-      });
-      const audio = event.getAudioTracks();
-      const video = event.getVideoTracks();
-      track.audio = audio.length ? 1 : 2;
-      track.video = video.length ? 1 : 2;
-      console.log('getUserMedia成功', event, audio, video);
-      currMediaType.value = allMediaTypeList[MediaTypeEnum.camera];
-      currMediaTypeList.value.push(allMediaTypeList[MediaTypeEnum.camera]);
-      localStream.value = event;
-    }
-  }
-
-  /** 窗口 */
-  async function startGetDisplayMedia() {
-    if (!localStream.value) {
-      // WARN navigator.mediaDevices.getDisplayMedia在localhost和https才能用，http://192.168.1.103:8000局域网用不了
-      const event = await navigator.mediaDevices.getDisplayMedia({
-        video: true,
-        audio: true,
-      });
-      const audio = event.getAudioTracks();
-      const video = event.getVideoTracks();
-      track.audio = audio.length ? 1 : 2;
-      track.video = video.length ? 1 : 2;
-      console.log('getDisplayMedia成功', event, audio, video);
-      currMediaType.value = allMediaTypeList[MediaTypeEnum.screen];
-      currMediaTypeList.value.push(allMediaTypeList[MediaTypeEnum.screen]);
-      localStream.value = event;
-    }
-  }
 
   watch(
     () => appStore.allTrack,
@@ -191,7 +132,6 @@ export function usePull({
   watch(
     () => appStore.muted,
     (val) => {
-      console.log(val, audioElArr, 2222);
       remoteVideoRef.value.muted = val;
       audioElArr.forEach((el) => {
         console.log(el, el.muted);
@@ -235,7 +175,7 @@ export function usePull({
       isAnchor: false,
     });
     ws.update();
-    initReceive();
+    initWsReceive();
 
     remoteVideoRef.value?.addEventListener('loadstart', () => {
       console.warn('视频流-loadstart');
@@ -301,20 +241,6 @@ export function usePull({
     });
   }
 
-  function addTrack() {
-    if (!localStream.value) return;
-    liveUserList.value.forEach((item) => {
-      console.log(item, item.id, 1111113223431);
-      if (item.id !== getSocketId()) {
-        localStream.value.getTracks().forEach((track) => {
-          const rtc = networkStore.getRtcMap(`${roomId.value}___${item.id}`);
-          console.log('pull-addTrack', `${roomId.value}___${item.id}`);
-          rtc?.addTrack(localStream.value);
-        });
-      }
-    });
-  }
-
   async function sendOffer({
     sender,
     receiver,
@@ -343,22 +269,6 @@ export function usePull({
     });
   }
 
-  async function batchSendOffer(socketId: string) {
-    console.log('batchSendOffer', socketId);
-    await nextTick(async () => {
-      if (!offerSended.value.has(socketId) && socketId !== getSocketId()) {
-        hooksRtcMap.value.add(await startNewWebRtc({ receiver: socketId }));
-        await addTrack();
-        console.log('执行sendOffer', {
-          sender: getSocketId(),
-          receiver: socketId,
-        });
-        sendOffer({ sender: getSocketId(), receiver: socketId });
-        // offerSended.value.add(socketId);
-      }
-    });
-  }
-
   function addVideo() {
     sidebarList.value.push({ socketId: getSocketId() });
     console.log(sidebarList.value, 111, getSocketId());
@@ -377,7 +287,6 @@ export function usePull({
               videoEl: localVideoRef.value[socketId],
             })
           );
-          await addTrack();
           console.log('执行sendOffer', {
             sender: getSocketId(),
             receiver: socketId,
@@ -474,7 +383,7 @@ export function usePull({
     danmuStr.value = '';
   }
 
-  function initReceive() {
+  function initWsReceive() {
     const instance = networkStore.wsMap.get(roomId.value);
     if (!instance?.socketIo) return;
     // websocket连接成功
@@ -731,7 +640,6 @@ export function usePull({
         id: data.data.join_socket_id,
         userInfo: data.data.liveRoom.user,
       });
-      batchSendOffer(data.data.join_socket_id);
     });
 
     // 用户离开房间
@@ -750,6 +658,7 @@ export function usePull({
       networkStore.rtcMap
         .get(`${roomId.value}___${data.socketId as string}`)
         ?.close();
+      networkStore.removeRtc(`${roomId.value}___${data.socketId as string}`);
       if (!instance) return;
       const res = liveUserList.value.filter(
         (item) => item.id !== data.socketId
@@ -772,10 +681,6 @@ export function usePull({
     getSocketId,
     keydownDanmu,
     sendDanmu,
-    batchSendOffer,
-    startGetUserMedia,
-    startGetDisplayMedia,
-    addTrack,
     addVideo,
     autoplayVal,
     videoLoading,

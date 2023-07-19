@@ -21,7 +21,7 @@
             x5-video-player-fullscreen="true"
             x5-video-orientation="portraint"
             muted
-            controls
+            :controls="NODE_ENV === 'development' ? true : false"
           ></video>
           <div
             v-if="!appStore.allTrack || appStore.allTrack.length <= 0"
@@ -174,6 +174,12 @@
               ({{ item.audio === 1 ? '音频' : ''
               }}{{ item.video === 1 ? '视频' : '' }}){{ item.mediaName }}
             </span>
+            <div
+              class="del"
+              @click="delTrack(item)"
+            >
+              x
+            </div>
           </div>
         </div>
         <div class="bottom">
@@ -250,12 +256,14 @@
 </template>
 
 <script lang="ts" setup>
+import { getRandomString } from 'billd-utils';
+import { NODE_ENV } from 'script/constant';
 import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { usePush } from '@/hooks/use-push';
 import { DanmuMsgTypeEnum, MediaTypeEnum, liveTypeEnum } from '@/interface';
-import { useAppStore } from '@/store/app';
+import { AppRootState, useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
 
 import MediaModalCpt from './mediaModal/index.vue';
@@ -313,11 +321,9 @@ watch(
 );
 
 onMounted(() => {
-  if (localVideoRef.value) {
-    // localVideoRef.value.oncontextmenu = (e) => {
-    //   e.preventDefault();
-    // };
-  }
+  localVideoRef.value!.oncontextmenu = (e) => {
+    e.preventDefault();
+  };
   if (topRef.value && bottomRef.value && containerRef.value) {
     const res =
       bottomRef.value.getBoundingClientRect().top -
@@ -342,24 +348,11 @@ async function selectMediaOk(val: {
       },
       audio: true,
     });
-    if (localStream.value) {
-      const mixedStream = new MediaStream();
-      localStream.value
-        ?.getVideoTracks()
-        .forEach((track) => mixedStream.addTrack(track));
-      localStream.value
-        ?.getAudioTracks()
-        .forEach((track) => mixedStream.addTrack(track));
-      event.getVideoTracks().forEach((track) => mixedStream.addTrack(track));
-      event.getAudioTracks().forEach((track) => mixedStream.addTrack(track));
-      localStream.value = mixedStream;
-    } else {
-      localStream.value = event;
-    }
     const audio = event.getAudioTracks();
     appStore.setAllTrack([
       ...appStore.allTrack,
       {
+        id: getRandomString(8),
         audio: audio.length > 0 ? 1 : 2,
         video: 1,
         mediaName: val.mediaName,
@@ -378,23 +371,10 @@ async function selectMediaOk(val: {
       },
       audio: false,
     });
-    if (localStream.value) {
-      const mixedStream = new MediaStream();
-      localStream.value
-        ?.getVideoTracks()
-        .forEach((track) => mixedStream.addTrack(track));
-      localStream.value
-        ?.getAudioTracks()
-        .forEach((track) => mixedStream.addTrack(track));
-      event.getVideoTracks().forEach((track) => mixedStream.addTrack(track));
-      event.getAudioTracks().forEach((track) => mixedStream.addTrack(track));
-      localStream.value = mixedStream;
-    } else {
-      localStream.value = event;
-    }
     appStore.setAllTrack([
       ...appStore.allTrack,
       {
+        id: getRandomString(8),
         audio: 2,
         video: 1,
         mediaName: val.mediaName,
@@ -409,24 +389,10 @@ async function selectMediaOk(val: {
       video: false,
       audio: { deviceId: val.deviceId },
     });
-    if (localStream.value) {
-      const mixedStream = new MediaStream();
-      localStream.value
-        ?.getVideoTracks()
-        .forEach((track) => mixedStream.addTrack(track));
-      localStream.value
-        ?.getAudioTracks()
-        .forEach((track) => mixedStream.addTrack(track));
-      event.getVideoTracks().forEach((track) => mixedStream.addTrack(track));
-      event.getAudioTracks().forEach((track) => mixedStream.addTrack(track));
-      localStream.value = mixedStream;
-    } else {
-      localStream.value = event;
-    }
-    console.log(localStream.value, event);
     appStore.setAllTrack([
       ...appStore.allTrack,
       {
+        id: getRandomString(8),
         audio: 1,
         video: 2,
         mediaName: val.mediaName,
@@ -437,6 +403,12 @@ async function selectMediaOk(val: {
     ]);
     console.log('获取麦克风成功');
   }
+}
+
+function delTrack(item: AppRootState['allTrack'][0]) {
+  console.log(item);
+  const res = appStore.allTrack.filter((iten) => iten.id !== item.id);
+  appStore.setAllTrack(res);
 }
 
 function handleAddMedia() {
@@ -620,6 +592,15 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
         justify-content: space-between;
         margin: 5px 0;
         font-size: 12px;
+        &:hover {
+          .del {
+            display: block;
+          }
+        }
+        .del {
+          display: none;
+          cursor: pointer;
+        }
       }
       .bottom {
         position: absolute;

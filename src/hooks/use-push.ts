@@ -1,13 +1,5 @@
 import { getRandomString, windowReload } from 'billd-utils';
-import {
-  Ref,
-  nextTick,
-  onMounted,
-  onUnmounted,
-  reactive,
-  ref,
-  watch,
-} from 'vue';
+import { Ref, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { fetchRtcV1Publish } from '@/api/srs';
@@ -44,15 +36,16 @@ import { useUserStore } from '@/store/user';
 
 import { loginTip } from './use-login';
 import { useTip } from './use-tip';
+import { useWs } from './use-ws';
 
 export function usePush({
   localVideoRef,
   remoteVideoRef,
   isSRS,
 }: {
-  localVideoRef: Ref<HTMLVideoElement | undefined>;
+  localVideoRef: Ref<HTMLVideoElement>;
   remoteVideoRef: Ref<HTMLVideoElement[]>;
-  isSRS?: boolean;
+  isSRS: boolean;
 }) {
   const route = useRoute();
   const router = useRouter();
@@ -69,6 +62,7 @@ export function usePush({
   const offerSended = ref(new Set());
   const webRTC = ref<WebRTCClass>();
   const srsSdp = ref('');
+  const { initWs } = useWs();
   const maxBitrate = ref([
     {
       label: '1000',
@@ -157,12 +151,7 @@ export function usePush({
   ]);
   const currentMaxFramerate = ref(maxFramerate.value[1].value);
 
-  const track = reactive({
-    audio: 1,
-    video: 1,
-  });
   const streamurl = ref('');
-
   const damuList = ref<IDanmu[]>([]);
   const liveUserList = ref<ILiveUser[]>([]);
 
@@ -191,39 +180,44 @@ export function usePush({
   >([]);
 
   watch(
-    () => localStream.value,
-    (newStream) => {
-      console.log('localStream变了');
-      console.log('新的视频流', newStream?.getVideoTracks());
-      console.log('新的音频流', newStream?.getAudioTracks());
-      if (!localVideoRef.value || !newStream) return;
-      localVideoRef.value.srcObject = newStream;
-      if (isSRS) {
-        if (isLiving.value) {
-          networkStore.getRtcMap(`${roomId.value}___${getSocketId()}`)?.close();
-          networkStore.removeRtc(`${roomId.value}___${getSocketId()}`);
-          startNewWebRtc({
-            receiver: getSocketId(),
-            videoEl: localVideoRef.value,
-          });
-        }
-      } else {
-        networkStore.rtcMap.forEach((rtc) => {
-          newStream?.getTracks().forEach((track) => {
-            const sender = rtc.peerConnection
-              ?.getSenders()
-              .find((s) => s.track?.id === track.id);
-            if (!sender) {
-              console.warn('localStream变了，pc插入track');
-              // rtc.peerConnection?.addTransceiver(track, {
-              //   streams: [newStream],
-              //   direction: 'sendonly',
-              // });
-              rtc.peerConnection?.addTrack(track, newStream);
-            }
-          });
-        });
-      }
+    () => appStore.allTrack,
+    (trackInfo) => {
+      console.log('appStore.allTrack变了');
+      const mixedStream = new MediaStream();
+      trackInfo.forEach((item) => {
+        mixedStream.addTrack(item.track);
+      });
+      localStream.value = mixedStream;
+      localVideoRef.value.srcObject = mixedStream;
+      // if (!localVideoRef.value || !newStream) return;
+      // localVideoRef.value.srcObject = newStream;
+      // if (isSRS) {
+      //   if (isLiving.value) {
+      //     console.log('当前是srs，关闭');
+      //     networkStore.getRtcMap(`${roomId.value}___${getSocketId()}`)?.close();
+      //     networkStore.removeRtc(`${roomId.value}___${getSocketId()}`);
+      //     startNewWebRtc({
+      //       receiver: getSocketId(),
+      //       videoEl: localVideoRef.value,
+      //     });
+      //   }
+      // } else {
+      //   networkStore.rtcMap.forEach((rtc) => {
+      //     newStream?.getTracks().forEach((track) => {
+      //       const sender = rtc.peerConnection
+      //         ?.getSenders()
+      //         .find((s) => s.track?.id === track.id);
+      //       if (!sender) {
+      //         console.warn('localStream变了，pc插入track');
+      //         // rtc.peerConnection?.addTransceiver(track, {
+      //         //   streams: [newStream],
+      //         //   direction: 'sendonly',
+      //         // });
+      //         rtc.peerConnection?.addTrack(track, newStream);
+      //       }
+      //     });
+      //   });
+      // }
     },
     { deep: true }
   );
@@ -382,6 +376,15 @@ export function usePush({
       window.$message.warning('请选择一个素材！');
       return;
     }
+    initWs({
+      roomId: roomId.value,
+      isSRS,
+      localVideo: localVideoRef.value,
+      currentMaxBitrate: currentMaxBitrate.value,
+      currentMaxFramerate: currentMaxFramerate.value,
+      currentResolutionRatio: currentResolutionRatio.value,
+    });
+    return;
     const instance = new WebSocketClass({
       roomId: roomId.value,
       url: WEBSOCKET_URL,
@@ -435,6 +438,7 @@ export function usePush({
     receiver: string;
     videoEl?: HTMLVideoElement;
   }) {
+    console.log('xxx', localStream.value);
     let rtc: WebRTCClass;
     if (isSRS) {
       console.warn('SRS开始new WebRTCClass', `${roomId.value}___${receiver!}`);
@@ -463,7 +467,7 @@ export function usePush({
       });
       webRTC.value = rtc;
     } else {
-      console.warn('开始new WebRTCClass', `${roomId.value}___${receiver!}`);
+      console.warn('-开始new WebRTCClass', `${roomId.value}___${receiver!}`);
       rtc = new WebRTCClass({
         maxBitrate: currentMaxBitrate.value,
         maxFramerate: currentMaxFramerate.value,
@@ -789,7 +793,6 @@ export function usePush({
         msg: '',
       };
       damuList.value.push(danmu);
-      if (isSRS) return;
       if (joined.value) {
         startNewWebRtc({
           receiver: data.data.join_socket_id,
@@ -814,6 +817,7 @@ export function usePush({
       networkStore.rtcMap
         .get(`${roomId.value}___${data.socketId as string}`)
         ?.close();
+      networkStore.removeRtc(`${roomId.value}___${data.socketId as string}`);
       const res = liveUserList.value.filter(
         (item) => item.id !== data.socketId
       );
