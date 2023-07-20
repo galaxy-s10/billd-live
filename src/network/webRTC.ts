@@ -1,7 +1,8 @@
+import { getRandomString } from 'billd-utils';
 import browserTool from 'browser-tool';
-import { NODE_ENV } from 'script/constant';
 
-import { ICandidate } from '@/interface';
+import { ICandidate, MediaTypeEnum } from '@/interface';
+import { AppRootState, useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 
 import { WsMsgTypeEnum } from './webSocket';
@@ -69,11 +70,6 @@ export class WebRTCClass {
     console.warn('new webrtc参数:', data);
     this.browser = browserTool();
     this.createPeerConnection();
-    // setInterval(() => {
-    //   const getAudioTracks = this.localStream?.getAudioTracks().length;
-    //   const getVideoTracks = this.localStream?.getVideoTracks().length;
-    //   console.log(getAudioTracks, getVideoTracks, '----');
-    // }, 1000);
   }
 
   prettierLog = (msg: string, type?: 'log' | 'warn' | 'error', ...args) => {
@@ -87,33 +83,62 @@ export class WebRTCClass {
 
   addTrack = (stream: MediaStream, isCb?: boolean) => {
     console.log('开始addTrack,是否是pc的track回调', isCb);
-    console.log('收到新stream', stream);
-    console.log('收到新stream的视频轨', stream.getVideoTracks());
-    console.log('收到新stream的音频轨', stream.getAudioTracks());
-    console.log('原本旧stream的视频轨', this.localStream?.getVideoTracks());
-    console.log('原本旧stream的音频轨', this.localStream?.getAudioTracks());
-    const mixedStream = new MediaStream();
-    this.localStream
-      ?.getVideoTracks()
-      .forEach((track) => mixedStream.addTrack(track));
-    this.localStream
-      ?.getAudioTracks()
-      .forEach((track) => mixedStream.addTrack(track));
-    stream.getVideoTracks().forEach((track) => mixedStream.addTrack(track));
-    stream.getAudioTracks().forEach((track) => mixedStream.addTrack(track));
-    console.log('混流stream', stream);
-    console.log('混流stream的视频流', mixedStream.getVideoTracks());
-    console.log('混流stream的音频流', mixedStream.getAudioTracks());
-    // const sender = this.peerConnection
-    //   ?.getSenders()
-    //   .find((sender) => sender.track !== track);
-    // console.log('getSenders', this.peerConnection?.getSenders());
-    // console.log('sender', sender);
-    if (NODE_ENV === 'development') {
-      this.videoEl.controls = true;
-    }
-    this.videoEl.srcObject = mixedStream;
-    this.localStream = mixedStream;
+    console.log('收到新track', stream);
+    console.log('收到新track的视频轨', stream.getVideoTracks());
+    console.log('收到新track的音频轨', stream.getAudioTracks());
+    console.log('原本旧track的视频轨', this.localStream?.getVideoTracks());
+    console.log('原本旧track的音频轨', this.localStream?.getAudioTracks());
+
+    const appStore = useAppStore();
+    const allTrack: AppRootState['allTrack'] = [];
+
+    this.localStream?.getVideoTracks().forEach((track) => {
+      allTrack.push({
+        id: getRandomString(8),
+        track,
+        stream,
+        audio: 2,
+        video: 1,
+        type: MediaTypeEnum.screen,
+        mediaName: '',
+      });
+    });
+    this.localStream?.getAudioTracks().forEach((track) => {
+      allTrack.push({
+        id: getRandomString(8),
+        track,
+        stream,
+        audio: 1,
+        video: 2,
+        type: MediaTypeEnum.microphone,
+        mediaName: '',
+      });
+    });
+    stream.getVideoTracks().forEach((track) =>
+      allTrack.push({
+        id: getRandomString(8),
+        track,
+        stream,
+        audio: 2,
+        video: 1,
+        type: MediaTypeEnum.screen,
+        mediaName: '',
+      })
+    );
+    stream.getAudioTracks().forEach((track) =>
+      allTrack.push({
+        id: getRandomString(8),
+        track,
+        stream,
+        audio: 1,
+        video: 2,
+        type: MediaTypeEnum.microphone,
+        mediaName: '',
+      })
+    );
+    appStore.setAllTrack(allTrack);
+    this.localStream = stream;
+
     if (this.maxBitrate !== -1) {
       this.setMaxBitrate(this.maxBitrate);
     }
@@ -265,11 +290,11 @@ export class WebRTCClass {
     // 废弃：https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/addStream
     console.warn(`${this.roomId}，开始监听pc的addstream`);
     this.peerConnection.addEventListener('addstream', (event: any) => {
-      console.warn(`${this.roomId}，pc收到addstream事件`, event);
-      console.log('addstream事件的stream', event.stream);
-      console.log('addstream事件的视频轨', event.stream.getVideoTracks());
-      console.log('addstream事件的音频轨', event.stream.getAudioTracks());
-      this.addTrack(event.stream, true);
+      // console.warn(`${this.roomId}，pc收到addstream事件`, event);
+      // console.log('addstream事件的stream', event.stream);
+      // console.log('addstream事件的视频轨', event.stream.getVideoTracks());
+      // console.log('addstream事件的音频轨', event.stream.getAudioTracks());
+      // this.addTrack(event.stream, true);
     });
 
     console.warn(`${this.roomId}，开始监听pc的track`);

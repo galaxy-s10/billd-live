@@ -70,6 +70,7 @@ export class WebSocketClass {
       alert('当前环境不支持WebSocket！');
       return;
     }
+    console.warn('开始new WebSocketClass', data);
     this.roomId = data.roomId;
     this.isAnchor = data.isAnchor;
     this.url = data.url;

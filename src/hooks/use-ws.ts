@@ -5,14 +5,17 @@ import { fetchRtcV1Publish } from '@/api/srs';
 import { WEBSOCKET_URL } from '@/constant';
 import {
   DanmuMsgTypeEnum,
+  IAnswer,
   ICandidate,
   IDanmu,
   IHeartbeat,
   IJoin,
+  ILive,
   ILiveUser,
   IMessage,
   IOffer,
   IOtherJoin,
+  IUpdateJoinInfo,
   LiveRoomTypeEnum,
 } from '@/interface';
 import { WebRTCClass } from '@/network/webRTC';
@@ -22,7 +25,7 @@ import {
   WsMsgTypeEnum,
   prettierReceiveWebsocket,
 } from '@/network/webSocket';
-import { useAppStore } from '@/store/app';
+import { AppRootState, useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 
@@ -34,7 +37,9 @@ export const useWs = () => {
   const liveUserList = ref<ILiveUser[]>([]);
   const roomId = ref('');
   const roomName = ref('');
-  const isLiving = ref(false);
+  const roomNoLive = ref(false);
+  const liveRoomInfo = ref<ILive>();
+  const isAnchor = ref(false);
   const joined = ref(false);
   const isSRS = ref(false);
   const localVideo = ref<HTMLVideoElement>(document.createElement('video'));
@@ -128,18 +133,136 @@ export const useWs = () => {
   const damuList = ref<IDanmu[]>([]);
 
   watch(
+    () => appStore.muted,
+    (newVal) => {
+      console.log(newVal);
+    }
+  );
+
+  watch(
     () => appStore.allTrack,
-    (trackInfo) => {
+    (newTrack, oldTrack) => {
       console.log('appStore.allTrack变了');
       const mixedStream = new MediaStream();
-      trackInfo.forEach((item) => {
+      newTrack.forEach((item) => {
         mixedStream.addTrack(item.track);
       });
+      // oldTrack.forEach((item) => {
+      //   mixedStream.addTrack(item.track);
+      // });
+      console.log('新的allTrack音频轨', mixedStream.getAudioTracks());
+      console.log('新的allTrack视频轨', mixedStream.getVideoTracks());
+      console.log('旧的allTrack音频轨', localStream.value?.getAudioTracks());
+      console.log('旧的allTrack视频轨', localStream.value?.getVideoTracks());
       localStream.value = mixedStream;
-      localVideo.value.srcObject = mixedStream;
     },
     { deep: true }
   );
+
+  watch(
+    () => currentMaxFramerate.value,
+    (newVal) => {
+      networkStore.rtcMap.forEach(async (rtc) => {
+        const res = await rtc.setMaxFramerate(newVal);
+        if (res === 1) {
+          window.$message.success('切换帧率成功！');
+        } else {
+          window.$message.success('切换帧率失败！');
+        }
+      });
+    }
+  );
+
+  watch(
+    () => currentMaxBitrate.value,
+    (newVal) => {
+      networkStore.rtcMap.forEach(async (rtc) => {
+        const res = await rtc.setMaxBitrate(newVal);
+        if (res === 1) {
+          window.$message.success('切换码率成功！');
+        } else {
+          window.$message.success('切换码率失败！');
+        }
+      });
+    }
+  );
+
+  watch(
+    () => currentResolutionRatio.value,
+    (newVal) => {
+      networkStore.rtcMap.forEach(async (rtc) => {
+        const res = await rtc.setResolutionRatio(newVal);
+        if (res === 1) {
+          window.$message.success('切换分辨率成功！');
+        } else {
+          window.$message.success('切换分辨率失败！');
+        }
+      });
+    }
+  );
+
+  function addTrack(addTrackInfo: AppRootState['allTrack'][0]) {
+    if (isAnchor.value) {
+      networkStore.rtcMap.forEach((rtc) => {
+        const sender = rtc.peerConnection
+          ?.getSenders()
+          .find((sender) => sender.track === addTrackInfo.track);
+        if (!sender) {
+          rtc.peerConnection?.addTrack(addTrackInfo.track, addTrackInfo.stream);
+        }
+      });
+    }
+    const mixedStream = new MediaStream();
+    appStore.allTrack.forEach((item) => {
+      mixedStream.addTrack(item.track);
+    });
+    console.log('addTrack后结果的音频轨', mixedStream.getAudioTracks());
+    console.log('addTrack后结果的视频轨', mixedStream.getVideoTracks());
+    localStream.value = mixedStream;
+    const data: IUpdateJoinInfo['data'] = {
+      live_room_id: Number(roomId.value),
+      track: {
+        audio: appStore.getTrackInfo().audio > 0 ? 1 : 2,
+        video: appStore.getTrackInfo().video > 0 ? 1 : 2,
+      },
+    };
+    networkStore.wsMap.get(roomId.value)?.send({
+      msgType: WsMsgTypeEnum.updateJoinInfo,
+      data,
+    });
+  }
+  function delTrack(delTrackInfo: AppRootState['allTrack'][0]) {
+    if (isAnchor.value) {
+      networkStore.rtcMap.forEach((rtc) => {
+        const sender = rtc.peerConnection
+          ?.getSenders()
+          .find((sender) => sender.track === delTrackInfo.track);
+        if (sender) {
+          console.log('删除track', sender);
+          rtc.peerConnection?.removeTrack(sender);
+        }
+      });
+    }
+    const mixedStream = new MediaStream();
+    appStore.allTrack.forEach((item) => {
+      console.log('xxxx', item.track);
+      mixedStream.addTrack(item.track);
+    });
+    console.log('delTrack后结果的音频轨', mixedStream.getAudioTracks());
+    console.log('delTrack后结果的视频轨', mixedStream.getVideoTracks());
+    localStream.value = mixedStream;
+    const data: IUpdateJoinInfo['data'] = {
+      live_room_id: Number(roomId.value),
+      track: {
+        audio: appStore.getTrackInfo().audio > 0 ? 1 : 2,
+        video: appStore.getTrackInfo().video > 0 ? 1 : 2,
+      },
+    };
+    networkStore.wsMap.get(roomId.value)?.send({
+      msgType: WsMsgTypeEnum.updateJoinInfo,
+      data,
+    });
+  }
 
   function getSocketId() {
     return networkStore.wsMap.get(roomId.value)?.socketIo?.id || '-1';
@@ -185,7 +308,6 @@ export const useWs = () => {
       });
     } else {
       const sdp = await rtc.createOffer();
-      console.log(sdp, 22);
       await rtc.setLocalDescription(sdp!);
       const res = await fetchRtcV1Publish({
         api: `/rtc/v1/publish/`,
@@ -245,7 +367,6 @@ export const useWs = () => {
   function handleNegotiationneeded(data: { roomId: string; isSRS: boolean }) {
     console.warn(`${data.roomId}，开始监听pc的negotiationneeded`);
     const rtc = networkStore.getRtcMap(data.roomId);
-    console.log(rtc, 111);
     if (!rtc) return;
     rtc.peerConnection?.addEventListener('negotiationneeded', (event) => {
       console.warn(`${data.roomId}，pc收到negotiationneeded`, event);
@@ -264,7 +385,6 @@ export const useWs = () => {
     receiver: string;
     videoEl: HTMLVideoElement;
   }) {
-    console.log('xxx', localStream.value);
     let rtc: WebRTCClass;
     if (isSRS.value) {
       console.warn('SRS开始new WebRTCClass', `${roomId.value}___${receiver!}`);
@@ -341,7 +461,7 @@ export const useWs = () => {
     });
 
     // 收到offer
-    ws.socketIo.on(WsMsgTypeEnum.offer, (data: IOffer) => {
+    ws.socketIo.on(WsMsgTypeEnum.offer, async (data: IOffer) => {
       prettierReceiveWebsocket(
         WsMsgTypeEnum.offer,
         `发送者：${data.data.sender}，接收者：${data.data.receiver}`,
@@ -351,27 +471,31 @@ export const useWs = () => {
       if (!ws) return;
       if (data.data.receiver === getSocketId()) {
         console.log('收到offer，这个offer是发给我的');
-        // nextTick(async () => {
-        //   const rtc = await startNewWebRtc({
-        //     receiver: data.data.sender,
-        //     videoEl: remoteVideoRef.value[data.data.sender],
-        //   });
-        //   if (rtc) {
-        //     await rtc.setRemoteDescription(data.data.sdp);
-        //     const sdp = await rtc.createAnswer();
-        //     await rtc.setLocalDescription(sdp!);
-        //     const answerData: IAnswer = {
-        //       sdp,
-        //       sender: getSocketId(),
-        //       receiver: data.data.sender,
-        //       live_room_id: data.data.live_room_id,
-        //     };
-        //     ws.send({
-        //       msgType: WsMsgTypeEnum.answer,
-        //       data: answerData,
-        //     });
-        //   }
-        // });
+        if (!isAnchor.value) {
+          // 如果是用户进来看直播
+          let rtc = networkStore.getRtcMap(
+            `${roomId.value}___${data.data.sender}`
+          );
+          if (!rtc) {
+            rtc = await startNewWebRtc({
+              receiver: data.data.sender,
+              videoEl: localVideo.value,
+            });
+          }
+          await rtc.setRemoteDescription(data.data.sdp);
+          const sdp = await rtc.createAnswer();
+          await rtc.setLocalDescription(sdp!);
+          const answerData: IAnswer = {
+            sdp,
+            sender: getSocketId(),
+            receiver: data.data.sender,
+            live_room_id: data.data.live_room_id,
+          };
+          ws.send({
+            msgType: WsMsgTypeEnum.answer,
+            data: answerData,
+          });
+        }
       } else {
         console.log('收到offer，但是这个offer不是发给我的');
       }
@@ -433,6 +557,12 @@ export const useWs = () => {
       prettierReceiveWebsocket(WsMsgTypeEnum.roomLiveing, data);
     });
 
+    // 管理员不在直播
+    ws.socketIo.on(WsMsgTypeEnum.roomNoLive, (data) => {
+      prettierReceiveWebsocket(WsMsgTypeEnum.roomNoLive, data);
+      roomNoLive.value = true;
+    });
+
     // 当前所有在线用户
     ws.socketIo.on(WsMsgTypeEnum.liveUser, (data) => {
       prettierReceiveWebsocket(WsMsgTypeEnum.liveUser, data);
@@ -459,8 +589,8 @@ export const useWs = () => {
         id: `${getSocketId()}`,
         userInfo: data.user_info,
       });
-      if (isSRS.value) {
-        startNewWebRtc({ receiver: getSocketId(), videoEl: localVideo.value });
+      if (!isAnchor.value) {
+        liveRoomInfo.value = data.data;
       }
     });
 
@@ -478,7 +608,6 @@ export const useWs = () => {
         msg: '',
       };
       damuList.value.push(danmu);
-      if (isSRS.value) return;
       if (joined.value) {
         startNewWebRtc({
           receiver: data.data.join_socket_id,
@@ -517,28 +646,49 @@ export const useWs = () => {
   }
 
   function initWs(data: {
+    isAnchor: boolean;
     roomId: string;
     isSRS: boolean;
-    currentResolutionRatio: number;
-    currentMaxFramerate: number;
-    currentMaxBitrate: number;
-    localVideo: HTMLVideoElement;
+    currentResolutionRatio?: number;
+    currentMaxFramerate?: number;
+    currentMaxBitrate?: number;
   }) {
     roomId.value = data.roomId;
-    localVideo.value = data.localVideo;
-    currentMaxBitrate.value = data.currentMaxBitrate;
-    currentMaxFramerate.value = data.currentMaxFramerate;
-    currentResolutionRatio.value = data.currentResolutionRatio;
+    isAnchor.value = data.isAnchor;
+    if (data.currentMaxBitrate) {
+      currentMaxBitrate.value = data.currentMaxBitrate;
+    }
+    if (data.currentMaxFramerate) {
+      currentMaxFramerate.value = data.currentMaxFramerate;
+    }
+    if (data.currentResolutionRatio) {
+      currentResolutionRatio.value = data.currentResolutionRatio;
+    }
     isSRS.value = data.isSRS;
-    console.warn('开始new WebSocketClass', data);
     new WebSocketClass({
       roomId: roomId.value,
       url: WEBSOCKET_URL,
-      isAnchor: true,
+      isAnchor: data.isAnchor,
     });
-    isLiving.value = true;
     initReceive();
   }
 
-  return { initWs };
+  return {
+    getSocketId,
+    initWs,
+    addTrack,
+    delTrack,
+    liveRoomInfo,
+    roomNoLive,
+    heartbeatTimer,
+    localStream,
+    liveUserList,
+    damuList,
+    maxBitrate,
+    maxFramerate,
+    resolutionRatio,
+    currentMaxFramerate,
+    currentMaxBitrate,
+    currentResolutionRatio,
+  };
 };

@@ -41,7 +41,9 @@ export const useAppStore = defineStore('app', {
     isOnlyAudio() {
       let videoTracks = 0;
       this.allTrack.forEach((item) => {
-        videoTracks += item.stream.getVideoTracks().length;
+        if (item.video === 1) {
+          videoTracks += 1;
+        }
       });
       return videoTracks <= 0;
     },

@@ -11,14 +11,16 @@
             <div
               class="avatar"
               :style="{
-                backgroundImage: `url(${userAvatar})`,
+                backgroundImage: `url(${liveRoomInfo?.user?.avatar})`,
               }"
             ></div>
             <div class="detail">
-              <div class="top">{{ userName || '-' }}</div>
+              <div class="top">{{ liveRoomInfo?.user?.username }}</div>
               <div class="bottom">
-                <span>{{ roomName }}</span>
-                <span>socketId:{{ getSocketId() }}</span>
+                <span>{{ liveRoomInfo?.live_room?.name }}</span>
+                <span v-if="NODE_ENV === 'development'">
+                  socketId:{{ getSocketId() }}
+                </span>
               </div>
             </div>
           </div>
@@ -35,7 +37,8 @@
               class="cover"
               :style="{
                 backgroundImage: `url(${
-                  coverImg || currentLiveRoom?.user?.avatar
+                  liveRoomInfo?.live_room?.cover_img ||
+                  liveRoomInfo?.user?.avatar
                 })`,
               }"
             ></div>
@@ -113,7 +116,9 @@
             @click="handleRecharge"
           >
             <div class="ico wallet"></div>
-            <div class="name">余额:{{ balance }}</div>
+            <div class="name">
+              余额:{{ userStore.userInfo?.wallet?.balance }}
+            </div>
             <div class="price">立即充值</div>
           </div>
         </div>
@@ -205,6 +210,7 @@
 </template>
 
 <script lang="ts" setup>
+import { NODE_ENV } from 'script/constant';
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -242,28 +248,15 @@ const {
   getSocketId,
   keydownDanmu,
   sendDanmu,
-  batchSendOffer,
-  startGetUserMedia,
-  startGetDisplayMedia,
-  addTrack,
   addVideo,
   autoplayVal,
   videoLoading,
-  balance,
-  roomName,
-  userName,
-  userAvatar,
-  currentLiveRoom,
-  hlsurl,
-  coverImg,
   roomNoLive,
   damuList,
-  giftList,
   liveUserList,
-  danmuStr,
-  localStream,
-  sender,
   sidebarList,
+  danmuStr,
+  liveRoomInfo,
 } = usePull({
   localVideoRef,
   canvasRef,
@@ -297,15 +290,10 @@ function handleRecharge() {
 function handleJoin() {
   showJoin.value = !showJoin.value;
   nextTick(async () => {
-    await startGetUserMedia();
+    // await startGetUserMedia();
     addVideo();
   });
 }
-
-onUnmounted(() => {
-  closeWs();
-  closeRtc();
-});
 
 watch(
   () => damuList.value.length,
@@ -317,6 +305,11 @@ watch(
     }, 0);
   }
 );
+
+onUnmounted(() => {
+  closeWs();
+  closeRtc();
+});
 
 onMounted(() => {
   getGoodsList();
@@ -336,11 +329,7 @@ onMounted(() => {
         topRef.value.getBoundingClientRect().height);
     containerRef.value.style.height = `${res}px`;
   }
-  if (route.query.liveType === liveTypeEnum.srsHlsPull) {
-    initPull();
-  } else {
-    initPull();
-  }
+  initPull();
 });
 </script>
 

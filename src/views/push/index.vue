@@ -22,6 +22,7 @@
             x5-video-orientation="portraint"
             muted
             :controls="NODE_ENV === 'development' ? true : false"
+            @contextmenu.prevent
           ></video>
           <div
             v-if="!appStore.allTrack || appStore.allTrack.length <= 0"
@@ -150,7 +151,7 @@
             </n-button>
             <n-button
               v-else
-              type="info"
+              type="error"
               size="small"
               @click="endLive"
             >
@@ -171,12 +172,11 @@
             class="item"
           >
             <span class="name">
-              ({{ item.audio === 1 ? '音频' : ''
-              }}{{ item.video === 1 ? '视频' : '' }}){{ item.mediaName }}
+              ({{ item.audio === 1 ? '音频' : '视频' }}){{ item.mediaName }}
             </span>
             <div
               class="del"
-              @click="delTrack(item)"
+              @click="handleDelTrack(item)"
             >
               x
             </div>
@@ -186,9 +186,9 @@
           <n-button
             size="small"
             type="primary"
-            @click="handleAddMedia"
+            @click="showSelectMediaModalCpt = true"
           >
-            添加音频
+            添加素材
           </n-button>
         </div>
       </div>
@@ -246,11 +246,18 @@
       </div>
     </div>
 
+    <SelectMediaModalCpt
+      v-if="showSelectMediaModalCpt"
+      :all-media-type-list="allMediaTypeList"
+      @close="showSelectMediaModalCpt = false"
+      @ok="selectMediaOk"
+    ></SelectMediaModalCpt>
+
     <MediaModalCpt
       v-if="showMediaModalCpt"
       :media-type="currentMediaType"
       @close="showMediaModalCpt = false"
-      @ok="selectMediaOk"
+      @ok="addMediaOk"
     ></MediaModalCpt>
   </div>
 </template>
@@ -267,11 +274,13 @@ import { AppRootState, useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
 
 import MediaModalCpt from './mediaModal/index.vue';
+import SelectMediaModalCpt from './selectMediaModal/index.vue';
 
 const route = useRoute();
 const userStore = useUserStore();
 const appStore = useAppStore();
 const currentMediaType = ref(MediaTypeEnum.camera);
+const showSelectMediaModalCpt = ref(false);
 const showMediaModalCpt = ref(false);
 const liveType = route.query.liveType;
 const topRef = ref<HTMLDivElement>();
@@ -282,7 +291,6 @@ const localVideoRef = ref<HTMLVideoElement>();
 const remoteVideoRef = ref<HTMLVideoElement[]>([]);
 
 const {
-  initPush,
   confirmRoomName,
   getSocketId,
   startLive,
@@ -302,7 +310,8 @@ const {
   roomName,
   damuList,
   liveUserList,
-  userSelectMediaList,
+  addTrack,
+  delTrack,
 } = usePush({
   localVideoRef,
   remoteVideoRef,
@@ -321,19 +330,21 @@ watch(
 );
 
 onMounted(() => {
-  localVideoRef.value!.oncontextmenu = (e) => {
-    e.preventDefault();
-  };
   if (topRef.value && bottomRef.value && containerRef.value) {
     const res =
       bottomRef.value.getBoundingClientRect().top -
       topRef.value.getBoundingClientRect().top;
     containerRef.value.style.height = `${res}px`;
   }
-  initPush();
 });
 
-async function selectMediaOk(val: {
+function selectMediaOk(val: MediaTypeEnum) {
+  showMediaModalCpt.value = true;
+  showSelectMediaModalCpt.value = false;
+  currentMediaType.value = val;
+}
+
+async function addMediaOk(val: {
   type: MediaTypeEnum;
   deviceId: string;
   mediaName: string;
@@ -349,18 +360,33 @@ async function selectMediaOk(val: {
       audio: true,
     });
     const audio = event.getAudioTracks();
-    appStore.setAllTrack([
-      ...appStore.allTrack,
-      {
+    const videoTrack = {
+      id: getRandomString(8),
+      audio: 2,
+      video: 1,
+      mediaName: val.mediaName,
+      type: MediaTypeEnum.screen,
+      track: event.getVideoTracks()[0],
+      stream: event,
+    };
+    if (audio.length) {
+      const autioTrack = {
         id: getRandomString(8),
-        audio: audio.length > 0 ? 1 : 2,
-        video: 1,
+        audio: 1,
+        video: 2,
         mediaName: val.mediaName,
         type: MediaTypeEnum.screen,
-        track: event.getVideoTracks()[0],
+        track: event.getAudioTracks()[0],
         stream: event,
-      },
-    ]);
+      };
+      appStore.setAllTrack([...appStore.allTrack, videoTrack, autioTrack]);
+      addTrack(videoTrack);
+      addTrack(autioTrack);
+    } else {
+      appStore.setAllTrack([...appStore.allTrack, videoTrack]);
+      addTrack(videoTrack);
+    }
+
     console.log('获取窗口成功');
   } else if (val.type === MediaTypeEnum.camera) {
     const event = await navigator.mediaDevices.getUserMedia({
@@ -371,53 +397,46 @@ async function selectMediaOk(val: {
       },
       audio: false,
     });
-    appStore.setAllTrack([
-      ...appStore.allTrack,
-      {
-        id: getRandomString(8),
-        audio: 2,
-        video: 1,
-        mediaName: val.mediaName,
-        type: MediaTypeEnum.camera,
-        track: event.getVideoTracks()[0],
-        stream: event,
-      },
-    ]);
+    const track = {
+      id: getRandomString(8),
+      audio: 2,
+      video: 1,
+      mediaName: val.mediaName,
+      type: MediaTypeEnum.camera,
+      track: event.getVideoTracks()[0],
+      stream: event,
+    };
+    appStore.setAllTrack([...appStore.allTrack, track]);
+    addTrack(track);
     console.log('获取摄像头成功');
   } else if (val.type === MediaTypeEnum.microphone) {
     const event = await navigator.mediaDevices.getUserMedia({
       video: false,
       audio: { deviceId: val.deviceId },
     });
-    appStore.setAllTrack([
-      ...appStore.allTrack,
-      {
-        id: getRandomString(8),
-        audio: 1,
-        video: 2,
-        mediaName: val.mediaName,
-        type: MediaTypeEnum.microphone,
-        track: event.getAudioTracks()[0],
-        stream: event,
-      },
-    ]);
+    const track = {
+      id: getRandomString(8),
+      audio: 1,
+      video: 2,
+      mediaName: val.mediaName,
+      type: MediaTypeEnum.microphone,
+      track: event.getAudioTracks()[0],
+      stream: event,
+    };
+    appStore.setAllTrack([...appStore.allTrack, track]);
+    addTrack(track);
     console.log('获取麦克风成功');
   }
 }
 
-function delTrack(item: AppRootState['allTrack'][0]) {
-  console.log(item);
+function handleDelTrack(item: AppRootState['allTrack'][0]) {
+  console.log('handleDelTrack', item);
   const res = appStore.allTrack.filter((iten) => iten.id !== item.id);
   appStore.setAllTrack(res);
-}
-
-function handleAddMedia() {
-  currentMediaType.value = MediaTypeEnum.microphone;
-  showMediaModalCpt.value = true;
+  delTrack(item);
 }
 
 function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
-  console.log(item);
   currentMediaType.value = item.type;
   showMediaModalCpt.value = true;
 }
