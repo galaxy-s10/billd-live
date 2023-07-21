@@ -10,9 +10,13 @@
       >
         <div class="video-wrap">
           <AudioRoomTip></AudioRoomTip>
-          <video
-            id="localVideo"
+          <div
             ref="localVideoRef"
+            class="media-list"
+          ></div>
+          <!-- <video
+            id="localVideo"
+            ref="localVideo2Ref"
             autoplay
             webkit-playsinline="true"
             playsinline
@@ -23,7 +27,7 @@
             muted
             :controls="NODE_ENV === 'development' ? true : false"
             @contextmenu.prevent
-          ></video>
+          ></video> -->
           <div
             v-if="!appStore.allTrack || appStore.allTrack.length <= 0"
             class="add-wrap"
@@ -264,7 +268,6 @@
 
 <script lang="ts" setup>
 import { getRandomString } from 'billd-utils';
-import { NODE_ENV } from 'script/constant';
 import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -473,10 +476,16 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
         justify-content: center;
         height: 100%;
         background-color: rgba($color: #000000, $alpha: 0.5);
-        #localVideo {
-          max-width: 100%;
-          max-height: 100%;
+        .media-list {
+          :deep(video) {
+            width: 50%;
+          }
         }
+
+        // #localVideo {
+        //   max-width: 100%;
+        //   max-height: 100%;
+        // }
         .add-wrap {
           position: absolute;
           top: 50%;

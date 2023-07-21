@@ -1,4 +1,3 @@
-import { NODE_ENV } from 'script/constant';
 import { Ref, nextTick, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -15,7 +14,7 @@ import { WsMsgTypeEnum } from '@/network/webSocket';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
-import { videoToCanvas } from '@/utils';
+import { createVideo, videoToCanvas } from '@/utils';
 
 export function usePull({
   localVideoRef,
@@ -96,17 +95,10 @@ export function usePull({
           });
           videoLoading.value = false;
         } else if (roomLiveType.value === liveTypeEnum.webrtcPull) {
-          const videoEl = document.createElement('video');
-          videoEl.muted = true;
-          videoEl.playsInline = true;
-          videoEl.autoplay = true;
-          videoEl.setAttribute('webkit-playsinline', 'true');
-          videoEl.oncontextmenu = (e) => {
-            e.preventDefault();
-          };
-          if (NODE_ENV === 'development') {
-            videoEl.controls = true;
-          }
+          const videoEl = createVideo({
+            muted: appStore.muted,
+            autoplay: true,
+          });
           videoEl.srcObject = stream.value;
           canvasRef.value?.childNodes?.forEach((item) => {
             item.remove();

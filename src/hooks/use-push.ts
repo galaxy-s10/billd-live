@@ -11,6 +11,7 @@ import { WsMsgTypeEnum } from '@/network/webSocket';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
+import { createVideo } from '@/utils';
 
 import { loginTip } from './use-login';
 import { useTip } from './use-tip';
@@ -35,6 +36,8 @@ export function usePush({
   const roomName = ref('');
   const danmuStr = ref('');
   const isLiving = ref(false);
+
+  const videoElArr = ref<HTMLVideoElement[]>([]);
 
   const allMediaTypeList: {
     [index: string]: { type: MediaTypeEnum; txt: string };
@@ -73,11 +76,33 @@ export function usePush({
   watch(
     () => localStream,
     (stream) => {
-      if (stream.value) {
-        localVideoRef.value!.srcObject = stream.value;
-      } else {
-        localVideoRef.value!.srcObject = null;
-      }
+      console.log('localStream变了');
+      console.log('音频轨：', stream.value?.getAudioTracks());
+      console.log('视频轨：', stream.value?.getVideoTracks());
+      videoElArr.value.forEach((dom) => {
+        dom.remove();
+      });
+      stream.value?.getVideoTracks().forEach((track) => {
+        console.log('视频轨enabled：', track.id, track.enabled);
+        const video = createVideo({});
+        video.id = track.id;
+        video.srcObject = new MediaStream([track]);
+        localVideoRef.value?.appendChild(video);
+        videoElArr.value.push(video);
+      });
+      stream.value?.getAudioTracks().forEach((track) => {
+        console.log('音频轨enabled：', track.id, track.enabled);
+        const video = createVideo({});
+        video.id = track.id;
+        video.srcObject = new MediaStream([track]);
+        localVideoRef.value?.appendChild(video);
+        videoElArr.value.push(video);
+      });
+      // if (stream.value) {
+      //   localVideoRef.value!.srcObject = stream.value;
+      // } else {
+      //   localVideoRef.value!.srcObject = null;
+      // }
     },
     { deep: true }
   );

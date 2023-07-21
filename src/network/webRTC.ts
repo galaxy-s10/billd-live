@@ -156,6 +156,7 @@ export class WebRTCClass {
     return new Promise((resolve) => {
       this.localStream?.getTracks().forEach((track) => {
         if (track.kind === 'video') {
+          console.log('设置分辨率ing');
           track
             .applyConstraints({
               height,
@@ -166,7 +167,7 @@ export class WebRTCClass {
               resolve(1);
             })
             .catch((error) => {
-              console.error('设置分辨率失败', error);
+              console.error('设置分辨率失败', height, error);
               resolve(0);
             });
         }
@@ -180,6 +181,7 @@ export class WebRTCClass {
     return new Promise<number>((resolve) => {
       this.peerConnection?.getSenders().forEach((sender) => {
         if (sender.track?.kind === 'video') {
+          console.log('设置最大码率ing');
           const parameters = { ...sender.getParameters() };
           if (parameters.encodings[0]) {
             const val = 1000 * maxBitrate;
@@ -192,7 +194,7 @@ export class WebRTCClass {
                 resolve(1);
               })
               .catch((error) => {
-                console.error('设置最大码率失败', error);
+                console.error('设置最大码率失败', maxBitrate, error);
                 resolve(0);
               });
           }
@@ -207,6 +209,7 @@ export class WebRTCClass {
     return new Promise<number>((resolve) => {
       this.peerConnection?.getSenders().forEach((sender) => {
         if (sender.track?.kind === 'video') {
+          console.log('设置最大帧率ing');
           const parameters = { ...sender.getParameters() };
           if (parameters.encodings[0]) {
             parameters.encodings[0].maxFramerate = maxFramerate;
@@ -218,7 +221,7 @@ export class WebRTCClass {
                 resolve(1);
               })
               .catch((error) => {
-                console.error('设置最大帧率失败', error);
+                console.error('设置最大帧率失败', maxFramerate, error);
                 resolve(0);
               });
           }

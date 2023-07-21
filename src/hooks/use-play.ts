@@ -6,6 +6,7 @@ import Player from 'video.js/dist/types/player';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 
 import { useAppStore } from '@/store/app';
+import { createVideo } from '@/utils';
 
 export * as flvJs from 'flv.js';
 
@@ -52,11 +53,7 @@ export function useFlvPlay() {
             type: 'flv',
             url: data.flvurl,
           });
-          const videoEl = document.createElement('video');
-          // videoEl.autoplay = true;
-          videoEl.muted = true;
-          videoEl.playsInline = true;
-          videoEl.setAttribute('webkit-playsinline', 'true');
+          const videoEl = createVideo({ muted: true, autoplay: true });
           flvVideoEl.value = videoEl;
           flvVideoEl.value.addEventListener('play', () => {
             console.log('flv-play');
@@ -125,11 +122,7 @@ export function useHlsPlay() {
 
   function startHlsPlay(data: { hlsurl: string }) {
     destroyHls();
-    const videoEl = document.createElement('video');
-    videoEl.autoplay = true;
-    videoEl.muted = appStore.muted;
-    videoEl.playsInline = true;
-    videoEl.setAttribute('webkit-playsinline', 'true');
+    const videoEl = createVideo({ muted: appStore.muted, autoplay: true });
     hlsVideoEl.value = videoEl;
     // document.body.appendChild(videoEl);
     return new Promise<{ width: number; height: number }>((resolve) => {

@@ -1,22 +1,23 @@
-import { getRangeRandom } from 'billd-utils';
+// TIP: ctrl+cmd+t,生成函数注释
 
-export const sum = (a, b) => {
-  return a + b;
-};
+import { NODE_ENV } from 'script/constant';
 
-/**
- * @description 获取随机字符串(ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz)
- * @example: getRandomString(4) ===> abd3
- * @param {number} length
- * @return {*}
- */
-export const getRandomString = (length: number): string => {
-  const str = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-  let res = '';
-  for (let i = 0; i < length; i += 1) {
-    res += str.charAt(getRangeRandom(0, str.length - 1));
+export const createVideo = ({ muted = true, autoplay = true }) => {
+  const videoEl = document.createElement('video');
+  videoEl.autoplay = autoplay;
+  videoEl.muted = muted;
+  videoEl.playsInline = true;
+  videoEl.setAttribute('webkit-playsinline', 'true');
+  videoEl.setAttribute('x5-video-player-type', 'h5');
+  videoEl.setAttribute('x5-video-player-fullscreen', 'true');
+  videoEl.setAttribute('x5-video-orientation', 'portraint');
+  videoEl.oncontextmenu = (e) => {
+    e.preventDefault();
+  };
+  if (NODE_ENV === 'development') {
+    videoEl.controls = true;
   }
-  return res;
+  return videoEl;
 };
 
 export function videoToCanvas(data: {
