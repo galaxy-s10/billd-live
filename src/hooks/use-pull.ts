@@ -22,16 +22,16 @@ export function usePull({
   liveType: liveTypeEnum;
 }) {
   const route = useRoute();
-  const appStore = useAppStore();
   const userStore = useUserStore();
   const networkStore = useNetworkStore();
+  const appStore = useAppStore();
   const roomId = ref(route.params.roomId as string);
   const roomLiveType = ref<liveTypeEnum>(liveType);
-  const flvurl = ref('');
-  const hlsurl = ref('');
   const danmuStr = ref('');
   const autoplayVal = ref(false);
   const videoLoading = ref(false);
+  const flvurl = ref('');
+  const hlsurl = ref('');
   const sidebarList = ref<
     {
       socketId: string;
@@ -42,6 +42,7 @@ export function usePull({
   const {
     getSocketId,
     initWs,
+    roomLiveing,
     liveRoomInfo,
     roomNoLive,
     heartbeatTimer,
@@ -61,38 +62,82 @@ export function usePull({
   const { flvVideoEl, startFlvPlay } = useFlvPlay();
   const { hlsVideoEl, startHlsPlay } = useHlsPlay();
 
+  async function handleHlsPlay() {
+    console.log('handleHlsPlay');
+    videoLoading.value = true;
+    const { width, height } = await startHlsPlay({
+      hlsurl: hlsurl.value,
+    });
+    videoToCanvas({
+      videoEl: hlsVideoEl.value!,
+      targetEl: canvasRef.value!,
+      width,
+      height,
+    });
+    videoLoading.value = false;
+  }
+
+  async function handlePlay() {
+    if (roomLiveType.value === liveTypeEnum.srsFlvPull) {
+      console.log('srsFlvPull', autoplayVal.value);
+      if (!autoplayVal.value) return;
+      const { width, height } = await startFlvPlay({
+        flvurl: flvurl.value,
+      });
+      videoToCanvas({
+        videoEl: flvVideoEl.value!,
+        targetEl: canvasRef.value!,
+        width,
+        height,
+      });
+      videoLoading.value = false;
+    } else if (roomLiveType.value === liveTypeEnum.srsHlsPull) {
+      console.log('srsHlsPull', autoplayVal.value);
+      if (!autoplayVal.value) return;
+      handleHlsPlay();
+    }
+  }
+
+  watch(
+    () => autoplayVal.value,
+    (val) => {
+      console.log('autoplayVal变了', val);
+      if (val && roomLiveType.value === liveTypeEnum.webrtcPull) {
+        handlePlay();
+      }
+    }
+  );
+
+  watch(
+    () => roomLiveing.value,
+    (val) => {
+      if (val) {
+        flvurl.value = val.live?.live_room?.flv_url!;
+        hlsurl.value = val.live?.live_room?.hls_url!;
+        if (val && roomLiveType.value === liveTypeEnum.webrtcPull) {
+          handlePlay();
+        }
+      }
+    }
+  );
+  watch(
+    () => appStore.muted,
+    (newVal) => {
+      console.log('muted变了', newVal);
+      videoElArr.value.forEach((el) => {
+        el.muted = newVal;
+      });
+    }
+  );
+
   watch(
     () => localStream,
-    async (stream) => {
+    (stream) => {
       if (stream.value) {
         console.log('localStream变了');
         console.log('音频轨：', stream.value?.getAudioTracks());
         console.log('视频轨：', stream.value?.getVideoTracks());
-        if (roomLiveType.value === liveTypeEnum.srsFlvPull) {
-          if (!autoplayVal.value) return;
-          const { width, height } = await startFlvPlay({
-            flvurl: flvurl.value,
-          });
-          videoToCanvas({
-            videoEl: flvVideoEl.value!,
-            targetEl: canvasRef.value!,
-            width,
-            height,
-          });
-          videoLoading.value = false;
-        } else if (roomLiveType.value === liveTypeEnum.srsHlsPull) {
-          if (!autoplayVal.value) return;
-          const { width, height } = await startHlsPlay({
-            hlsurl: hlsurl.value,
-          });
-          videoToCanvas({
-            videoEl: hlsVideoEl.value!,
-            targetEl: canvasRef.value!,
-            width,
-            height,
-          });
-          videoLoading.value = false;
-        } else if (roomLiveType.value === liveTypeEnum.webrtcPull) {
+        if (roomLiveType.value === liveTypeEnum.webrtcPull) {
           videoElArr.value.forEach((dom) => {
             dom.remove();
           });
@@ -112,14 +157,28 @@ export function usePull({
             canvasRef.value?.appendChild(video);
             videoElArr.value.push(video);
           });
-          // videoEl.srcObject = stream.value;
-          // canvasRef.value?.childNodes?.forEach((item) => {
-          //   item.remove();
-          // });
-          // canvasRef.value?.appendChild(videoEl);
           videoLoading.value = false;
         } else if (roomLiveType.value === liveTypeEnum.srsWebrtcPull) {
-          console.log('lllll');
+          videoElArr.value.forEach((dom) => {
+            dom.remove();
+          });
+          stream.value?.getVideoTracks().forEach((track) => {
+            console.log('视频轨enabled：', track.id, track.enabled);
+            const video = createVideo({});
+            video.id = track.id;
+            video.srcObject = new MediaStream([track]);
+            canvasRef.value?.appendChild(video);
+            videoElArr.value.push(video);
+          });
+          stream.value?.getAudioTracks().forEach((track) => {
+            console.log('音频轨enabled：', track.id, track.enabled);
+            const video = createVideo({});
+            video.id = track.id;
+            video.srcObject = new MediaStream([track]);
+            canvasRef.value?.appendChild(video);
+            videoElArr.value.push(video);
+          });
+          videoLoading.value = false;
         }
       } else {
         videoElArr.value?.forEach((item) => {
@@ -139,13 +198,6 @@ export function usePull({
       if (userInfo && connected) {
         const instance = networkStore.wsMap.get(roomId.value);
         if (!instance) return;
-        // const data: IUpdateJoinInfo['data'] = {
-        //   live_room_id: Number(roomId.value),
-        // };
-        // instance.send({
-        //   msgType: WsMsgTypeEnum.updateJoinInfo,
-        //   data,
-        // });
       }
     }
   );
@@ -155,7 +207,12 @@ export function usePull({
     if (autoplayVal.value) {
       videoLoading.value = true;
     }
-    initWs({ roomId: roomId.value, isSRS, isAnchor: false });
+    initWs({
+      roomId: roomId.value,
+      isSRS,
+      isAnchor: false,
+      isPull: true,
+    });
   }
 
   function closeWs() {
@@ -172,26 +229,11 @@ export function usePull({
   function addVideo() {
     sidebarList.value.push({ socketId: getSocketId() });
     nextTick(() => {
-      liveUserList.value.forEach(async (item) => {
+      liveUserList.value.forEach((item) => {
         const socketId = item.id;
-        console.log(item, 333);
         if (socketId === getSocketId()) {
           localVideoRef.value[getSocketId()].srcObject = localStream.value;
         }
-        // if (!offerSended.value.has(socketId)) {
-        //   hooksRtcMap.value.add(
-        //     await startNewWebRtc({
-        //       receiver: socketId,
-        //       videoEl: localVideoRef.value[socketId],
-        //     })
-        //   );
-        //   console.log('执行sendOffer', {
-        //     sender: getSocketId(),
-        //     receiver: socketId,
-        //   });
-        //   sendOffer({ sender: getSocketId(), receiver: socketId });
-        //   offerSended.value.add(socketId);
-        // }
       });
     });
   }
@@ -238,6 +280,9 @@ export function usePull({
     keydownDanmu,
     sendDanmu,
     addVideo,
+    handleHlsPlay,
+    roomLiveType,
+    roomLiveing,
     autoplayVal,
     videoLoading,
     roomNoLive,

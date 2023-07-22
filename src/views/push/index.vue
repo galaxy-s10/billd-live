@@ -395,6 +395,13 @@ async function addMediaOk(val: {
       addTrack(videoTrack);
       addTrack(autioTrack);
     } else {
+      if (
+        isSRS &&
+        appStore.allTrack.filter((item) => item.video === 1).length >= 1
+      ) {
+        window.$message.error('srs模式最多只能有一个视频');
+        return;
+      }
       appStore.setAllTrack([...appStore.allTrack, videoTrack]);
       addTrack(videoTrack);
     }
@@ -409,6 +416,13 @@ async function addMediaOk(val: {
       },
       audio: false,
     });
+    if (
+      isSRS &&
+      appStore.allTrack.filter((item) => item.video === 1).length >= 1
+    ) {
+      window.$message.error('srs模式最多只能有一个视频');
+      return;
+    }
     const track = {
       id: getRandomString(8),
       audio: 2,
@@ -499,8 +513,16 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
             width: 100%;
             height: 100%;
           }
+          :deep(canvas) {
+            width: 100%;
+            height: 100%;
+          }
           &.item {
             :deep(video) {
+              width: 50%;
+              height: initial !important;
+            }
+            :deep(canvas) {
               width: 50%;
               height: initial !important;
             }

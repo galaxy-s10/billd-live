@@ -28,6 +28,7 @@
         <div
           ref="containerRef"
           class="container"
+          :style="{ height: height + 'px' }"
         >
           <div
             v-loading="videoLoading"
@@ -47,6 +48,7 @@
               ref="canvasRef"
               class="media-list"
               :class="{ item: appStore.allTrack.length > 1 }"
+              :style="{ height: height + 'px' }"
             ></div>
             <AudioRoomTip></AudioRoomTip>
             <VideoControls></VideoControls>
@@ -238,6 +240,7 @@ const userStore = useUserStore();
 const appStore = useAppStore();
 
 const giftGoodsList = ref<IGoods[]>([]);
+const height = ref(0);
 const giftLoading = ref(false);
 const showRecharge = ref(false);
 const showJoin = ref(true);
@@ -295,9 +298,10 @@ function handleRecharge() {
 }
 
 function handleJoin() {
+  window.$message.info('维护中~');
+  return;
   showJoin.value = !showJoin.value;
-  nextTick(async () => {
-    // await startGetUserMedia();
+  nextTick(() => {
     addVideo();
   });
 }
@@ -334,7 +338,7 @@ onMounted(() => {
       bottomRef.value.getBoundingClientRect().top -
       (topRef.value.getBoundingClientRect().top +
         topRef.value.getBoundingClientRect().height);
-    containerRef.value.style.height = `${res}px`;
+    height.value = res;
   }
   initPull();
 });
@@ -430,7 +434,12 @@ onMounted(() => {
           inset: 0;
         }
         .media-list {
+          overflow-y: scroll;
           :deep(video) {
+            width: 100%;
+            height: 100%;
+          }
+          :deep(canvas) {
             width: 100%;
             height: 100%;
           }
@@ -439,28 +448,12 @@ onMounted(() => {
               width: 50%;
               height: initial !important;
             }
+            :deep(canvas) {
+              width: 50%;
+              height: initial !important;
+            }
           }
         }
-        // :deep(canvas) {
-        //   position: absolute;
-        //   top: 0;
-        //   left: 50%;
-        //   width: 100%;
-        //   height: 100%;
-        //   transform: translate(-50%);
-
-        //   user-select: none;
-        // }
-        // :deep(video) {
-        //   position: absolute;
-        //   top: 0;
-        //   left: 50%;
-        //   width: 100%;
-        //   height: 100%;
-        //   transform: translate(-50%);
-
-        //   user-select: none;
-        // }
 
         .controls {
           display: none;

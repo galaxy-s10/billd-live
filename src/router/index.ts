@@ -191,14 +191,34 @@ router.beforeEach((to, from, next) => {
   if (isMobile() && !isIPad()) {
     if (!Object.keys(mobileRouterName).includes(to.name as string)) {
       // 当前移动端，但是跳转了非移动端路由
-      return next({ name: mobileRouterName.h5 });
+      console.log('当前移动端，但是跳转了非移动端路由', to, from);
+      if (to.name === routerName.pull) {
+        return next({
+          name: mobileRouterName.h5Room,
+          params: { roomId: to.params.roomId },
+        });
+      } else {
+        return next({
+          name: mobileRouterName.h5,
+        });
+      }
     } else {
       return next();
     }
   } else {
     if (Object.keys(mobileRouterName).includes(to.name as string)) {
       // 当前非移动端，但是跳转了移动端路由
-      return next({ name: routerName.home });
+      console.log('当前非移动端，但是跳转了移动端路由');
+      if (to.name === mobileRouterName.h5Room) {
+        // 有可能是原生webrtc或srs-webrtc
+        return next({
+          name: routerName.home,
+        });
+      } else {
+        return next({
+          name: routerName.home,
+        });
+      }
     }
     return next();
   }

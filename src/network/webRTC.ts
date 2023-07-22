@@ -15,8 +15,6 @@ export class WebRTCClass {
 
   videoEl: HTMLVideoElement;
 
-  direction: RTCRtpTransceiverDirection;
-
   peerConnection: RTCPeerConnection | null = null;
 
   /** 最大码率 */
@@ -50,12 +48,10 @@ export class WebRTCClass {
     maxFramerate?: number;
     resolutionRatio?: number;
     isSRS: boolean;
-    direction: RTCRtpTransceiverDirection;
     receiver: string;
   }) {
     this.roomId = data.roomId;
     this.videoEl = data.videoEl;
-    this.direction = data.direction;
     this.receiver = data.receiver;
     if (data.maxBitrate) {
       this.maxBitrate = data.maxBitrate;
@@ -161,7 +157,6 @@ export class WebRTCClass {
         });
       }
     });
-    console.log(addTrack.length, 'pppppo');
     if (addTrack.length) {
       appStore.setAllTrack([...appStore.allTrack, ...addTrack]);
     }

@@ -185,6 +185,7 @@ export function usePush({
       isAnchor: true,
       roomId: roomId.value,
       isSRS,
+      isPull: false,
       currentMaxBitrate: currentMaxBitrate.value,
       currentMaxFramerate: currentMaxFramerate.value,
       currentResolutionRatio: currentResolutionRatio.value,

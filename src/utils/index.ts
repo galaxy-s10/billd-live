@@ -1,7 +1,5 @@
 // TIP: ctrl+cmd+t,生成函数注释
 
-import { NODE_ENV } from 'script/constant';
-
 export const createVideo = ({ muted = true, autoplay = true }) => {
   const videoEl = document.createElement('video');
   videoEl.autoplay = autoplay;
@@ -14,9 +12,9 @@ export const createVideo = ({ muted = true, autoplay = true }) => {
   videoEl.oncontextmenu = (e) => {
     e.preventDefault();
   };
-  if (NODE_ENV === 'development') {
-    videoEl.controls = true;
-  }
+  // if (NODE_ENV === 'development') {
+  videoEl.controls = true;
+  // }
   return videoEl;
 };
 

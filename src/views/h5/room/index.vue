@@ -5,11 +5,11 @@
         <div
           class="avatar"
           :style="{
-            backgroundImage: `url(${liveRoomInfo?.user_live_room?.user.avatar})`,
+            backgroundImage: `url(${roomLiveing?.live?.user?.avatar})`,
           }"
         ></div>
         <div class="username">
-          {{ liveRoomInfo?.user_live_room?.user.username }}
+          {{ roomLiveing?.live?.user?.username }}
         </div>
       </div>
       <div class="right">
@@ -28,10 +28,14 @@
       <div
         class="cover"
         :style="{
-          backgroundImage: `url(${liveRoomInfo?.cover_img})`,
+          backgroundImage: `url(${roomLiveing?.live?.live_room?.cover_img})`,
         }"
       ></div>
-      <div ref="canvasRef"></div>
+      <div
+        ref="canvasRef"
+        class="media-list"
+        :class="{ item: appStore.allTrack.length > 1 }"
+      ></div>
       <div
         v-if="showPlayBtn"
         class="tip-btn"
@@ -46,6 +50,7 @@
       <div
         ref="containerRef"
         class="list"
+        :style="{ height: height + 'px' }"
       >
         <div
           v-for="(item, index) in damuList"
@@ -101,22 +106,19 @@ import { useRoute } from 'vue-router';
 import { fetchFindLiveRoom } from '@/api/liveRoom';
 import { useHlsPlay } from '@/hooks/use-play';
 import { usePull } from '@/hooks/use-pull';
-import {
-  DanmuMsgTypeEnum,
-  ILiveRoom,
-  LiveRoomTypeEnum,
-  liveTypeEnum,
-} from '@/interface';
+import { DanmuMsgTypeEnum, LiveRoomTypeEnum, liveTypeEnum } from '@/interface';
 import router, { mobileRouterName } from '@/router';
-import { videoToCanvas } from '@/utils';
+import { useAppStore } from '@/store/app';
 
 const route = useRoute();
+const appStore = useAppStore();
 
 const bottomRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
 const canvasRef = ref<HTMLVideoElement>();
 const localVideoRef = ref<HTMLVideoElement[]>([]);
 const showPlayBtn = ref(false);
+const height = ref(0);
 
 const { hlsVideoEl, startHlsPlay } = useHlsPlay();
 
@@ -127,30 +129,18 @@ const {
   getSocketId,
   keydownDanmu,
   sendDanmu,
-  batchSendOffer,
-  startGetUserMedia,
-  startGetDisplayMedia,
-  addTrack,
   addVideo,
+  handleHlsPlay,
+  roomLiveType,
+  roomLiveing,
   autoplayVal,
   videoLoading,
-  balance,
-  roomLiveType,
-  roomSocketId,
-  roomName,
-  userName,
-  userAvatar,
-  currentLiveRoom,
-  hlsurl,
-  coverImg,
   roomNoLive,
   damuList,
-  giftList,
   liveUserList,
-  danmuStr,
-  localStream,
-  sender,
   sidebarList,
+  danmuStr,
+  liveRoomInfo,
 } = usePull({
   localVideoRef,
   canvasRef,
@@ -158,12 +148,6 @@ const {
   isSRS: false,
 });
 
-const liveRoomInfo = ref<ILiveRoom>();
-
-watch(
-  () => autoplayVal.value,
-  (v) => {}
-);
 watch(
   () => damuList.value.length,
   () => {
@@ -180,10 +164,10 @@ async function getLiveRoomInfo() {
     videoLoading.value = true;
     const res = await fetchFindLiveRoom(route.params.roomId as string);
     if (res.code === 200) {
-      liveRoomInfo.value = res.data;
+      console.log('kkkkk');
       if (res.data.type === LiveRoomTypeEnum.user_wertc) {
-        roomLiveType.value = liveTypeEnum.webrtcPull;
         autoplayVal.value = true;
+        roomLiveType.value = liveTypeEnum.webrtcPull;
         showPlayBtn.value = false;
       } else {
         showPlayBtn.value = true;
@@ -197,19 +181,9 @@ async function getLiveRoomInfo() {
   }
 }
 
-async function startPull() {
+function startPull() {
   showPlayBtn.value = false;
-  videoLoading.value = true;
-  const { width, height } = await startHlsPlay({
-    hlsurl: liveRoomInfo.value!.hls_url!,
-  });
-  videoToCanvas({
-    videoEl: hlsVideoEl.value!,
-    targetEl: canvasRef.value!,
-    width,
-    height,
-  });
-  videoLoading.value = false;
+  handleHlsPlay();
 }
 
 onMounted(() => {
@@ -219,7 +193,8 @@ onMounted(() => {
     const res =
       bottomRef.value.getBoundingClientRect().top -
       containerRef.value.getBoundingClientRect().top;
-    containerRef.value.style.height = `${res}px`;
+    height.value = res;
+    // containerRef.value.style.height = `${res}px`;
   }
 });
 </script>
@@ -269,26 +244,48 @@ onMounted(() => {
 
       inset: 0;
     }
-    :deep(video) {
-      position: absolute;
-      top: 0;
-      left: 50%;
-      width: 100%;
-      height: 100%;
-      transform: translate(-50%);
-
-      user-select: nones;
+    .media-list {
+      height: 230px;
+      overflow-y: scroll;
+      :deep(video) {
+        width: 100%;
+        height: 100%;
+      }
+      :deep(canvas) {
+        width: 100%;
+        height: 100%;
+      }
+      &.item {
+        :deep(video) {
+          width: 50%;
+          height: initial !important;
+        }
+        :deep(canvas) {
+          width: 50%;
+          height: initial !important;
+        }
+      }
     }
-    :deep(canvas) {
-      position: absolute;
-      top: 0;
-      left: 50%;
-      width: 100%;
-      height: 100%;
-      transform: translate(-50%);
+    // :deep(video) {
+    //   position: absolute;
+    //   top: 0;
+    //   left: 50%;
+    //   width: 100%;
+    //   height: 100%;
+    //   transform: translate(-50%);
 
-      user-select: nones;
-    }
+    //   user-select: nones;
+    // }
+    // :deep(canvas) {
+    //   position: absolute;
+    //   top: 0;
+    //   left: 50%;
+    //   width: 100%;
+    //   height: 100%;
+    //   transform: translate(-50%);
+
+    //   user-select: nones;
+    // }
     .tip-btn {
       position: absolute;
       top: 50%;

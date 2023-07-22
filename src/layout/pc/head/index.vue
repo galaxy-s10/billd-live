@@ -282,6 +282,7 @@ const resource = ref([
   },
   {
     label: 'billd-live-admin',
+    url: 'https://live-admin.hsslive.cn',
   },
 ]);
 const plugins = ref([
