@@ -3,13 +3,7 @@ import { useRoute } from 'vue-router';
 
 import { useFlvPlay, useHlsPlay } from '@/hooks/use-play';
 import { useWs } from '@/hooks/use-ws';
-import {
-  DanmuMsgTypeEnum,
-  IDanmu,
-  IMessage,
-  IUpdateJoinInfo,
-  liveTypeEnum,
-} from '@/interface';
+import { DanmuMsgTypeEnum, IDanmu, IMessage, liveTypeEnum } from '@/interface';
 import { WsMsgTypeEnum } from '@/network/webSocket';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
@@ -43,6 +37,7 @@ export function usePull({
       socketId: string;
     }[]
   >([]);
+  const videoElArr = ref<HTMLVideoElement[]>([]);
 
   const {
     getSocketId,
@@ -70,6 +65,9 @@ export function usePull({
     () => localStream,
     async (stream) => {
       if (stream.value) {
+        console.log('localStream变了');
+        console.log('音频轨：', stream.value?.getAudioTracks());
+        console.log('视频轨：', stream.value?.getVideoTracks());
         if (roomLiveType.value === liveTypeEnum.srsFlvPull) {
           if (!autoplayVal.value) return;
           const { width, height } = await startFlvPlay({
@@ -95,21 +93,38 @@ export function usePull({
           });
           videoLoading.value = false;
         } else if (roomLiveType.value === liveTypeEnum.webrtcPull) {
-          const videoEl = createVideo({
-            muted: appStore.muted,
-            autoplay: true,
+          videoElArr.value.forEach((dom) => {
+            dom.remove();
           });
-          videoEl.srcObject = stream.value;
-          canvasRef.value?.childNodes?.forEach((item) => {
-            item.remove();
+          stream.value?.getVideoTracks().forEach((track) => {
+            console.log('视频轨enabled：', track.id, track.enabled);
+            const video = createVideo({});
+            video.id = track.id;
+            video.srcObject = new MediaStream([track]);
+            canvasRef.value?.appendChild(video);
+            videoElArr.value.push(video);
           });
-          canvasRef.value?.appendChild(videoEl);
+          stream.value?.getAudioTracks().forEach((track) => {
+            console.log('音频轨enabled：', track.id, track.enabled);
+            const video = createVideo({});
+            video.id = track.id;
+            video.srcObject = new MediaStream([track]);
+            canvasRef.value?.appendChild(video);
+            videoElArr.value.push(video);
+          });
+          // videoEl.srcObject = stream.value;
+          // canvasRef.value?.childNodes?.forEach((item) => {
+          //   item.remove();
+          // });
+          // canvasRef.value?.appendChild(videoEl);
           videoLoading.value = false;
-        } else {
-          canvasRef.value?.childNodes?.forEach((item) => {
-            item.remove();
-          });
+        } else if (roomLiveType.value === liveTypeEnum.srsWebrtcPull) {
+          console.log('lllll');
         }
+      } else {
+        videoElArr.value?.forEach((item) => {
+          item.remove();
+        });
       }
     },
     { deep: true }
@@ -124,13 +139,13 @@ export function usePull({
       if (userInfo && connected) {
         const instance = networkStore.wsMap.get(roomId.value);
         if (!instance) return;
-        const data: IUpdateJoinInfo['data'] = {
-          live_room_id: Number(roomId.value),
-        };
-        instance.send({
-          msgType: WsMsgTypeEnum.updateJoinInfo,
-          data,
-        });
+        // const data: IUpdateJoinInfo['data'] = {
+        //   live_room_id: Number(roomId.value),
+        // };
+        // instance.send({
+        //   msgType: WsMsgTypeEnum.updateJoinInfo,
+        //   data,
+        // });
       }
     }
   );

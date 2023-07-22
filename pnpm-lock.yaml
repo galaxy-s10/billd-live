@@ -50,6 +50,9 @@ dependencies:
   qrcode:
     specifier: ^1.5.3
     version: 1.5.3
+  sdp-transform:
+    specifier: ^2.14.1
+    version: 2.14.1
   socket.io-client:
     specifier: ^4.6.1
     version: 4.6.1

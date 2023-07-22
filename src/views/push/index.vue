@@ -13,6 +13,7 @@
           <div
             ref="localVideoRef"
             class="media-list"
+            :class="{ item: appStore.allTrack.length > 1 }"
           ></div>
           <!-- <video
             id="localVideo"
@@ -285,14 +286,13 @@ const appStore = useAppStore();
 const currentMediaType = ref(MediaTypeEnum.camera);
 const showSelectMediaModalCpt = ref(false);
 const showMediaModalCpt = ref(false);
-const liveType = route.query.liveType;
 const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
 const danmuListRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
 const localVideoRef = ref<HTMLVideoElement>();
 const remoteVideoRef = ref<HTMLVideoElement[]>([]);
-
+const isSRS = route.query.liveType === liveTypeEnum.srsPush;
 const {
   confirmRoomName,
   getSocketId,
@@ -318,7 +318,7 @@ const {
 } = usePush({
   localVideoRef,
   remoteVideoRef,
-  isSRS: liveType === liveTypeEnum.srsPush,
+  isSRS,
 });
 
 watch(
@@ -362,7 +362,6 @@ async function addMediaOk(val: {
       },
       audio: true,
     });
-    const audio = event.getAudioTracks();
     const videoTrack = {
       id: getRandomString(8),
       audio: 2,
@@ -371,8 +370,17 @@ async function addMediaOk(val: {
       type: MediaTypeEnum.screen,
       track: event.getVideoTracks()[0],
       stream: event,
+      streamid: event.id,
     };
+    const audio = event.getAudioTracks();
     if (audio.length) {
+      if (
+        isSRS &&
+        appStore.allTrack.filter((item) => item.audio === 1).length >= 1
+      ) {
+        window.$message.error('srs模式最多只能有一个音频');
+        return;
+      }
       const autioTrack = {
         id: getRandomString(8),
         audio: 1,
@@ -381,6 +389,7 @@ async function addMediaOk(val: {
         type: MediaTypeEnum.screen,
         track: event.getAudioTracks()[0],
         stream: event,
+        streamid: event.id,
       };
       appStore.setAllTrack([...appStore.allTrack, videoTrack, autioTrack]);
       addTrack(videoTrack);
@@ -408,6 +417,7 @@ async function addMediaOk(val: {
       type: MediaTypeEnum.camera,
       track: event.getVideoTracks()[0],
       stream: event,
+      streamid: event.id,
     };
     appStore.setAllTrack([...appStore.allTrack, track]);
     addTrack(track);
@@ -417,6 +427,13 @@ async function addMediaOk(val: {
       video: false,
       audio: { deviceId: val.deviceId },
     });
+    if (
+      isSRS &&
+      appStore.allTrack.filter((item) => item.audio === 1).length >= 1
+    ) {
+      window.$message.error('srs模式最多只能有一个音频');
+      return;
+    }
     const track = {
       id: getRandomString(8),
       audio: 1,
@@ -425,6 +442,7 @@ async function addMediaOk(val: {
       type: MediaTypeEnum.microphone,
       track: event.getAudioTracks()[0],
       stream: event,
+      streamid: event.id,
     };
     appStore.setAllTrack([...appStore.allTrack, track]);
     addTrack(track);
@@ -478,7 +496,14 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
         background-color: rgba($color: #000000, $alpha: 0.5);
         .media-list {
           :deep(video) {
-            width: 50%;
+            width: 100%;
+            height: 100%;
+          }
+          &.item {
+            :deep(video) {
+              width: 50%;
+              height: initial !important;
+            }
           }
         }
 

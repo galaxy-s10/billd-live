@@ -338,6 +338,7 @@ export interface IUpdateJoinInfo {
   data: {
     live_room_id: number;
     track?: { audio: number; video: number };
+    rtmp_url: string;
   };
 }
 

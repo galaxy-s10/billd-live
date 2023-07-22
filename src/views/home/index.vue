@@ -32,14 +32,21 @@
           >
             <div
               v-if="
-                currentLiveRoom.live_room?.type ===
-                  LiveRoomTypeEnum.user_wertc ||
-                currentLiveRoom.live_room?.type === LiveRoomTypeEnum.user_srs
+                currentLiveRoom.live_room?.type === LiveRoomTypeEnum.user_wertc
               "
               class="btn webrtc"
               @click="joinRoom()"
             >
               进入直播（webrtc）
+            </div>
+            <div
+              v-if="
+                currentLiveRoom.live_room?.type === LiveRoomTypeEnum.user_srs
+              "
+              class="btn webrtc"
+              @click="joinRoom()"
+            >
+              进入直播（srs-webrtc）
             </div>
             <div
               v-if="

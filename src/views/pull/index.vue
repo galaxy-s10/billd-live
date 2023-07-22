@@ -42,7 +42,12 @@
                 })`,
               }"
             ></div>
-            <div ref="canvasRef"></div>
+            <!-- <div ref="canvasRef"></div> -->
+            <div
+              ref="canvasRef"
+              class="media-list"
+              :class="{ item: appStore.allTrack.length > 1 }"
+            ></div>
             <AudioRoomTip></AudioRoomTip>
             <VideoControls></VideoControls>
           </div>
@@ -223,12 +228,14 @@ import {
   IGoods,
   liveTypeEnum,
 } from '@/interface';
+import { useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
 
 import RechargeCpt from './recharge/index.vue';
 
 const route = useRoute();
 const userStore = useUserStore();
+const appStore = useAppStore();
 
 const giftGoodsList = ref<IGoods[]>([]);
 const giftLoading = ref(false);
@@ -422,26 +429,38 @@ onMounted(() => {
 
           inset: 0;
         }
-        :deep(canvas) {
-          position: absolute;
-          top: 0;
-          left: 50%;
-          width: 100%;
-          height: 100%;
-          transform: translate(-50%);
-
-          user-select: none;
+        .media-list {
+          :deep(video) {
+            width: 100%;
+            height: 100%;
+          }
+          &.item {
+            :deep(video) {
+              width: 50%;
+              height: initial !important;
+            }
+          }
         }
-        :deep(video) {
-          position: absolute;
-          top: 0;
-          left: 50%;
-          width: 100%;
-          height: 100%;
-          transform: translate(-50%);
+        // :deep(canvas) {
+        //   position: absolute;
+        //   top: 0;
+        //   left: 50%;
+        //   width: 100%;
+        //   height: 100%;
+        //   transform: translate(-50%);
 
-          user-select: none;
-        }
+        //   user-select: none;
+        // }
+        // :deep(video) {
+        //   position: absolute;
+        //   top: 0;
+        //   left: 50%;
+        //   width: 100%;
+        //   height: 100%;
+        //   transform: translate(-50%);
+
+        //   user-select: none;
+        // }
 
         .controls {
           display: none;

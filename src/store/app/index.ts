@@ -16,6 +16,7 @@ export type AppRootState = {
     type: MediaTypeEnum;
     track: MediaStreamTrack;
     stream: MediaStream;
+    streamid: string;
   }[];
 };
 

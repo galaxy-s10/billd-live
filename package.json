@@ -47,6 +47,7 @@
     "naive-ui": "^2.34.3",
     "pinia": "^2.0.33",
     "qrcode": "^1.5.3",
+    "sdp-transform": "^2.14.1",
     "socket.io-client": "^4.6.1",
     "unplugin-vue-components": "^0.24.1",
     "vconsole": "^3.15.0",

@@ -16,7 +16,6 @@ import {
   IMessage,
   IOffer,
   IOtherJoin,
-  IUpdateJoinInfo,
   LiveRoomTypeEnum,
   liveTypeEnum,
 } from '@/interface';
@@ -144,13 +143,13 @@ export function usePull({
       if (userInfo && connected) {
         const instance = networkStore.wsMap.get(roomId.value);
         if (!instance) return;
-        const data: IUpdateJoinInfo['data'] = {
-          live_room_id: Number(roomId.value),
-        };
-        instance.send({
-          msgType: WsMsgTypeEnum.updateJoinInfo,
-          data,
-        });
+        // const data: IUpdateJoinInfo['data'] = {
+        //   live_room_id: Number(roomId.value),
+        // };
+        // instance.send({
+        //   msgType: WsMsgTypeEnum.updateJoinInfo,
+        //   data,
+        // });
       }
     }
   );

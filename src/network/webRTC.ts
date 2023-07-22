@@ -90,53 +90,81 @@ export class WebRTCClass {
     console.log('原本旧track的音频轨', this.localStream?.getAudioTracks());
 
     const appStore = useAppStore();
-    const allTrack: AppRootState['allTrack'] = [];
+    if (isCb) {
+      stream.onremovetrack = (event) => {
+        console.log('onremovetrack事件', event);
+        const res = appStore.allTrack.filter((info) => {
+          if (info.track.id === event.track.id) {
+            return false;
+          }
+          return true;
+        });
+        appStore.setAllTrack(res);
+      };
+    }
+
+    const addTrack: AppRootState['allTrack'] = [];
 
     this.localStream?.getVideoTracks().forEach((track) => {
-      allTrack.push({
-        id: getRandomString(8),
-        track,
-        stream,
-        audio: 2,
-        video: 1,
-        type: MediaTypeEnum.screen,
-        mediaName: '',
-      });
+      if (!appStore.allTrack.find((info) => info.track.id === track.id)) {
+        addTrack.push({
+          id: getRandomString(8),
+          track,
+          stream,
+          audio: 2,
+          video: 1,
+          type: MediaTypeEnum.screen,
+          mediaName: '',
+          streamid: stream.id,
+        });
+      }
     });
     this.localStream?.getAudioTracks().forEach((track) => {
-      allTrack.push({
-        id: getRandomString(8),
-        track,
-        stream,
-        audio: 1,
-        video: 2,
-        type: MediaTypeEnum.microphone,
-        mediaName: '',
-      });
+      if (!appStore.allTrack.find((info) => info.track.id === track.id)) {
+        addTrack.push({
+          id: getRandomString(8),
+          track,
+          stream,
+          audio: 1,
+          video: 2,
+          type: MediaTypeEnum.microphone,
+          mediaName: '',
+          streamid: stream.id,
+        });
+      }
     });
-    stream.getVideoTracks().forEach((track) =>
-      allTrack.push({
-        id: getRandomString(8),
-        track,
-        stream,
-        audio: 2,
-        video: 1,
-        type: MediaTypeEnum.screen,
-        mediaName: '',
-      })
-    );
-    stream.getAudioTracks().forEach((track) =>
-      allTrack.push({
-        id: getRandomString(8),
-        track,
-        stream,
-        audio: 1,
-        video: 2,
-        type: MediaTypeEnum.microphone,
-        mediaName: '',
-      })
-    );
-    appStore.setAllTrack(allTrack);
+    stream.getVideoTracks().forEach((track) => {
+      if (!appStore.allTrack.find((info) => info.track.id === track.id)) {
+        addTrack.push({
+          id: getRandomString(8),
+          track,
+          stream,
+          audio: 2,
+          video: 1,
+          type: MediaTypeEnum.screen,
+          mediaName: '',
+          streamid: stream.id,
+        });
+      }
+    });
+    stream.getAudioTracks().forEach((track) => {
+      if (!appStore.allTrack.find((info) => info.track.id === track.id)) {
+        addTrack.push({
+          id: getRandomString(8),
+          track,
+          stream,
+          audio: 1,
+          video: 2,
+          type: MediaTypeEnum.microphone,
+          mediaName: '',
+          streamid: stream.id,
+        });
+      }
+    });
+    console.log(addTrack.length, 'pppppo');
+    if (addTrack.length) {
+      appStore.setAllTrack([...appStore.allTrack, ...addTrack]);
+    }
     this.localStream = stream;
 
     if (this.maxBitrate !== -1) {
@@ -238,7 +266,37 @@ export class WebRTCClass {
       const description = await this.peerConnection.createOffer({
         iceRestart: true,
       });
-      this.prettierLog('createOffer成功', 'warn');
+      this.prettierLog('createOffer成功', 'warn', description);
+      // const sdpStr = description.sdp;
+
+      // const sdpObj = SDPTransform.parse(sdpStr);
+
+      // // Get all m-lines
+      // const mlines = sdpObj.media;
+
+      // // Map to store unique m-lines
+      // const mLineMap = new Map();
+
+      // mlines.forEach((mLine) => {
+      //   const key = `${mLine.type}_${mLine.port}`;
+      //   if (!mLineMap.has(key)) {
+      //     mLineMap.set(key, mLine);
+      //   }
+      // });
+
+      // // Clear media array and only keep m-lines from map
+      // sdpObj.media = [];
+
+      // mLineMap.forEach((mLine) => {
+      //   sdpObj.media.push(mLine);
+      // });
+
+      // // Write new SDP string
+      // const newSdpStr = SDPTransform.write(sdpObj);
+      // console.log('old', description.sdp);
+      // console.log('newSdpStr', newSdpStr);
+      // Use new SDP string ...
+      // description.sdp = newSdpStr;
       return description;
     } catch (error) {
       this.prettierLog('createOffer失败', 'error');
@@ -252,7 +310,7 @@ export class WebRTCClass {
     this.prettierLog('createAnswer开始', 'warn');
     try {
       const description = await this.peerConnection.createAnswer();
-      this.prettierLog('createAnswer成功', 'warn');
+      this.prettierLog('createAnswer成功', 'warn', description);
       return description;
     } catch (error) {
       this.prettierLog('createAnswer失败', 'error');
@@ -266,7 +324,7 @@ export class WebRTCClass {
     this.prettierLog('setLocalDescription开始', 'warn');
     try {
       await this.peerConnection.setLocalDescription(desc);
-      this.prettierLog('setLocalDescription成功', 'warn');
+      this.prettierLog('setLocalDescription成功', 'warn', desc);
     } catch (error) {
       this.prettierLog('setLocalDescription失败', 'error');
       console.error('setLocalDescription', desc);
@@ -280,7 +338,7 @@ export class WebRTCClass {
     this.prettierLog(`setRemoteDescription开始`, 'warn');
     try {
       await this.peerConnection.setRemoteDescription(desc);
-      this.prettierLog('setRemoteDescription成功', 'warn');
+      this.prettierLog('setRemoteDescription成功', 'warn', desc);
     } catch (error) {
       this.prettierLog('setRemoteDescription失败', 'error');
       console.error('setRemoteDescription', desc);

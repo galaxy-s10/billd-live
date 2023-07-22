@@ -155,6 +155,15 @@ export const useWs = () => {
       console.log('旧的allTrack音频轨', localStream.value?.getAudioTracks());
       console.log('旧的allTrack视频轨', localStream.value?.getVideoTracks());
       localStream.value = mixedStream;
+      if (isSRS.value) {
+        networkStore.rtcMap.forEach((rtc) => {
+          rtc.close();
+        });
+        startNewWebRtc({
+          receiver: 'srs',
+          videoEl: localVideo.value,
+        });
+      }
     },
     { deep: true }
   );
@@ -206,7 +215,7 @@ export const useWs = () => {
       networkStore.rtcMap.forEach((rtc) => {
         const sender = rtc.peerConnection
           ?.getSenders()
-          .find((sender) => sender.track === addTrackInfo.track);
+          .find((sender) => sender.track?.id === addTrackInfo.track.id);
         if (!sender) {
           rtc.peerConnection?.addTrack(addTrackInfo.track, addTrackInfo.stream);
         }
@@ -219,27 +228,49 @@ export const useWs = () => {
     console.log('addTrack后结果的音频轨', mixedStream.getAudioTracks());
     console.log('addTrack后结果的视频轨', mixedStream.getVideoTracks());
     localStream.value = mixedStream;
+    let resUrl = '';
+    const rtmpUrl = userStore.userInfo?.live_rooms?.[0].rtmp_url!;
+    if (rtmpUrl.indexOf('type=') === -1) {
+      resUrl += `${rtmpUrl}&type=${
+        isSRS.value ? LiveRoomTypeEnum.user_srs : LiveRoomTypeEnum.user_wertc
+      }`;
+    } else {
+      resUrl = rtmpUrl.replace(
+        /type=([0-9]+)/,
+        `type=${
+          isSRS.value ? LiveRoomTypeEnum.user_srs : LiveRoomTypeEnum.user_wertc
+        }`
+      );
+    }
     const data: IUpdateJoinInfo['data'] = {
       live_room_id: Number(roomId.value),
       track: {
         audio: appStore.getTrackInfo().audio > 0 ? 1 : 2,
         video: appStore.getTrackInfo().video > 0 ? 1 : 2,
       },
+      rtmp_url: resUrl,
     };
     networkStore.wsMap.get(roomId.value)?.send({
       msgType: WsMsgTypeEnum.updateJoinInfo,
       data,
     });
+    setTimeout(() => {
+      networkStore.wsMap.get(roomId.value)?.send({
+        msgType: WsMsgTypeEnum.updateJoinInfo,
+        data,
+      });
+    }, 1000);
   }
   function delTrack(delTrackInfo: AppRootState['allTrack'][0]) {
     if (isAnchor.value) {
       networkStore.rtcMap.forEach((rtc) => {
         const sender = rtc.peerConnection
           ?.getSenders()
-          .find((sender) => sender.track === delTrackInfo.track);
+          .find((sender) => sender.track?.id === delTrackInfo.track.id);
         if (sender) {
-          console.log('删除track', sender);
+          console.log('删除track', delTrackInfo, sender);
           rtc.peerConnection?.removeTrack(sender);
+          sender.replaceTrack(null);
         }
       });
     }
@@ -251,12 +282,27 @@ export const useWs = () => {
     console.log('delTrack后结果的音频轨', mixedStream.getAudioTracks());
     console.log('delTrack后结果的视频轨', mixedStream.getVideoTracks());
     localStream.value = mixedStream;
+    let resUrl = '';
+    const rtmpUrl = userStore.userInfo?.live_rooms?.[0].rtmp_url!;
+    if (rtmpUrl.indexOf('type=') === -1) {
+      resUrl += `${rtmpUrl}&type=${
+        isSRS.value ? LiveRoomTypeEnum.user_srs : LiveRoomTypeEnum.user_wertc
+      }`;
+    } else {
+      resUrl = rtmpUrl.replace(
+        /type=([0-9]+)/,
+        `type=${
+          isSRS.value ? LiveRoomTypeEnum.user_srs : LiveRoomTypeEnum.user_wertc
+        }`
+      );
+    }
     const data: IUpdateJoinInfo['data'] = {
       live_room_id: Number(roomId.value),
       track: {
         audio: appStore.getTrackInfo().audio > 0 ? 1 : 2,
         video: appStore.getTrackInfo().video > 0 ? 1 : 2,
       },
+      rtmp_url: resUrl,
     };
     networkStore.wsMap.get(roomId.value)?.send({
       msgType: WsMsgTypeEnum.updateJoinInfo,
@@ -319,6 +365,10 @@ export const useWs = () => {
         ),
         tid: getRandomString(10),
       });
+      if (res.data.code !== 0) {
+        console.error('/rtc/v1/publish/拿不到sdp');
+        return;
+      }
       await rtc.setRemoteDescription(
         new RTCSessionDescription({ type: 'answer', sdp: res.data.sdp })
       );
@@ -344,6 +394,20 @@ export const useWs = () => {
   function sendJoin() {
     const instance = networkStore.wsMap.get(roomId.value);
     if (!instance) return;
+    let resUrl = '';
+    const rtmpUrl = userStore.userInfo?.live_rooms?.[0].rtmp_url!;
+    if (rtmpUrl.indexOf('type=') === -1) {
+      resUrl += `${rtmpUrl}&type=${
+        isSRS.value ? LiveRoomTypeEnum.user_srs : LiveRoomTypeEnum.user_wertc
+      }`;
+    } else {
+      resUrl = rtmpUrl.replace(
+        /type=([0-9]+)/,
+        `type=${
+          isSRS.value ? LiveRoomTypeEnum.user_srs : LiveRoomTypeEnum.user_wertc
+        }`
+      );
+    }
     const joinData: IJoin['data'] = {
       live_room: {
         id: Number(roomId.value),
@@ -352,6 +416,7 @@ export const useWs = () => {
         type: isSRS.value
           ? LiveRoomTypeEnum.user_srs
           : LiveRoomTypeEnum.user_wertc,
+        rtmp_url: resUrl,
       },
       track: {
         audio: appStore.getTrackInfo().audio > 0 ? 1 : 2,
@@ -368,6 +433,7 @@ export const useWs = () => {
     console.warn(`${data.roomId}，开始监听pc的negotiationneeded`);
     const rtc = networkStore.getRtcMap(data.roomId);
     if (!rtc) return;
+    console.warn(`监听pc的negotiationneeded`);
     rtc.peerConnection?.addEventListener('negotiationneeded', (event) => {
       console.warn(`${data.roomId}，pc收到negotiationneeded`, event);
       sendOffer({
@@ -392,24 +458,34 @@ export const useWs = () => {
         maxBitrate: currentMaxBitrate.value,
         maxFramerate: currentMaxFramerate.value,
         resolutionRatio: currentResolutionRatio.value,
-        roomId: `${roomId.value}___${getSocketId()}`,
+        roomId: `${roomId.value}___${receiver!}`,
         videoEl,
         isSRS: true,
         direction: 'sendonly',
         receiver,
       });
-      handleNegotiationneeded({
-        roomId: `${roomId.value}___${receiver}`,
-        isSRS: true,
-      });
+      // handleNegotiationneeded({
+      //   roomId: `${roomId.value}___${receiver}`,
+      //   isSRS: true,
+      // });
+      rtc.peerConnection?.addTransceiver('audio', { direction: 'sendonly' });
+      // rtc.peerConnection?.addTransceiver('video', { direction: 'sendonly' });
       rtc.localStream = localStream.value;
       localStream.value?.getTracks().forEach((track) => {
-        console.warn('srs startNewWebRtc，pc插入track');
+        console.warn(
+          'srs startNewWebRtc，pc插入track',
+          track.id,
+          localStream.value?.id
+        );
         // rtc.peerConnection?.addTransceiver(track, {
         //   streams: [localStream.value!],
         //   direction: 'sendonly',
         // });
         rtc.peerConnection?.addTrack(track, localStream.value!);
+      });
+      sendOffer({
+        sender: getSocketId(),
+        receiver,
       });
     } else {
       console.warn('开始new WebRTCClass', `${roomId.value}___${receiver!}`);
@@ -423,19 +499,20 @@ export const useWs = () => {
         direction: 'sendonly',
         receiver,
       });
-      handleNegotiationneeded({
-        roomId: `${roomId.value}___${receiver}`,
-        isSRS: false,
-      });
-      rtc.localStream = localStream.value;
-      localStream.value?.getTracks().forEach((track) => {
-        console.warn('startNewWebRtc，pc插入track');
-        // rtc.peerConnection?.addTransceiver(track, {
-        //   streams: [localStream.value!],
-        //   direction: 'sendonly',
-        // });
-        rtc.peerConnection?.addTrack(track, localStream.value!);
-      });
+      if (isAnchor.value) {
+        handleNegotiationneeded({
+          roomId: `${roomId.value}___${receiver}`,
+          isSRS: false,
+        });
+        rtc.localStream = localStream.value;
+        localStream.value?.getTracks().forEach((track) => {
+          // rtc.peerConnection?.addTransceiver(track, {
+          //   streams: [localStream.value!],
+          //   direction: 'sendonly',
+          // });
+          rtc.peerConnection?.addTrack(track, localStream.value!);
+        });
+      }
     }
     return rtc;
   }
@@ -592,6 +669,13 @@ export const useWs = () => {
       if (!isAnchor.value) {
         liveRoomInfo.value = data.data;
       }
+      // 如果是srs开播，则不需要等有人进来了才new webrtc，只要Websocket连上了就开始new webrtc
+      if (isSRS.value) {
+        startNewWebRtc({
+          receiver: 'srs',
+          videoEl: localVideo.value,
+        });
+      }
     });
 
     // 其他用户加入房间
@@ -608,6 +692,8 @@ export const useWs = () => {
         msg: '',
       };
       damuList.value.push(danmu);
+      // 如果是srs开播，且进来的用户不是srs-webrtc-pull，则不能再new webrtc了
+      if (isSRS.value) return;
       if (joined.value) {
         startNewWebRtc({
           receiver: data.data.join_socket_id,
