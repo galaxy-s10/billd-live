@@ -247,6 +247,7 @@ onMounted(() => {
     .media-list {
       height: 230px;
       overflow-y: scroll;
+      position: absolute;
       :deep(video) {
         width: 100%;
         height: 100%;

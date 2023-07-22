@@ -271,7 +271,11 @@ const {
   localVideoRef,
   canvasRef,
   liveType: route.query.liveType as liveTypeEnum,
-  isSRS: route.query.liveType === liveTypeEnum.srsWebrtcPull,
+  isSRS: [
+    liveTypeEnum.srsWebrtcPull,
+    liveTypeEnum.srsFlvPull,
+    liveTypeEnum.srsHlsPull,
+  ].includes(route.query.liveType as liveTypeEnum),
 });
 
 async function getGoodsList() {

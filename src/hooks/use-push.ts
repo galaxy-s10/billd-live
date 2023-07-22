@@ -6,7 +6,12 @@ import {
   fetchCreateUserLiveRoom,
   fetchUserHasLiveRoom,
 } from '@/api/userLiveRoom';
-import { DanmuMsgTypeEnum, IMessage, MediaTypeEnum } from '@/interface';
+import {
+  DanmuMsgTypeEnum,
+  IMessage,
+  MediaTypeEnum,
+  liveTypeEnum,
+} from '@/interface';
 import { WsMsgTypeEnum } from '@/network/webSocket';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
@@ -215,6 +220,7 @@ export function usePush({
       currentMaxBitrate: currentMaxBitrate.value,
       currentMaxFramerate: currentMaxFramerate.value,
       currentResolutionRatio: currentResolutionRatio.value,
+      roomLiveType: isSRS ? liveTypeEnum.srsPush : liveTypeEnum.webrtcPush,
     });
     return;
   }

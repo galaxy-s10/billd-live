@@ -17,6 +17,7 @@ import {
   IOtherJoin,
   IUpdateJoinInfo,
   LiveRoomTypeEnum,
+  liveTypeEnum,
 } from '@/interface';
 import { WebRTCClass } from '@/network/webRTC';
 import {
@@ -41,6 +42,7 @@ export const useWs = () => {
   const roomLiveing = ref<IJoin['data']>();
   const liveRoomInfo = ref<ILive>();
   const isAnchor = ref(false);
+  const roomLiveType = ref(liveTypeEnum.srsFlvPull);
   const joined = ref(false);
   const isSRS = ref(false);
   const isPull = ref(false);
@@ -359,12 +361,21 @@ export const useWs = () => {
       const sdp = await rtc.createOffer();
       await rtc.setLocalDescription(sdp!);
       let res;
+
       if (isPull.value) {
+        console.log(
+          roomLiveing.value,
+          2222222222,
+          roomLiveing.value!.live!.live_room!.rtmp_url!.replace(
+            'rtmp',
+            'webrtc'
+          )
+        );
         res = await fetchRtcV1Play({
           api: `/rtc/v1/play/`,
           clientip: null,
           sdp: sdp!.sdp!,
-          streamurl: userStore.userInfo!.live_rooms![0]!.rtmp_url!.replace(
+          streamurl: roomLiveing.value!.live!.live_room!.rtmp_url!.replace(
             'rtmp',
             'webrtc'
           ),
@@ -653,8 +664,20 @@ export const useWs = () => {
     // 管理员正在直播
     ws.socketIo.on(WsMsgTypeEnum.roomLiveing, (data: IJoin) => {
       prettierReceiveWebsocket(WsMsgTypeEnum.roomLiveing, data);
-      console.log(data.data, 333323);
       roomLiveing.value = data.data;
+      console.log(isSRS.value, isPull.value, data, 111);
+      // 如果是srs开播，则不需要等有人进来了才new webrtc，只要Websocket连上了就开始new webrtc
+      if (isSRS.value) {
+        if (isPull.value) {
+          console.log('llllll');
+          if (roomLiveType.value === liveTypeEnum.srsWebrtcPull) {
+            startNewWebRtc({
+              receiver: 'srs',
+              videoEl: localVideo.value,
+            });
+          }
+        }
+      }
     });
 
     // 管理员不在直播
@@ -696,10 +719,12 @@ export const useWs = () => {
       }
       // 如果是srs开播，则不需要等有人进来了才new webrtc，只要Websocket连上了就开始new webrtc
       if (isSRS.value) {
-        startNewWebRtc({
-          receiver: 'srs',
-          videoEl: localVideo.value,
-        });
+        if (!isPull.value) {
+          startNewWebRtc({
+            receiver: 'srs',
+            videoEl: localVideo.value,
+          });
+        }
       }
     });
 
@@ -764,9 +789,11 @@ export const useWs = () => {
     currentResolutionRatio?: number;
     currentMaxFramerate?: number;
     currentMaxBitrate?: number;
+    roomLiveType: liveTypeEnum;
   }) {
     roomId.value = data.roomId;
     isAnchor.value = data.isAnchor;
+    roomLiveType.value = data.roomLiveType;
     if (data.currentMaxBitrate) {
       currentMaxBitrate.value = data.currentMaxBitrate;
     }

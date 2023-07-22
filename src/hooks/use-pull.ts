@@ -111,12 +111,13 @@ export function usePull({
   watch(
     () => roomLiveing.value,
     (val) => {
+      console.log(val, roomLiveType.value, '-------');
       if (val) {
         flvurl.value = val.live?.live_room?.flv_url!;
         hlsurl.value = val.live?.live_room?.hls_url!;
-        if (val && roomLiveType.value === liveTypeEnum.webrtcPull) {
-          handlePlay();
-        }
+        // if (val && roomLiveType.value === liveTypeEnum.webrtcPull) {
+        handlePlay();
+        // }
       }
     }
   );
@@ -212,6 +213,7 @@ export function usePull({
       isSRS,
       isAnchor: false,
       isPull: true,
+      roomLiveType: roomLiveType.value,
     });
   }
 
