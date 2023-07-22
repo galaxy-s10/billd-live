@@ -59,6 +59,7 @@ export function usePush({
   const {
     getSocketId,
     initWs,
+    lastCoverImg,
     heartbeatTimer,
     localStream,
     liveUserList,
@@ -131,6 +132,20 @@ export function usePush({
     closeRtc();
   });
 
+  function handleCoverImg(dom: HTMLVideoElement) {
+    const canvas = document.createElement('canvas');
+    const { width, height } = dom.getBoundingClientRect();
+    const rate = width / height;
+    const coverWidth = width * 0.5;
+    const coverHeight = coverWidth / rate;
+    canvas.width = coverWidth;
+    canvas.height = coverHeight;
+    canvas.getContext('2d')!.drawImage(dom, 0, 0, coverWidth, coverHeight);
+    // webp比png的体积小非常多！因此coverWidth就可以不用压缩太夸张
+    const dataURL = canvas.toDataURL('image/webp');
+    return dataURL;
+  }
+
   function closeWs() {
     const instance = networkStore.wsMap.get(roomId.value);
     instance?.close();
@@ -181,6 +196,17 @@ export function usePush({
       return;
     }
     isLiving.value = true;
+    const el = appStore.allTrack.find((item) => {
+      if (item.video === 1) {
+        return true;
+      }
+    });
+    if (el) {
+      const res1 = videoElArr.value.find((item) => item.id === el.track.id);
+      if (res1) {
+        lastCoverImg.value = handleCoverImg(res1);
+      }
+    }
     initWs({
       isAnchor: true,
       roomId: roomId.value,

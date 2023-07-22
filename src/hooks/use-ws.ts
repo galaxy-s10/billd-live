@@ -47,6 +47,7 @@ export const useWs = () => {
   const trackInfo = reactive({ track_audio: 1, track_video: 1 });
   const localVideo = ref<HTMLVideoElement>(document.createElement('video'));
   const localStream = ref<MediaStream>();
+  const lastCoverImg = ref('');
   const maxBitrate = ref([
     {
       label: '1000',
@@ -402,22 +403,6 @@ export const useWs = () => {
     }
   }
 
-  function handleCoverImg() {
-    const canvas = document.createElement('canvas');
-    const { width, height } = localVideo.value.getBoundingClientRect();
-    const rate = width / height;
-    const coverWidth = width * 0.5;
-    const coverHeight = coverWidth / rate;
-    canvas.width = coverWidth;
-    canvas.height = coverHeight;
-    canvas
-      .getContext('2d')!
-      .drawImage(localVideo.value, 0, 0, coverWidth, coverHeight);
-    // webp比png的体积小非常多！因此coverWidth就可以不用压缩太夸张
-    const dataURL = canvas.toDataURL('image/webp');
-    return dataURL;
-  }
-
   function sendJoin() {
     const instance = networkStore.wsMap.get(roomId.value);
     if (!instance) return;
@@ -444,7 +429,7 @@ export const useWs = () => {
       live_room: {
         id: Number(roomId.value),
         name: roomName.value,
-        cover_img: handleCoverImg(),
+        cover_img: lastCoverImg.value,
         type: isSRS.value
           ? LiveRoomTypeEnum.user_srs
           : LiveRoomTypeEnum.user_wertc,
@@ -806,6 +791,7 @@ export const useWs = () => {
     initWs,
     addTrack,
     delTrack,
+    lastCoverImg,
     roomLiveing,
     liveRoomInfo,
     roomNoLive,
