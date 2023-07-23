@@ -11,13 +11,13 @@
             <div
               class="avatar"
               :style="{
-                backgroundImage: `url(${liveRoomInfo?.user?.avatar})`,
+                backgroundImage: `url(${roomLiveing?.live?.user?.avatar})`,
               }"
             ></div>
             <div class="detail">
-              <div class="top">{{ liveRoomInfo?.user?.username }}</div>
+              <div class="top">{{ roomLiveing?.live?.user?.username }}</div>
               <div class="bottom">
-                <span>{{ liveRoomInfo?.live_room?.name }}</span>
+                <span>{{ roomLiveing?.live?.live_room?.name }}</span>
                 <span v-if="NODE_ENV === 'development'">
                   socketId:{{ getSocketId() }}
                 </span>
@@ -38,8 +38,8 @@
               class="cover"
               :style="{
                 backgroundImage: `url(${
-                  liveRoomInfo?.live_room?.cover_img ||
-                  liveRoomInfo?.user?.avatar
+                  roomLiveing?.live?.live_room?.cover_img ||
+                  roomLiveing?.live?.user?.avatar
                 })`,
               }"
             ></div>
@@ -62,7 +62,6 @@
               v-for="(item, index) in sidebarList"
               :key="index"
               class="item"
-              :socketId="item.socketId"
             >
               <!-- x-webkit-airplay这个属性应该是使此视频支持ios的AirPlay功能 -->
               <!-- playsinline、 webkit-playsinline IOS微信浏览器支持小窗内播放 -->
@@ -259,6 +258,7 @@ const {
   keydownDanmu,
   sendDanmu,
   addVideo,
+  roomLiveing,
   autoplayVal,
   videoLoading,
   roomNoLive,
@@ -438,6 +438,7 @@ onMounted(() => {
           inset: 0;
         }
         .media-list {
+          position: absolute;
           overflow-y: scroll;
           :deep(video) {
             width: 100%;
