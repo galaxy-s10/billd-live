@@ -105,6 +105,7 @@ export function useHlsPlay() {
   }
 
   function setMuted(val) {
+    console.log('setMuted', val);
     if (hlsVideoEl.value) {
       hlsVideoEl.value.muted = val;
     }

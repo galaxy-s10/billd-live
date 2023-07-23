@@ -80,35 +80,30 @@ export function usePush({
   } = useWs();
 
   watch(
-    () => localStream,
+    () => localStream.value,
     (stream) => {
       console.log('localStream变了');
-      console.log('音频轨：', stream.value?.getAudioTracks());
-      console.log('视频轨：', stream.value?.getVideoTracks());
+      console.log('音频轨：', stream?.getAudioTracks());
+      console.log('视频轨：', stream?.getVideoTracks());
       videoElArr.value.forEach((dom) => {
         dom.remove();
       });
-      stream.value?.getVideoTracks().forEach((track) => {
+      stream?.getVideoTracks().forEach((track) => {
         console.log('视频轨enabled：', track.id, track.enabled);
         const video = createVideo({});
-        video.id = track.id;
+        video.setAttribute('track-id', track.id);
         video.srcObject = new MediaStream([track]);
         localVideoRef.value?.appendChild(video);
         videoElArr.value.push(video);
       });
-      stream.value?.getAudioTracks().forEach((track) => {
+      stream?.getAudioTracks().forEach((track) => {
         console.log('音频轨enabled：', track.id, track.enabled);
         const video = createVideo({});
-        video.id = track.id;
+        video.setAttribute('track-id', track.id);
         video.srcObject = new MediaStream([track]);
         localVideoRef.value?.appendChild(video);
         videoElArr.value.push(video);
       });
-      // if (stream.value) {
-      //   localVideoRef.value!.srcObject = stream.value;
-      // } else {
-      //   localVideoRef.value!.srcObject = null;
-      // }
     },
     { deep: true }
   );
@@ -207,7 +202,9 @@ export function usePush({
       }
     });
     if (el) {
-      const res1 = videoElArr.value.find((item) => item.id === el.track.id);
+      const res1 = videoElArr.value.find(
+        (item) => item.getAttribute('track-id') === el.track.id
+      );
       if (res1) {
         lastCoverImg.value = handleCoverImg(res1);
       }

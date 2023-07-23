@@ -52,6 +52,18 @@ export const useWs = () => {
   const lastCoverImg = ref('');
   const maxBitrate = ref([
     {
+      label: '1',
+      value: 1,
+    },
+    {
+      label: '10',
+      value: 10,
+    },
+    {
+      label: '50',
+      value: 50,
+    },
+    {
       label: '1000',
       value: 1000,
     },
@@ -92,27 +104,11 @@ export const useWs = () => {
       value: 10000,
     },
   ]);
-  const currentMaxBitrate = ref(maxBitrate.value[0].value);
-  const resolutionRatio = ref([
-    {
-      label: '360P',
-      value: 360,
-    },
-    {
-      label: '720P',
-      value: 720,
-    },
-    {
-      label: '1080P',
-      value: 1080,
-    },
-    {
-      label: '1440P',
-      value: 1440,
-    },
-  ]);
-  const currentResolutionRatio = ref(resolutionRatio.value[2].value);
   const maxFramerate = ref([
+    {
+      label: '1帧',
+      value: 1,
+    },
     {
       label: '10帧',
       value: 10,
@@ -134,7 +130,43 @@ export const useWs = () => {
       value: 60,
     },
   ]);
-  const currentMaxFramerate = ref(maxFramerate.value[1].value);
+  const resolutionRatio = ref([
+    {
+      label: '160P',
+      value: 160,
+    },
+    {
+      label: '240P',
+      value: 240,
+    },
+    {
+      label: '360P',
+      value: 360,
+    },
+    {
+      label: '720P',
+      value: 720,
+    },
+    {
+      label: '1080P',
+      value: 1080,
+    },
+    {
+      label: '1440P',
+      value: 1440,
+    },
+    {
+      label: '1920P',
+      value: 1920,
+    },
+    {
+      label: '2400P',
+      value: 2400,
+    },
+  ]);
+  const currentMaxBitrate = ref(maxBitrate.value[3].value);
+  const currentResolutionRatio = ref(resolutionRatio.value[3].value);
+  const currentMaxFramerate = ref(maxFramerate.value[2].value);
 
   const damuList = ref<IDanmu[]>([]);
 
@@ -146,9 +178,6 @@ export const useWs = () => {
       newTrack.forEach((item) => {
         mixedStream.addTrack(item.track);
       });
-      // oldTrack.forEach((item) => {
-      //   mixedStream.addTrack(item.track);
-      // });
       console.log('新的allTrack音频轨', mixedStream.getAudioTracks());
       console.log('新的allTrack视频轨', mixedStream.getVideoTracks());
       console.log('旧的allTrack音频轨', localStream.value?.getAudioTracks());
@@ -170,8 +199,35 @@ export const useWs = () => {
   );
 
   watch(
+    () => currentResolutionRatio.value,
+    (newVal) => {
+      appStore.allTrack.forEach((info) => {
+        info.track.applyConstraints({
+          frameRate: { max: currentMaxFramerate.value },
+          height: newVal,
+        });
+      });
+      networkStore.rtcMap.forEach(async (rtc) => {
+        const res = await rtc.setResolutionRatio(newVal);
+        if (res === 1) {
+          window.$message.success('切换分辨率成功！');
+        } else {
+          window.$message.success('切换分辨率失败！');
+        }
+      });
+    }
+  );
+
+  watch(
     () => currentMaxFramerate.value,
     (newVal) => {
+      console.log(currentMaxFramerate.value, 'currentMaxFramerate.value');
+      appStore.allTrack.forEach((info) => {
+        info.track.applyConstraints({
+          frameRate: { max: newVal },
+          height: currentResolutionRatio.value,
+        });
+      });
       networkStore.rtcMap.forEach(async (rtc) => {
         const res = await rtc.setMaxFramerate(newVal);
         if (res === 1) {
@@ -197,20 +253,6 @@ export const useWs = () => {
     }
   );
 
-  watch(
-    () => currentResolutionRatio.value,
-    (newVal) => {
-      networkStore.rtcMap.forEach(async (rtc) => {
-        const res = await rtc.setResolutionRatio(newVal);
-        if (res === 1) {
-          window.$message.success('切换分辨率成功！');
-        } else {
-          window.$message.success('切换分辨率失败！');
-        }
-      });
-    }
-  );
-
   function addTrack(addTrackInfo: AppRootState['allTrack'][0]) {
     if (isAnchor.value) {
       networkStore.rtcMap.forEach((rtc) => {
@@ -218,6 +260,7 @@ export const useWs = () => {
           ?.getSenders()
           .find((sender) => sender.track?.id === addTrackInfo.track.id);
         if (!sender) {
+          console.log('ffff', sender);
           rtc.peerConnection?.addTrack(addTrackInfo.track, addTrackInfo.stream);
         }
       });
@@ -483,9 +526,9 @@ export const useWs = () => {
     if (isSRS.value) {
       console.warn('SRS开始new WebRTCClass', `${roomId.value}___${receiver!}`);
       rtc = new WebRTCClass({
-        maxBitrate: currentMaxBitrate.value,
-        maxFramerate: currentMaxFramerate.value,
-        resolutionRatio: currentResolutionRatio.value,
+        maxBitrate: isPull.value ? -1 : currentMaxBitrate.value,
+        maxFramerate: isPull.value ? -1 : currentMaxFramerate.value,
+        resolutionRatio: isPull.value ? -1 : currentResolutionRatio.value,
         roomId: `${roomId.value}___${receiver!}`,
         videoEl,
         isSRS: true,
@@ -523,9 +566,9 @@ export const useWs = () => {
     } else {
       console.warn('开始new WebRTCClass', `${roomId.value}___${receiver!}`);
       rtc = new WebRTCClass({
-        maxBitrate: currentMaxBitrate.value,
-        maxFramerate: currentMaxFramerate.value,
-        resolutionRatio: currentResolutionRatio.value,
+        maxBitrate: isPull.value ? -1 : currentMaxBitrate.value,
+        maxFramerate: isPull.value ? -1 : currentMaxFramerate.value,
+        resolutionRatio: isPull.value ? -1 : currentResolutionRatio.value,
         roomId: `${roomId.value}___${receiver!}`,
         videoEl,
         isSRS: false,

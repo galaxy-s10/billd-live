@@ -145,7 +145,7 @@ export function usePull({
           stream.value?.getVideoTracks().forEach((track) => {
             console.log('视频轨enabled：', track.id, track.enabled);
             const video = createVideo({});
-            video.id = track.id;
+            video.setAttribute('track-id', track.id);
             video.srcObject = new MediaStream([track]);
             canvasRef.value?.appendChild(video);
             videoElArr.value.push(video);
@@ -153,7 +153,7 @@ export function usePull({
           stream.value?.getAudioTracks().forEach((track) => {
             console.log('音频轨enabled：', track.id, track.enabled);
             const video = createVideo({});
-            video.id = track.id;
+            video.setAttribute('track-id', track.id);
             video.srcObject = new MediaStream([track]);
             canvasRef.value?.appendChild(video);
             videoElArr.value.push(video);
@@ -166,15 +166,17 @@ export function usePull({
           stream.value?.getVideoTracks().forEach((track) => {
             console.log('视频轨enabled：', track.id, track.enabled);
             const video = createVideo({});
-            video.id = track.id;
+            video.setAttribute('track-id', track.id);
             video.srcObject = new MediaStream([track]);
+            // document.body.appendChild(video);
+            // console.log('kkkk', video);
             canvasRef.value?.appendChild(video);
             videoElArr.value.push(video);
           });
           stream.value?.getAudioTracks().forEach((track) => {
             console.log('音频轨enabled：', track.id, track.enabled);
             const video = createVideo({});
-            video.id = track.id;
+            video.setAttribute('track-id', track.id);
             video.srcObject = new MediaStream([track]);
             canvasRef.value?.appendChild(video);
             videoElArr.value.push(video);

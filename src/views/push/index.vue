@@ -358,7 +358,7 @@ async function addMediaOk(val: {
       video: {
         deviceId: val.deviceId,
         height: currentResolutionRatio.value,
-        frameRate: { ideal: currentMaxFramerate.value, max: 90 },
+        frameRate: { max: currentMaxFramerate.value },
       },
       audio: true,
     });
@@ -371,6 +371,7 @@ async function addMediaOk(val: {
       track: event.getVideoTracks()[0],
       stream: event,
       streamid: event.id,
+      trackid: event.getVideoTracks()[0].id,
     };
     const audio = event.getAudioTracks();
     if (audio.length) {
@@ -381,7 +382,7 @@ async function addMediaOk(val: {
         window.$message.error('srs模式最多只能有一个音频');
         return;
       }
-      const autioTrack = {
+      const audioTrack = {
         id: getRandomString(8),
         audio: 1,
         video: 2,
@@ -390,10 +391,11 @@ async function addMediaOk(val: {
         track: event.getAudioTracks()[0],
         stream: event,
         streamid: event.id,
+        trackid: event.getAudioTracks()[0].id,
       };
-      appStore.setAllTrack([...appStore.allTrack, videoTrack, autioTrack]);
+      appStore.setAllTrack([...appStore.allTrack, videoTrack, audioTrack]);
       addTrack(videoTrack);
-      addTrack(autioTrack);
+      addTrack(audioTrack);
     } else {
       if (
         isSRS &&
@@ -412,7 +414,7 @@ async function addMediaOk(val: {
       video: {
         deviceId: val.deviceId,
         height: currentResolutionRatio.value,
-        frameRate: { ideal: currentMaxFramerate.value, max: 90 },
+        frameRate: { max: currentMaxFramerate.value },
       },
       audio: false,
     });
@@ -432,6 +434,7 @@ async function addMediaOk(val: {
       track: event.getVideoTracks()[0],
       stream: event,
       streamid: event.id,
+      trackid: event.getVideoTracks()[0].id,
     };
     appStore.setAllTrack([...appStore.allTrack, track]);
     addTrack(track);
@@ -457,6 +460,7 @@ async function addMediaOk(val: {
       track: event.getAudioTracks()[0],
       stream: event,
       streamid: event.id,
+      trackid: event.getAudioTracks()[0].id,
     };
     appStore.setAllTrack([...appStore.allTrack, track]);
     addTrack(track);
@@ -618,7 +622,7 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
             width: 80px;
           }
           .down {
-            width: 80px;
+            width: 90px;
 
             user-select: none;
           }

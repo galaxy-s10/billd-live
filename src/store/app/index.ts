@@ -17,6 +17,7 @@ export type AppRootState = {
     track: MediaStreamTrack;
     stream: MediaStream;
     streamid: string;
+    trackid: string;
   }[];
 };
 

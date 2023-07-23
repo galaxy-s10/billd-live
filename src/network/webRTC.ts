@@ -112,6 +112,7 @@ export class WebRTCClass {
           type: MediaTypeEnum.screen,
           mediaName: '',
           streamid: stream.id,
+          trackid: track.id,
         });
       }
     });
@@ -126,6 +127,7 @@ export class WebRTCClass {
           type: MediaTypeEnum.microphone,
           mediaName: '',
           streamid: stream.id,
+          trackid: track.id,
         });
       }
     });
@@ -140,6 +142,7 @@ export class WebRTCClass {
           type: MediaTypeEnum.screen,
           mediaName: '',
           streamid: stream.id,
+          trackid: track.id,
         });
       }
     });
@@ -154,6 +157,7 @@ export class WebRTCClass {
           type: MediaTypeEnum.microphone,
           mediaName: '',
           streamid: stream.id,
+          trackid: track.id,
         });
       }
     });
@@ -176,10 +180,11 @@ export class WebRTCClass {
   /** 设置分辨率 */
   setResolutionRatio = (height: number) => {
     console.log('开始设置分辨率', height);
+    console.log('旧的分辨率', this.resolutionRatio);
     return new Promise((resolve) => {
       this.localStream?.getTracks().forEach((track) => {
         if (track.kind === 'video') {
-          console.log('设置分辨率ing');
+          console.log('设置分辨率ing', track.id);
           track
             .applyConstraints({
               height,
@@ -198,26 +203,31 @@ export class WebRTCClass {
     });
   };
 
-  /** 设置最大码率 */
-  setMaxBitrate = (maxBitrate: number) => {
-    console.log('开始设置最大码率', maxBitrate);
+  /** 设置最大帧率 */
+  setMaxFramerate = (maxFramerate: number) => {
+    console.log('开始设置最大帧率', maxFramerate);
+    console.log('旧的最大帧率', this.maxFramerate);
     return new Promise<number>((resolve) => {
       this.peerConnection?.getSenders().forEach((sender) => {
         if (sender.track?.kind === 'video') {
-          console.log('设置最大码率ing');
+          console.log('设置最大帧率ing', sender.track.id);
           const parameters = { ...sender.getParameters() };
           if (parameters.encodings[0]) {
-            const val = 1000 * maxBitrate;
-            parameters.encodings[0].maxBitrate = val;
+            if (parameters.encodings[0].maxFramerate === maxFramerate) {
+              console.log('最大帧率不变，不设置');
+              resolve(1);
+              return;
+            }
+            parameters.encodings[0].maxFramerate = maxFramerate;
             sender
               .setParameters(parameters)
               .then(() => {
-                console.log('设置最大码率成功');
-                this.maxBitrate = val;
+                console.log('设置最大帧率成功', maxFramerate);
+                this.maxFramerate = maxFramerate;
                 resolve(1);
               })
               .catch((error) => {
-                console.error('设置最大码率失败', maxBitrate, error);
+                console.error('设置最大帧率失败', maxFramerate, error);
                 resolve(0);
               });
           }
@@ -226,25 +236,33 @@ export class WebRTCClass {
     });
   };
 
-  /** 设置最大帧率 */
-  setMaxFramerate = (maxFramerate: number) => {
-    console.log('开始设置最大帧率', maxFramerate);
+  /** 设置最大码率 */
+  setMaxBitrate = (maxBitrate: number) => {
+    console.log('开始设置最大码率', maxBitrate);
+    console.log('旧的最大码率', this.maxBitrate);
     return new Promise<number>((resolve) => {
       this.peerConnection?.getSenders().forEach((sender) => {
         if (sender.track?.kind === 'video') {
-          console.log('设置最大帧率ing');
+          console.log('设置最大码率ing', sender.track.id);
           const parameters = { ...sender.getParameters() };
           if (parameters.encodings[0]) {
-            parameters.encodings[0].maxFramerate = maxFramerate;
+            const val = 1000 * maxBitrate;
+            console.log(parameters.encodings[0].maxBitrate, val, 23223);
+            if (parameters.encodings[0].maxBitrate === val) {
+              console.log('最大码率不变，不设置');
+              resolve(1);
+              return;
+            }
+            parameters.encodings[0].maxBitrate = val;
             sender
               .setParameters(parameters)
               .then(() => {
-                console.log('设置最大帧率成功');
-                this.maxFramerate = maxFramerate;
+                console.log('设置最大码率成功', maxBitrate);
+                this.maxBitrate = val;
                 resolve(1);
               })
               .catch((error) => {
-                console.error('设置最大帧率失败', maxFramerate, error);
+                console.error('设置最大码率失败', maxBitrate, error);
                 resolve(0);
               });
           }
@@ -444,6 +462,15 @@ export class WebRTCClass {
         if (connectionState === 'connected') {
           // 表示每一个 ICE 连接要么正在使用（connected 或 completed 状态），要么已被关闭（closed 状态）；并且，至少有一个连接处于 connected 或 completed 状态。
           console.warn(this.roomId, 'connectionState:connected');
+          if (this.maxBitrate !== -1) {
+            this.setMaxBitrate(this.maxBitrate);
+          }
+          if (this.maxFramerate !== -1) {
+            this.setMaxFramerate(this.maxFramerate);
+          }
+          if (this.resolutionRatio !== -1) {
+            this.setResolutionRatio(this.resolutionRatio);
+          }
         }
         if (connectionState === 'disconnected') {
           // 表示至少有一个 ICE 连接处于 disconnected 状态，并且没有连接处于 failed、connecting 或 checking 状态。
