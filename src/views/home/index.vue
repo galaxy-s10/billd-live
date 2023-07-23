@@ -197,8 +197,14 @@ async function changeLiveRoom(item: ILive) {
     //   });
     // } else {
     destroyHls();
-    await startHlsPlay({
+    const { width, height } = await startHlsPlay({
       hlsurl: item.live_room.hls_url!,
+    });
+    videoToCanvas({
+      videoEl: hlsVideoEl.value!,
+      targetEl: canvasRef.value!,
+      width,
+      height,
     });
     // }
   } else {
