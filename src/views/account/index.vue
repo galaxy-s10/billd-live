@@ -40,7 +40,9 @@
           class="rtmp-url"
         >
           <span>
-            推流地址：{{ newRtmpUrl || userInfo?.live_rooms?.[0].rtmp_url }}，
+            推流地址：{{
+              newRtmpUrl || handleUrl(userInfo?.live_rooms?.[0].rtmp_url!)
+            }}，
           </span>
           <span
             class="link"
@@ -69,7 +71,7 @@ import { useRouter } from 'vue-router';
 import { fetchUpdateLiveRoomKey } from '@/api/liveRoom';
 import { fetchUserInfo } from '@/api/user';
 import { loginTip } from '@/hooks/use-login';
-import { IUser, liveTypeEnum } from '@/interface';
+import { IUser, LiveRoomTypeEnum, liveTypeEnum } from '@/interface';
 import { routerName } from '@/router';
 
 const newRtmpUrl = ref();
@@ -86,7 +88,9 @@ async function handleUserInfo() {
 }
 
 function handleCopy() {
-  copyToClipBoard(newRtmpUrl.value || userInfo.value?.live_rooms?.[0].rtmp_url);
+  copyToClipBoard(
+    newRtmpUrl.value || handleUrl(userInfo.value?.live_rooms?.[0].rtmp_url!)
+  );
   window.$message.success('复制成功！');
 }
 
@@ -101,12 +105,26 @@ function openLiveRoom() {
   openToTarget(url.href);
 }
 
+function handleUrl(rtmpUrl: string) {
+  let resUrl = '';
+  if (rtmpUrl.indexOf('type=') === -1) {
+    resUrl += `${rtmpUrl}&type=${LiveRoomTypeEnum.user_obs}`;
+  } else {
+    resUrl = rtmpUrl.replace(
+      /type=([0-9]+)/,
+      `type=${LiveRoomTypeEnum.user_obs}`
+    );
+  }
+  return resUrl;
+}
+
 async function handleUpdateKey() {
   try {
     keyLoading.value = true;
     const res = await fetchUpdateLiveRoomKey();
     if (res.code === 200) {
-      newRtmpUrl.value = res.data.rtmp_url;
+      const resUrl = handleUrl(res.data.rtmp_url as string);
+      newRtmpUrl.value = resUrl;
     }
   } catch (error) {
     console.log(error);

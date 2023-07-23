@@ -99,7 +99,9 @@
               </n-input-group>
             </div>
             <div class="bottom">
-              <span>socketId：{{ getSocketId() }}</span>
+              <span v-if="NODE_ENV === 'development'">
+                socketId：{{ getSocketId() }}
+              </span>
             </div>
           </div>
         </div>
@@ -269,6 +271,7 @@
 
 <script lang="ts" setup>
 import { getRandomString } from 'billd-utils';
+import { NODE_ENV } from 'script/constant';
 import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
