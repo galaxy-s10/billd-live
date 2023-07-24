@@ -1,5 +1,17 @@
 <template>
   <div class="push-wrap">
+    <div @click="drawCanvasFn">3333</div>
+    <video
+      id="canvasVideoRef"
+      ref="canvasVideoRef"
+      muted
+      autoplay
+      controls
+    ></video>
+    <div
+      ref="testRef"
+      class="testRef"
+    ></div>
     <div
       ref="topRef"
       class="left"
@@ -293,6 +305,8 @@ const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
 const danmuListRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
+const testRef = ref<HTMLVideoElement>();
+const canvasVideoRef = ref<HTMLVideoElement>();
 const localVideoRef = ref<HTMLVideoElement>();
 const remoteVideoRef = ref<HTMLVideoElement[]>([]);
 const isSRS = route.query.liveType === liveTypeEnum.srsPush;
@@ -323,7 +337,7 @@ const {
   remoteVideoRef,
   isSRS,
 });
-
+const drawCanvasFn = ref();
 watch(
   () => damuList.value.length,
   () => {
@@ -335,7 +349,51 @@ watch(
   }
 );
 
+function drawTimer(data: { canvas: HTMLCanvasElement }) {
+  const width = 200;
+  const height = 200;
+  const canvas = data.canvas;
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d')!;
+
+  let timer;
+  let oldTxt = `${+new Date()}`;
+  function drawCanvas() {
+    ctx.font = '25px';
+    ctx.fillStyle = 'red';
+    const textWidth = ctx.measureText(oldTxt).width; // 获取文字的宽度
+    ctx.clearRect(50, 50 - 25, textWidth, 25); // 覆盖旧文字的矩形区域
+    oldTxt = `${+new Date()}`;
+    // -1是因为下划线问题
+    ctx.fillText(`${oldTxt}`, 50, 50 - 1);
+    timer = requestAnimationFrame(drawCanvas);
+  }
+
+  function stopDrawing() {
+    cancelAnimationFrame(timer);
+  }
+
+  drawCanvas();
+
+  return { drawCanvas, stopDrawing };
+}
+
+function createCanvas() {
+  const canvas = document.createElement('canvas');
+  canvas.id = 'sdfsgsa';
+  canvas.width = 1920;
+  canvas.height = 1080;
+  const stream = canvas.captureStream(24);
+  testRef.value?.appendChild(canvas);
+  const { drawCanvas } = drawTimer({ canvas });
+  drawCanvasFn.value = drawCanvas;
+  console.log(stream, 'canvasVideoRef');
+  canvasVideoRef.value!.srcObject = stream;
+}
+
 onMounted(() => {
+  createCanvas();
   if (topRef.value && bottomRef.value && containerRef.value) {
     const res =
       bottomRef.value.getBoundingClientRect().top -
@@ -428,17 +486,34 @@ async function addMediaOk(val: {
       window.$message.error('srs模式最多只能有一个视频');
       return;
     }
+    // const el = document.querySelector('#canvasVideoRef') as HTMLVideoElement;
+    const el = document.querySelector('#sdfsgsa') as HTMLCanvasElement;
+    const stream = el.captureStream(24);
+    // const el = document.querySelector('#canvasVideoRef') as HTMLVideoElement;
+    console.log(el, 22121);
+    console.log(el, el, stream, 111122121);
     const track = {
       id: getRandomString(8),
-      audio: 2,
-      video: 1,
+      audio: 1,
+      video: 2,
       mediaName: val.mediaName,
-      type: MediaTypeEnum.camera,
-      track: event.getVideoTracks()[0],
-      stream: event,
+      type: MediaTypeEnum.microphone,
+      track: stream.getTracks()[0],
+      stream,
       streamid: event.id,
-      trackid: event.getVideoTracks()[0].id,
+      trackid: stream.getTracks()[0].id,
     };
+    // const track = {
+    //   id: getRandomString(8),
+    //   audio: 2,
+    //   video: 1,
+    //   mediaName: val.mediaName,
+    //   type: MediaTypeEnum.camera,
+    //   track: event.getVideoTracks()[0],
+    //   stream: event,
+    //   streamid: event.id,
+    //   trackid: event.getVideoTracks()[0].id,
+    // };
     appStore.setAllTrack([...appStore.allTrack, track]);
     addTrack(track);
     console.log('获取摄像头成功');
@@ -490,6 +565,13 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
   min-width: $large-width;
   height: 700px;
   text-align: center;
+  .testRef {
+    // width: 600px;
+    // background-color: red;
+    :deep(canvas) {
+      // width: 100%;
+    }
+  }
   .left {
     position: relative;
     display: inline-block;
