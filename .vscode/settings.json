@@ -38,6 +38,5 @@
     "tsx",
     "vue"
   ],
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "vue.codeActions.enabled": false
+  "typescript.tsdk": "node_modules/typescript/lib"
 }

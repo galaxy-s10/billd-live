@@ -32,12 +32,14 @@
     }
   },
   "dependencies": {
+    "@types/fabric": "^5.3.3",
     "@vicons/ionicons5": "^0.12.0",
     "axios": "^1.2.1",
     "billd-html-webpack-plugin": "^1.0.1",
     "billd-scss": "^0.0.7",
     "billd-utils": "^0.0.12",
     "browser-tool": "^1.0.5",
+    "fabric": "^5.3.0",
     "flv.js": "^1.6.2",
     "js-cookie": "^3.0.5",
     "m3u8-parser": "^6.2.0",

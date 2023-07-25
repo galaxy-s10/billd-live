@@ -8,52 +8,45 @@
         ref="containerRef"
         class="container"
       >
-        <div class="video-wrap">
-          <AudioRoomTip></AudioRoomTip>
-          <div
-            ref="localVideoRef"
-            class="media-list"
-            :class="{ item: appStore.allTrack.length > 1 }"
-          ></div>
-          <div
-            v-if="!appStore.allTrack || appStore.allTrack.length <= 0"
-            class="add-wrap"
-          >
-            <n-space>
-              <n-button
-                v-for="(item, index) in allMediaTypeList"
-                :key="index"
-                class="item"
-                @click="handleStartMedia(item)"
-              >
-                {{ item.txt }}
-              </n-button>
-            </n-space>
-          </div>
-        </div>
-
-        <div class="sidebar">
-          <div class="title">在线人员</div>
-          <div
-            v-for="(item, index) in liveUserList.filter(
-              (item) => item.id !== getSocketId()
-            )"
-            :key="index"
-            class="item"
-          >
-            <video
-              :ref="(el) => (remoteVideoRef[item.id] = el)"
-              autoplay
-              webkit-playsinline="true"
-              playsinline
-              x-webkit-airplay="allow"
-              x5-video-player-type="h5"
-              x5-video-player-fullscreen="true"
-              x5-video-orientation="portraint"
-              muted
-            ></video>
-            <div>{{ item.userInfo?.username || item.id }}</div>
-          </div>
+        <AudioRoomTip></AudioRoomTip>
+        <canvas
+          id="canvasRef"
+          ref="canvasRef"
+        ></canvas>
+        <!-- <DND
+          v-for="(item, index) in appStore.allTrack.filter(
+            (v) => v.video === 1
+          )"
+          :key="index"
+          @move="handleDNDMove"
+        >
+          <video
+            :id="item.id"
+            :data-track-id="item.trackid"
+            autoplay
+            webkit-playsinline="true"
+            playsinline
+            x-webkit-airplay="allow"
+            x5-video-player-type="h5"
+            x5-video-player-fullscreen="true"
+            x5-video-orientation="portraint"
+            muted
+          ></video>
+        </DND> -->
+        <div
+          v-if="!appStore.allTrack || appStore.allTrack.length <= 0"
+          class="add-wrap"
+        >
+          <n-space>
+            <n-button
+              v-for="(item, index) in allMediaTypeList"
+              :key="index"
+              class="item"
+              @click="handleStartMedia(item)"
+            >
+              {{ item.txt }}
+            </n-button>
+          </n-space>
         </div>
       </div>
 
@@ -256,15 +249,16 @@
 </template>
 
 <script lang="ts" setup>
-import { getRandomString } from 'billd-utils';
+import { fabric } from 'fabric';
 import { NODE_ENV } from 'script/constant';
-import { onMounted, ref, watch } from 'vue';
+import { markRaw, nextTick, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { usePush } from '@/hooks/use-push';
 import { DanmuMsgTypeEnum, MediaTypeEnum, liveTypeEnum } from '@/interface';
 import { AppRootState, useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
+import { createVideo, getRandomEnglishString } from '@/utils';
 
 import MediaModalCpt from './mediaModal/index.vue';
 import SelectMediaModalCpt from './selectMediaModal/index.vue';
@@ -279,9 +273,15 @@ const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
 const danmuListRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
+const canvasRef = ref<HTMLCanvasElement>();
+const fabricCanvas = ref<fabric.Canvas>();
 const localVideoRef = ref<HTMLVideoElement>();
 const remoteVideoRef = ref<HTMLVideoElement[]>([]);
 const isSRS = route.query.liveType === liveTypeEnum.srsPush;
+const canvasSize = reactive({
+  width: 1920,
+  height: 1080,
+});
 const {
   confirmRoomName,
   getSocketId,
@@ -309,7 +309,16 @@ const {
   remoteVideoRef,
   isSRS,
 });
-const drawCanvasFn = ref();
+const drawCanvasArr = ref<
+  {
+    id: string;
+    cb: any;
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  }[]
+>([]);
 watch(
   () => damuList.value.length,
   () => {
@@ -321,13 +330,174 @@ watch(
   }
 );
 
-onMounted(() => {
-  if (topRef.value && bottomRef.value && containerRef.value) {
-    const res =
-      bottomRef.value.getBoundingClientRect().top -
-      topRef.value.getBoundingClientRect().top;
-    containerRef.value.style.height = `${res}px`;
+function handleDNDMove(val: { top: number; left: number; el: HTMLElement }) {
+  console.log('handleDNDMove', val, val.el.id);
+  const el = drawCanvasArr.value.find((item) => item.id === val.el.id);
+  console.log(el, ratio.value, 3333);
+  if (el) {
+    el.left = val.left / ratio.value;
+    el.top = val.top / ratio.value;
   }
+  // el?.cb(val.left, val.top);
+}
+
+function drawVideo(video: {
+  el: HTMLVideoElement;
+  width: number;
+  height: number;
+}) {
+  // const ctx = canvasRef.value!.getContext('2d')!;
+  let timer;
+
+  function drawCanvas() {
+    // 清空画布
+    // ctx.clearRect(0, 0, canvasSize.width, canvasSize.height);
+
+    drawCanvasArr.value.forEach((item) => {
+      const video = document.querySelector(`#${item.id}`) as HTMLVideoElement;
+      const videoInstance = new fabric.Image(video, {
+        left: item.left || 0,
+        top: item.top || 0,
+      });
+      console.log(canvasRef.value, video, 222221112);
+      fabricCanvas.value!.add(videoInstance);
+
+      // ctx.drawImage(
+      //   video,
+      //   item.left || 0,
+      //   item.top || 0,
+      //   item.width,
+      //   item.height
+      // );
+    });
+
+    console.log(video.el.id);
+    // timer = requestAnimationFrame(drawCanvas);
+  }
+
+  // function stopDrawing() {
+  //   cancelAnimationFrame(timer);
+  // }
+
+  drawCanvas();
+
+  return { drawCanvas };
+}
+
+function createAutoVideo({ stream, id }: { stream: MediaStream; id }) {
+  const video = createVideo({});
+  video.srcObject = stream;
+  const w = stream.getVideoTracks()[0].getSettings().width;
+  const h = stream.getVideoTracks()[0].getSettings().height;
+  console.log(w, h, 3333);
+
+  video.style.width = `1px`;
+  video.style.height = `1px`;
+  containerRef.value!.appendChild(video);
+  video.width = w!;
+  video.height = h!;
+  const dom = new fabric.Image(video, {
+    top: 0,
+    left: 0,
+  });
+  dom.scale(ratio.value);
+  fabricCanvas.value!.add(dom);
+  fabric.util.requestAnimFrame(function render() {
+    fabricCanvas.value?.renderAll();
+    fabric.util.requestAnimFrame(render);
+  });
+  video.style.position = 'absolute';
+  video.style.bottom = '0';
+  video.style.left = '0';
+  // };
+
+  // const video = document.querySelector(`#${id}`) as HTMLVideoElement;
+  // const video = createVideo({});
+  // video.id = id;
+  // video.srcObject = stream;
+  // document.body.appendChild(video);
+  // video.onmousemove = () => {
+  //   video.style.cursor = 'move';
+  // };
+  // video.onmouseout = () => {
+  //   video.style.removeProperty('cursor');
+  // };
+  // video.onloadeddata = () => {
+  //   const rect = document
+  //     .querySelector(`#${video.id}`)
+  //     ?.getBoundingClientRect()!;
+  //   const width = rect.width * ratio.value;
+  //   const height = rect.height * ratio.value;
+  //   console.log(width, height, 21223);
+  //   // video.style.width = `${width}px`;
+  //   // video.style.height = `${height}px`;
+  //   // const video = document.querySelector(`#${item.id}`) as HTMLVideoElement;
+  //   // const videoInstance = new fabric.Image(video, {
+  //   //   left: 10,
+  //   //   top: 10,
+  //   //   width,
+  //   //   height,
+  //   //   stroke: 'lightgreen',
+  //   //   strokeWidth: 4,
+  //   //   // objectCaching: false,
+  //   // });
+  //   // const { drawCanvas } = drawVideo({
+  //   //   width: rect.width,
+  //   //   height: rect.height,
+  //   //   el: video,
+  //   // });
+  //   // drawCanvasArr.value.push({
+  //   //   id,
+  //   //   cb: drawCanvas,
+  //   //   left: 0,
+  //   //   top: 0,
+  //   //   width: rect.width,
+  //   //   height: rect.height,
+  //   // });
+  // };
+}
+
+function initCanvas() {
+  const ins = markRaw(new fabric.Canvas(canvasRef.value!));
+  // const rect = new fabric.Rect({
+  //   top: 10,
+  //   left: 10,
+  //   width: 200,
+  //   height: 200,
+  //   fill: '#aa96da',
+  // });
+  ins.setWidth(containerRef.value!.getBoundingClientRect().width);
+  ins.setHeight(canvasSize.height * ratio.value);
+  fabricCanvas.value = ins;
+
+  console.log(ins, 111111);
+  console.log(fabricCanvas.value.upperCanvasEl.captureStream());
+  // if (canvasRef.value) {
+  //   const rect = canvasRef.value.getBoundingClientRect();
+  //   ratio.value = rect.width / canvasSize.width;
+  // }
+
+  // const stream = canvas.captureStream();
+  // const canvas = new fabric.Canvas('c1');
+  // canvas.add(
+  //   new fabric.Circle({ radius: 30, fill: '#f55', top: 100, left: 100 })
+  // );
+  // console.log(canvas, 2221);
+  // canvas.selectionColor = 'rgba(0,255,0,0.3)';
+  // canvas.selectionBorderColor = 'red';
+  // canvas.selectionLineWidth = 5;
+  // containerRef.value?.appendChild(canvas);
+  // this.__canvases.push(canvas);
+}
+
+const ratio = ref(0);
+
+onMounted(() => {
+  if (containerRef.value) {
+    ratio.value =
+      containerRef.value.getBoundingClientRect().width / canvasSize.width;
+  }
+  initCanvas();
 });
 
 function selectMediaOk(val: MediaTypeEnum) {
@@ -352,7 +522,7 @@ async function addMediaOk(val: {
       audio: true,
     });
     const videoTrack = {
-      id: getRandomString(8),
+      id: getRandomEnglishString(8),
       audio: 2,
       video: 1,
       mediaName: val.mediaName,
@@ -364,15 +534,8 @@ async function addMediaOk(val: {
     };
     const audio = event.getAudioTracks();
     if (audio.length) {
-      if (
-        isSRS &&
-        appStore.allTrack.filter((item) => item.audio === 1).length >= 1
-      ) {
-        window.$message.error('srs模式最多只能有一个音频');
-        return;
-      }
       const audioTrack = {
-        id: getRandomString(8),
+        id: getRandomEnglishString(8),
         audio: 1,
         video: 2,
         mediaName: val.mediaName,
@@ -386,16 +549,15 @@ async function addMediaOk(val: {
       addTrack(videoTrack);
       addTrack(audioTrack);
     } else {
-      if (
-        isSRS &&
-        appStore.allTrack.filter((item) => item.video === 1).length >= 1
-      ) {
-        window.$message.error('srs模式最多只能有一个视频');
-        return;
-      }
       appStore.setAllTrack([...appStore.allTrack, videoTrack]);
       addTrack(videoTrack);
     }
+    nextTick(() => {
+      createAutoVideo({
+        stream: event,
+        id: videoTrack.id,
+      });
+    });
 
     console.log('获取窗口成功');
   } else if (val.type === MediaTypeEnum.camera) {
@@ -407,43 +569,22 @@ async function addMediaOk(val: {
       },
       audio: false,
     });
-    if (
-      isSRS &&
-      appStore.allTrack.filter((item) => item.video === 1).length >= 1
-    ) {
-      window.$message.error('srs模式最多只能有一个视频');
-      return;
-    }
-    // const el = document.querySelector('#canvasVideoRef') as HTMLVideoElement;
-    const el = document.querySelector('#sdfsgsa') as HTMLCanvasElement;
-    const stream = el.captureStream(24);
-    // const el = document.querySelector('#canvasVideoRef') as HTMLVideoElement;
-    console.log(el, 22121);
-    console.log(el, el, stream, 111122121);
     const track = {
-      id: getRandomString(8),
-      audio: 1,
-      video: 2,
+      id: getRandomEnglishString(8),
+      audio: 2,
+      video: 1,
       mediaName: val.mediaName,
-      type: MediaTypeEnum.microphone,
-      track: stream.getTracks()[0],
-      stream,
+      type: MediaTypeEnum.camera,
+      track: event.getVideoTracks()[0],
+      stream: event,
       streamid: event.id,
-      trackid: stream.getTracks()[0].id,
+      trackid: event.getVideoTracks()[0].id,
     };
-    // const track = {
-    //   id: getRandomString(8),
-    //   audio: 2,
-    //   video: 1,
-    //   mediaName: val.mediaName,
-    //   type: MediaTypeEnum.camera,
-    //   track: event.getVideoTracks()[0],
-    //   stream: event,
-    //   streamid: event.id,
-    //   trackid: event.getVideoTracks()[0].id,
-    // };
     appStore.setAllTrack([...appStore.allTrack, track]);
     addTrack(track);
+    nextTick(() => {
+      createAutoVideo({ stream: event, id: track.id });
+    });
     console.log('获取摄像头成功');
   } else if (val.type === MediaTypeEnum.microphone) {
     const event = await navigator.mediaDevices.getUserMedia({
@@ -458,7 +599,7 @@ async function addMediaOk(val: {
       return;
     }
     const track = {
-      id: getRandomString(8),
+      id: getRandomEnglishString(8),
       audio: 1,
       video: 2,
       mediaName: val.mediaName,
@@ -491,7 +632,7 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
 .push-wrap {
   margin: 20px auto 0;
   min-width: $large-width;
-  height: 700px;
+  // height: 700px;
   text-align: center;
   .testRef {
     // width: 600px;
@@ -513,81 +654,31 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
     vertical-align: top;
 
     .container {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
       height: 100%;
-      background-color: #fff;
-      .video-wrap {
-        position: relative;
-        display: flex;
-        flex: 1;
-        justify-content: center;
-        height: 100%;
-        background-color: rgba($color: #000000, $alpha: 0.5);
-        .media-list {
-          :deep(video) {
-            width: 100%;
-            height: 100%;
-          }
-          :deep(canvas) {
-            width: 100%;
-            height: 100%;
-          }
-          &.item {
-            :deep(video) {
-              width: 50%;
-              height: initial !important;
-            }
-            :deep(canvas) {
-              width: 50%;
-              height: initial !important;
-            }
-          }
-        }
+      background-color: rgba($color: #000000, $alpha: 0.5);
+      line-height: 0;
 
-        // #localVideo {
-        //   max-width: 100%;
-        //   max-height: 100%;
-        // }
-        .add-wrap {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: space-around;
-          padding: 0 20px;
-          height: 50px;
-          border-radius: 5px;
-          background-color: white;
-          transform: translate(-50%, -50%);
-        }
+      :deep(canvas) {
+        width: 100%;
       }
-      .sidebar {
-        overflow: scroll;
-        width: 130px;
-        height: 100%;
-        background-color: rgba($color: #000000, $alpha: 0.3);
 
-        @extend %hideScrollbar;
-        .title {
-          color: white;
-        }
-        .join {
-          color: white;
-          cursor: pointer;
-        }
-        video {
-          max-width: 100%;
-        }
+      .add-wrap {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        padding: 0 20px;
+        height: 50px;
+        border-radius: 5px;
+        background-color: white;
+        transform: translate(-50%, -50%);
       }
     }
     .room-control {
-      position: absolute;
-      right: 0;
-      bottom: 0;
-      left: 0;
       display: flex;
       justify-content: space-between;
       padding: 20px;

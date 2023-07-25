@@ -36,6 +36,7 @@ export const routerName = {
 
   pull: 'pull',
   push: 'push',
+  pushByCanvas: 'pushByCanvas',
   ...mobileRouterName,
 };
 
@@ -137,6 +138,11 @@ export const defaultRoutes: RouteRecordRaw[] = [
         name: routerName.push,
         path: '/push',
         component: () => import('@/views/push/index.vue'),
+      },
+      {
+        name: routerName.pushByCanvas,
+        path: '/pushByCanvas',
+        component: () => import('@/views/pushByCanvas/index.vue'),
       },
     ],
   },
