@@ -49,6 +49,8 @@ export const useWs = () => {
   const trackInfo = reactive({ track_audio: 1, track_video: 1 });
   const localVideo = ref<HTMLVideoElement>(document.createElement('video'));
   const localStream = ref<MediaStream>();
+  const fabricCanvasEl = ref<HTMLCanvasElement>();
+  const canvasVideoStream = ref<MediaStream>();
   const lastCoverImg = ref('');
   const maxBitrate = ref([
     {
@@ -174,15 +176,20 @@ export const useWs = () => {
     () => appStore.allTrack,
     (newTrack, oldTrack) => {
       console.log('appStore.allTrack变了');
-      const mixedStream = new MediaStream();
-      newTrack.forEach((item) => {
-        mixedStream.addTrack(item.track);
-      });
-      console.log('新的allTrack音频轨', mixedStream.getAudioTracks());
-      console.log('新的allTrack视频轨', mixedStream.getVideoTracks());
-      console.log('旧的allTrack音频轨', localStream.value?.getAudioTracks());
-      console.log('旧的allTrack视频轨', localStream.value?.getVideoTracks());
-      localStream.value = mixedStream;
+      if (fabricCanvasEl.value) {
+        const mixedStream = fabricCanvasEl.value.captureStream();
+        localStream.value = mixedStream;
+      } else {
+        const mixedStream = new MediaStream();
+        newTrack.forEach((item) => {
+          mixedStream.addTrack(item.track);
+        });
+        console.log('新的allTrack音频轨', mixedStream.getAudioTracks());
+        console.log('新的allTrack视频轨', mixedStream.getVideoTracks());
+        console.log('旧的allTrack音频轨', localStream.value?.getAudioTracks());
+        console.log('旧的allTrack视频轨', localStream.value?.getVideoTracks());
+        localStream.value = mixedStream;
+      }
       if (isSRS.value) {
         if (!isPull.value) {
           networkStore.rtcMap.forEach((rtc) => {
@@ -201,12 +208,23 @@ export const useWs = () => {
   watch(
     () => currentResolutionRatio.value,
     (newVal) => {
-      appStore.allTrack.forEach((info) => {
-        info.track.applyConstraints({
-          frameRate: { max: currentMaxFramerate.value },
-          height: newVal,
+      if (canvasVideoStream.value) {
+        canvasVideoStream.value.getVideoTracks().forEach((track) => {
+          console.log('23ds1', track);
+          track.applyConstraints({
+            frameRate: { max: currentMaxFramerate.value },
+            height: newVal,
+          });
         });
-      });
+      } else {
+        appStore.allTrack.forEach((info) => {
+          info.track.applyConstraints({
+            frameRate: { max: currentMaxFramerate.value },
+            height: newVal,
+          });
+        });
+      }
+
       networkStore.rtcMap.forEach(async (rtc) => {
         const res = await rtc.setResolutionRatio(newVal);
         if (res === 1) {
@@ -222,12 +240,22 @@ export const useWs = () => {
     () => currentMaxFramerate.value,
     (newVal) => {
       console.log(currentMaxFramerate.value, 'currentMaxFramerate.value');
-      appStore.allTrack.forEach((info) => {
-        info.track.applyConstraints({
-          frameRate: { max: newVal },
-          height: currentResolutionRatio.value,
+      if (canvasVideoStream.value) {
+        canvasVideoStream.value.getVideoTracks().forEach((track) => {
+          track.applyConstraints({
+            frameRate: { max: newVal },
+            height: currentResolutionRatio.value,
+          });
         });
-      });
+      } else {
+        appStore.allTrack.forEach((info) => {
+          info.track.applyConstraints({
+            frameRate: { max: newVal },
+            height: currentResolutionRatio.value,
+          });
+        });
+      }
+
       networkStore.rtcMap.forEach(async (rtc) => {
         const res = await rtc.setMaxFramerate(newVal);
         if (res === 1) {
@@ -253,14 +281,14 @@ export const useWs = () => {
     }
   );
 
-  function addTrack(addTrackInfo: AppRootState['allTrack'][0]) {
+  function addTrack(addTrackInfo: { track; stream }) {
     if (isAnchor.value) {
       networkStore.rtcMap.forEach((rtc) => {
         const sender = rtc.peerConnection
           ?.getSenders()
           .find((sender) => sender.track?.id === addTrackInfo.track.id);
         if (!sender) {
-          console.log('ffff', sender);
+          console.log('pc添加track-1');
           rtc.peerConnection?.addTrack(addTrackInfo.track, addTrackInfo.stream);
         }
       });
@@ -319,7 +347,6 @@ export const useWs = () => {
     }
     const mixedStream = new MediaStream();
     appStore.allTrack.forEach((item) => {
-      console.log('xxxx', item.track);
       mixedStream.addTrack(item.track);
     });
     console.log('delTrack后结果的音频轨', mixedStream.getAudioTracks());
@@ -550,15 +577,27 @@ export const useWs = () => {
       //   roomId: `${roomId.value}___${receiver}`,
       //   isSRS: true,
       // });
+      if (fabricCanvasEl.value) {
+        const mixedStream = fabricCanvasEl.value.captureStream();
+        localStream.value = mixedStream;
+      }
       rtc.localStream = localStream.value;
+      const aaaa = document.querySelector('#canvasRef') as HTMLCanvasElement;
+      console.log(
+        localStream.value?.getVideoTracks(),
+        '235252',
+        aaaa.captureStream().getVideoTracks()
+      );
       localStream.value?.getTracks().forEach((track) => {
         console.warn(
           'srs startNewWebRtc，pc插入track',
           track.id,
           localStream.value?.id
         );
+        console.log('pc添加track-2');
         rtc.peerConnection?.addTrack(track, localStream.value!);
       });
+
       sendOffer({
         sender: getSocketId(),
         receiver,
@@ -585,6 +624,7 @@ export const useWs = () => {
           //   streams: [localStream.value!],
           //   direction: 'sendonly',
           // });
+          console.log('pc添加track-3');
           rtc.peerConnection?.addTrack(track, localStream.value!);
         });
       }
@@ -861,6 +901,8 @@ export const useWs = () => {
     initWs,
     addTrack,
     delTrack,
+    fabricCanvasEl,
+    canvasVideoStream,
     lastCoverImg,
     roomLiveing,
     liveRoomInfo,

@@ -490,22 +490,15 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
 <style lang="scss" scoped>
 .push-wrap {
   margin: 20px auto 0;
-  min-width: $large-width;
+  width: $w-1275;
   height: 700px;
   text-align: center;
-  .testRef {
-    // width: 600px;
-    // background-color: red;
-    :deep(canvas) {
-      // width: 100%;
-    }
-  }
   .left {
     position: relative;
     display: inline-block;
     overflow: hidden;
     box-sizing: border-box;
-    width: $large-left-width;
+    width: $w-1000;
     height: 100%;
     border-radius: 6px;
     background-color: white;
@@ -659,7 +652,7 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
     display: inline-block;
     box-sizing: border-box;
     margin-left: 10px;
-    width: 240px;
+    width: $w-250;
     height: 100%;
     border-radius: 6px;
     background-color: white;
@@ -753,17 +746,17 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
     }
   }
 }
-// 屏幕宽度小于$large-width的时候
-@media screen and (max-width: $large-width) {
+
+// 屏幕宽度大于1500的时候
+@media screen and (min-width: $w-1500) {
   .push-wrap {
+    width: $w-1475;
+
     .left {
-      width: $medium-left-width;
+      width: $w-1200;
     }
     .right {
-      .list {
-        .item {
-        }
-      }
+      width: $w-250;
     }
   }
 }

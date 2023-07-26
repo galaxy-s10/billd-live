@@ -41,7 +41,6 @@ export function usePush({
   const roomName = ref('');
   const danmuStr = ref('');
   const isLiving = ref(false);
-
   const videoElArr = ref<HTMLVideoElement[]>([]);
 
   const allMediaTypeList: {
@@ -64,6 +63,8 @@ export function usePush({
   const {
     getSocketId,
     initWs,
+    fabricCanvasEl,
+    canvasVideoStream,
     lastCoverImg,
     heartbeatTimer,
     localStream,
@@ -300,6 +301,8 @@ export function usePush({
     sendDanmu,
     keydownDanmu,
     localStream,
+    fabricCanvasEl,
+    canvasVideoStream,
     isLiving,
     allMediaTypeList,
     currentResolutionRatio,

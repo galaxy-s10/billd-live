@@ -351,15 +351,14 @@ onMounted(() => {
 <style lang="scss" scoped>
 .pull-wrap {
   margin: 20px auto 0;
-  min-width: $large-width;
+  width: $w-1275;
   height: 700px;
-  text-align: center;
   .left {
     position: relative;
     display: inline-block;
     overflow: hidden;
     box-sizing: border-box;
-    width: $large-left-width;
+    width: $w-1000;
     height: 100%;
     border-radius: 6px;
     background-color: papayawhip;
@@ -570,7 +569,7 @@ onMounted(() => {
     display: inline-block;
     box-sizing: border-box;
     margin-left: 10px;
-    min-width: 300px;
+    width: $w-250;
     height: 100%;
     border-radius: 6px;
     background-color: papayawhip;
@@ -669,19 +668,16 @@ onMounted(() => {
   }
 }
 
-// 屏幕宽度小于$large-width的时候
-@media screen and (max-width: $large-width) {
+// 屏幕宽度大于1500的时候
+@media screen and (min-width: $w-1500) {
   .pull-wrap {
+    width: $w-1475;
+
     .left {
-      width: $medium-left-width;
+      width: $w-1200;
     }
     .right {
-      .list {
-        .item {
-          width: 150px;
-          height: 80px;
-        }
-      }
+      width: $w-250;
     }
   }
 }

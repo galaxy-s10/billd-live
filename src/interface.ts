@@ -184,6 +184,7 @@ export enum liveTypeEnum {
   srsHlsPull = 'srsHlsPull',
   srsPush = 'srsPush',
   webrtcPush = 'webrtcPush',
+  canvasPush = 'canvasPush',
 }
 
 /** 直播间类型 */

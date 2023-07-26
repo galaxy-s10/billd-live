@@ -178,6 +178,12 @@
           <div class="list">
             <a
               class="item"
+              @click.prevent="handleStartLive(liveTypeEnum.canvasPush)"
+            >
+              <div class="txt">canvas混流开播</div>
+            </a>
+            <a
+              class="item"
               @click.prevent="handleStartLive(liveTypeEnum.webrtcPush)"
             >
               <div class="txt">webrtc开播</div>
@@ -362,7 +368,7 @@ function handleStartLive(key) {
   align-items: center;
   justify-content: space-between;
   padding: 0 30px;
-  min-width: $medium-width;
+  min-width: $w-1300;
   height: 64px;
   font-size: 14px;
   background-color: #fff;
