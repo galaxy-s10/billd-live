@@ -153,21 +153,9 @@ export const useWs = () => {
       label: '1080P',
       value: 1080,
     },
-    {
-      label: '1440P',
-      value: 1440,
-    },
-    {
-      label: '1920P',
-      value: 1920,
-    },
-    {
-      label: '2400P',
-      value: 2400,
-    },
   ]);
   const currentMaxBitrate = ref(maxBitrate.value[3].value);
-  const currentResolutionRatio = ref(resolutionRatio.value[3].value);
+  const currentResolutionRatio = ref(resolutionRatio.value[4].value);
   const currentMaxFramerate = ref(maxFramerate.value[2].value);
 
   const damuList = ref<IDanmu[]>([]);
@@ -208,22 +196,22 @@ export const useWs = () => {
   watch(
     () => currentResolutionRatio.value,
     (newVal) => {
-      if (canvasVideoStream.value) {
-        canvasVideoStream.value.getVideoTracks().forEach((track) => {
-          console.log('23ds1', track);
-          track.applyConstraints({
-            frameRate: { max: currentMaxFramerate.value },
-            height: newVal,
-          });
+      // if (canvasVideoStream.value) {
+      // canvasVideoStream.value.getVideoTracks().forEach((track) => {
+      //   console.log('23ds1', track);
+      //   track.applyConstraints({
+      //     frameRate: { max: currentMaxFramerate.value },
+      //     height: newVal,
+      //   });
+      // });
+      // } else {
+      appStore.allTrack.forEach((info) => {
+        info.track.applyConstraints({
+          frameRate: { max: currentMaxFramerate.value },
+          height: newVal,
         });
-      } else {
-        appStore.allTrack.forEach((info) => {
-          info.track.applyConstraints({
-            frameRate: { max: currentMaxFramerate.value },
-            height: newVal,
-          });
-        });
-      }
+      });
+      // }
 
       networkStore.rtcMap.forEach(async (rtc) => {
         const res = await rtc.setResolutionRatio(newVal);
@@ -578,20 +566,27 @@ export const useWs = () => {
       //   isSRS: true,
       // });
       if (fabricCanvasEl.value) {
-        const mixedStream = fabricCanvasEl.value.captureStream();
+        console.log(fabricCanvasEl.value, 332332232);
+        const el = document.querySelector('#canvasRef') as HTMLCanvasElement;
+        const mixedStream = el.captureStream();
+        localStream.value?.getTracks().forEach((track) => {
+          console.log(track.id, 322312112);
+        });
+        // const mixedStream = fabricCanvasEl.value.captureStream();
         localStream.value = mixedStream;
+        setInterval(() => {
+          localStream.value?.getTracks().forEach((track) => {
+            console.log(track.id, 322312112);
+          });
+        }, 1000);
       }
       rtc.localStream = localStream.value;
-      const aaaa = document.querySelector('#canvasRef') as HTMLCanvasElement;
-      console.log(
-        localStream.value?.getVideoTracks(),
-        '235252',
-        aaaa.captureStream().getVideoTracks()
-      );
       localStream.value?.getTracks().forEach((track) => {
         console.warn(
           'srs startNewWebRtc，pc插入track',
           track.id,
+          track.getSettings().height,
+          track.getSettings().width,
           localStream.value?.id
         );
         console.log('pc添加track-2');

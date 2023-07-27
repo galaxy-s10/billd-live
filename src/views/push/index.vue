@@ -414,34 +414,17 @@ async function addMediaOk(val: {
       window.$message.error('srs模式最多只能有一个视频');
       return;
     }
-    // const el = document.querySelector('#canvasVideoRef') as HTMLVideoElement;
-    const el = document.querySelector('#sdfsgsa') as HTMLCanvasElement;
-    const stream = el.captureStream(24);
-    // const el = document.querySelector('#canvasVideoRef') as HTMLVideoElement;
-    console.log(el, 22121);
-    console.log(el, el, stream, 111122121);
     const track = {
       id: getRandomString(8),
-      audio: 1,
-      video: 2,
+      audio: 2,
+      video: 1,
       mediaName: val.mediaName,
-      type: MediaTypeEnum.microphone,
-      track: stream.getTracks()[0],
-      stream,
+      type: MediaTypeEnum.camera,
+      track: event.getVideoTracks()[0],
+      stream: event,
       streamid: event.id,
-      trackid: stream.getTracks()[0].id,
+      trackid: event.getVideoTracks()[0].id,
     };
-    // const track = {
-    //   id: getRandomString(8),
-    //   audio: 2,
-    //   video: 1,
-    //   mediaName: val.mediaName,
-    //   type: MediaTypeEnum.camera,
-    //   track: event.getVideoTracks()[0],
-    //   stream: event,
-    //   streamid: event.id,
-    //   trackid: event.getVideoTracks()[0].id,
-    // };
     appStore.setAllTrack([...appStore.allTrack, track]);
     addTrack(track);
     console.log('获取摄像头成功');

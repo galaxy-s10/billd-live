@@ -166,15 +166,15 @@ export class WebRTCClass {
     }
     this.localStream = stream;
 
-    if (this.maxBitrate !== -1) {
-      this.setMaxBitrate(this.maxBitrate);
-    }
-    if (this.maxFramerate !== -1) {
-      this.setMaxFramerate(this.maxFramerate);
-    }
-    if (this.resolutionRatio !== -1) {
-      this.setResolutionRatio(this.resolutionRatio);
-    }
+    // if (this.maxBitrate !== -1) {
+    //   this.setMaxBitrate(this.maxBitrate);
+    // }
+    // if (this.maxFramerate !== -1) {
+    //   this.setMaxFramerate(this.maxFramerate);
+    // }
+    // if (this.resolutionRatio !== -1) {
+    //   this.setResolutionRatio(this.resolutionRatio);
+    // }
   };
 
   /** 设置分辨率 */
@@ -462,15 +462,15 @@ export class WebRTCClass {
         if (connectionState === 'connected') {
           // 表示每一个 ICE 连接要么正在使用（connected 或 completed 状态），要么已被关闭（closed 状态）；并且，至少有一个连接处于 connected 或 completed 状态。
           console.warn(this.roomId, 'connectionState:connected');
-          if (this.maxBitrate !== -1) {
-            this.setMaxBitrate(this.maxBitrate);
-          }
-          if (this.maxFramerate !== -1) {
-            this.setMaxFramerate(this.maxFramerate);
-          }
-          if (this.resolutionRatio !== -1) {
-            this.setResolutionRatio(this.resolutionRatio);
-          }
+          // if (this.maxBitrate !== -1) {
+          //   this.setMaxBitrate(this.maxBitrate);
+          // }
+          // if (this.maxFramerate !== -1) {
+          //   this.setMaxFramerate(this.maxFramerate);
+          // }
+          // if (this.resolutionRatio !== -1) {
+          //   this.setResolutionRatio(this.resolutionRatio);
+          // }
         }
         if (connectionState === 'disconnected') {
           // 表示至少有一个 ICE 连接处于 disconnected 状态，并且没有连接处于 failed、connecting 或 checking 状态。

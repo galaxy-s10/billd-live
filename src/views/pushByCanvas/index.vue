@@ -262,7 +262,7 @@ const canvasSize = reactive({
   width: 1920,
   height: 1080,
 });
-const ratio = ref(0);
+const scaleRatio = ref(0);
 const videoRatio = ref(16 / 9);
 const canvasVideo = ref<HTMLVideoElement>();
 const {
@@ -317,28 +317,52 @@ function createAutoVideo({ stream, id }: { stream: MediaStream; id }) {
   document.body.appendChild(video);
   const w = stream.getVideoTracks()[0].getSettings().width;
   const h = stream.getVideoTracks()[0].getSettings().height;
+  console.log('摄像头的流', { w, h }, stream.getVideoTracks()[0].id);
   video.width = w!;
   video.height = h!;
   const dom = new fabric.Image(video, {
     top: 0,
     left: 0,
   });
-  // dom.scale(ratio.value);
+  // dom.scale(scaleRatio.value);
   fabricCanvas.value!.add(dom);
   fabric.util.requestAnimFrame(function render() {
     fabricCanvas.value?.renderAll();
     fabric.util.requestAnimFrame(render);
   });
 
+  setTimeout(() => {
+    const el = document.querySelector('#canvasRef') as HTMLCanvasElement;
+    const mixedStream = el.captureStream();
+    mixedStream.getTracks().forEach((track) => {
+      console.log('canvas的流', track.id, 322312112);
+    });
+  }, 1000);
+
   canvasVideoStream.value = canvasRef.value?.captureStream();
   // canvasVideo.value!.srcObject = canvasRef.value?.captureStream();
   const mixedStream = new MediaStream();
-  canvasVideoStream.value?.getVideoTracks().forEach((track) => {
-    console.log('----', track, track.id);
-    mixedStream.addTrack(track);
-  });
+  // canvasVideoStream.value?.getVideoTracks().forEach((track) => {
+  //   console.log('3333', canvasRef.value, track, track.id);
+  //   mixedStream.addTrack(track);
+  // });
+  // setInterval(() => {
+  //   canvasVideoStream.value?.getVideoTracks().forEach((track) => {
+  //     console.log('3333', track, track.id);
+  //     mixedStream.addTrack(track);
+  //   });
+  // }, 1000);
+  // setInterval(() => {
+  //   fabricCanvasEl.value
+  //     ?.captureStream()
+  //     .getVideoTracks()
+  //     .forEach((track) => {
+  //       console.log('44444', track, track.id);
+  //     });
+  // }, 1000);
+
   mixedStream.getVideoTracks().forEach((track) => {
-    console.log('23ds1', ratio.value, track, track.id, track.kind);
+    // console.log('23ds1', scaleRatio.value, track, track.id, track.kind);
     // fabricCanvas.value?.setHeight(200);
     // fabricCanvas.value?.setWidth(200 * videoRatio.value);
     // const x = containerRef.value!.getBoundingClientRect().width / 200;
@@ -348,14 +372,29 @@ function createAutoVideo({ stream, id }: { stream: MediaStream; id }) {
     //   height: 120,
     // });
   });
-  console.log(mixedStream, '23321');
+  // console.log(mixedStream, '23321');
   canvasVideo.value!.srcObject = mixedStream;
 }
 
 function initCanvas() {
   const ins = markRaw(new fabric.Canvas(canvasRef.value!));
-  ins.setWidth(containerRef.value!.getBoundingClientRect().width);
-  ins.setHeight(canvasSize.height * ratio.value);
+  const resolutionHeight = currentResolutionRatio.value;
+  const resolutionWidth = currentResolutionRatio.value * videoRatio.value;
+  const wrapWidth = containerRef.value!.getBoundingClientRect().width;
+  const ratio = wrapWidth / resolutionWidth;
+  scaleRatio.value = ratio;
+  const wrapHeight = resolutionHeight * ratio;
+  console.log(
+    resolutionWidth,
+    resolutionHeight,
+    'xxxxxx',
+    ratio,
+    wrapHeight,
+    wrapWidth
+  );
+  ins.setWidth(wrapWidth);
+  ins.setHeight(wrapHeight);
+  // ins.setZoom(scaleRatio.value);
   fabricCanvas.value = ins;
   fabricCanvasEl.value = canvasRef.value!;
   const video = createVideo({});
@@ -364,10 +403,6 @@ function initCanvas() {
 }
 
 onMounted(() => {
-  if (containerRef.value) {
-    ratio.value =
-      containerRef.value.getBoundingClientRect().width / canvasSize.width;
-  }
   initCanvas();
 });
 
@@ -525,7 +560,7 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
       line-height: 0;
 
       :deep(canvas) {
-        width: 100%;
+        // width: 100%;
       }
 
       .add-wrap {

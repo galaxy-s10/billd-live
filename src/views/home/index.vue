@@ -324,11 +324,12 @@ function joinHlsRoom() {
 
 <style lang="scss" scoped>
 .home-wrap {
-  width: $w-1475;
+  background-color: papayawhip;
 
   .play-container {
     padding: 20px 0;
-    background-color: papayawhip;
+    width: $w-1475;
+    margin: 0 auto;
     text-align: center;
     white-space: nowrap;
     &.area {
@@ -378,7 +379,6 @@ function joinHlsRoom() {
         position: absolute;
         top: 0;
         left: 50%;
-        width: 100%;
         height: 100%;
         transform: translate(-50%);
 
@@ -388,7 +388,6 @@ function joinHlsRoom() {
         position: absolute;
         top: 0;
         left: 50%;
-        width: 100%;
         height: 100%;
         transform: translate(-50%);
 
@@ -535,7 +534,7 @@ function joinHlsRoom() {
   }
   .area-container {
     margin: 10px auto;
-    width: 1336px;
+    width: $w-1475;
     .area-item {
       .title {
         padding: 10px 0;
@@ -612,26 +611,19 @@ function joinHlsRoom() {
 // 屏幕宽度大于1500的时候
 @media screen and (min-width: $w-1500) {
   .home-wrap {
-    width: $w-1475;
-
     .play-container {
+      width: $w-1475;
+
       .left {
         width: $w-1200;
         height: 460px;
       }
       .right {
         height: 460px;
-
-        // .list {
-        //   .item {
-        //     width: 150px;
-        //     height: 80px;
-        //   }
-        // }
       }
     }
     .area-container {
-      width: 1085px;
+      width: $w-1475;
     }
   }
 }
