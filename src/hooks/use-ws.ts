@@ -49,7 +49,7 @@ export const useWs = () => {
   const trackInfo = reactive({ track_audio: 1, track_video: 1 });
   const localVideo = ref<HTMLVideoElement>(document.createElement('video'));
   const localStream = ref<MediaStream>();
-  const fabricCanvasEl = ref<HTMLCanvasElement>();
+  const fabricCanvasEl = ref<HTMLVideoElement>();
   const canvasVideoStream = ref<MediaStream>();
   const lastCoverImg = ref('');
   const maxBitrate = ref([
@@ -154,7 +154,7 @@ export const useWs = () => {
       value: 1080,
     },
   ]);
-  const currentMaxBitrate = ref(maxBitrate.value[3].value);
+  const currentMaxBitrate = ref(maxBitrate.value[4].value);
   const currentResolutionRatio = ref(resolutionRatio.value[4].value);
   const currentMaxFramerate = ref(maxFramerate.value[2].value);
 
@@ -165,6 +165,7 @@ export const useWs = () => {
     (newTrack, oldTrack) => {
       console.log('appStore.allTrack变了');
       if (fabricCanvasEl.value) {
+        // @ts-ignore
         const mixedStream = fabricCanvasEl.value.captureStream();
         localStream.value = mixedStream;
       } else {
@@ -566,13 +567,11 @@ export const useWs = () => {
       //   isSRS: true,
       // });
       if (fabricCanvasEl.value) {
-        console.log(fabricCanvasEl.value, 332332232);
-        const el = document.querySelector('#canvasRef') as HTMLCanvasElement;
-        const mixedStream = el.captureStream();
+        // @ts-ignore
+        const mixedStream = fabricCanvasEl.value.captureStream();
         localStream.value?.getTracks().forEach((track) => {
           console.log(track.id, 322312112);
         });
-        // const mixedStream = fabricCanvasEl.value.captureStream();
         localStream.value = mixedStream;
         setInterval(() => {
           localStream.value?.getTracks().forEach((track) => {

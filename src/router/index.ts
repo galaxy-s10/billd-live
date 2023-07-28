@@ -134,15 +134,16 @@ export const defaultRoutes: RouteRecordRaw[] = [
         path: '/pull/:roomId',
         component: () => import('@/views/pull/index.vue'),
       },
-      {
-        name: routerName.push,
-        path: '/push',
-        component: () => import('@/views/push/index.vue'),
-      },
+
       {
         name: routerName.pushByCanvas,
         path: '/pushByCanvas',
         component: () => import('@/views/pushByCanvas/index.vue'),
+      },
+      {
+        name: routerName.push,
+        path: '/push',
+        component: () => import('@/views/push/index.vue'),
       },
     ],
   },

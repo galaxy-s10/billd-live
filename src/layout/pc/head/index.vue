@@ -350,14 +350,23 @@ function quickStart() {
   window.$message.info('敬请期待！');
 }
 
-function handleStartLive(key) {
+function handleStartLive(key: liveTypeEnum) {
   if (!loginTip()) {
     return;
   }
-  const url = router.resolve({
-    name: routerName.push,
-    query: { liveType: key },
-  });
+  let url;
+  if (key === liveTypeEnum.canvasPush) {
+    url = router.resolve({
+      name: routerName.pushByCanvas,
+      query: { liveType: liveTypeEnum.srsPush },
+    });
+  } else {
+    url = router.resolve({
+      name: routerName.push,
+      query: { liveType: key },
+    });
+  }
+
   openToTarget(url.href);
 }
 </script>

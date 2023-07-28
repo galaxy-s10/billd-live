@@ -9,9 +9,10 @@
         class="container"
       >
         <AudioRoomTip></AudioRoomTip>
+        <!-- <div id="canvasRef"></div> -->
         <canvas
-          id="canvasRef"
-          ref="canvasRef"
+          id="pushCanvasRef"
+          ref="pushCanvasRef"
         ></canvas>
         <div
           v-if="!appStore.allTrack || appStore.allTrack.length <= 0"
@@ -253,14 +254,14 @@ const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
 const danmuListRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
-const canvasRef = ref<HTMLCanvasElement>();
+const pushCanvasRef = ref<HTMLCanvasElement>();
 const fabricCanvas = ref<fabric.Canvas>();
 const localVideoRef = ref<HTMLVideoElement>();
 const remoteVideoRef = ref<HTMLVideoElement[]>([]);
 const isSRS = route.query.liveType === liveTypeEnum.srsPush;
-const canvasSize = reactive({
-  width: 1920,
-  height: 1080,
+const wrapSize = reactive({
+  width: 0,
+  height: 0,
 });
 const scaleRatio = ref(0);
 const videoRatio = ref(16 / 9);
@@ -313,13 +314,26 @@ function createAutoVideo({ stream, id }: { stream: MediaStream; id }) {
   video.style.height = `1px`;
   video.style.position = 'fixed';
   video.style.bottom = '0';
-  video.style.left = '0';
+  video.style.right = '0';
+  video.style.opacity = '0';
+  video.style.pointerEvents = 'none';
   document.body.appendChild(video);
+
   const w = stream.getVideoTracks()[0].getSettings().width;
   const h = stream.getVideoTracks()[0].getSettings().height;
   console.log('摄像头的流', { w, h }, stream.getVideoTracks()[0].id);
   video.width = w!;
   video.height = h!;
+  // const dom = new fabric.Rect({
+  //   left: 100,
+  //   top: 50,
+  //   fill: 'yellow',
+  //   width: 200,
+  //   height: 100,
+  //   objectCaching: false,
+  //   stroke: 'lightgreen',
+  //   strokeWidth: 4,
+  // });
   const dom = new fabric.Image(video, {
     top: 0,
     left: 0,
@@ -331,53 +345,31 @@ function createAutoVideo({ stream, id }: { stream: MediaStream; id }) {
     fabric.util.requestAnimFrame(render);
   });
 
+  // canvasVideoStream.value = document
+  //   .querySelector('#pushCanvasRef')!
+  //   .captureStream();
+  canvasVideoStream.value = pushCanvasRef.value!.captureStream();
+
   setTimeout(() => {
-    const el = document.querySelector('#canvasRef') as HTMLCanvasElement;
-    const mixedStream = el.captureStream();
-    mixedStream.getTracks().forEach((track) => {
-      console.log('canvas的流', track.id, 322312112);
-    });
+    canvasVideoStream.value
+      ?.getVideoTracks()[0]
+      .applyConstraints({
+        width: { ideal: 640 },
+        height: { ideal: 480 },
+        // frameRate: { ideal: 30 },
+      })
+      .then(() => {
+        console.log('修改成功');
+        canvasVideo.value!.srcObject = canvasVideoStream.value!;
+      })
+      .catch((e) => {
+        console.error('修改错误', e);
+      });
   }, 1000);
-
-  canvasVideoStream.value = canvasRef.value?.captureStream();
-  // canvasVideo.value!.srcObject = canvasRef.value?.captureStream();
-  const mixedStream = new MediaStream();
-  // canvasVideoStream.value?.getVideoTracks().forEach((track) => {
-  //   console.log('3333', canvasRef.value, track, track.id);
-  //   mixedStream.addTrack(track);
-  // });
-  // setInterval(() => {
-  //   canvasVideoStream.value?.getVideoTracks().forEach((track) => {
-  //     console.log('3333', track, track.id);
-  //     mixedStream.addTrack(track);
-  //   });
-  // }, 1000);
-  // setInterval(() => {
-  //   fabricCanvasEl.value
-  //     ?.captureStream()
-  //     .getVideoTracks()
-  //     .forEach((track) => {
-  //       console.log('44444', track, track.id);
-  //     });
-  // }, 1000);
-
-  mixedStream.getVideoTracks().forEach((track) => {
-    // console.log('23ds1', scaleRatio.value, track, track.id, track.kind);
-    // fabricCanvas.value?.setHeight(200);
-    // fabricCanvas.value?.setWidth(200 * videoRatio.value);
-    // const x = containerRef.value!.getBoundingClientRect().width / 200;
-    // ratio.value = ratio.value * x;
-    // console.log(ratio.value);
-    // track.applyConstraints({
-    //   height: 120,
-    // });
-  });
-  // console.log(mixedStream, '23321');
-  canvasVideo.value!.srcObject = mixedStream;
+  canvasVideo.value!.srcObject = canvasVideoStream.value!;
 }
 
 function initCanvas() {
-  const ins = markRaw(new fabric.Canvas(canvasRef.value!));
   const resolutionHeight = currentResolutionRatio.value;
   const resolutionWidth = currentResolutionRatio.value * videoRatio.value;
   const wrapWidth = containerRef.value!.getBoundingClientRect().width;
@@ -392,12 +384,20 @@ function initCanvas() {
     wrapHeight,
     wrapWidth
   );
+  // lower-canvas: 实际的canvas画面，也就是pushCanvasRef
+  // upper-canvas: 操作时候的canvas
+  const ins = markRaw(new fabric.Canvas(pushCanvasRef.value!));
+  // ins.setWidth(resolutionWidth);
+  // ins.setHeight(resolutionHeight);
   ins.setWidth(wrapWidth);
   ins.setHeight(wrapHeight);
-  // ins.setZoom(scaleRatio.value);
+  console.log({ resolutionWidth, resolutionHeight });
+  ins.setZoom(1);
+  wrapSize.width = wrapWidth;
+  wrapSize.height = wrapHeight;
   fabricCanvas.value = ins;
-  fabricCanvasEl.value = canvasRef.value!;
   const video = createVideo({});
+  fabricCanvasEl.value = video;
   canvasVideo.value = video;
   document.body.appendChild(video);
 }
@@ -545,7 +545,7 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
     display: inline-block;
     overflow: hidden;
     box-sizing: border-box;
-    width: $w-1000;
+    width: $w-950;
     height: 100%;
     border-radius: 6px;
     background-color: white;
@@ -749,10 +749,10 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
   .push-wrap {
     width: $w-1475;
     .left {
-      width: $w-1200;
+      width: $w-1150;
     }
     .right {
-      width: $w-250;
+      width: $w-300;
     }
   }
 }
