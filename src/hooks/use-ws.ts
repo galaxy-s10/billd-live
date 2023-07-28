@@ -49,7 +49,6 @@ export const useWs = () => {
   const trackInfo = reactive({ track_audio: 1, track_video: 1 });
   const localVideo = ref<HTMLVideoElement>(document.createElement('video'));
   const localStream = ref<MediaStream>();
-  const fabricCanvasEl = ref<HTMLVideoElement>();
   const canvasVideoStream = ref<MediaStream>();
   const lastCoverImg = ref('');
   const maxBitrate = ref([
@@ -60,10 +59,6 @@ export const useWs = () => {
     {
       label: '10',
       value: 10,
-    },
-    {
-      label: '50',
-      value: 50,
     },
     {
       label: '1000',
@@ -120,10 +115,6 @@ export const useWs = () => {
       value: 20,
     },
     {
-      label: '24帧',
-      value: 24,
-    },
-    {
       label: '30帧',
       value: 30,
     },
@@ -133,14 +124,6 @@ export const useWs = () => {
     },
   ]);
   const resolutionRatio = ref([
-    {
-      label: '160P',
-      value: 160,
-    },
-    {
-      label: '240P',
-      value: 240,
-    },
     {
       label: '360P',
       value: 360,
@@ -153,9 +136,13 @@ export const useWs = () => {
       label: '1080P',
       value: 1080,
     },
+    // {
+    //   label: '1440P',
+    //   value: 1440,
+    // },
   ]);
-  const currentMaxBitrate = ref(maxBitrate.value[4].value);
-  const currentResolutionRatio = ref(resolutionRatio.value[4].value);
+  const currentMaxBitrate = ref(maxBitrate.value[2].value);
+  const currentResolutionRatio = ref(resolutionRatio.value[2].value);
   const currentMaxFramerate = ref(maxFramerate.value[2].value);
 
   const damuList = ref<IDanmu[]>([]);
@@ -164,21 +151,15 @@ export const useWs = () => {
     () => appStore.allTrack,
     (newTrack, oldTrack) => {
       console.log('appStore.allTrack变了');
-      if (fabricCanvasEl.value) {
-        // @ts-ignore
-        const mixedStream = fabricCanvasEl.value.captureStream();
-        localStream.value = mixedStream;
-      } else {
-        const mixedStream = new MediaStream();
-        newTrack.forEach((item) => {
-          mixedStream.addTrack(item.track);
-        });
-        console.log('新的allTrack音频轨', mixedStream.getAudioTracks());
-        console.log('新的allTrack视频轨', mixedStream.getVideoTracks());
-        console.log('旧的allTrack音频轨', localStream.value?.getAudioTracks());
-        console.log('旧的allTrack视频轨', localStream.value?.getVideoTracks());
-        localStream.value = mixedStream;
-      }
+      const mixedStream = new MediaStream();
+      newTrack.forEach((item) => {
+        mixedStream.addTrack(item.track);
+      });
+      console.log('新的allTrack音频轨', mixedStream.getAudioTracks());
+      console.log('新的allTrack视频轨', mixedStream.getVideoTracks());
+      console.log('旧的allTrack音频轨', localStream.value?.getAudioTracks());
+      console.log('旧的allTrack视频轨', localStream.value?.getVideoTracks());
+      localStream.value = mixedStream;
       if (isSRS.value) {
         if (!isPull.value) {
           networkStore.rtcMap.forEach((rtc) => {
@@ -197,22 +178,21 @@ export const useWs = () => {
   watch(
     () => currentResolutionRatio.value,
     (newVal) => {
-      // if (canvasVideoStream.value) {
-      // canvasVideoStream.value.getVideoTracks().forEach((track) => {
-      //   console.log('23ds1', track);
-      //   track.applyConstraints({
-      //     frameRate: { max: currentMaxFramerate.value },
-      //     height: newVal,
-      //   });
-      // });
-      // } else {
-      appStore.allTrack.forEach((info) => {
-        info.track.applyConstraints({
-          frameRate: { max: currentMaxFramerate.value },
-          height: newVal,
+      if (canvasVideoStream.value) {
+        canvasVideoStream.value.getVideoTracks().forEach((track) => {
+          track.applyConstraints({
+            frameRate: { max: currentMaxFramerate.value },
+            height: newVal,
+          });
         });
-      });
-      // }
+      } else {
+        appStore.allTrack.forEach((info) => {
+          info.track.applyConstraints({
+            frameRate: { max: currentMaxFramerate.value },
+            height: newVal,
+          });
+        });
+      }
 
       networkStore.rtcMap.forEach(async (rtc) => {
         const res = await rtc.setResolutionRatio(newVal);
@@ -566,18 +546,8 @@ export const useWs = () => {
       //   roomId: `${roomId.value}___${receiver}`,
       //   isSRS: true,
       // });
-      if (fabricCanvasEl.value) {
-        // @ts-ignore
-        const mixedStream = fabricCanvasEl.value.captureStream();
-        localStream.value?.getTracks().forEach((track) => {
-          console.log(track.id, 322312112);
-        });
-        localStream.value = mixedStream;
-        setInterval(() => {
-          localStream.value?.getTracks().forEach((track) => {
-            console.log(track.id, 322312112);
-          });
-        }, 1000);
+      if (canvasVideoStream.value) {
+        localStream.value = canvasVideoStream.value;
       }
       rtc.localStream = localStream.value;
       localStream.value?.getTracks().forEach((track) => {
@@ -895,7 +865,6 @@ export const useWs = () => {
     initWs,
     addTrack,
     delTrack,
-    fabricCanvasEl,
     canvasVideoStream,
     lastCoverImg,
     roomLiveing,

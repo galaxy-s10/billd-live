@@ -16,7 +16,7 @@ import { WsMsgTypeEnum } from '@/network/webSocket';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
-import { createVideo } from '@/utils';
+import { createVideo, generateBase64 } from '@/utils';
 
 import { loginTip } from './use-login';
 import { useTip } from './use-tip';
@@ -63,7 +63,6 @@ export function usePush({
   const {
     getSocketId,
     initWs,
-    fabricCanvasEl,
     canvasVideoStream,
     lastCoverImg,
     heartbeatTimer,
@@ -133,20 +132,6 @@ export function usePush({
     closeRtc();
   });
 
-  function handleCoverImg(dom: HTMLVideoElement) {
-    const canvas = document.createElement('canvas');
-    const { width, height } = dom.getBoundingClientRect();
-    const rate = width / height;
-    const coverWidth = width * 0.5;
-    const coverHeight = coverWidth / rate;
-    canvas.width = coverWidth;
-    canvas.height = coverHeight;
-    canvas.getContext('2d')!.drawImage(dom, 0, 0, coverWidth, coverHeight);
-    // webp比png的体积小非常多！因此coverWidth就可以不用压缩太夸张
-    const dataURL = canvas.toDataURL('image/webp');
-    return dataURL;
-  }
-
   function closeWs() {
     const instance = networkStore.wsMap.get(roomId.value);
     instance?.close();
@@ -207,7 +192,10 @@ export function usePush({
         (item) => item.getAttribute('track-id') === el.track.id
       );
       if (res1) {
-        lastCoverImg.value = handleCoverImg(res1);
+        // canvas推流的话，不需要再设置预览图了
+        if (!canvasVideoStream.value) {
+          lastCoverImg.value = generateBase64(res1);
+        }
       }
     }
     initWs({
@@ -300,8 +288,8 @@ export function usePush({
     endLive,
     sendDanmu,
     keydownDanmu,
+    lastCoverImg,
     localStream,
-    fabricCanvasEl,
     canvasVideoStream,
     isLiving,
     allMediaTypeList,

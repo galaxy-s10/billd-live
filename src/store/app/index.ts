@@ -18,6 +18,7 @@ export type AppRootState = {
     stream: MediaStream;
     streamid: string;
     trackid: string;
+    canvasDom?: any;
   }[];
 };
 

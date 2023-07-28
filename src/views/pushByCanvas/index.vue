@@ -9,7 +9,6 @@
         class="container"
       >
         <AudioRoomTip></AudioRoomTip>
-        <!-- <div id="canvasRef"></div> -->
         <canvas
           id="pushCanvasRef"
           ref="pushCanvasRef"
@@ -60,7 +59,7 @@
             </div>
             <div class="bottom">
               <span v-if="NODE_ENV === 'development'">
-                socketId：{{ getSocketId() }}
+                {{ getSocketId() }}
               </span>
             </div>
           </div>
@@ -112,7 +111,7 @@
               v-if="!isLiving"
               type="info"
               size="small"
-              @click="startLive"
+              @click="handleStartLive"
             >
               开始直播
             </n-button>
@@ -232,14 +231,14 @@
 <script lang="ts" setup>
 import { fabric } from 'fabric';
 import { NODE_ENV } from 'script/constant';
-import { markRaw, nextTick, onMounted, reactive, ref, watch } from 'vue';
+import { markRaw, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { usePush } from '@/hooks/use-push';
 import { DanmuMsgTypeEnum, MediaTypeEnum, liveTypeEnum } from '@/interface';
 import { AppRootState, useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
-import { createVideo, getRandomEnglishString } from '@/utils';
+import { createVideo, generateBase64, getRandomEnglishString } from '@/utils';
 
 import MediaModalCpt from './mediaModal/index.vue';
 import SelectMediaModalCpt from './selectMediaModal/index.vue';
@@ -265,7 +264,6 @@ const wrapSize = reactive({
 });
 const scaleRatio = ref(0);
 const videoRatio = ref(16 / 9);
-const canvasVideo = ref<HTMLVideoElement>();
 const {
   confirmRoomName,
   getSocketId,
@@ -273,8 +271,7 @@ const {
   endLive,
   sendDanmu,
   keydownDanmu,
-  localStream,
-  fabricCanvasEl,
+  lastCoverImg,
   canvasVideoStream,
   isLiving,
   allMediaTypeList,
@@ -307,7 +304,12 @@ watch(
   }
 );
 
-function createAutoVideo({ stream, id }: { stream: MediaStream; id }) {
+function handleStartLive() {
+  lastCoverImg.value = generateBase64(pushCanvasRef.value!);
+  startLive();
+}
+
+function autoCreateVideo({ stream }: { stream: MediaStream }) {
   const video = createVideo({});
   video.srcObject = stream;
   video.style.width = `1px`;
@@ -318,55 +320,44 @@ function createAutoVideo({ stream, id }: { stream: MediaStream; id }) {
   video.style.opacity = '0';
   video.style.pointerEvents = 'none';
   document.body.appendChild(video);
+  return new Promise<any>((resolve) => {
+    video.onloadedmetadata = () => {
+      const width = stream.getVideoTracks()[0].getSettings().width!;
+      const height = stream.getVideoTracks()[0].getSettings().height!;
+      let ratio = 1;
+      if (width > wrapSize.width) {
+        const r1 = wrapSize.width / width;
+        ratio = r1;
+      }
+      if (height > wrapSize.height) {
+        const r1 = wrapSize.height / height;
+        if (ratio > r1) {
+          ratio = r1;
+        }
+      }
 
-  const w = stream.getVideoTracks()[0].getSettings().width;
-  const h = stream.getVideoTracks()[0].getSettings().height;
-  console.log('摄像头的流', { w, h }, stream.getVideoTracks()[0].id);
-  video.width = w!;
-  video.height = h!;
-  // const dom = new fabric.Rect({
-  //   left: 100,
-  //   top: 50,
-  //   fill: 'yellow',
-  //   width: 200,
-  //   height: 100,
-  //   objectCaching: false,
-  //   stroke: 'lightgreen',
-  //   strokeWidth: 4,
-  // });
-  const dom = new fabric.Image(video, {
-    top: 0,
-    left: 0,
-  });
-  // dom.scale(scaleRatio.value);
-  fabricCanvas.value!.add(dom);
-  fabric.util.requestAnimFrame(function render() {
-    fabricCanvas.value?.renderAll();
-    fabric.util.requestAnimFrame(render);
-  });
+      video.width = width;
+      video.height = height;
 
-  // canvasVideoStream.value = document
-  //   .querySelector('#pushCanvasRef')!
-  //   .captureStream();
-  canvasVideoStream.value = pushCanvasRef.value!.captureStream();
-
-  setTimeout(() => {
-    canvasVideoStream.value
-      ?.getVideoTracks()[0]
-      .applyConstraints({
-        width: { ideal: 640 },
-        height: { ideal: 480 },
-        // frameRate: { ideal: 30 },
-      })
-      .then(() => {
-        console.log('修改成功');
-        canvasVideo.value!.srcObject = canvasVideoStream.value!;
-      })
-      .catch((e) => {
-        console.error('修改错误', e);
+      const dom = markRaw(
+        new fabric.Image(video, {
+          top: 0,
+          left: 0,
+          width,
+          height,
+        })
+      );
+      dom.scale(ratio);
+      fabricCanvas.value!.add(dom);
+      fabric.util.requestAnimFrame(function render() {
+        fabricCanvas.value?.renderAll();
+        fabric.util.requestAnimFrame(render);
       });
-  }, 1000);
-  canvasVideo.value!.srcObject = canvasVideoStream.value!;
+
+      canvasVideoStream.value = pushCanvasRef.value!.captureStream();
+      resolve(dom);
+    };
+  });
 }
 
 function initCanvas() {
@@ -376,30 +367,15 @@ function initCanvas() {
   const ratio = wrapWidth / resolutionWidth;
   scaleRatio.value = ratio;
   const wrapHeight = resolutionHeight * ratio;
-  console.log(
-    resolutionWidth,
-    resolutionHeight,
-    'xxxxxx',
-    ratio,
-    wrapHeight,
-    wrapWidth
-  );
   // lower-canvas: 实际的canvas画面，也就是pushCanvasRef
   // upper-canvas: 操作时候的canvas
   const ins = markRaw(new fabric.Canvas(pushCanvasRef.value!));
-  // ins.setWidth(resolutionWidth);
-  // ins.setHeight(resolutionHeight);
   ins.setWidth(wrapWidth);
   ins.setHeight(wrapHeight);
-  console.log({ resolutionWidth, resolutionHeight });
-  ins.setZoom(1);
+  ins.setBackgroundColor('black', () => {});
   wrapSize.width = wrapWidth;
   wrapSize.height = wrapHeight;
   fabricCanvas.value = ins;
-  const video = createVideo({});
-  fabricCanvasEl.value = video;
-  canvasVideo.value = video;
-  document.body.appendChild(video);
 }
 
 onMounted(() => {
@@ -422,11 +398,11 @@ async function addMediaOk(val: {
     const event = await navigator.mediaDevices.getDisplayMedia({
       video: {
         deviceId: val.deviceId,
-        height: currentResolutionRatio.value,
-        frameRate: { max: currentMaxFramerate.value },
+        // displaySurface: 'monitor', // browser默认标签页;window默认窗口;monitor默认整个屏幕
       },
       audio: true,
     });
+
     const videoTrack = {
       id: getRandomEnglishString(8),
       audio: 2,
@@ -437,7 +413,14 @@ async function addMediaOk(val: {
       stream: event,
       streamid: event.id,
       trackid: event.getVideoTracks()[0].id,
+      canvasDom: undefined,
     };
+
+    const canvasDom = await autoCreateVideo({
+      stream: event,
+    });
+    videoTrack.canvasDom = canvasDom;
+
     const audio = event.getAudioTracks();
     if (audio.length) {
       const audioTrack = {
@@ -452,30 +435,22 @@ async function addMediaOk(val: {
         trackid: event.getAudioTracks()[0].id,
       };
       appStore.setAllTrack([...appStore.allTrack, videoTrack, audioTrack]);
-      // addTrack(videoTrack);
+      addTrack(videoTrack);
       addTrack(audioTrack);
     } else {
       appStore.setAllTrack([...appStore.allTrack, videoTrack]);
-      // addTrack(videoTrack);
+      addTrack(videoTrack);
     }
-    nextTick(() => {
-      createAutoVideo({
-        stream: event,
-        id: videoTrack.id,
-      });
-    });
 
     console.log('获取窗口成功');
   } else if (val.type === MediaTypeEnum.camera) {
     const event = await navigator.mediaDevices.getUserMedia({
       video: {
         deviceId: val.deviceId,
-        height: currentResolutionRatio.value,
-        frameRate: { max: currentMaxFramerate.value },
       },
       audio: false,
     });
-    const track = {
+    const videoTrack = {
       id: getRandomEnglishString(8),
       audio: 2,
       video: 1,
@@ -485,12 +460,17 @@ async function addMediaOk(val: {
       stream: event,
       streamid: event.id,
       trackid: event.getVideoTracks()[0].id,
+      canvasDom: undefined,
     };
-    appStore.setAllTrack([...appStore.allTrack, track]);
-    // addTrack(track);
-    nextTick(() => {
-      createAutoVideo({ stream: event, id: track.id });
+    const video = createVideo({});
+    video.srcObject = event;
+    const canvasDom = await autoCreateVideo({
+      stream: event,
     });
+    videoTrack.canvasDom = canvasDom;
+
+    appStore.setAllTrack([...appStore.allTrack, videoTrack]);
+    addTrack(videoTrack);
     console.log('获取摄像头成功');
   } else if (val.type === MediaTypeEnum.microphone) {
     const event = await navigator.mediaDevices.getUserMedia({
@@ -523,6 +503,10 @@ async function addMediaOk(val: {
 
 function handleDelTrack(item: AppRootState['allTrack'][0]) {
   console.log('handleDelTrack', item);
+  if (item.canvasDom !== undefined) {
+    // @ts-ignore
+    fabricCanvas.value?.remove(item.canvasDom);
+  }
   const res = appStore.allTrack.filter((iten) => iten.id !== item.id);
   appStore.setAllTrack(res);
   delTrack(item);
@@ -538,14 +522,14 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
 .push-wrap {
   display: flex;
   justify-content: space-between;
-  margin: 20px auto 0;
-  width: $w-1275;
+  margin: 15px auto 0;
+  width: $w-1250;
   .left {
     position: relative;
     display: inline-block;
     overflow: hidden;
     box-sizing: border-box;
-    width: $w-950;
+    width: $w-960;
     height: 100%;
     border-radius: 6px;
     background-color: white;
@@ -572,7 +556,7 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
         justify-content: space-around;
         padding: 0 20px;
         height: 50px;
-        border-radius: 5px;
+        border-radius: 6px;
         background-color: white;
         transform: translate(-50%, -50%);
       }
@@ -589,8 +573,8 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
 
         .avatar {
           margin-right: 20px;
-          width: 64px;
-          height: 64px;
+          width: 55px;
+          height: 55px;
           border-radius: 50%;
           background-position: center center;
           background-size: cover;
@@ -645,12 +629,12 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
     }
   }
   .right {
-    position: relative;
-    display: inline-block;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     box-sizing: border-box;
     margin-left: 10px;
     width: $w-250;
-    height: 100%;
     border-radius: 6px;
     background-color: white;
     color: #9499a0;
@@ -658,7 +642,6 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
     .resource-card {
       position: relative;
       box-sizing: border-box;
-      margin-bottom: 5%;
       margin-bottom: 10px;
       padding: 10px;
       width: 100%;
@@ -692,10 +675,11 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
       }
     }
     .danmu-card {
+      position: relative;
+      flex: 1;
       box-sizing: border-box;
       padding: 10px;
       width: 100%;
-      height: 400px;
       border-radius: 6px;
       background-color: papayawhip;
       text-align: initial;
@@ -704,8 +688,7 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
       }
       .list {
         overflow: scroll;
-        margin-bottom: 10px;
-        height: 300px;
+        height: 360px;
 
         @extend %hideScrollbar;
 
@@ -722,9 +705,14 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
       }
 
       .send-msg {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
         display: flex;
         align-items: center;
         box-sizing: border-box;
+        width: calc(100% - 20px);
+        transform: translateX(-50%);
         .ipt {
           display: block;
           box-sizing: border-box;
@@ -749,7 +737,7 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
   .push-wrap {
     width: $w-1475;
     .left {
-      width: $w-1150;
+      width: $w-1152;
     }
     .right {
       width: $w-300;

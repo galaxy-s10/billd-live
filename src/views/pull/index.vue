@@ -28,7 +28,6 @@
         <div
           ref="containerRef"
           class="container"
-          :style="{ height: height + 'px' }"
         >
           <div
             v-loading="videoLoading"
@@ -48,47 +47,9 @@
               ref="canvasRef"
               class="media-list"
               :class="{ item: appStore.allTrack.length > 1 }"
-              :style="{ height: height + 'px' }"
             ></div>
             <AudioRoomTip></AudioRoomTip>
             <VideoControls></VideoControls>
-          </div>
-
-          <div
-            v-if="showSidebar"
-            class="sidebar"
-          >
-            <div
-              v-for="(item, index) in sidebarList"
-              :key="index"
-              class="item"
-            >
-              <!-- x-webkit-airplay这个属性应该是使此视频支持ios的AirPlay功能 -->
-              <!-- playsinline、 webkit-playsinline IOS微信浏览器支持小窗内播放 -->
-              <!-- x5-video-player-type 启用H5播放器，是wechat安卓版特性 -->
-              <!-- x5-video-player-fullscreen 全屏设置 -->
-              <!-- x5-video-orientation 声明播放器支持的方向，可选值landscape横屏，portraint竖屏。默认值portraint。 -->
-              <video
-                :ref="(el) => (localVideoRef[item.socketId] = el)"
-                autoplay
-                webkit-playsinline="true"
-                playsinline
-                x-webkit-airplay="allow"
-                x5-video-player-type="h5"
-                x5-video-player-fullscreen="true"
-                x5-video-orientation="portraint"
-                muted
-              ></video>
-              <div class="name">{{ item.socketId }}</div>
-            </div>
-
-            <div
-              v-if="showJoin"
-              class="join"
-              @click="handleJoin()"
-            >
-              加入
-            </div>
           </div>
         </div>
 
@@ -350,9 +311,10 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .pull-wrap {
-  margin: 20px auto 0;
+  display: flex;
+  justify-content: space-around;
+  margin: 15px auto 0;
   width: $w-1275;
-  height: 700px;
   .left {
     position: relative;
     display: inline-block;
@@ -376,8 +338,8 @@ onMounted(() => {
 
         .avatar {
           margin-right: 20px;
-          width: 64px;
-          height: 64px;
+          width: 50px;
+          height: 50px;
           border-radius: 50%;
 
           @extend %containBg;
@@ -422,6 +384,7 @@ onMounted(() => {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      height: 562px;
       .video-wrap {
         position: relative;
         overflow: hidden;
@@ -502,23 +465,20 @@ onMounted(() => {
     }
 
     .gift-list {
-      position: absolute;
-      right: 0;
-      bottom: 0;
-      left: 0;
       display: flex;
       align-items: center;
       justify-content: space-around;
       box-sizing: border-box;
-      height: 120px;
+      height: 100px;
+      margin: 5px 0;
       .item {
         display: flex;
         align-items: center;
+        width: 100px;
+        height: 100px;
         flex-direction: column;
         justify-content: center;
         box-sizing: border-box;
-        width: 110px;
-        height: 110px;
         text-align: center;
         cursor: pointer;
         &:hover {
@@ -526,8 +486,8 @@ onMounted(() => {
         }
         .ico {
           position: relative;
-          width: 50px;
-          height: 50px;
+          width: 45px;
+          height: 45px;
           background-position: center center;
           background-size: cover;
           background-repeat: no-repeat;
@@ -568,9 +528,7 @@ onMounted(() => {
     position: relative;
     display: inline-block;
     box-sizing: border-box;
-    margin-left: 10px;
     width: $w-250;
-    height: 100%;
     border-radius: 6px;
     background-color: papayawhip;
     color: #9499a0;
@@ -614,7 +572,7 @@ onMounted(() => {
     .danmu-list {
       overflow-y: scroll;
       padding: 0 15px;
-      height: 450px;
+      height: 480px;
       text-align: initial;
 
       @extend %hideScrollbar;
@@ -671,13 +629,13 @@ onMounted(() => {
 // 屏幕宽度大于1500的时候
 @media screen and (min-width: $w-1500) {
   .pull-wrap {
-    width: $w-1475;
+    width: $w-1350;
 
     .left {
-      width: $w-1200;
+      width: $w-1000;
     }
     .right {
-      width: $w-250;
+      width: $w-300;
     }
   }
 }

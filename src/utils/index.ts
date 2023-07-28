@@ -2,6 +2,29 @@
 
 import { getRangeRandom } from 'billd-utils';
 
+export function generateBase64(dom: CanvasImageSource) {
+  const canvas = document.createElement('canvas');
+  // @ts-ignore
+  const { width, height } = dom.getBoundingClientRect();
+  const rate = width / height;
+  let ratio = 0.5;
+  function geturl() {
+    const coverWidth = width * ratio;
+    const coverHeight = coverWidth / rate;
+    canvas.width = coverWidth;
+    canvas.height = coverHeight;
+    canvas.getContext('2d')!.drawImage(dom, 0, 0, coverWidth, coverHeight);
+    // webp比png的体积小非常多！因此coverWidth就可以不用压缩太夸张
+    return canvas.toDataURL('image/webp');
+  }
+  let dataURL = geturl();
+  while (dataURL.length > 1000 * 20) {
+    ratio = ratio * 0.8;
+    dataURL = geturl();
+  }
+  return dataURL;
+}
+
 /**
  * @description 获取随机字符串(ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz)
  * @example: getRandomString(4) ===> abd3

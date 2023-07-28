@@ -34,7 +34,7 @@ import router, { routerName } from '@/router';
   top: 50%;
   right: 0;
   padding: 15px 10px;
-  width: 40px;
+  width: 50px;
   border-radius: 20px 0 0 20px;
   background-color: white;
   box-shadow: 0 0 20px 1px rgba($theme-color-gold, 0.15);
@@ -42,10 +42,10 @@ import router, { routerName } from '@/router';
   text-align: center;
   transform: translateY(-50%);
   .item {
+    cursor: pointer;
     &:not(:last-child) {
       margin-bottom: 10px;
     }
-    cursor: pointer;
     .ico {
       margin: 0 auto;
       width: 20px;

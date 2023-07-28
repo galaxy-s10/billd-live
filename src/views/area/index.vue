@@ -97,7 +97,7 @@ async function getData() {
 
 <style lang="scss" scoped>
 .area-wrap {
-  padding: 20px;
+  padding: 15px 20px;
   .title {
     margin-bottom: 10px;
   }
