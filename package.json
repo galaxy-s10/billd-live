@@ -57,7 +57,8 @@
     "vue": "^3.2.31",
     "vue-demi": "^0.13.11",
     "vue-router": "^4.0.13",
-    "webrtc-adapter": "^8.2.2"
+    "webrtc-adapter": "^8.2.2",
+    "worker-timers": "^7.0.74"
   },
   "devDependencies": {
     "@babel/core": "^7.14.0",

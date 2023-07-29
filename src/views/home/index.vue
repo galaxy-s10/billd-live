@@ -1,7 +1,14 @@
 <template>
   <div class="home-wrap">
     <div class="banner"></div>
+
     <div class="play-container">
+      <div
+        class="bg"
+        :style="{
+          // backgroundImage: `url(https://resource.hsslive.cn/image/2b045c7f02febd23893244e923115535.webp)`,
+        }"
+      ></div>
       <div class="container">
         <div class="left">
           <div
@@ -329,8 +336,23 @@ function joinHlsRoom() {
 
 <style lang="scss" scoped>
 .home-wrap {
+  .banner {
+  }
+
   .play-container {
-    background-color: papayawhip;
+    position: relative;
+    .bg {
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      z-index: -1;
+      width: 100%;
+      height: 100%;
+      background-color: papayawhip;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
     .container {
       display: flex;
       justify-content: space-between;
@@ -346,7 +368,6 @@ function joinHlsRoom() {
         height: 618px;
         border-radius: 4px;
         background-color: rgba($color: #000000, $alpha: 0.3);
-        vertical-align: top;
 
         @extend %coverBg;
 
@@ -444,12 +465,10 @@ function joinHlsRoom() {
         display: inline-block;
         overflow: scroll;
         box-sizing: border-box;
-        margin-left: 10px;
         padding: 12px;
         height: 618px;
         border-radius: 4px;
         background-color: rgba($color: #000000, $alpha: 0.3);
-        vertical-align: top;
 
         @extend %hideScrollbar;
 

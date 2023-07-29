@@ -1,5 +1,4 @@
 import '@/assets/css/videojs.scss';
-import { isSafari } from 'billd-utils';
 import flvJs from 'flv.js';
 import videoJs from 'video.js';
 import Player from 'video.js/dist/types/player';
@@ -59,7 +58,11 @@ export function useFlvPlay() {
             console.log('flv-play');
           });
           flvVideoEl.value.addEventListener('playing', () => {
-            console.log('flv-playing', isSafari());
+            console.log(
+              'flv-playing',
+              flvVideoEl.value?.videoWidth,
+              flvVideoEl.value?.videoHeight
+            );
             // setMuted(false);
             setMuted(appStore.muted);
             resolve({

@@ -111,7 +111,6 @@ export function usePull({
   watch(
     () => roomLiveing.value,
     (val) => {
-      console.log(val, roomLiveType.value, '-------');
       if (val) {
         flvurl.value = val.live?.live_room?.flv_url!;
         hlsurl.value = val.live?.live_room?.hls_url!;

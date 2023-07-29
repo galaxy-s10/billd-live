@@ -231,8 +231,9 @@
 <script lang="ts" setup>
 import { fabric } from 'fabric';
 import { NODE_ENV } from 'script/constant';
-import { markRaw, onMounted, reactive, ref, watch } from 'vue';
+import { markRaw, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import * as workerTimers from 'worker-timers';
 
 import { usePush } from '@/hooks/use-push';
 import { DanmuMsgTypeEnum, MediaTypeEnum, liveTypeEnum } from '@/interface';
@@ -256,13 +257,17 @@ const containerRef = ref<HTMLDivElement>();
 const pushCanvasRef = ref<HTMLCanvasElement>();
 const fabricCanvas = ref<fabric.Canvas>();
 const localVideoRef = ref<HTMLVideoElement>();
+const webAudioTrack = ref<MediaStreamTrack>();
+const audioCtx = ref<AudioContext>();
 const remoteVideoRef = ref<HTMLVideoElement[]>([]);
 const isSRS = route.query.liveType === liveTypeEnum.srsPush;
 const wrapSize = reactive({
   width: 0,
   height: 0,
 });
+
 const scaleRatio = ref(0);
+const timerId = ref(-1);
 const videoRatio = ref(16 / 9);
 const {
   confirmRoomName,
@@ -304,9 +309,54 @@ watch(
   }
 );
 
+// 处理页面显示/隐藏
+function onPageVisibility() {
+  // 注意：此属性在Page Visibility Level 2 规范中被描述为“历史” 。考虑改用该Document.visibilityState 属性。
+  // const isHidden = document.hidden;
+
+  if (document.visibilityState === 'hidden') {
+    console.log(new Date().toLocaleString(), '页面隐藏了', timerId.value);
+    if (isLiving.value) {
+      const delay = 1000 / 60; // 16.666666666666668
+      timerId.value = workerTimers.setInterval(() => {
+        fabricCanvas.value?.renderAll();
+      }, delay);
+    }
+  } else {
+    console.log(new Date().toLocaleString(), '页面显示了', timerId.value);
+    if (isLiving.value) {
+      workerTimers.clearInterval(timerId.value);
+    }
+  }
+}
+
 function handleStartLive() {
   lastCoverImg.value = generateBase64(pushCanvasRef.value!);
+  // const video = createVideo({});
+  // document.body.appendChild(video);
+  audioCtx.value = new AudioContext();
+  const gainNode = audioCtx.value.createGain();
+
+  appStore.allTrack.forEach((item) => {
+    if (item.audio === 1) {
+      if (!audioCtx.value) return;
+      // const destination = audioCtx.value.createMediaStreamDestination();
+      const audioInput = audioCtx.value.createMediaStreamSource(item.stream);
+      // gainNode.connect(destination);
+      audioInput.connect(gainNode);
+    }
+  });
+  const destination = audioCtx.value.createMediaStreamDestination();
+  // video.srcObject = destination.stream;
+  gainNode.connect(destination);
+
+  // video.onloadeddata = () => {
+  // @ts-ignore
+  // webAudioTrack.value = video.srcObject!.getAudioTracks()[0];
+  // canvasVideoStream.value?.addTrack(webAudioTrack.value!);
+  canvasVideoStream.value?.addTrack(destination.stream.getAudioTracks()[0]);
   startLive();
+  // };
 }
 
 function autoCreateVideo({ stream }: { stream: MediaStream }) {
@@ -349,10 +399,12 @@ function autoCreateVideo({ stream }: { stream: MediaStream }) {
       );
       dom.scale(ratio);
       fabricCanvas.value!.add(dom);
-      fabric.util.requestAnimFrame(function render() {
+      function renderFrame() {
         fabricCanvas.value?.renderAll();
-        fabric.util.requestAnimFrame(render);
-      });
+        window.requestAnimationFrame(renderFrame);
+      }
+
+      renderFrame();
 
       canvasVideoStream.value = pushCanvasRef.value!.captureStream();
       resolve(dom);
@@ -380,7 +432,20 @@ function initCanvas() {
 
 onMounted(() => {
   initCanvas();
+  document.addEventListener('visibilitychange', onPageVisibility);
+  handleAudioTrack();
 });
+
+onUnmounted(() => {
+  document.removeEventListener('visibilitychange', onPageVisibility);
+});
+
+function handleAudioTrack() {
+  audioCtx.value = new AudioContext();
+  // const destination = audioCtx.value.createMediaStreamDestination();
+  // const gainNode = audioCtx.value.createGain();
+  // gainNode.connect(destination);
+}
 
 function selectMediaOk(val: MediaTypeEnum) {
   showMediaModalCpt.value = true;
@@ -462,8 +527,6 @@ async function addMediaOk(val: {
       trackid: event.getVideoTracks()[0].id,
       canvasDom: undefined,
     };
-    const video = createVideo({});
-    video.srcObject = event;
     const canvasDom = await autoCreateVideo({
       stream: event,
     });
@@ -481,10 +544,10 @@ async function addMediaOk(val: {
       isSRS &&
       appStore.allTrack.filter((item) => item.audio === 1).length >= 1
     ) {
-      window.$message.error('srs模式最多只能有一个音频');
-      return;
+      // window.$message.error('srs模式最多只能有一个音频');
+      // return;
     }
-    const track = {
+    const audioTrack = {
       id: getRandomEnglishString(8),
       audio: 1,
       video: 2,
@@ -495,8 +558,9 @@ async function addMediaOk(val: {
       streamid: event.id,
       trackid: event.getAudioTracks()[0].id,
     };
-    appStore.setAllTrack([...appStore.allTrack, track]);
-    addTrack(track);
+    appStore.setAllTrack([...appStore.allTrack, audioTrack]);
+    addTrack(audioTrack);
+
     console.log('获取麦克风成功');
   }
 }
@@ -737,7 +801,7 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
   .push-wrap {
     width: $w-1475;
     .left {
-      width: $w-1152;
+      width: $w-1150;
     }
     .right {
       width: $w-300;

@@ -554,11 +554,13 @@ export const useWs = () => {
         console.warn(
           'srs startNewWebRtc，pc插入track',
           track.id,
-          track.getSettings().height,
-          track.getSettings().width,
           localStream.value?.id
         );
-        console.log('pc添加track-2');
+        console.log(
+          'pc添加track-2',
+          track.kind,
+          canvasVideoStream.value?.getAudioTracks()
+        );
         rtc.peerConnection?.addTrack(track, localStream.value!);
       });
 
@@ -712,11 +714,9 @@ export const useWs = () => {
     ws.socketIo.on(WsMsgTypeEnum.roomLiveing, (data: IJoin) => {
       prettierReceiveWebsocket(WsMsgTypeEnum.roomLiveing, data);
       roomLiveing.value = data.data;
-      console.log(isSRS.value, isPull.value, data, 111);
       // 如果是srs开播，则不需要等有人进来了才new webrtc，只要Websocket连上了就开始new webrtc
       if (isSRS.value) {
         if (isPull.value) {
-          console.log('llllll');
           if (roomLiveType.value === liveTypeEnum.srsWebrtcPull) {
             startNewWebRtc({
               receiver: 'srs',

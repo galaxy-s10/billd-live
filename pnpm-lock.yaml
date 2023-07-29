@@ -83,6 +83,9 @@ dependencies:
   webrtc-adapter:
     specifier: ^8.2.2
     version: 8.2.2
+  worker-timers:
+    specifier: ^7.0.74
+    version: 7.0.74
 
 devDependencies:
   '@babel/core':
@@ -1310,6 +1313,13 @@ packages:
     engines: {node: '>=6.9.0'}
     dependencies:
       regenerator-runtime: 0.13.11
+
+  /@babel/runtime@7.22.6:
+    resolution: {integrity: sha512-wDb5pWm4WDdF6LFUde3Jl8WzPA+3ZbxYqkC6xAXuD3irdEHN1k0NfTRrJD8ZD378SJ61miMLCqIOXYhd8x+AJQ==}
+    engines: {node: '>=6.9.0'}
+    dependencies:
+      regenerator-runtime: 0.13.11
+    dev: false
 
   /@babel/template@7.20.7:
     resolution: {integrity: sha512-8SegXApWe6VoNw0r9JHpSteLKTpTiLZ4rMlGIm9JQ18KiCtyQiAMEazujAHrUS5flrcqYZa75ukev3P6QmUwUw==}
@@ -4619,7 +4629,7 @@ packages:
     resolution: {integrity: sha512-Kv5nKlh6yRrdrGvxeJ2e5y2eRUpkUosIW4A2AS38zwSz27zu7ufDwQPi5Jhs3XAlGNetl3bmnGhQsMtkKJnj3w==}
     dependencies:
       no-case: 3.0.4
-      tslib: 2.5.0
+      tslib: 2.6.1
     dev: true
 
   /dot-prop@5.3.0:
@@ -5434,6 +5444,14 @@ packages:
   /fast-levenshtein@2.0.6:
     resolution: {integrity: sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==}
     dev: true
+
+  /fast-unique-numbers@8.0.7:
+    resolution: {integrity: sha512-I+VCWGlHB6HSqE0W0FxB5mgmgBHJiBs19kS9y6JJKXDp84IzuE7H24NRwpnZbuONK7T2r+7T0z1OZbehc5URxA==}
+    engines: {node: '>=16.1.0'}
+    dependencies:
+      '@babel/runtime': 7.22.6
+      tslib: 2.6.1
+    dev: false
 
   /fastest-levenshtein@1.0.16:
     resolution: {integrity: sha512-eRnCtTTtGZFpQCwhJiUOuxPQWRXVKYDn0b2PeHfXL6/Zi53SLAzAHfVhVWK2AryC/WH05kGfxhFIPvTF0SXQzg==}
@@ -6926,7 +6944,7 @@ packages:
   /lower-case@2.0.2:
     resolution: {integrity: sha512-7fm3l3NAF9WfN6W3JOmf5drwpVqX78JtoGJ3A6W0a6ZnldM41w2fV5D490psKFTpMds8TJse/eHLFFsNHHjHgg==}
     dependencies:
-      tslib: 2.5.0
+      tslib: 2.6.1
     dev: true
 
   /lru-cache@5.1.1:
@@ -7308,7 +7326,7 @@ packages:
     resolution: {integrity: sha512-fgAN3jGAh+RoxUGZHTSOLJIqUc2wmoBwGR4tbpNAKmmovFoWq0OdRkb0VkldReO2a2iBT/OEulG9XSUc10r3zg==}
     dependencies:
       lower-case: 2.0.2
-      tslib: 2.5.0
+      tslib: 2.6.1
     dev: true
 
   /node-abort-controller@3.1.1:
@@ -7643,7 +7661,7 @@ packages:
     resolution: {integrity: sha512-uWlGT3YSnK9x3BQJaOdcZwrnV6hPpd8jFH1/ucpiLRPh/2zCVJKS19E4GvYHvaCcACn3foXZ0cLB9Wrx1KGe5g==}
     dependencies:
       no-case: 3.0.4
-      tslib: 2.5.0
+      tslib: 2.6.1
     dev: true
 
   /path-exists@3.0.0:
@@ -7730,7 +7748,7 @@ packages:
     resolution: {integrity: sha512-afRERtHn54AlwaF2/+LFszyAANTCggGilmcmILUzEjvs3XgFZT+xE6+QWQcAGmu4xajy+Xtj7acLOPdx5/eXWQ==}
     hasBin: true
     dependencies:
-      '@babel/runtime': 7.21.0
+      '@babel/runtime': 7.22.6
     dev: false
 
   /pkg-dir@4.2.0:
@@ -9725,6 +9743,9 @@ packages:
   /tslib@2.5.0:
     resolution: {integrity: sha512-336iVw3rtn2BUK7ORdIAHTyxHGRIHVReokCR3XjbckJMK7ms8FysBfhLR8IXnAgy7T0PTPNBWKiH514FOW/WSg==}
 
+  /tslib@2.6.1:
+    resolution: {integrity: sha512-t0hLfiEKfMUoqhG+U1oid7Pva4bbDPHYfJNiB7BiIjRkj1pyC++4N3huJfqY6aRH6VTB0rvtzQwjM4K6qpfOig==}
+
   /tsutils@3.21.0(typescript@4.9.5):
     resolution: {integrity: sha512-mHKK3iUXL+3UF6xL5k0PEhKRUBKPBCv/+RkEOpjRWxxx27KKRBmmA60A9pgOUvMi8GKhRMPEmjBRPzs2W7O1OA==}
     engines: {node: '>= 6'}
@@ -10511,6 +10532,31 @@ packages:
   /wordwrap@1.0.0:
     resolution: {integrity: sha512-gvVzJFlPycKc5dZN4yPkP8w7Dc37BtP1yczEneOb4uq34pXZcvrtRTmWV8W+Ume+XCxKgbjM+nevkyFPMybd4Q==}
     dev: true
+
+  /worker-timers-broker@6.0.94:
+    resolution: {integrity: sha512-LYo2uktzGgJW2lB/XHq0p8M3NKeC7fCaQ20o+WpmLTx0TnS/g3IkSFituBR7Fify/q1natgrJN7GUJKcgCFVmw==}
+    dependencies:
+      '@babel/runtime': 7.22.6
+      fast-unique-numbers: 8.0.7
+      tslib: 2.6.1
+      worker-timers-worker: 7.0.58
+    dev: false
+
+  /worker-timers-worker@7.0.58:
+    resolution: {integrity: sha512-tCZI7c5YgjZAS16BZNCjd5T+W+jEC+g9M74gqKVRRlZ13Y8DW3ZJR1fiXHzd9yRy9wK1PTOZOcSdDLvxNtUb8Q==}
+    dependencies:
+      '@babel/runtime': 7.22.6
+      tslib: 2.6.1
+    dev: false
+
+  /worker-timers@7.0.74:
+    resolution: {integrity: sha512-XdxJ9gTNdvM6FkStgXmjDbF/v9reoJzpLiq1YORcA1DdMYxWh+zdEgqxuoJu3rpM05CwrUsb4d03FCDfExNiQQ==}
+    dependencies:
+      '@babel/runtime': 7.22.6
+      tslib: 2.6.1
+      worker-timers-broker: 6.0.94
+      worker-timers-worker: 7.0.58
+    dev: false
 
   /wrap-ansi@6.2.0:
     resolution: {integrity: sha512-r6lPcBGxZXlIcymEu7InxDMhdW0KDxpLgoFLcguasxCaJ/SOIZwINatK9KY/tf+ZrlywOKU0UDj3ATXUBfxJXA==}
