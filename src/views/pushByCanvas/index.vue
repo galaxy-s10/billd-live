@@ -354,7 +354,9 @@ function handleStartLive() {
   // @ts-ignore
   // webAudioTrack.value = video.srcObject!.getAudioTracks()[0];
   // canvasVideoStream.value?.addTrack(webAudioTrack.value!);
-  canvasVideoStream.value?.addTrack(destination.stream.getAudioTracks()[0]);
+  if (destination.stream.getAudioTracks()[0]) {
+    canvasVideoStream.value?.addTrack(destination.stream.getAudioTracks()[0]);
+  }
   startLive();
   // };
 }
