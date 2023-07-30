@@ -136,13 +136,13 @@ export const useWs = () => {
       label: '1080P',
       value: 1080,
     },
-    // {
-    //   label: '1440P',
-    //   value: 1440,
-    // },
+    {
+      label: '1440P',
+      value: 1440,
+    },
   ]);
   const currentMaxBitrate = ref(maxBitrate.value[2].value);
-  const currentResolutionRatio = ref(resolutionRatio.value[2].value);
+  const currentResolutionRatio = ref(resolutionRatio.value[3].value);
   const currentMaxFramerate = ref(maxFramerate.value[2].value);
 
   const damuList = ref<IDanmu[]>([]);
@@ -153,7 +153,9 @@ export const useWs = () => {
       console.log('appStore.allTrack变了');
       const mixedStream = new MediaStream();
       newTrack.forEach((item) => {
-        mixedStream.addTrack(item.track);
+        if (item.track) {
+          mixedStream.addTrack(item.track);
+        }
       });
       console.log('新的allTrack音频轨', mixedStream.getAudioTracks());
       console.log('新的allTrack视频轨', mixedStream.getVideoTracks());
@@ -187,7 +189,7 @@ export const useWs = () => {
         });
       } else {
         appStore.allTrack.forEach((info) => {
-          info.track.applyConstraints({
+          info.track?.applyConstraints({
             frameRate: { max: currentMaxFramerate.value },
             height: newVal,
           });
@@ -218,7 +220,7 @@ export const useWs = () => {
         });
       } else {
         appStore.allTrack.forEach((info) => {
-          info.track.applyConstraints({
+          info.track?.applyConstraints({
             frameRate: { max: newVal },
             height: currentResolutionRatio.value,
           });
@@ -264,7 +266,9 @@ export const useWs = () => {
     }
     const mixedStream = new MediaStream();
     appStore.allTrack.forEach((item) => {
-      mixedStream.addTrack(item.track);
+      if (item.track) {
+        mixedStream.addTrack(item.track);
+      }
     });
     console.log('addTrack后结果的音频轨', mixedStream.getAudioTracks());
     console.log('addTrack后结果的视频轨', mixedStream.getVideoTracks());
@@ -307,7 +311,7 @@ export const useWs = () => {
       networkStore.rtcMap.forEach((rtc) => {
         const sender = rtc.peerConnection
           ?.getSenders()
-          .find((sender) => sender.track?.id === delTrackInfo.track.id);
+          .find((sender) => sender.track?.id === delTrackInfo.track?.id);
         if (sender) {
           console.log('删除track', delTrackInfo, sender);
           rtc.peerConnection?.removeTrack(sender);
@@ -316,7 +320,9 @@ export const useWs = () => {
     }
     const mixedStream = new MediaStream();
     appStore.allTrack.forEach((item) => {
-      mixedStream.addTrack(item.track);
+      if (item.track) {
+        mixedStream.addTrack(item.track);
+      }
     });
     console.log('delTrack后结果的音频轨', mixedStream.getAudioTracks());
     console.log('delTrack后结果的视频轨', mixedStream.getVideoTracks());

@@ -138,7 +138,7 @@
             class="item"
           >
             <span class="name">
-              ({{ item.audio === 1 ? '音频' : '视频' }}){{ item.mediaName }}
+              ({{ mediaTypeEnumMap[item.type] }}){{ item.mediaName }}
             </span>
             <div
               class="del"
@@ -230,6 +230,7 @@
 
 <script lang="ts" setup>
 import { fabric } from 'fabric';
+import { UploadFileInfo } from 'naive-ui';
 import { NODE_ENV } from 'script/constant';
 import { markRaw, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
@@ -257,7 +258,6 @@ const containerRef = ref<HTMLDivElement>();
 const pushCanvasRef = ref<HTMLCanvasElement>();
 const fabricCanvas = ref<fabric.Canvas>();
 const localVideoRef = ref<HTMLVideoElement>();
-const webAudioTrack = ref<MediaStreamTrack>();
 const audioCtx = ref<AudioContext>();
 const remoteVideoRef = ref<HTMLVideoElement[]>([]);
 const isSRS = route.query.liveType === liveTypeEnum.srsPush;
@@ -298,6 +298,14 @@ const {
   isSRS,
 });
 
+const mediaTypeEnumMap = {
+  [MediaTypeEnum.camera]: '摄像头',
+  [MediaTypeEnum.microphone]: '麦克风',
+  [MediaTypeEnum.screen]: '窗口',
+  [MediaTypeEnum.img]: '图片',
+  [MediaTypeEnum.txt]: '文字',
+};
+
 watch(
   () => damuList.value.length,
   () => {
@@ -332,33 +340,55 @@ function onPageVisibility() {
 
 function handleStartLive() {
   lastCoverImg.value = generateBase64(pushCanvasRef.value!);
-  // const video = createVideo({});
-  // document.body.appendChild(video);
-  audioCtx.value = new AudioContext();
-  const gainNode = audioCtx.value.createGain();
 
-  appStore.allTrack.forEach((item) => {
-    if (item.audio === 1) {
+  const allAudioTrack = appStore.allTrack.filter((item) => item.audio === 1);
+  if (allAudioTrack.length) {
+    audioCtx.value = new AudioContext();
+    const gainNode = audioCtx.value.createGain();
+    allAudioTrack.forEach((item) => {
       if (!audioCtx.value) return;
       // const destination = audioCtx.value.createMediaStreamDestination();
-      const audioInput = audioCtx.value.createMediaStreamSource(item.stream);
+      const audioInput = audioCtx.value.createMediaStreamSource(item.stream!);
       // gainNode.connect(destination);
       audioInput.connect(gainNode);
-    }
-  });
-  const destination = audioCtx.value.createMediaStreamDestination();
-  // video.srcObject = destination.stream;
-  gainNode.connect(destination);
-
-  // video.onloadeddata = () => {
-  // @ts-ignore
-  // webAudioTrack.value = video.srcObject!.getAudioTracks()[0];
-  // canvasVideoStream.value?.addTrack(webAudioTrack.value!);
-  if (destination.stream.getAudioTracks()[0]) {
+    });
+    const destination = audioCtx.value.createMediaStreamDestination();
+    // video.onloadeddata = () => {
+    // @ts-ignore
     canvasVideoStream.value?.addTrack(destination.stream.getAudioTracks()[0]);
+    // video.srcObject = destination.stream;
+    gainNode.connect(destination);
   }
   startLive();
-  // };
+}
+
+function handleScale({ width, height }: { width: number; height: number }) {
+  const resolutionHeight = currentResolutionRatio.value;
+  const resolutionWidth = currentResolutionRatio.value * videoRatio.value;
+  console.log('当前分辨率', { resolutionWidth, resolutionHeight });
+  let ratio = 1;
+  if (width > resolutionWidth) {
+    const r1 = resolutionWidth / width;
+    ratio = r1;
+  }
+  if (height > resolutionHeight) {
+    const r1 = resolutionHeight / height;
+    if (ratio > r1) {
+      ratio = r1;
+    }
+  }
+  // if (width > wrapSize.width) {
+  //   const r1 = wrapSize.width / width;
+  //   ratio = r1;
+  // }
+  // if (height > wrapSize.height) {
+  //   const r1 = wrapSize.height / height;
+  //   if (ratio > r1) {
+  //     ratio = r1;
+  //   }
+  // }
+
+  return ratio;
 }
 
 function autoCreateVideo({ stream }: { stream: MediaStream }) {
@@ -372,82 +402,174 @@ function autoCreateVideo({ stream }: { stream: MediaStream }) {
   video.style.opacity = '0';
   video.style.pointerEvents = 'none';
   document.body.appendChild(video);
-  return new Promise<any>((resolve) => {
-    video.onloadedmetadata = () => {
-      const width = stream.getVideoTracks()[0].getSettings().width!;
-      const height = stream.getVideoTracks()[0].getSettings().height!;
-      let ratio = 1;
-      if (width > wrapSize.width) {
-        const r1 = wrapSize.width / width;
-        ratio = r1;
-      }
-      if (height > wrapSize.height) {
-        const r1 = wrapSize.height / height;
-        if (ratio > r1) {
-          ratio = r1;
+  return new Promise<{ canvasDom: fabric.Image; initScale: number }>(
+    (resolve) => {
+      video.onloadedmetadata = () => {
+        const width = stream.getVideoTracks()[0].getSettings().width!;
+        const height = stream.getVideoTracks()[0].getSettings().height!;
+        const ratio = handleScale({ width, height });
+        const initScale = height / currentResolutionRatio.value;
+        video.width = width;
+        video.height = height;
+
+        const canvasDom = markRaw(
+          new fabric.Image(video, {
+            top: 0,
+            left: 0,
+            width,
+            height,
+          })
+        );
+        console.log(
+          '初始化',
+          ratio,
+          canvasDom.width,
+          canvasDom.height,
+          canvasDom
+        );
+
+        canvasDom.scale(ratio);
+        fabricCanvas.value!.add(canvasDom);
+        function renderFrame() {
+          fabricCanvas.value?.renderAll();
+          window.requestAnimationFrame(renderFrame);
         }
+
+        renderFrame();
+
+        canvasVideoStream.value = pushCanvasRef.value!.captureStream();
+        resolve({ canvasDom, initScale });
+      };
+    }
+  );
+}
+
+watch(
+  () => currentResolutionRatio.value,
+  (newHeight, oldHeight) => {
+    changeCanvasAttr({ newHeight, oldHeight });
+  }
+);
+
+function changeCanvasAttr({
+  newHeight,
+  oldHeight,
+}: {
+  newHeight: number;
+  oldHeight: number;
+}) {
+  if (fabricCanvas.value) {
+    const resolutionHeight = currentResolutionRatio.value;
+    const resolutionWidth = currentResolutionRatio.value * videoRatio.value;
+    fabricCanvas.value.setWidth(resolutionWidth);
+    fabricCanvas.value.setHeight(resolutionHeight);
+    fabricCanvas.value.forEachObject((canvas) => {
+      canvas.setCoords();
+    });
+    changeCanvasStyle();
+
+    appStore.allTrack.forEach((item) => {
+      if (item.canvasDom) {
+        let ratio = 1;
+        if (newHeight < oldHeight) {
+          // 2560*1440==>640*480
+          // 1920*1080==>640*480
+          // 2560/1920=1.333333
+          ratio = newHeight / oldHeight;
+          const ratio1 = handleScale({
+            width: item.canvasDom.width!,
+            height: item.canvasDom.height!,
+          });
+          // item.canvasDom.width = 100;
+          // item.canvasDom.height = 100;
+          item.canvasDom.scale(ratio);
+          item.canvasDom.left = item.canvasDom.left! * ratio;
+          item.canvasDom.top = item.canvasDom.top! * ratio;
+          console.log(
+            '分辨率变小了',
+            { ratio, ratio1 },
+            item.canvasDom.width,
+            item.canvasDom.height,
+            item.canvasDom
+          );
+        } else {
+          ratio = newHeight / oldHeight;
+          item.canvasDom.scale(ratio);
+          const ratio1 = handleScale({
+            width: item.canvasDom.width!,
+            height: item.canvasDom.height!,
+          });
+          item.canvasDom.scale(ratio1);
+          item.canvasDom.left = item.canvasDom.left! * ratio;
+          item.canvasDom.top = item.canvasDom.top! * ratio;
+          console.log(
+            '分辨率变大了',
+            { ratio, ratio1 },
+            item.canvasDom.width,
+            item.canvasDom.height,
+            item.canvasDom
+          );
+        }
+
+        console.log(
+          item.canvasDom.width,
+          item.canvasDom.height,
+          ratio,
+          'kkkkkkkkkkkkkkkk'
+        );
       }
+    });
+    changeCanvasStyle();
+  }
+}
 
-      video.width = width;
-      video.height = height;
-
-      const dom = markRaw(
-        new fabric.Image(video, {
-          top: 0,
-          left: 0,
-          width,
-          height,
-        })
-      );
-      dom.scale(ratio);
-      fabricCanvas.value!.add(dom);
-      function renderFrame() {
-        fabricCanvas.value?.renderAll();
-        window.requestAnimationFrame(renderFrame);
-      }
-
-      renderFrame();
-
-      canvasVideoStream.value = pushCanvasRef.value!.captureStream();
-      resolve(dom);
-    };
-  });
+function changeCanvasStyle() {
+  // @ts-ignore
+  fabricCanvas.value.wrapperEl.style.width = `${wrapSize.width}px`;
+  // @ts-ignore
+  fabricCanvas.value.wrapperEl.style.height = `${wrapSize.height}px`;
+  // @ts-ignore
+  fabricCanvas.value.lowerCanvasEl.style.width = `${wrapSize.width}px`;
+  // @ts-ignore
+  fabricCanvas.value.lowerCanvasEl.style.height = `${wrapSize.height}px`;
+  // @ts-ignore
+  fabricCanvas.value.upperCanvasEl.style.width = `${wrapSize.width}px`;
+  // @ts-ignore
+  fabricCanvas.value.upperCanvasEl.style.height = `${wrapSize.height}px`;
 }
 
 function initCanvas() {
   const resolutionHeight = currentResolutionRatio.value;
   const resolutionWidth = currentResolutionRatio.value * videoRatio.value;
   const wrapWidth = containerRef.value!.getBoundingClientRect().width;
+  // const wrapWidth = 1920;
   const ratio = wrapWidth / resolutionWidth;
-  scaleRatio.value = ratio;
+  scaleRatio.value = resolutionWidth / wrapWidth;
   const wrapHeight = resolutionHeight * ratio;
+  // const wrapHeight = 1080;
   // lower-canvas: 实际的canvas画面，也就是pushCanvasRef
   // upper-canvas: 操作时候的canvas
   const ins = markRaw(new fabric.Canvas(pushCanvasRef.value!));
-  ins.setWidth(wrapWidth);
-  ins.setHeight(wrapHeight);
+  ins.setWidth(resolutionWidth);
+  ins.setHeight(resolutionHeight);
+
+  // ins.setWidth(wrapWidth);
+  // ins.setHeight(wrapHeight);
   ins.setBackgroundColor('black', () => {});
   wrapSize.width = wrapWidth;
   wrapSize.height = wrapHeight;
   fabricCanvas.value = ins;
+  changeCanvasStyle();
 }
 
 onMounted(() => {
   initCanvas();
   document.addEventListener('visibilitychange', onPageVisibility);
-  handleAudioTrack();
 });
 
 onUnmounted(() => {
   document.removeEventListener('visibilitychange', onPageVisibility);
 });
-
-function handleAudioTrack() {
-  audioCtx.value = new AudioContext();
-  // const destination = audioCtx.value.createMediaStreamDestination();
-  // const gainNode = audioCtx.value.createGain();
-  // gainNode.connect(destination);
-}
 
 function selectMediaOk(val: MediaTypeEnum) {
   showMediaModalCpt.value = true;
@@ -459,6 +581,8 @@ async function addMediaOk(val: {
   type: MediaTypeEnum;
   deviceId: string;
   mediaName: string;
+  txtInfo?: { txt: string; color: string };
+  imgInfo?: UploadFileInfo[];
 }) {
   showMediaModalCpt.value = false;
   if (val.type === MediaTypeEnum.screen) {
@@ -480,13 +604,15 @@ async function addMediaOk(val: {
       stream: event,
       streamid: event.id,
       trackid: event.getVideoTracks()[0].id,
-      canvasDom: undefined,
     };
 
-    const canvasDom = await autoCreateVideo({
+    const { canvasDom, initScale } = await autoCreateVideo({
       stream: event,
     });
+    // @ts-ignore
     videoTrack.canvasDom = canvasDom;
+    // @ts-ignore
+    videoTrack.initScale = initScale;
 
     const audio = event.getAudioTracks();
     if (audio.length) {
@@ -527,12 +653,14 @@ async function addMediaOk(val: {
       stream: event,
       streamid: event.id,
       trackid: event.getVideoTracks()[0].id,
-      canvasDom: undefined,
     };
-    const canvasDom = await autoCreateVideo({
+    const { canvasDom, initScale } = await autoCreateVideo({
       stream: event,
     });
+    // @ts-ignore
     videoTrack.canvasDom = canvasDom;
+    // @ts-ignore
+    videoTrack.initScale = initScale;
 
     appStore.setAllTrack([...appStore.allTrack, videoTrack]);
     addTrack(videoTrack);
@@ -542,13 +670,6 @@ async function addMediaOk(val: {
       video: false,
       audio: { deviceId: val.deviceId },
     });
-    if (
-      isSRS &&
-      appStore.allTrack.filter((item) => item.audio === 1).length >= 1
-    ) {
-      // window.$message.error('srs模式最多只能有一个音频');
-      // return;
-    }
     const audioTrack = {
       id: getRandomEnglishString(8),
       audio: 1,
@@ -564,6 +685,98 @@ async function addMediaOk(val: {
     addTrack(audioTrack);
 
     console.log('获取麦克风成功');
+  } else if (val.type === MediaTypeEnum.txt) {
+    const txtTrack = {
+      id: getRandomEnglishString(8),
+      audio: 2,
+      video: 2,
+      mediaName: val.mediaName,
+      type: MediaTypeEnum.txt,
+      track: undefined,
+      stream: undefined,
+      streamid: undefined,
+      trackid: undefined,
+    };
+    if (fabricCanvas.value) {
+      const dom = markRaw(
+        new fabric.Text(val.txtInfo?.txt || '', {
+          top: 0,
+          left: 0,
+          fill: val.txtInfo?.color,
+        })
+      );
+      // @ts-ignore
+      txtTrack.canvasDom = dom;
+      fabricCanvas.value.add(dom);
+    }
+
+    // @ts-ignore
+    appStore.setAllTrack([...appStore.allTrack, txtTrack]);
+    addTrack(txtTrack);
+
+    console.log('获取文字成功', fabricCanvas.value);
+  } else if (val.type === MediaTypeEnum.img) {
+    const imgTrack = {
+      id: getRandomEnglishString(8),
+      audio: 2,
+      video: 2,
+      mediaName: val.mediaName,
+      type: MediaTypeEnum.img,
+      track: undefined,
+      stream: undefined,
+      streamid: undefined,
+      trackid: undefined,
+    };
+
+    if (fabricCanvas.value) {
+      const imgEl = await new Promise<HTMLImageElement>((resolve) => {
+        if (!val.imgInfo) return;
+        const file = val.imgInfo[0].file;
+        console.log(file);
+        const reader = new FileReader();
+        reader.addEventListener(
+          'load',
+          function () {
+            const img = document.createElement('img');
+            img.src = reader.result as string;
+            img.onload = () => {
+              resolve(img);
+            };
+          },
+          false
+        );
+        if (file) {
+          reader.readAsDataURL(file);
+        }
+      });
+
+      const canvasDom = markRaw(
+        new fabric.Image(imgEl, {
+          top: 0,
+          left: 0,
+          width: imgEl.width,
+          height: imgEl.height,
+        })
+      );
+      const ratio = handleScale({ width: imgEl.width, height: imgEl.height });
+      console.log(
+        '初始化',
+        ratio,
+        canvasDom.width,
+        canvasDom.height,
+        canvasDom
+      );
+      // @ts-ignore
+      imgTrack.canvasDom = canvasDom;
+      canvasDom.scale(ratio);
+      fabricCanvas.value.add(canvasDom);
+    }
+
+    // @ts-ignore
+    appStore.setAllTrack([...appStore.allTrack, imgTrack]);
+    addTrack(imgTrack);
+
+    console.log('获取图片成功', fabricCanvas.value);
   }
 }
 

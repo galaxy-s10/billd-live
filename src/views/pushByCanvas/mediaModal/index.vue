@@ -18,12 +18,42 @@
             />
           </div>
         </div>
+
         <div class="item">
           <div class="label">名称</div>
           <div class="value">
             <n-input v-model:value="mediaName" />
           </div>
         </div>
+        <template v-if="props.mediaType === MediaTypeEnum.txt && txtInfo">
+          <div class="item">
+            <div class="label">内容</div>
+            <div class="value">
+              <n-input v-model:value="txtInfo.txt" />
+            </div>
+          </div>
+          <div class="item">
+            <div class="label">颜色</div>
+            <div class="value">
+              <n-color-picker v-model:value="txtInfo.color" />
+            </div>
+          </div>
+        </template>
+        <template v-if="props.mediaType === MediaTypeEnum.img">
+          <div class="item">
+            <div class="label">图片</div>
+            <div class="value">
+              <n-upload
+                :max="1"
+                accept="image/png, image/jpeg, image/webp"
+                :on-update:file-list="changImg"
+              >
+                <n-button>选择文件</n-button>
+              </n-upload>
+              <!-- <input type="file" /> -->
+            </div>
+          </div>
+        </template>
       </div>
 
       <template #footer>
@@ -41,14 +71,13 @@
 </template>
 
 <script lang="ts" setup>
+import { UploadFileInfo } from 'naive-ui';
 import { defineEmits, defineProps, onMounted, ref, withDefaults } from 'vue';
 
 import { MediaTypeEnum } from '@/interface';
 import { useAppStore } from '@/store/app';
-import { useNetworkStore } from '@/store/network';
 
 const mediaName = ref('');
-const networkStore = useNetworkStore();
 const appStore = useAppStore();
 
 const props = withDefaults(
@@ -62,6 +91,8 @@ const props = withDefaults(
 const emits = defineEmits(['close', 'ok']);
 
 const inputOptions = ref<{ label: string; value: string }[]>([]);
+const txtInfo = ref<{ txt: string; color: string }>();
+const imgInfo = ref<UploadFileInfo[]>();
 const currentInput = ref<{
   type: MediaTypeEnum;
   deviceId: string;
@@ -74,8 +105,34 @@ onMounted(() => {
   init();
 });
 
+function changImg(list: UploadFileInfo[]) {
+  imgInfo.value = list;
+}
+
 function handleOk() {
-  emits('ok', { ...currentInput.value, mediaName: mediaName.value });
+  if (mediaName.value.length < 4 || mediaName.value.length > 10) {
+    window.$message.info('名称要求4-10个字符！');
+    return;
+  }
+  if (props.mediaType === MediaTypeEnum.txt) {
+    if (txtInfo.value?.txt?.length! < 3 || txtInfo.value?.txt?.length! > 100) {
+      window.$message.info('内容要求3-100个字符！');
+      return;
+    }
+  }
+  if (props.mediaType === MediaTypeEnum.img) {
+    if (imgInfo.value?.length! !== 1) {
+      window.$message.info('请选择图片！');
+      return;
+    }
+  }
+
+  emits('ok', {
+    ...currentInput.value,
+    mediaName: mediaName.value,
+    txtInfo: txtInfo.value,
+    imgInfo: imgInfo.value,
+  });
 }
 
 async function init() {
@@ -123,6 +180,26 @@ async function init() {
     };
     mediaName.value = `窗口-${
       appStore.allTrack.filter((item) => item.type === MediaTypeEnum.screen)
+        .length + 1
+    }`;
+  } else if (props.mediaType === MediaTypeEnum.txt) {
+    currentInput.value = {
+      ...currentInput.value,
+      type: MediaTypeEnum.txt,
+    };
+    txtInfo.value = { txt: '', color: 'rgba(255,215,0,1)' };
+    mediaName.value = `文字-${
+      appStore.allTrack.filter((item) => item.type === MediaTypeEnum.txt)
+        .length + 1
+    }`;
+  } else if (props.mediaType === MediaTypeEnum.img) {
+    currentInput.value = {
+      ...currentInput.value,
+      type: MediaTypeEnum.img,
+    };
+    imgInfo.value = [];
+    mediaName.value = `图片-${
+      appStore.allTrack.filter((item) => item.type === MediaTypeEnum.img)
         .length + 1
     }`;
   }

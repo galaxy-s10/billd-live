@@ -58,6 +58,14 @@ export function usePush({
       type: MediaTypeEnum.microphone,
       txt: '麦克风',
     },
+    [MediaTypeEnum.txt]: {
+      type: MediaTypeEnum.txt,
+      txt: '文字',
+    },
+    [MediaTypeEnum.img]: {
+      type: MediaTypeEnum.img,
+      txt: '图片',
+    },
   };
 
   const {
@@ -189,7 +197,7 @@ export function usePush({
     });
     if (el) {
       const res1 = videoElArr.value.find(
-        (item) => item.getAttribute('track-id') === el.track.id
+        (item) => item.getAttribute('track-id') === el.track?.id
       );
       if (res1) {
         // canvas推流的话，不需要再设置预览图了

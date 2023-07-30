@@ -324,6 +324,8 @@ export enum MediaTypeEnum {
   camera,
   screen,
   microphone,
+  txt,
+  img,
 }
 
 export enum DanmuMsgTypeEnum {

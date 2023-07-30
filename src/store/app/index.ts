@@ -14,11 +14,12 @@ export type AppRootState = {
     id: string;
     mediaName: string;
     type: MediaTypeEnum;
-    track: MediaStreamTrack;
-    stream: MediaStream;
+    track?: MediaStreamTrack;
+    stream?: MediaStream;
     streamid: string;
     trackid: string;
-    canvasDom?: any;
+    canvasDom?: fabric.Image;
+    initScale?: number;
   }[];
 };
 
@@ -53,8 +54,10 @@ export const useAppStore = defineStore('app', {
     getTrackInfo() {
       const res = { audio: 0, video: 0 };
       this.allTrack.forEach((item) => {
-        res.audio += item.stream.getAudioTracks().length;
-        res.video += item.stream.getVideoTracks().length;
+        if (item.stream) {
+          res.audio += item.stream.getAudioTracks().length;
+          res.video += item.stream.getVideoTracks().length;
+        }
       });
       return res;
     },

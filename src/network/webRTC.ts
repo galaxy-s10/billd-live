@@ -90,7 +90,7 @@ export class WebRTCClass {
       stream.onremovetrack = (event) => {
         console.log('onremovetrack事件', event);
         const res = appStore.allTrack.filter((info) => {
-          if (info.track.id === event.track.id) {
+          if (info.track?.id === event.track.id) {
             return false;
           }
           return true;
@@ -102,7 +102,7 @@ export class WebRTCClass {
     const addTrack: AppRootState['allTrack'] = [];
 
     this.localStream?.getVideoTracks().forEach((track) => {
-      if (!appStore.allTrack.find((info) => info.track.id === track.id)) {
+      if (!appStore.allTrack.find((info) => info.track?.id === track.id)) {
         addTrack.push({
           id: getRandomString(8),
           track,
@@ -117,7 +117,7 @@ export class WebRTCClass {
       }
     });
     this.localStream?.getAudioTracks().forEach((track) => {
-      if (!appStore.allTrack.find((info) => info.track.id === track.id)) {
+      if (!appStore.allTrack.find((info) => info.track?.id === track.id)) {
         addTrack.push({
           id: getRandomString(8),
           track,
@@ -132,7 +132,7 @@ export class WebRTCClass {
       }
     });
     stream.getVideoTracks().forEach((track) => {
-      if (!appStore.allTrack.find((info) => info.track.id === track.id)) {
+      if (!appStore.allTrack.find((info) => info.track?.id === track.id)) {
         addTrack.push({
           id: getRandomString(8),
           track,
@@ -147,7 +147,7 @@ export class WebRTCClass {
       }
     });
     stream.getAudioTracks().forEach((track) => {
-      if (!appStore.allTrack.find((info) => info.track.id === track.id)) {
+      if (!appStore.allTrack.find((info) => info.track?.id === track.id)) {
         addTrack.push({
           id: getRandomString(8),
           track,
