@@ -363,8 +363,10 @@ function handleStartLive() {
 }
 
 function handleScale({ width, height }: { width: number; height: number }) {
-  const resolutionHeight = currentResolutionRatio.value;
-  const resolutionWidth = currentResolutionRatio.value * videoRatio.value;
+  const resolutionHeight =
+    currentResolutionRatio.value / window.devicePixelRatio;
+  const resolutionWidth =
+    (currentResolutionRatio.value / window.devicePixelRatio) * videoRatio.value;
   console.log('当前分辨率', { resolutionWidth, resolutionHeight });
   let ratio = 1;
   if (width > resolutionWidth) {
@@ -408,7 +410,7 @@ function autoCreateVideo({ stream }: { stream: MediaStream }) {
         const width = stream.getVideoTracks()[0].getSettings().width!;
         const height = stream.getVideoTracks()[0].getSettings().height!;
         const ratio = handleScale({ width, height });
-        const initScale = height / currentResolutionRatio.value;
+        const initScale = 1;
         video.width = width;
         video.height = height;
 
@@ -437,7 +439,6 @@ function autoCreateVideo({ stream }: { stream: MediaStream }) {
 
         renderFrame();
 
-        canvasVideoStream.value = pushCanvasRef.value!.captureStream();
         resolve({ canvasDom, initScale });
       };
     }
@@ -451,6 +452,21 @@ watch(
   }
 );
 
+// 容器宽高，1280*720，即720p
+// canvas容器宽高，2560*1440，即1440p
+
+// ======
+// 容器宽高，960*540，即540p
+// dom宽高，640*480
+// canvas容器宽高，960*540，即540p
+// 将dom绘制到容器里，此时dom的大小就是640*480
+// 需求，不管切换多少分辨率，我要看到的dom都是一样大小，即
+// 960*540时，dom是640*480
+// 1280*720时，dom不能是640*480了，因为这样他就会对比上一个分辨率的dom看起来小了，960/1280=0.75,540/720=0.75，
+// 其实就是分辨率变大了，我们就要将图片也变大，即图片的宽是640/0.75=853.4，高是480/0.75=640
+// 坐标变化，960*540时，dom坐标是100,100
+// 1280*720时，dom的坐标不能再是100，100了，否则对比上一个分辨率看起来偏
+
 function changeCanvasAttr({
   newHeight,
   oldHeight,
@@ -459,64 +475,47 @@ function changeCanvasAttr({
   oldHeight: number;
 }) {
   if (fabricCanvas.value) {
-    const resolutionHeight = currentResolutionRatio.value;
-    const resolutionWidth = currentResolutionRatio.value * videoRatio.value;
+    const resolutionHeight =
+      currentResolutionRatio.value / window.devicePixelRatio;
+    const resolutionWidth =
+      (currentResolutionRatio.value / window.devicePixelRatio) *
+      videoRatio.value;
     fabricCanvas.value.setWidth(resolutionWidth);
     fabricCanvas.value.setHeight(resolutionHeight);
-    fabricCanvas.value.forEachObject((canvas) => {
-      canvas.setCoords();
-    });
-    changeCanvasStyle();
-
+    // fabricCanvas.value.forEachObject((canvas) => {
+    //   canvas.setCoords();
+    // });
     appStore.allTrack.forEach((item) => {
       if (item.canvasDom) {
-        let ratio = 1;
+        // 分辨率变小了，将图片变小
         if (newHeight < oldHeight) {
-          // 2560*1440==>640*480
-          // 1920*1080==>640*480
-          // 2560/1920=1.333333
-          ratio = newHeight / oldHeight;
-          const ratio1 = handleScale({
-            width: item.canvasDom.width!,
-            height: item.canvasDom.height!,
-          });
-          // item.canvasDom.width = 100;
-          // item.canvasDom.height = 100;
-          item.canvasDom.scale(ratio);
-          item.canvasDom.left = item.canvasDom.left! * ratio;
-          item.canvasDom.top = item.canvasDom.top! * ratio;
+          const ratio = newHeight / oldHeight;
+          const ratio1 = (item.canvasDom.scaleX || 1) * ratio;
+          const ratio2 = oldHeight / newHeight;
           console.log(
-            '分辨率变小了',
-            { ratio, ratio1 },
-            item.canvasDom.width,
-            item.canvasDom.height,
+            ratio,
+            ratio1,
+            '分辨率变小了，将图片变小-----',
             item.canvasDom
           );
-        } else {
-          ratio = newHeight / oldHeight;
-          item.canvasDom.scale(ratio);
-          const ratio1 = handleScale({
-            width: item.canvasDom.width!,
-            height: item.canvasDom.height!,
-          });
           item.canvasDom.scale(ratio1);
-          item.canvasDom.left = item.canvasDom.left! * ratio;
-          item.canvasDom.top = item.canvasDom.top! * ratio;
+          item.canvasDom.left = item.canvasDom.left! / ratio2;
+          item.canvasDom.top = item.canvasDom.top! / ratio2;
+        } else {
+          // 分辨率变大了，将图片变大
+          const ratio = newHeight / oldHeight;
+          const ratio1 = (item.canvasDom.scaleX || 1) * ratio;
+          const ratio2 = oldHeight / newHeight;
           console.log(
-            '分辨率变大了',
-            { ratio, ratio1 },
-            item.canvasDom.width,
-            item.canvasDom.height,
+            ratio,
+            ratio1,
+            '分辨率变大了，将图片变大-----',
             item.canvasDom
           );
+          item.canvasDom.scale(ratio1);
+          item.canvasDom.left = item.canvasDom.left! / ratio2;
+          item.canvasDom.top = item.canvasDom.top! / ratio2;
         }
-
-        console.log(
-          item.canvasDom.width,
-          item.canvasDom.height,
-          ratio,
-          'kkkkkkkkkkkkkkkk'
-        );
       }
     });
     changeCanvasStyle();
@@ -539,8 +538,10 @@ function changeCanvasStyle() {
 }
 
 function initCanvas() {
-  const resolutionHeight = currentResolutionRatio.value;
-  const resolutionWidth = currentResolutionRatio.value * videoRatio.value;
+  const resolutionHeight =
+    currentResolutionRatio.value / window.devicePixelRatio;
+  const resolutionWidth =
+    (currentResolutionRatio.value / window.devicePixelRatio) * videoRatio.value;
   const wrapWidth = containerRef.value!.getBoundingClientRect().width;
   // const wrapWidth = 1920;
   const ratio = wrapWidth / resolutionWidth;
@@ -550,11 +551,9 @@ function initCanvas() {
   // lower-canvas: 实际的canvas画面，也就是pushCanvasRef
   // upper-canvas: 操作时候的canvas
   const ins = markRaw(new fabric.Canvas(pushCanvasRef.value!));
+  console.log('window.devicePixelRatio', window.devicePixelRatio);
   ins.setWidth(resolutionWidth);
   ins.setHeight(resolutionHeight);
-
-  // ins.setWidth(wrapWidth);
-  // ins.setHeight(wrapHeight);
   ins.setBackgroundColor('black', () => {});
   wrapSize.width = wrapWidth;
   wrapSize.height = wrapHeight;
@@ -778,6 +777,7 @@ async function addMediaOk(val: {
 
     console.log('获取图片成功', fabricCanvas.value);
   }
+  canvasVideoStream.value = pushCanvasRef.value!.captureStream();
 }
 
 function handleDelTrack(item: AppRootState['allTrack'][0]) {

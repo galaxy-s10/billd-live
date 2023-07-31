@@ -129,6 +129,10 @@ export const useWs = () => {
       value: 360,
     },
     {
+      label: '540P',
+      value: 540,
+    },
+    {
       label: '720P',
       value: 720,
     },

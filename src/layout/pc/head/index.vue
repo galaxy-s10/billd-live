@@ -183,13 +183,13 @@
               <div class="txt">canvas混流开播</div>
             </a>
             <a
-              class="item"
+              class="item disabled"
               @click.prevent="handleStartLive(liveTypeEnum.webrtcPush)"
             >
               <div class="txt">webrtc开播</div>
             </a>
             <a
-              class="item"
+              class="item disabled"
               @click.prevent="handleStartLive(liveTypeEnum.srsPush)"
             >
               <div class="txt">srs-webrtc开播</div>
@@ -361,6 +361,8 @@ function handleStartLive(key: liveTypeEnum) {
       query: { liveType: liveTypeEnum.srsPush },
     });
   } else {
+    window.$message.info('请体验canvas混流开播~');
+    return;
     url = router.resolve({
       name: routerName.push,
       query: { liveType: key },
@@ -379,9 +381,9 @@ function handleStartLive(key: liveTypeEnum) {
   padding: 0 30px;
   min-width: $w-1300;
   height: 64px;
-  font-size: 14px;
   background-color: #fff;
   box-shadow: inset 0 -1px #f1f2f3 !important;
+  font-size: 14px;
   .hr {
     width: 100%;
     height: 1px;
@@ -538,8 +540,14 @@ function handleStartLive(key: liveTypeEnum) {
           margin-bottom: 5px;
           padding: 0 15px;
           cursor: pointer;
+
           &:hover {
             color: $theme-color-gold;
+          }
+          &.disabled {
+            color: initial !important;
+            opacity: 0.5;
+            cursor: not-allowed;
           }
         }
       }
@@ -563,7 +571,6 @@ function handleStartLive(key: liveTypeEnum) {
         width: 90px;
         .item {
           display: flex;
-          // justify-content: flex-end;
           padding: 0 15px;
           cursor: pointer;
           &:hover {

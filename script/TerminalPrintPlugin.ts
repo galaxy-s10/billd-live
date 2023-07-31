@@ -18,9 +18,7 @@ class TerminalPrintPlugin {
       console.log(
         `- Network:  ${chalk.cyan(`http://${localIPv4!}:${port}${publicPath}`)}`
       );
-      console.log(
-        `- 支持赞助: ${chalk.cyan(`https://live.hsslive.cn/support`)}`
-      );
+      console.log(`- 作者微信: ${chalk.cyan(`shuisheng9905`)}`);
       console.log(
         `- 付费课程: ${chalk.cyan(`https://www.hsslive.cn/article/151`)}`
       );
