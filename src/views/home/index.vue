@@ -122,7 +122,7 @@
         </div>
       </div>
     </div>
-    <!-- <div class="area-container">
+    <div class="area-container">
       <div class="area-item">
         <div class="title">推荐直播</div>
         <div class="live-room-list">
@@ -158,7 +158,7 @@
           </div>
         </div>
       </div>
-    </div> -->
+    </div>
 
     <div class="foot">*部分内容来源网络，如有侵权，请联系我删除~</div>
   </div>
@@ -655,7 +655,7 @@ function joinHlsRoom() {
       }
     }
     .area-container {
-      width: $w-1200;
+      width: $w-1150;
     }
   }
 }
