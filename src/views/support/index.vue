@@ -11,7 +11,7 @@ import router, { routerName } from '@/router';
 onMounted(() => {
   router.push({
     name: routerName.shop,
-    query: { goodsType: GoodsTypeEnum.sponsors },
+    query: { goodsType: GoodsTypeEnum.support },
   });
 });
 </script>

@@ -89,7 +89,7 @@
               :key="index"
               :href="item.url"
               class="item"
-              @click="handleJump(item)"
+              @click.prevent="handleJump(item)"
             >
               <div class="txt">{{ item.label }}</div>
               <VPIconExternalLink
@@ -104,7 +104,7 @@
               :key="index"
               class="item"
               :href="item.url"
-              @click="handleJump(item)"
+              @click.prevent="handleJump(item)"
             >
               <div class="txt">{{ item.label }}</div>
               <VPIconExternalLink
@@ -375,15 +375,21 @@ function handleStartLive(key: liveTypeEnum) {
 
 <style lang="scss" scoped>
 .head-wrap {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  box-sizing: border-box;
   padding: 0 30px;
-  min-width: $w-1300;
+  min-width: $w-1100;
   height: 64px;
   background-color: #fff;
   box-shadow: inset 0 -1px #f1f2f3 !important;
   font-size: 14px;
+  width: 100%;
   .hr {
     width: 100%;
     height: 1px;

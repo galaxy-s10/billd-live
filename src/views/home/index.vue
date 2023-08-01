@@ -122,7 +122,7 @@
         </div>
       </div>
     </div>
-    <div class="area-container">
+    <!-- <div class="area-container">
       <div class="area-item">
         <div class="title">推荐直播</div>
         <div class="live-room-list">
@@ -158,7 +158,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <div class="foot">*部分内容来源网络，如有侵权，请联系我删除~</div>
   </div>
@@ -355,17 +355,21 @@ function joinHlsRoom() {
     }
     .container {
       display: flex;
-      justify-content: space-between;
+      box-sizing: border-box;
       margin: 0 auto;
       padding: 15px 0;
-      width: $w-1350;
+      justify-content: center;
+      height: calc($w-1100 / $video-ratio);
+
       .left {
         position: relative;
         display: inline-block;
         overflow: hidden;
         box-sizing: border-box;
+        flex-shrink: 0;
+        margin-right: 20px;
         width: $w-1100;
-        height: 618px;
+        height: 100%;
         border-radius: 4px;
         background-color: rgba($color: #000000, $alpha: 0.3);
 
@@ -462,11 +466,12 @@ function joinHlsRoom() {
         }
       }
       .right {
+        flex-shrink: 0;
         display: inline-block;
         overflow: scroll;
         box-sizing: border-box;
-        padding: 12px;
-        height: 618px;
+        padding: 12px 10px;
+        height: 100%;
         border-radius: 4px;
         background-color: rgba($color: #000000, $alpha: 0.3);
 
@@ -560,6 +565,8 @@ function joinHlsRoom() {
   .area-container {
     margin: 10px auto;
     width: $w-1350;
+    box-sizing: border-box;
+
     .area-item {
       .title {
         padding: 10px 0;
@@ -633,23 +640,22 @@ function joinHlsRoom() {
   }
 }
 
-// 屏幕宽度大于1500的时候
-@media screen and (min-width: $w-1500) {
+// 屏幕宽度小于1330的时候
+@media screen and (max-width: 1330px) {
   .home-wrap {
     .play-container {
       .container {
-        width: $w-1350;
+        height: calc($w-900 / $video-ratio);
+
         .left {
-          width: $w-1100;
-          height: 618px;
+          width: $w-900;
         }
         .right {
-          height: 618px;
         }
       }
     }
     .area-container {
-      width: $w-1350;
+      width: $w-1200;
     }
   }
 }
