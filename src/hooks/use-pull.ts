@@ -64,13 +64,19 @@ export function usePull({
   const stopDrawingArr = ref<any[]>([]);
 
   onUnmounted(() => {
-    stopDrawingArr.value.forEach((cb) => cb());
+    stopOldDrawing();
   });
+
+  function stopOldDrawing() {
+    stopDrawingArr.value.forEach((cb) => cb());
+    stopDrawingArr.value = [];
+  }
 
   async function handleHlsPlay() {
     console.log('handleHlsPlay');
-    await startHlsPlay({ hlsurl: hlsurl.value });
     videoLoading.value = true;
+    stopOldDrawing();
+    await startHlsPlay({ hlsurl: hlsurl.value });
     const { canvas, stopDrawing } = videoToCanvas({
       videoEl: hlsVideoEl.value!,
       targetEl: canvasRef.value!,
@@ -82,6 +88,7 @@ export function usePull({
 
   async function handleFlvPlay() {
     console.log('handleFlvPlay');
+    stopOldDrawing();
     await startFlvPlay({ flvurl: flvurl.value });
     const initCanvas = videoToCanvas({
       videoEl: flvVideoEl.value!,
@@ -90,6 +97,7 @@ export function usePull({
     stopDrawingArr.value.push(initCanvas.stopDrawing);
     canvasRef.value!.appendChild(initCanvas.canvas);
     flvPlayer.value!.on(mpegts.Events.MEDIA_INFO, () => {
+      stopOldDrawing();
       const newCanvas = videoToCanvas({
         videoEl: flvVideoEl.value!,
         targetEl: canvasRef.value!,

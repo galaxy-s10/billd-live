@@ -83,7 +83,6 @@ export function videoToCanvas(data: {
       canvas.height = height!;
       ctx.drawImage(videoEl, 0, 0, width!, height!);
     }
-    console.log(performance.now());
     timer = requestAnimationFrame(drawCanvas);
   }
 

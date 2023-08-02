@@ -80,41 +80,6 @@ export function useFlvPlay() {
       } else {
         console.error('不支持flv');
       }
-      // if (flvJs.isSupported()) {
-      //   flvPlayer.value = flvJs.createPlayer({
-      //     type: 'flv',
-      //     url: data.flvurl,
-      //   });
-      //   const videoEl = createVideo({ muted: true, autoplay: true });
-      //   flvVideoEl.value = videoEl;
-      //   flvVideoEl.value.addEventListener('play', () => {
-      //     console.log('flv-play');
-      //   });
-      //   flvVideoEl.value.addEventListener('playing', () => {
-      //     console.log(
-      //       'flv-playing',
-      //       flvVideoEl.value?.videoWidth,
-      //       flvVideoEl.value?.videoHeight
-      //     );
-      //     // setMuted(false);
-      //     setMuted(appStore.muted);
-      //     resolve({
-      //       width: flvVideoEl.value?.videoWidth || 0,
-      //       height: flvVideoEl.value?.videoHeight || 0,
-      //     });
-      //   });
-      //   flvPlayer.value.attachMediaElement(flvVideoEl.value);
-      //   flvPlayer.value.load();
-      //   try {
-      //     console.log('开始播放flv');
-      //     flvPlayer.value.play();
-      //   } catch (err) {
-      //     console.error('flv播放失败');
-      //     console.log(err);
-      //   }
-      // } else {
-      //   console.error('不支持flv');
-      // }
     });
   }
 
