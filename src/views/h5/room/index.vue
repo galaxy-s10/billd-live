@@ -104,7 +104,6 @@ import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchFindLiveRoom } from '@/api/liveRoom';
-import { useHlsPlay } from '@/hooks/use-play';
 import { usePull } from '@/hooks/use-pull';
 import { DanmuMsgTypeEnum, LiveRoomTypeEnum, liveTypeEnum } from '@/interface';
 import router, { mobileRouterName } from '@/router';
@@ -119,8 +118,6 @@ const canvasRef = ref<HTMLVideoElement>();
 const localVideoRef = ref<HTMLVideoElement[]>([]);
 const showPlayBtn = ref(false);
 const height = ref(0);
-
-const { hlsVideoEl, startHlsPlay } = useHlsPlay();
 
 const {
   initPull,
@@ -164,7 +161,6 @@ async function getLiveRoomInfo() {
     videoLoading.value = true;
     const res = await fetchFindLiveRoom(route.params.roomId as string);
     if (res.code === 200) {
-      console.log('kkkkk');
       if (res.data.type === LiveRoomTypeEnum.user_wertc) {
         autoplayVal.value = true;
         roomLiveType.value = liveTypeEnum.webrtcPull;
@@ -194,7 +190,6 @@ onMounted(() => {
       bottomRef.value.getBoundingClientRect().top -
       containerRef.value.getBoundingClientRect().top;
     height.value = res;
-    // containerRef.value.style.height = `${res}px`;
   }
 });
 </script>
@@ -245,14 +240,16 @@ onMounted(() => {
       inset: 0;
     }
     .media-list {
-      height: 230px;
+      position: relative;
       overflow-y: scroll;
-      position: absolute;
+      height: 230px;
       :deep(video) {
+        display: block;
         width: 100%;
         height: 100%;
       }
       :deep(canvas) {
+        display: block;
         width: 100%;
         height: 100%;
       }

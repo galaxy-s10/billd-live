@@ -1,4 +1,5 @@
-import { Ref, nextTick, ref, watch } from 'vue';
+import mpegts from 'mpegts.js';
+import { Ref, nextTick, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { useFlvPlay, useHlsPlay } from '@/hooks/use-play';
@@ -38,7 +39,6 @@ export function usePull({
     }[]
   >([]);
   const videoElArr = ref<HTMLVideoElement[]>([]);
-
   const {
     getSocketId,
     initWs,
@@ -59,20 +59,43 @@ export function usePull({
     delTrack,
   } = useWs();
 
-  const { flvVideoEl, startFlvPlay } = useFlvPlay();
-  const { hlsVideoEl, startHlsPlay } = useHlsPlay();
+  const { flvPlayer, flvVideoEl, startFlvPlay, destroyFlv } = useFlvPlay();
+  const { hlsVideoEl, startHlsPlay, destroyHls } = useHlsPlay();
+  const stopDrawingArr = ref<any[]>([]);
+
+  onUnmounted(() => {
+    stopDrawingArr.value.forEach((cb) => cb());
+  });
 
   async function handleHlsPlay() {
     console.log('handleHlsPlay');
+    await startHlsPlay({ hlsurl: hlsurl.value });
     videoLoading.value = true;
-    const { width, height } = await startHlsPlay({
-      hlsurl: hlsurl.value,
-    });
-    videoToCanvas({
+    const { canvas, stopDrawing } = videoToCanvas({
       videoEl: hlsVideoEl.value!,
       targetEl: canvasRef.value!,
-      width,
-      height,
+    });
+    stopDrawingArr.value.push(stopDrawing);
+    canvasRef.value!.appendChild(canvas);
+    videoLoading.value = false;
+  }
+
+  async function handleFlvPlay() {
+    console.log('handleFlvPlay');
+    await startFlvPlay({ flvurl: flvurl.value });
+    const initCanvas = videoToCanvas({
+      videoEl: flvVideoEl.value!,
+      targetEl: canvasRef.value!,
+    });
+    stopDrawingArr.value.push(initCanvas.stopDrawing);
+    canvasRef.value!.appendChild(initCanvas.canvas);
+    flvPlayer.value!.on(mpegts.Events.MEDIA_INFO, () => {
+      const newCanvas = videoToCanvas({
+        videoEl: flvVideoEl.value!,
+        targetEl: canvasRef.value!,
+      });
+      initCanvas.canvas = newCanvas.canvas;
+      stopDrawingArr.value.push(newCanvas.stopDrawing);
     });
     videoLoading.value = false;
   }
@@ -81,20 +104,11 @@ export function usePull({
     if (roomLiveType.value === liveTypeEnum.srsFlvPull) {
       console.log('srsFlvPull', autoplayVal.value);
       if (!autoplayVal.value) return;
-      const { width, height } = await startFlvPlay({
-        flvurl: flvurl.value,
-      });
-      videoToCanvas({
-        videoEl: flvVideoEl.value!,
-        targetEl: canvasRef.value!,
-        width,
-        height,
-      });
-      videoLoading.value = false;
+      await handleFlvPlay();
     } else if (roomLiveType.value === liveTypeEnum.srsHlsPull) {
       console.log('srsHlsPull', autoplayVal.value);
       if (!autoplayVal.value) return;
-      handleHlsPlay();
+      await handleHlsPlay();
     }
   }
 
@@ -284,6 +298,7 @@ export function usePull({
     sendDanmu,
     addVideo,
     handleHlsPlay,
+    handleFlvPlay,
     roomLiveType,
     roomLiveing,
     autoplayVal,

@@ -44,6 +44,9 @@ dependencies:
   mediasoup-client:
     specifier: ^3.6.84
     version: 3.6.84
+  mpegts.js:
+    specifier: ^1.7.3
+    version: 1.7.3
   msr:
     specifier: ^1.3.4
     version: 1.3.4
@@ -7224,6 +7227,13 @@ packages:
       '@videojs/vhs-utils': 3.0.5
       '@xmldom/xmldom': 0.8.8
       global: 4.4.0
+    dev: false
+
+  /mpegts.js@1.7.3:
+    resolution: {integrity: sha512-kqZ1C1IsbAQN72cK8vMrzKeM7hwrwSBbFAwVAc7PPweOeoZxCANrc7fAVDKMfYUzxdNkMTnec9tVmlxmKZB0TQ==}
+    dependencies:
+      es6-promise: 4.2.8
+      webworkify-webpack: 2.1.5
     dev: false
 
   /mrmime@1.0.1:

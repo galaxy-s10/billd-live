@@ -1,5 +1,5 @@
 import '@/assets/css/videojs.scss';
-import flvJs from 'flv.js';
+import mpegts from 'mpegts.js';
 import videoJs from 'video.js';
 import Player from 'video.js/dist/types/player';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
@@ -10,7 +10,8 @@ import { createVideo } from '@/utils';
 export * as flvJs from 'flv.js';
 
 export function useFlvPlay() {
-  const flvPlayer = ref<flvJs.Player>();
+  // const flvPlayer = ref<flvJs.Player>();
+  const flvPlayer = ref<mpegts.Player>();
   const flvVideoEl = ref<HTMLVideoElement>();
   const appStore = useAppStore();
 
@@ -22,9 +23,10 @@ export function useFlvPlay() {
 
   function destroyFlv() {
     if (flvPlayer.value) {
+      console.log(flvPlayer.value.destroy);
       flvPlayer.value.destroy();
     }
-    flvVideoEl.value?.remove();
+    // flvVideoEl.value?.remove();
   }
 
   watch(
@@ -46,47 +48,77 @@ export function useFlvPlay() {
   function startFlvPlay(data: { flvurl: string }) {
     destroyFlv();
     return new Promise<{ width: number; height: number }>((resolve) => {
-      setTimeout(() => {
-        if (flvJs.isSupported()) {
-          flvPlayer.value = flvJs.createPlayer({
-            type: 'flv',
-            url: data.flvurl,
+      if (mpegts.getFeatureList().mseLivePlayback) {
+        flvPlayer.value = mpegts.createPlayer({
+          type: 'flv', // could also be mpegts, m2ts, flv
+          isLive: true,
+          url: data.flvurl,
+        });
+        const videoEl = createVideo({ muted: true, autoplay: true });
+        flvVideoEl.value = videoEl;
+        flvVideoEl.value.addEventListener('play', () => {
+          console.log('flv-play');
+        });
+        flvVideoEl.value.addEventListener('playing', () => {
+          console.log('flv-playing');
+          // setMuted(false);
+          setMuted(appStore.muted);
+          resolve({
+            width: flvVideoEl.value?.videoWidth || 0,
+            height: flvVideoEl.value?.videoHeight || 0,
           });
-          const videoEl = createVideo({ muted: true, autoplay: true });
-          flvVideoEl.value = videoEl;
-          flvVideoEl.value.addEventListener('play', () => {
-            console.log('flv-play');
-          });
-          flvVideoEl.value.addEventListener('playing', () => {
-            console.log(
-              'flv-playing',
-              flvVideoEl.value?.videoWidth,
-              flvVideoEl.value?.videoHeight
-            );
-            // setMuted(false);
-            setMuted(appStore.muted);
-            resolve({
-              width: flvVideoEl.value?.videoWidth || 0,
-              height: flvVideoEl.value?.videoHeight || 0,
-            });
-          });
-          flvPlayer.value.attachMediaElement(flvVideoEl.value);
-          flvPlayer.value.load();
-          try {
-            console.log('开始播放flv');
-            flvPlayer.value.play();
-          } catch (err) {
-            console.error('flv播放失败');
-            console.log(err);
-          }
-        } else {
-          console.error('不支持flv');
+        });
+        flvPlayer.value.attachMediaElement(flvVideoEl.value);
+        flvPlayer.value.load();
+        try {
+          console.log('开始播放flv');
+          flvPlayer.value.play();
+        } catch (err) {
+          console.error('flv播放失败');
+          console.log(err);
         }
-      }, 500);
+      } else {
+        console.error('不支持flv');
+      }
+      // if (flvJs.isSupported()) {
+      //   flvPlayer.value = flvJs.createPlayer({
+      //     type: 'flv',
+      //     url: data.flvurl,
+      //   });
+      //   const videoEl = createVideo({ muted: true, autoplay: true });
+      //   flvVideoEl.value = videoEl;
+      //   flvVideoEl.value.addEventListener('play', () => {
+      //     console.log('flv-play');
+      //   });
+      //   flvVideoEl.value.addEventListener('playing', () => {
+      //     console.log(
+      //       'flv-playing',
+      //       flvVideoEl.value?.videoWidth,
+      //       flvVideoEl.value?.videoHeight
+      //     );
+      //     // setMuted(false);
+      //     setMuted(appStore.muted);
+      //     resolve({
+      //       width: flvVideoEl.value?.videoWidth || 0,
+      //       height: flvVideoEl.value?.videoHeight || 0,
+      //     });
+      //   });
+      //   flvPlayer.value.attachMediaElement(flvVideoEl.value);
+      //   flvPlayer.value.load();
+      //   try {
+      //     console.log('开始播放flv');
+      //     flvPlayer.value.play();
+      //   } catch (err) {
+      //     console.error('flv播放失败');
+      //     console.log(err);
+      //   }
+      // } else {
+      //   console.error('不支持flv');
+      // }
     });
   }
 
-  return { flvVideoEl, startFlvPlay, destroyFlv };
+  return { flvPlayer, flvVideoEl, startFlvPlay, destroyFlv };
 }
 
 export function useHlsPlay() {
@@ -173,5 +205,5 @@ export function useHlsPlay() {
     });
   }
 
-  return { hlsVideoEl, startHlsPlay, destroyHls };
+  return { hlsPlayer, hlsVideoEl, startHlsPlay, destroyHls };
 }

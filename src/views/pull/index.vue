@@ -42,7 +42,6 @@
                 })`,
               }"
             ></div>
-            <!-- <div ref="canvasRef"></div> -->
             <div
               ref="canvasRef"
               class="media-list"
@@ -400,13 +399,14 @@ onMounted(() => {
           inset: 0;
         }
         .media-list {
-          position: absolute;
-          overflow-y: scroll;
+          position: relative;
           :deep(video) {
+            display: block;
             width: 100%;
             height: 100%;
           }
           :deep(canvas) {
+            display: block;
             width: 100%;
             height: 100%;
           }
@@ -465,20 +465,21 @@ onMounted(() => {
     }
 
     .gift-list {
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: space-around;
       box-sizing: border-box;
-      height: 100px;
       margin: 5px 0;
+      height: 100px;
       .item {
         display: flex;
         align-items: center;
-        width: 100px;
-        height: 100px;
         flex-direction: column;
         justify-content: center;
         box-sizing: border-box;
+        width: 100px;
+        height: 100px;
         text-align: center;
         cursor: pointer;
         &:hover {

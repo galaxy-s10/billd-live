@@ -45,6 +45,7 @@
     "m3u8-parser": "^6.2.0",
     "mediainfo.js": "^0.1.9",
     "mediasoup-client": "^3.6.84",
+    "mpegts.js": "^1.7.3",
     "msr": "^1.3.4",
     "naive-ui": "^2.34.3",
     "pinia": "^2.0.33",

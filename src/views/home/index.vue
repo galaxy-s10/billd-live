@@ -166,11 +166,11 @@
 
 <script lang="ts" setup>
 import { isMobile } from 'billd-utils';
-import { nextTick, onMounted, ref } from 'vue';
+import { nextTick, onMounted, onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { fetchLiveList } from '@/api/live';
-import { useFlvPlay, useHlsPlay } from '@/hooks/use-play';
+import { useHlsPlay } from '@/hooks/use-play';
 import { ILive, ILiveRoom, LiveRoomTypeEnum, liveTypeEnum } from '@/interface';
 import { routerName } from '@/router';
 import { videoToCanvas } from '@/utils';
@@ -181,11 +181,24 @@ const showControls = ref(false);
 const topLiveRoomList = ref<ILive[]>([]);
 const otherLiveRoomList = ref<ILive[]>([]);
 const currentLiveRoom = ref<ILive>();
-
-const { flvVideoEl, startFlvPlay, destroyFlv } = useFlvPlay();
+const stopDrawingArr = ref<any[]>([]);
 const { hlsVideoEl, startHlsPlay, destroyHls } = useHlsPlay();
 
-async function changeLiveRoom(item: ILive) {
+onUnmounted(() => {
+  stopDrawingArr.value.forEach((cb) => cb());
+});
+
+async function handleHlsPlay(hlsurl: string) {
+  await startHlsPlay({ hlsurl });
+  const { canvas, stopDrawing } = videoToCanvas({
+    videoEl: hlsVideoEl.value!,
+    targetEl: canvasRef.value!,
+  });
+  stopDrawingArr.value.push(stopDrawing);
+  canvasRef.value!.appendChild(canvas);
+}
+
+function changeLiveRoom(item: ILive) {
   if (item.id === currentLiveRoom.value?.id) return;
   currentLiveRoom.value = item;
   canvasRef.value?.childNodes?.forEach((item) => {
@@ -196,31 +209,9 @@ async function changeLiveRoom(item: ILive) {
     item.live_room?.type === LiveRoomTypeEnum.user_obs ||
     item.live_room?.type === LiveRoomTypeEnum.system
   ) {
-    // @ts-ignore
-    // if (flvJs.isSupported()) {
-    //   const { width, height } = await startFlvPlay({
-    //     flvurl: item.live_room.flv_url!,
-    //   });
-    //   videoToCanvas({
-    //     videoEl: flvVideoEl.value!,
-    //     targetEl: canvasRef.value!,
-    //     width,
-    //     height,
-    //   });
-    // } else {
     destroyHls();
-    const { width, height } = await startHlsPlay({
-      hlsurl: item.live_room.hls_url!,
-    });
-    videoToCanvas({
-      videoEl: hlsVideoEl.value!,
-      targetEl: canvasRef.value!,
-      width,
-      height,
-    });
-    // }
+    handleHlsPlay(item.live_room.hls_url!);
   } else {
-    destroyFlv();
     destroyHls();
   }
 }
@@ -237,7 +228,7 @@ async function getLiveRoomList() {
       otherLiveRoomList.value = res.data.rows.slice(top);
       if (res.data.total) {
         currentLiveRoom.value = topLiveRoomList.value[0];
-        nextTick(async () => {
+        nextTick(() => {
           if (
             currentLiveRoom.value?.live_room?.type ===
               LiveRoomTypeEnum.user_srs ||
@@ -245,27 +236,7 @@ async function getLiveRoomList() {
               LiveRoomTypeEnum.user_obs ||
             currentLiveRoom.value?.live_room?.type === LiveRoomTypeEnum.system
           ) {
-            // if (judgeDevice().isIphone) {
-            const { width, height } = await startHlsPlay({
-              hlsurl: currentLiveRoom.value.live_room.hls_url!,
-            });
-            videoToCanvas({
-              videoEl: hlsVideoEl.value!,
-              targetEl: canvasRef.value!,
-              width,
-              height,
-            });
-            // } else {
-            //   const { width, height } = await startFlvPlay({
-            //     flvurl: currentLiveRoom.value.live_room.flv_url!,
-            //   });
-            //   videoToCanvas({
-            //     videoEl: flvVideoEl.value!,
-            //     targetEl: canvasRef.value!,
-            //     width,
-            //     height,
-            //   });
-            // }
+            handleHlsPlay(currentLiveRoom.value.live_room.hls_url!);
           }
         });
       }

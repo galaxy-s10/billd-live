@@ -104,7 +104,6 @@ function showAll(item: IArea) {
   router.push({
     name: mobileRouterName.h5Area,
     params: { id: item.id },
-    query: { name: item.name },
   });
 }
 

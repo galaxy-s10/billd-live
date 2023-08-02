@@ -61,33 +61,40 @@ export const createVideo = ({ muted = true, autoplay = true }) => {
 export function videoToCanvas(data: {
   videoEl: HTMLVideoElement;
   targetEl: Element;
-  width: number;
-  height: number;
 }) {
-  const { videoEl, targetEl, width, height } = data;
+  const { videoEl, targetEl } = data;
   if (!videoEl || !targetEl) {
-    return;
+    throw new Error('videoEl或targetEl为空');
   }
   const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
+
   const ctx = canvas.getContext('2d')!;
 
   let timer;
 
   function drawCanvas() {
-    ctx.drawImage(videoEl, 0, 0, width, height);
+    const videoTrack = videoEl
+      // @ts-ignore
+      .captureStream()
+      .getVideoTracks()[0];
+    if (videoTrack) {
+      const { width, height } = videoTrack.getSettings();
+      canvas.width = width!;
+      canvas.height = height!;
+      ctx.drawImage(videoEl, 0, 0, width!, height!);
+    }
+    console.log(performance.now());
     timer = requestAnimationFrame(drawCanvas);
   }
 
   function stopDrawing() {
     cancelAnimationFrame(timer);
   }
-  targetEl.appendChild(canvas);
+  // targetEl.appendChild(canvas);
   // document.body.appendChild(videoEl);
   // targetEl.parentNode?.replaceChild(canvas, targetEl);
 
   drawCanvas();
 
-  return { drawCanvas, stopDrawing };
+  return { drawCanvas, stopDrawing, canvas };
 }

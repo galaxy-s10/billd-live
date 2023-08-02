@@ -309,7 +309,6 @@ const {
   remoteVideoRef,
   isSRS,
 });
-const drawCanvasFn = ref();
 watch(
   () => damuList.value.length,
   () => {
