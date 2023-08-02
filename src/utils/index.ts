@@ -61,6 +61,7 @@ export const createVideo = ({ muted = true, autoplay = true }) => {
 export function videoToCanvas(data: {
   videoEl: HTMLVideoElement;
   targetEl: Element;
+  size?: { width: number; height: number };
 }) {
   const { videoEl, targetEl } = data;
   if (!videoEl || !targetEl) {
@@ -73,15 +74,22 @@ export function videoToCanvas(data: {
   let timer;
 
   function drawCanvas() {
-    const videoTrack = videoEl
-      // @ts-ignore
-      .captureStream()
-      .getVideoTracks()[0];
-    if (videoTrack) {
-      const { width, height } = videoTrack.getSettings();
-      canvas.width = width!;
-      canvas.height = height!;
-      ctx.drawImage(videoEl, 0, 0, width!, height!);
+    if (data.size) {
+      const { width, height } = data.size;
+      canvas.width = width;
+      canvas.height = height;
+      ctx.drawImage(videoEl, 0, 0, width, height);
+    } else {
+      const videoTrack = videoEl
+        // @ts-ignore
+        .captureStream()
+        .getVideoTracks()[0];
+      if (videoTrack) {
+        const { width, height } = videoTrack.getSettings();
+        canvas.width = width!;
+        canvas.height = height!;
+        ctx.drawImage(videoEl, 0, 0, width!, height!);
+      }
     }
     timer = requestAnimationFrame(drawCanvas);
   }

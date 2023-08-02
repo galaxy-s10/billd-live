@@ -76,10 +76,11 @@ export function usePull({
     console.log('handleHlsPlay');
     videoLoading.value = true;
     stopOldDrawing();
-    await startHlsPlay({ hlsurl: hlsurl.value });
+    const { width, height } = await startHlsPlay({ hlsurl: hlsurl.value });
     const { canvas, stopDrawing } = videoToCanvas({
       videoEl: hlsVideoEl.value!,
       targetEl: canvasRef.value!,
+      size: { width, height },
     });
     stopDrawingArr.value.push(stopDrawing);
     canvasRef.value!.appendChild(canvas);

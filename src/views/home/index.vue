@@ -190,9 +190,11 @@ onUnmounted(() => {
 
 async function handleHlsPlay(hlsurl: string) {
   await startHlsPlay({ hlsurl });
+  const { width, height } = await startHlsPlay({ hlsurl });
   const { canvas, stopDrawing } = videoToCanvas({
     videoEl: hlsVideoEl.value!,
     targetEl: canvasRef.value!,
+    size: { width, height },
   });
   stopDrawingArr.value.push(stopDrawing);
   canvasRef.value!.appendChild(canvas);
