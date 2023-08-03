@@ -73,7 +73,7 @@ export function usePush({
     initWs,
     canvasVideoStream,
     lastCoverImg,
-    heartbeatTimer,
+    loopHeartbeatTimer,
     localStream,
     liveUserList,
     damuList,
@@ -136,6 +136,7 @@ export function usePush({
   });
 
   onUnmounted(() => {
+    clearInterval(loopHeartbeatTimer.value);
     closeWs();
     closeRtc();
   });
@@ -223,7 +224,7 @@ export function usePush({
   function endLive() {
     isLiving.value = false;
     localStream.value = undefined;
-    clearInterval(heartbeatTimer.value);
+    clearInterval(loopHeartbeatTimer.value);
     const instance = networkStore.wsMap.get(roomId.value);
     if (instance) {
       instance.send({

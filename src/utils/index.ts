@@ -60,26 +60,26 @@ export const createVideo = ({ muted = true, autoplay = true }) => {
 
 export function videoToCanvas(data: {
   videoEl: HTMLVideoElement;
-  targetEl: Element;
   size?: { width: number; height: number };
 }) {
-  const { videoEl, targetEl } = data;
-  if (!videoEl || !targetEl) {
-    throw new Error('videoEl或targetEl为空');
+  const { videoEl } = data;
+  if (!videoEl) {
+    throw new Error('videoEl不能为空！');
   }
   const canvas = document.createElement('canvas');
 
   const ctx = canvas.getContext('2d')!;
 
   let timer;
-
   function drawCanvas() {
     if (data.size) {
       const { width, height } = data.size;
       canvas.width = width;
       canvas.height = height;
       ctx.drawImage(videoEl, 0, 0, width, height);
+      // console.log('有size', width, height, performance.now());
     } else {
+      // WARN safari没有captureStream方法
       const videoTrack = videoEl
         // @ts-ignore
         .captureStream()
@@ -89,6 +89,7 @@ export function videoToCanvas(data: {
         canvas.width = width!;
         canvas.height = height!;
         ctx.drawImage(videoEl, 0, 0, width!, height!);
+        // console.log('没有size', width, height, performance.now());
       }
     }
     timer = requestAnimationFrame(drawCanvas);
@@ -97,11 +98,9 @@ export function videoToCanvas(data: {
   function stopDrawing() {
     cancelAnimationFrame(timer);
   }
-  // targetEl.appendChild(canvas);
-  // document.body.appendChild(videoEl);
-  // targetEl.parentNode?.replaceChild(canvas, targetEl);
+  document.body.appendChild(videoEl);
 
   drawCanvas();
 
-  return { drawCanvas, stopDrawing, canvas };
+  return { drawCanvas, stopDrawing, canvas, videoEl };
 }

@@ -185,15 +185,20 @@ const stopDrawingArr = ref<any[]>([]);
 const { hlsVideoEl, startHlsPlay, destroyHls } = useHlsPlay();
 
 onUnmounted(() => {
-  stopDrawingArr.value.forEach((cb) => cb());
+  handleStopDrawing();
 });
 
+function handleStopDrawing() {
+  stopDrawingArr.value.forEach((cb) => cb());
+  stopDrawingArr.value = [];
+}
+
 async function handleHlsPlay(hlsurl: string) {
+  handleStopDrawing();
   await startHlsPlay({ hlsurl });
   const { width, height } = await startHlsPlay({ hlsurl });
   const { canvas, stopDrawing } = videoToCanvas({
     videoEl: hlsVideoEl.value!,
-    targetEl: canvasRef.value!,
     size: { width, height },
   });
   stopDrawingArr.value.push(stopDrawing);
@@ -213,8 +218,6 @@ function changeLiveRoom(item: ILive) {
   ) {
     destroyHls();
     handleHlsPlay(item.live_room.hls_url!);
-  } else {
-    destroyHls();
   }
 }
 
@@ -281,7 +284,7 @@ function goRoom(item: ILiveRoom) {
     name: routerName.pull,
     params: { roomId: item.id },
     query: {
-      liveType: liveTypeEnum.srsFlvPull,
+      liveType: liveTypeEnum.srsHlsPull,
     },
   });
 }

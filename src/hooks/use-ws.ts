@@ -1,5 +1,5 @@
 import { getRandomString } from 'billd-utils';
-import { reactive, ref, watch } from 'vue';
+import { onUnmounted, reactive, ref, watch } from 'vue';
 
 import { fetchRtcV1Play, fetchRtcV1Publish } from '@/api/srs';
 import { WEBSOCKET_URL } from '@/constant';
@@ -34,7 +34,7 @@ export const useWs = () => {
   const appStore = useAppStore();
   const userStore = useUserStore();
   const networkStore = useNetworkStore();
-  const heartbeatTimer = ref();
+  const loopHeartbeatTimer = ref();
   const liveUserList = ref<ILiveUser[]>([]);
   const roomId = ref('');
   const roomName = ref('');
@@ -180,6 +180,9 @@ export const useWs = () => {
     },
     { deep: true }
   );
+  onUnmounted(() => {
+    clearInterval(loopHeartbeatTimer.value);
+  });
 
   watch(
     () => currentResolutionRatio.value,
@@ -368,7 +371,7 @@ export const useWs = () => {
   }
 
   function handleHeartbeat(liveId: number) {
-    heartbeatTimer.value = setInterval(() => {
+    loopHeartbeatTimer.value = setInterval(() => {
       const instance = networkStore.wsMap.get(roomId.value);
       if (!instance) return;
       const heartbeatData: IHeartbeat['data'] = {
@@ -880,7 +883,7 @@ export const useWs = () => {
     roomLiveing,
     liveRoomInfo,
     roomNoLive,
-    heartbeatTimer,
+    loopHeartbeatTimer,
     localStream,
     liveUserList,
     damuList,

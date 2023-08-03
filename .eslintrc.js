@@ -158,7 +158,13 @@ module.exports = {
     'import/no-named-as-default': 0, // https://github.com/import-js/eslint-plugin-import/blob/v2.26.0/docs/rules/no-named-as-default.md
 
     // @typescript-eslint插件
-    '@typescript-eslint/restrict-template-expressions': 2, // 强制模板文字表达式为string类型。即const a = {};console.log(`${a}`);会报错
+    '@typescript-eslint/restrict-template-expressions': [
+      'error',
+      {
+        allowBoolean: true,
+        allowNumber: true,
+      },
+    ], // 强制模板文字表达式为string类型。即const a = {};console.log(`${a}`);会报错
     '@typescript-eslint/no-unused-vars': 2,
     '@typescript-eslint/no-floating-promises': 0, // 要求适当处理类似 Promise 的语句。即将await或者return Promise，或者对promise进行.then或者.catch
     '@typescript-eslint/no-explicit-any': 0, // 不允许定义any类型。即let a: any;会报错

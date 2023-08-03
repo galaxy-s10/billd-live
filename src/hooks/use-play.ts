@@ -23,10 +23,9 @@ export function useFlvPlay() {
 
   function destroyFlv() {
     if (flvPlayer.value) {
-      console.log(flvPlayer.value.destroy);
       flvPlayer.value.destroy();
     }
-    // flvVideoEl.value?.remove();
+    flvVideoEl.value?.remove();
   }
 
   watch(
@@ -44,17 +43,28 @@ export function useFlvPlay() {
       flvVideoEl.value.muted = val;
     }
   }
+  function flvPlayTest() {
+    flvPlayer.value?.play();
+  }
 
   function startFlvPlay(data: { flvurl: string }) {
     destroyFlv();
     return new Promise<{ width: number; height: number }>((resolve) => {
-      if (mpegts.getFeatureList().mseLivePlayback) {
+      if (mpegts.getFeatureList().mseLivePlayback && mpegts.isSupported()) {
         flvPlayer.value = mpegts.createPlayer({
           type: 'flv', // could also be mpegts, m2ts, flv
           isLive: true,
           url: data.flvurl,
         });
         const videoEl = createVideo({ muted: true, autoplay: true });
+        videoEl.style.width = `1px`;
+        videoEl.style.height = `1px`;
+        videoEl.style.position = 'fixed';
+        videoEl.style.bottom = '0';
+        videoEl.style.right = '0';
+        videoEl.style.opacity = '0';
+        videoEl.style.pointerEvents = 'none';
+        document.body.appendChild(videoEl);
         flvVideoEl.value = videoEl;
         flvVideoEl.value.addEventListener('play', () => {
           console.log('flv-play');
@@ -71,7 +81,7 @@ export function useFlvPlay() {
         flvPlayer.value.attachMediaElement(flvVideoEl.value);
         flvPlayer.value.load();
         try {
-          console.log('开始播放flv');
+          console.log(`开始播放flv，muted:${appStore.muted}`);
           flvPlayer.value.play();
         } catch (err) {
           console.error('flv播放失败');
@@ -83,7 +93,7 @@ export function useFlvPlay() {
     });
   }
 
-  return { flvPlayer, flvVideoEl, startFlvPlay, destroyFlv };
+  return { flvPlayer, flvVideoEl, startFlvPlay, destroyFlv, flvPlayTest };
 }
 
 export function useHlsPlay() {
@@ -138,7 +148,7 @@ export function useHlsPlay() {
           ],
         },
         function () {
-          console.log('开始播放hls');
+          console.log(`开始播放hls，muted:${appStore.muted}`);
           hlsPlayer.value?.play();
           hlsPlayer.value?.on('play', () => {
             console.log('hls-play');
@@ -167,6 +177,9 @@ export function useHlsPlay() {
           });
         }
       );
+      hlsPlayer.value.on('error', (e) => {
+        console.error('hlsPlayer错误回调', e);
+      });
     });
   }
 

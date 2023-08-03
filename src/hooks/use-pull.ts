@@ -45,7 +45,7 @@ export function usePull({
     roomLiveing,
     liveRoomInfo,
     roomNoLive,
-    heartbeatTimer,
+    loopHeartbeatTimer,
     localStream,
     liveUserList,
     damuList,
@@ -64,22 +64,22 @@ export function usePull({
   const stopDrawingArr = ref<any[]>([]);
 
   onUnmounted(() => {
-    stopOldDrawing();
+    clearInterval(loopHeartbeatTimer.value);
+    handleStopDrawing();
   });
 
-  function stopOldDrawing() {
+  function handleStopDrawing() {
     stopDrawingArr.value.forEach((cb) => cb());
     stopDrawingArr.value = [];
   }
 
   async function handleHlsPlay() {
     console.log('handleHlsPlay');
+    handleStopDrawing();
     videoLoading.value = true;
-    stopOldDrawing();
     const { width, height } = await startHlsPlay({ hlsurl: hlsurl.value });
     const { canvas, stopDrawing } = videoToCanvas({
       videoEl: hlsVideoEl.value!,
-      targetEl: canvasRef.value!,
       size: { width, height },
     });
     stopDrawingArr.value.push(stopDrawing);
@@ -89,33 +89,30 @@ export function usePull({
 
   async function handleFlvPlay() {
     console.log('handleFlvPlay');
-    stopOldDrawing();
-    await startFlvPlay({ flvurl: flvurl.value });
+    handleStopDrawing();
+    const { width, height } = await startFlvPlay({
+      flvurl: flvurl.value,
+    });
     const initCanvas = videoToCanvas({
       videoEl: flvVideoEl.value!,
-      targetEl: canvasRef.value!,
+      size: {
+        width,
+        height,
+      },
     });
     stopDrawingArr.value.push(initCanvas.stopDrawing);
     canvasRef.value!.appendChild(initCanvas.canvas);
     flvPlayer.value!.on(mpegts.Events.MEDIA_INFO, () => {
-      stopOldDrawing();
-      const newCanvas = videoToCanvas({
-        videoEl: flvVideoEl.value!,
-        targetEl: canvasRef.value!,
-      });
-      initCanvas.canvas = newCanvas.canvas;
-      stopDrawingArr.value.push(newCanvas.stopDrawing);
+      initCanvas.videoEl = flvVideoEl.value!;
     });
     videoLoading.value = false;
   }
 
   async function handlePlay() {
     if (roomLiveType.value === liveTypeEnum.srsFlvPull) {
-      console.log('srsFlvPull', autoplayVal.value);
       if (!autoplayVal.value) return;
       await handleFlvPlay();
     } else if (roomLiveType.value === liveTypeEnum.srsHlsPull) {
-      console.log('srsHlsPull', autoplayVal.value);
       if (!autoplayVal.value) return;
       await handleHlsPlay();
     }
@@ -273,6 +270,7 @@ export function usePull({
   }
 
   function sendDanmu() {
+    startFlvPlay({ flvurl: flvurl.value });
     if (!danmuStr.value.trim().length) {
       window.$message.warning('请输入弹幕内容！');
       return;
