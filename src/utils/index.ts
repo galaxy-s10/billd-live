@@ -98,7 +98,8 @@ export function videoToCanvas(data: {
   function stopDrawing() {
     cancelAnimationFrame(timer);
   }
-  document.body.appendChild(videoEl);
+
+  // document.body.appendChild(videoEl);
 
   drawCanvas();
 
