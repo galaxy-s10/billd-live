@@ -73,11 +73,13 @@ export function usePull({
     stopDrawingArr.value = [];
   }
 
-  async function handleHlsPlay() {
+  async function handleHlsPlay(url?: string) {
     console.log('handleHlsPlay');
     handleStopDrawing();
     videoLoading.value = true;
-    const { width, height } = await startHlsPlay({ hlsurl: hlsurl.value });
+    const { width, height } = await startHlsPlay({
+      hlsurl: url || hlsurl.value,
+    });
     const { canvas, stopDrawing } = videoToCanvas({
       videoEl: hlsVideoEl.value!,
       size: { width, height },

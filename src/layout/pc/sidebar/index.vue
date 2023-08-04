@@ -33,6 +33,7 @@ import router, { routerName } from '@/router';
   position: fixed;
   top: 50%;
   right: 0;
+  z-index: 10;
   padding: 15px 10px;
   width: 50px;
   border-radius: 20px 0 0 20px;

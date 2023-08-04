@@ -1,14 +1,7 @@
 <template>
   <div class="home-wrap">
-    <div class="banner"></div>
-
     <div class="play-container">
-      <div
-        class="bg"
-        :style="{
-          // backgroundImage: `url(https://resource.hsslive.cn/image/2b045c7f02febd23893244e923115535.webp)`,
-        }"
-      ></div>
+      <div class="bg"></div>
       <div class="container">
         <div class="left">
           <div
@@ -26,10 +19,12 @@
               })`,
             }"
           ></div>
-          <div
-            v-if="currentLiveRoom?.live_room?.flv_url"
-            ref="canvasRef"
-          ></div>
+          <div v-loading="videoLoading">
+            <div
+              v-if="currentLiveRoom?.live_room?.flv_url"
+              ref="canvasRef"
+            ></div>
+          </div>
           <template v-if="currentLiveRoom">
             <VideoControls></VideoControls>
             <div
@@ -44,7 +39,7 @@
                   LiveRoomTypeEnum.user_wertc
                 "
                 class="btn webrtc"
-                @click="joinRoom()"
+                @click="joinRtcRoom()"
               >
                 进入直播（webrtc）
               </div>
@@ -53,7 +48,7 @@
                   currentLiveRoom.live_room?.type === LiveRoomTypeEnum.user_srs
                 "
                 class="btn webrtc"
-                @click="joinRoom()"
+                @click="joinRtcRoom()"
               >
                 进入直播（srs-webrtc）
               </div>
@@ -63,7 +58,7 @@
                   LiveRoomTypeEnum.user_wertc
                 "
                 class="btn flv"
-                @click="joinFlvRoom()"
+                @click="joinRoom(true)"
               >
                 进入直播（flv）
               </div>
@@ -73,7 +68,7 @@
                   LiveRoomTypeEnum.user_wertc
                 "
                 class="btn hls"
-                @click="joinHlsRoom()"
+                @click="joinRoom(false)"
               >
                 进入直播（hls）
               </div>
@@ -130,7 +125,7 @@
             v-for="(iten, indey) in otherLiveRoomList"
             :key="indey"
             class="live-room"
-            @click="goRoom(iten.live_room!)"
+            @click="joinOtherRoom(iten.live_room!)"
           >
             <div
               class="cover"
@@ -166,44 +161,34 @@
 
 <script lang="ts" setup>
 import { isMobile } from 'billd-utils';
-import { nextTick, onMounted, onUnmounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 import { fetchLiveList } from '@/api/live';
-import { useHlsPlay } from '@/hooks/use-play';
+import { usePull } from '@/hooks/use-pull';
 import { ILive, ILiveRoom, LiveRoomTypeEnum, liveTypeEnum } from '@/interface';
 import { routerName } from '@/router';
-import { videoToCanvas } from '@/utils';
 
-const canvasRef = ref<Element>();
+const route = useRoute();
 const router = useRouter();
+const canvasRef = ref<Element>();
 const showControls = ref(false);
+const topNums = ref(6);
 const topLiveRoomList = ref<ILive[]>([]);
 const otherLiveRoomList = ref<ILive[]>([]);
 const currentLiveRoom = ref<ILive>();
-const stopDrawingArr = ref<any[]>([]);
-const { hlsVideoEl, startHlsPlay, destroyHls } = useHlsPlay();
+const localVideoRef = ref<HTMLVideoElement[]>([]);
 
-onUnmounted(() => {
-  handleStopDrawing();
+const { handleHlsPlay, videoLoading } = usePull({
+  localVideoRef,
+  canvasRef,
+  liveType: route.query.liveType as liveTypeEnum,
+  isSRS: [
+    liveTypeEnum.srsWebrtcPull,
+    liveTypeEnum.srsFlvPull,
+    liveTypeEnum.srsHlsPull,
+  ].includes(route.query.liveType as liveTypeEnum),
 });
-
-function handleStopDrawing() {
-  stopDrawingArr.value.forEach((cb) => cb());
-  stopDrawingArr.value = [];
-}
-
-async function handleHlsPlay(hlsurl: string) {
-  handleStopDrawing();
-  await startHlsPlay({ hlsurl });
-  const { width, height } = await startHlsPlay({ hlsurl });
-  const { canvas, stopDrawing } = videoToCanvas({
-    videoEl: hlsVideoEl.value!,
-    size: { width, height },
-  });
-  stopDrawingArr.value.push(stopDrawing);
-  canvasRef.value!.appendChild(canvas);
-}
 
 function changeLiveRoom(item: ILive) {
   if (item.id === currentLiveRoom.value?.id) return;
@@ -212,12 +197,13 @@ function changeLiveRoom(item: ILive) {
     item.remove();
   });
   if (
-    item.live_room?.type === LiveRoomTypeEnum.user_srs ||
-    item.live_room?.type === LiveRoomTypeEnum.user_obs ||
-    item.live_room?.type === LiveRoomTypeEnum.system
+    [
+      LiveRoomTypeEnum.user_srs,
+      LiveRoomTypeEnum.user_obs,
+      LiveRoomTypeEnum.system,
+    ].includes(item.live_room?.type!)
   ) {
-    destroyHls();
-    handleHlsPlay(item.live_room.hls_url!);
+    handleHlsPlay(item.live_room?.hls_url!);
   }
 }
 
@@ -228,22 +214,19 @@ async function getLiveRoomList() {
       orderBy: 'desc',
     });
     if (res.code === 200) {
-      const top = 6;
-      topLiveRoomList.value = res.data.rows.slice(0, top);
-      otherLiveRoomList.value = res.data.rows.slice(top);
+      topLiveRoomList.value = res.data.rows.slice(0, topNums.value);
+      otherLiveRoomList.value = res.data.rows.slice(topNums.value);
       if (res.data.total) {
         currentLiveRoom.value = topLiveRoomList.value[0];
-        nextTick(() => {
-          if (
-            currentLiveRoom.value?.live_room?.type ===
-              LiveRoomTypeEnum.user_srs ||
-            currentLiveRoom.value?.live_room?.type ===
-              LiveRoomTypeEnum.user_obs ||
-            currentLiveRoom.value?.live_room?.type === LiveRoomTypeEnum.system
-          ) {
-            handleHlsPlay(currentLiveRoom.value.live_room.hls_url!);
-          }
-        });
+        if (
+          [
+            LiveRoomTypeEnum.user_srs,
+            LiveRoomTypeEnum.user_obs,
+            LiveRoomTypeEnum.system,
+          ].includes(currentLiveRoom.value?.live_room?.type!)
+        ) {
+          handleHlsPlay(currentLiveRoom.value.live_room?.hls_url!);
+        }
       }
     }
   } catch (error) {
@@ -255,7 +238,12 @@ onMounted(() => {
   getLiveRoomList();
 });
 
-function joinRoom() {
+function joinOtherRoom(item: ILiveRoom) {
+  currentLiveRoom.value = item;
+  joinRoom(false);
+}
+
+function joinRtcRoom() {
   if (currentLiveRoom.value?.live_room?.type === LiveRoomTypeEnum.user_srs) {
     router.push({
       name: routerName.pull,
@@ -279,32 +267,12 @@ function joinRoom() {
   }
 }
 
-function goRoom(item: ILiveRoom) {
-  router.push({
-    name: routerName.pull,
-    params: { roomId: item.id },
-    query: {
-      liveType: liveTypeEnum.srsHlsPull,
-    },
-  });
-}
-
-function joinFlvRoom() {
+function joinRoom(isFlv: boolean) {
   router.push({
     name: routerName.pull,
     params: { roomId: currentLiveRoom.value?.live_room_id },
     query: {
-      liveType: liveTypeEnum.srsFlvPull,
-    },
-  });
-}
-
-function joinHlsRoom() {
-  router.push({
-    name: routerName.pull,
-    params: { roomId: currentLiveRoom.value?.live_room_id },
-    query: {
-      liveType: liveTypeEnum.srsHlsPull,
+      liveType: isFlv ? liveTypeEnum.srsFlvPull : liveTypeEnum.srsHlsPull,
     },
   });
 }
@@ -312,9 +280,6 @@ function joinHlsRoom() {
 
 <style lang="scss" scoped>
 .home-wrap {
-  .banner {
-  }
-
   .play-container {
     position: relative;
     .bg {
@@ -364,7 +329,7 @@ function joinHlsRoom() {
           transform-origin: bottom;
           .txt {
             margin-top: 11px;
-            margin-left: 2px;
+            margin-left: 20px;
             background-image: initial !important;
             font-size: 14px;
           }

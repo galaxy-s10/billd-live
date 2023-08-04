@@ -100,8 +100,8 @@ import {
   ILiveRoom,
   IUser,
   LiveRoomTypeEnum,
-  liveTypeEnum,
   RankTypeEnum,
+  liveTypeEnum,
 } from '@/interface';
 import router, { routerName } from '@/router';
 
@@ -240,7 +240,7 @@ async function getLiveRoomList() {
     fullLoading({ loading: true });
     const res = await fetchLiveRoomList({
       orderName: 'updated_at',
-      orderBy: 'asc',
+      orderBy: 'desc',
     });
     if (res.code === 200) {
       const length = res.data.rows.length;

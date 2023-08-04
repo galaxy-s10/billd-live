@@ -43,9 +43,6 @@ export function useFlvPlay() {
       flvVideoEl.value.muted = val;
     }
   }
-  function flvPlayTest() {
-    flvPlayer.value?.play();
-  }
 
   function startFlvPlay(data: { flvurl: string }) {
     destroyFlv();
@@ -71,7 +68,6 @@ export function useFlvPlay() {
         });
         flvVideoEl.value.addEventListener('playing', () => {
           console.log('flv-playing');
-          // setMuted(false);
           setMuted(appStore.muted);
           resolve({
             width: flvVideoEl.value?.videoWidth || 0,
@@ -93,7 +89,7 @@ export function useFlvPlay() {
     });
   }
 
-  return { flvPlayer, flvVideoEl, startFlvPlay, destroyFlv, flvPlayTest };
+  return { flvPlayer, flvVideoEl, startFlvPlay, destroyFlv };
 }
 
 export function useHlsPlay() {
@@ -135,7 +131,6 @@ export function useHlsPlay() {
     destroyHls();
     const videoEl = createVideo({ muted: appStore.muted, autoplay: true });
     hlsVideoEl.value = videoEl;
-    // document.body.appendChild(videoEl);
     return new Promise<{ width: number; height: number }>((resolve) => {
       hlsPlayer.value = videoJs(
         videoEl,
@@ -148,15 +143,20 @@ export function useHlsPlay() {
           ],
         },
         function () {
-          console.log(`开始播放hls，muted:${appStore.muted}`);
-          hlsPlayer.value?.play();
+          try {
+            console.log(`开始播放hls，muted:${appStore.muted}`);
+            hlsPlayer.value?.play();
+          } catch (err) {
+            console.error('hls播放失败');
+            console.log(err);
+          }
           hlsPlayer.value?.on('play', () => {
             console.log('hls-play');
             // console.log(hlsPlayer.value?.videoHeight()); // 获取到的是0！
           });
-          hlsPlayer.value?.on('playing', () => {
+          hlsPlayer.value?.on('playing', (event) => {
             console.log('hls-playing');
-            appStore.setMuted(hlsVideoEl.value?.muted || false);
+            // document.body.appendChild(event.target);
             // console.log(hlsPlayer.value?.videoHeight()); // 获取到的是正确的！
             const childNodes = hlsPlayer.value?.el().childNodes;
             if (childNodes) {
@@ -177,9 +177,6 @@ export function useHlsPlay() {
           });
         }
       );
-      hlsPlayer.value.on('error', (e) => {
-        console.error('hlsPlayer错误回调', e);
-      });
     });
   }
 
