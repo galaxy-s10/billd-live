@@ -1,6 +1,9 @@
 <template>
   <div
-    v-if="appStore.allTrack.length > 0 && appStore.isOnlyAudio()"
+    v-if="
+      appCacheStore.allTrack.length > 0 &&
+      appCacheStore.getTrackInfo().video === 0
+    "
     class="audio-room-tip-wrap"
   >
     当前是语音房
@@ -8,9 +11,9 @@
 </template>
 
 <script lang="ts" setup>
-import { useAppStore } from '@/store/app';
+import { useAppCacheStore } from '@/store/cache';
 
-const appStore = useAppStore();
+const appCacheStore = useAppCacheStore();
 </script>
 
 <style lang="scss" scoped>

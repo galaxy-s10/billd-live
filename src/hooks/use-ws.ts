@@ -27,11 +27,14 @@ import {
   prettierReceiveWebsocket,
 } from '@/network/webSocket';
 import { AppRootState, useAppStore } from '@/store/app';
+import { useAppCacheStore } from '@/store/cache';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
+import { createVideo } from '@/utils';
 
 export const useWs = () => {
   const appStore = useAppStore();
+  const appCacheStore = useAppCacheStore();
   const userStore = useUserStore();
   const networkStore = useNetworkStore();
   const loopHeartbeatTimer = ref();
@@ -152,9 +155,9 @@ export const useWs = () => {
   const damuList = ref<IDanmu[]>([]);
 
   watch(
-    () => appStore.allTrack,
+    () => appCacheStore.allTrack,
     (newTrack, oldTrack) => {
-      console.log('appStore.allTrack变了');
+      console.log('appCacheStore.allTrack变了');
       const mixedStream = new MediaStream();
       newTrack.forEach((item) => {
         if (item.track) {
@@ -166,17 +169,17 @@ export const useWs = () => {
       console.log('旧的allTrack音频轨', localStream.value?.getAudioTracks());
       console.log('旧的allTrack视频轨', localStream.value?.getVideoTracks());
       localStream.value = mixedStream;
-      if (isSRS.value) {
-        if (!isPull.value) {
-          networkStore.rtcMap.forEach((rtc) => {
-            rtc.close();
-          });
-          startNewWebRtc({
-            receiver: 'srs',
-            videoEl: localVideo.value,
-          });
-        }
-      }
+      // if (isSRS.value) {
+      //   if (!isPull.value) {
+      //     networkStore.rtcMap.forEach((rtc) => {
+      //       rtc.close();
+      //     });
+      //     startNewWebRtc({
+      //       receiver: 'srs',
+      //       videoEl: localVideo.value,
+      //     });
+      //   }
+      // }
     },
     { deep: true }
   );
@@ -195,7 +198,7 @@ export const useWs = () => {
           });
         });
       } else {
-        appStore.allTrack.forEach((info) => {
+        appCacheStore.allTrack.forEach((info) => {
           info.track?.applyConstraints({
             frameRate: { max: currentMaxFramerate.value },
             height: newVal,
@@ -226,7 +229,7 @@ export const useWs = () => {
           });
         });
       } else {
-        appStore.allTrack.forEach((info) => {
+        appCacheStore.allTrack.forEach((info) => {
           info.track?.applyConstraints({
             frameRate: { max: newVal },
             height: currentResolutionRatio.value,
@@ -264,15 +267,33 @@ export const useWs = () => {
       networkStore.rtcMap.forEach((rtc) => {
         const sender = rtc.peerConnection
           ?.getSenders()
-          .find((sender) => sender.track?.id === addTrackInfo.track.id);
+          .find((sender) => sender.track?.id === addTrackInfo.track?.id);
         if (!sender) {
-          console.log('pc添加track-1');
-          rtc.peerConnection?.addTrack(addTrackInfo.track, addTrackInfo.stream);
+          console.log('pc添加track-1', addTrackInfo.track?.id);
+          // vel.srcObject = destination.stream;
+          // canvasVideoStream.value!.getAudioTracks()[0] =
+          //   destination.stream.getAudioTracks()[0];
+
+          // rtc.peerConnection?.addTrack(addTrackInfo.track, addTrackInfo.stream);
+          rtc.peerConnection
+            ?.getSenders()
+            ?.find((sender) => sender.track?.kind === 'audio')
+            ?.replaceTrack(canvasVideoStream.value?.getAudioTracks()[0]!);
+          const vel = createVideo({});
+          vel.srcObject = canvasVideoStream.value!;
+          document.body.appendChild(vel);
+          console.log(
+            rtc.peerConnection
+              ?.getSenders()
+              ?.find((sender) => sender.track?.kind === 'audio'),
+            8888,
+            rtc.peerConnection?.getSenders()
+          );
         }
       });
     }
     const mixedStream = new MediaStream();
-    appStore.allTrack.forEach((item) => {
+    appCacheStore.allTrack.forEach((item) => {
       if (item.track) {
         mixedStream.addTrack(item.track);
       }
@@ -326,7 +347,7 @@ export const useWs = () => {
       });
     }
     const mixedStream = new MediaStream();
-    appStore.allTrack.forEach((item) => {
+    appCacheStore.allTrack.forEach((item) => {
       if (item.track) {
         mixedStream.addTrack(item.track);
       }
@@ -569,11 +590,7 @@ export const useWs = () => {
           track.id,
           localStream.value?.id
         );
-        console.log(
-          'pc添加track-2',
-          track.kind,
-          canvasVideoStream.value?.getAudioTracks()
-        );
+        console.log('pc添加track-2', track.kind, track.id);
         rtc.peerConnection?.addTrack(track, localStream.value!);
       });
 

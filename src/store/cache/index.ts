@@ -1,11 +1,8 @@
 import { defineStore } from 'pinia';
 
 import { MediaTypeEnum } from '@/interface';
-import { mobileRouterName } from '@/router';
 
-export type AppRootState = {
-  muted: boolean;
-  navList: { routeName: string; name: string }[];
+export type AppCacheRootState = {
   allTrack: {
     /** 1开启；2关闭 */
     audio: number;
@@ -14,6 +11,7 @@ export type AppRootState = {
     id: string;
     mediaName: string;
     type: MediaTypeEnum;
+    muted?: boolean;
     track?: MediaStreamTrack;
     stream?: MediaStream;
     streamid: string;
@@ -23,24 +21,17 @@ export type AppRootState = {
     hidden?: boolean;
   }[];
 };
-
-export const useAppStore = defineStore('app', {
-  state: (): AppRootState => {
+export const useAppCacheStore = defineStore('appCache', {
+  persist: {
+    key: 'appCache',
+  },
+  state: (): AppCacheRootState => {
     return {
-      muted: true,
-      navList: [
-        { routeName: mobileRouterName.h5, name: '频道' },
-        { routeName: mobileRouterName.h5Rank, name: '排行' },
-        { routeName: mobileRouterName.h5Profile, name: '我的' },
-      ],
-      allTrack: [],
+      allTrack: [], // 当前是否横屏
     };
   },
   actions: {
-    setMuted(res: AppRootState['muted']) {
-      this.muted = res;
-    },
-    setAllTrack(res: AppRootState['allTrack']) {
+    setAllTrack(res: AppCacheRootState['allTrack']) {
       this.allTrack = res;
     },
     getTrackInfo() {

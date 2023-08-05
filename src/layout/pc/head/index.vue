@@ -158,6 +158,23 @@
       >
         赞助
       </a>
+      <a
+        class="privatizationDeployment"
+        :class="{
+          active:
+            router.currentRoute.value.name ===
+            routerName.privatizationDeployment,
+        }"
+        href="/privatizationDeployment"
+        @click.prevent="
+          router.push({ name: routerName.privatizationDeployment })
+        "
+      >
+        私有化部署
+        <div class="badge">
+          <div class="txt">new</div>
+        </div>
+      </a>
 
       <a
         class="github"
@@ -378,7 +395,7 @@ function handleStartLive(key: liveTypeEnum) {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 100;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -388,7 +405,7 @@ function handleStartLive(key: liveTypeEnum) {
   height: 64px;
   background-color: #fff;
   box-shadow: inset 0 -1px #f1f2f3 !important;
-  font-size: 14px;
+  font-size: 15px;
   width: 100%;
   .hr {
     width: 100%;
@@ -489,7 +506,7 @@ function handleStartLive(key: liveTypeEnum) {
           }
           .icon {
             margin-left: 5px;
-            width: 13px;
+            width: 14px;
             color: #3c3c4354;
 
             fill: currentColor;
@@ -499,7 +516,7 @@ function handleStartLive(key: liveTypeEnum) {
     }
     .ecosystem {
       .list {
-        width: 220px;
+        width: 225px;
         .title {
           margin: 10px 0 5px;
           padding: 0 15px;
@@ -513,7 +530,8 @@ function handleStartLive(key: liveTypeEnum) {
     }
 
     .github,
-    .sponsors {
+    .sponsors,
+    .privatizationDeployment {
       display: flex;
       align-items: center;
       margin-right: 20px;
@@ -524,6 +542,24 @@ function handleStartLive(key: liveTypeEnum) {
       }
       .txt {
         margin-right: 5px;
+      }
+    }
+    .privatizationDeployment {
+      position: relative;
+      .badge {
+        position: absolute;
+        right: -10px;
+        top: -10px;
+        background-color: red;
+        color: white;
+        line-height: 1;
+        border-radius: 4px;
+        padding: 0 2px;
+        .txt {
+          margin-right: 0;
+          @include minFont(10);
+          transform-origin: top !important;
+        }
       }
     }
 

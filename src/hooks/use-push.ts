@@ -14,6 +14,7 @@ import {
 } from '@/interface';
 import { WsMsgTypeEnum } from '@/network/webSocket';
 import { useAppStore } from '@/store/app';
+import { useAppCacheStore } from '@/store/cache';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 import { createVideo, generateBase64 } from '@/utils';
@@ -34,6 +35,7 @@ export function usePush({
   const route = useRoute();
   const router = useRouter();
   const appStore = useAppStore();
+  const appCacheStore = useAppCacheStore();
   const userStore = useUserStore();
   const networkStore = useNetworkStore();
 
@@ -65,6 +67,10 @@ export function usePush({
     [MediaTypeEnum.img]: {
       type: MediaTypeEnum.img,
       txt: '图片',
+    },
+    [MediaTypeEnum.media]: {
+      type: MediaTypeEnum.media,
+      txt: '视频',
     },
   };
 
@@ -186,12 +192,12 @@ export function usePush({
       return;
     }
     if (!roomNameIsOk()) return;
-    if (appStore.allTrack.length <= 0) {
+    if (appCacheStore.allTrack.length <= 0) {
       window.$message.warning('请选择一个素材！');
       return;
     }
     isLiving.value = true;
-    const el = appStore.allTrack.find((item) => {
+    const el = appCacheStore.allTrack.find((item) => {
       if (item.video === 1) {
         return true;
       }

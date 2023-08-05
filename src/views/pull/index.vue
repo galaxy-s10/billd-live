@@ -45,7 +45,7 @@
             <div
               ref="canvasRef"
               class="media-list"
-              :class="{ item: appStore.allTrack.length > 1 }"
+              :class="{ item: appCacheStore.allTrack.length > 1 }"
             ></div>
             <AudioRoomTip></AudioRoomTip>
             <VideoControls></VideoControls>
@@ -189,15 +189,14 @@ import {
   IGoods,
   liveTypeEnum,
 } from '@/interface';
-import { useAppStore } from '@/store/app';
+import { useAppCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
 
 import RechargeCpt from './recharge/index.vue';
 
 const route = useRoute();
 const userStore = useUserStore();
-const appStore = useAppStore();
-
+const appCacheStore = useAppCacheStore();
 const giftGoodsList = ref<IGoods[]>([]);
 const height = ref(0);
 const giftLoading = ref(false);
@@ -432,14 +431,14 @@ onMounted(() => {
           z-index: 1;
           align-items: center;
           padding: 12px 26px;
-          border: 2px solid rgba($color: papayawhip, $alpha: 0.5);
+          border: 2px solid rgba($color: $theme-color-gold, $alpha: 0.5);
           border-radius: 6px;
           background-color: rgba(0, 0, 0, 0.3);
           color: $theme-color-gold;
           cursor: pointer;
           transform: translate(-50%, -50%);
           &:hover {
-            background-color: rgba($color: papayawhip, $alpha: 0.5);
+            background-color: rgba($color: $theme-color-gold, $alpha: 0.5);
             color: white;
           }
         }

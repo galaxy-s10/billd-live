@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>Document</title>
+  </head>
+  <body>
+    <input type="file" />
+    <textarea id="fileContent"></textarea>
+    <button id="save">Save File</button>
+    <script>
+      const fileName = document.getElementById('fileName');
+      const fileContent = document.getElementById('fileContent').value;
+      const saveBtn = document.getElementById('save');
+
+      saveBtn.addEventListener('click', () => {
+        saveFile();
+      });
+
+      function saveFile() {
+        console.log(221);
+        window.webkitRequestFileSystem(
+          TEMPORARY,
+          1024 * 1024 /*1MB*/,
+          onInitFs,
+          errorHandler
+        );
+
+        function onInitFs(fs) {
+          console.log(111);
+          // 获取fileSystem 对象
+          const fileSystem = fs;
+          // 获取文件名称
+          const name = fileName.value;
+          console.log(fs, fileName.value, 22222);
+          // 创建文件
+          fileSystem.root.getFile(
+            name,
+            { create: true },
+            function (fileEntry) {
+              // 创建文件写入流
+              fileEntry.createWriter(function (fileWriter) {
+                fileWriter.onwriteend = () => {
+                  // 完成后关闭文件
+                  fileWriter.abort();
+                };
+                // 写入文件内容
+                const content = new Blob([fileContent]);
+                fileWriter.write(content);
+              });
+            },
+            errorHandler
+          );
+        }
+
+        function errorHandler(e) {
+          console.log('Error:', e);
+        }
+      }
+    </script>
+  </body>
+</html>

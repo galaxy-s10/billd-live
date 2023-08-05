@@ -21,6 +21,7 @@ export const routerName = {
   account: 'account',
   rank: 'rank',
   sponsors: 'sponsors',
+  privatizationDeployment: 'privatizationDeployment',
   support: 'support',
   order: 'order',
   shop: 'shop',
@@ -112,6 +113,11 @@ export const defaultRoutes: RouteRecordRaw[] = [
         name: routerName.sponsors,
         path: '/sponsors',
         component: () => import('@/views/sponsors/index.vue'),
+      },
+      {
+        name: routerName.privatizationDeployment,
+        path: '/privatizationDeployment',
+        component: () => import('@/views/privatizationDeployment/index.vue'),
       },
       {
         name: routerName.support,

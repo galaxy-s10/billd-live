@@ -44,12 +44,12 @@
 import { defineEmits, defineProps, onMounted, ref, withDefaults } from 'vue';
 
 import { MediaTypeEnum } from '@/interface';
-import { useAppStore } from '@/store/app';
+import { useAppCacheStore } from '@/store/cache';
 import { useNetworkStore } from '@/store/network';
 
 const mediaName = ref('');
 const networkStore = useNetworkStore();
-const appStore = useAppStore();
+const appCacheStore = useAppCacheStore();
 
 const props = withDefaults(
   defineProps<{
@@ -95,8 +95,9 @@ async function init() {
       type: MediaTypeEnum.microphone,
     };
     mediaName.value = `麦克风-${
-      appStore.allTrack.filter((item) => item.type === MediaTypeEnum.microphone)
-        .length + 1
+      appCacheStore.allTrack.filter(
+        (item) => item.type === MediaTypeEnum.microphone
+      ).length + 1
     }`;
   } else if (props.mediaType === MediaTypeEnum.camera) {
     res.forEach((item) => {
@@ -113,8 +114,9 @@ async function init() {
       type: MediaTypeEnum.camera,
     };
     mediaName.value = `摄像头-${
-      appStore.allTrack.filter((item) => item.type === MediaTypeEnum.camera)
-        .length + 1
+      appCacheStore.allTrack.filter(
+        (item) => item.type === MediaTypeEnum.camera
+      ).length + 1
     }`;
   } else if (props.mediaType === MediaTypeEnum.screen) {
     currentInput.value = {
@@ -122,8 +124,9 @@ async function init() {
       type: MediaTypeEnum.screen,
     };
     mediaName.value = `窗口-${
-      appStore.allTrack.filter((item) => item.type === MediaTypeEnum.screen)
-        .length + 1
+      appCacheStore.allTrack.filter(
+        (item) => item.type === MediaTypeEnum.screen
+      ).length + 1
     }`;
   }
 }

@@ -34,7 +34,7 @@
       <div
         ref="canvasRef"
         class="media-list"
-        :class="{ item: appStore.allTrack.length > 1 }"
+        :class="{ item: appCacheStore.allTrack.length > 1 }"
       ></div>
       <div
         v-if="showPlayBtn"
@@ -107,10 +107,10 @@ import { fetchFindLiveRoom } from '@/api/liveRoom';
 import { usePull } from '@/hooks/use-pull';
 import { DanmuMsgTypeEnum, LiveRoomTypeEnum, liveTypeEnum } from '@/interface';
 import router, { mobileRouterName } from '@/router';
-import { useAppStore } from '@/store/app';
+import { useAppCacheStore } from '@/store/cache';
 
 const route = useRoute();
-const appStore = useAppStore();
+const appCacheStore = useAppCacheStore();
 
 const bottomRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
@@ -183,7 +183,9 @@ function startPull() {
 }
 
 onMounted(() => {
-  scrollTo({ top: 0 });
+  setTimeout(() => {
+    scrollTo(0, 0);
+  }, 100);
   getLiveRoomInfo();
   if (containerRef.value && bottomRef.value) {
     const res =

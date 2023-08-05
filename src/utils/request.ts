@@ -57,7 +57,7 @@ class MyAxios {
         const statusCode = error.response.status as number;
         const errorResponse = error.response;
         const errorResponseData = errorResponse.data;
-        const whiteList = ['400', '401', '403', '404'];
+        const whiteList = ['400', '401', '403', '404', '500'];
         if (error.response) {
           if (!whiteList.includes(`${statusCode}`)) {
             window.$message.error(error.message);
@@ -83,6 +83,11 @@ class MyAxios {
           if (statusCode === 404) {
             console.error(errorResponseData.message);
             window.$message.error(errorResponseData.message);
+            return Promise.reject(errorResponseData);
+          }
+          if (statusCode === 500) {
+            console.error(errorResponseData.error);
+            window.$message.error(errorResponseData.error);
             return Promise.reject(errorResponseData);
           }
         } else {

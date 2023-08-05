@@ -58,7 +58,12 @@
                   LiveRoomTypeEnum.user_wertc
                 "
                 class="btn flv"
-                @click="joinRoom(true)"
+                @click="
+                  joinRoom({
+                    isFlv: true,
+                    roomId: currentLiveRoom.live_room_id!,
+                  })
+                "
               >
                 进入直播（flv）
               </div>
@@ -68,7 +73,12 @@
                   LiveRoomTypeEnum.user_wertc
                 "
                 class="btn hls"
-                @click="joinRoom(false)"
+                @click="
+                  joinRoom({
+                    isFlv: false,
+                    roomId: currentLiveRoom.live_room_id!,
+                  })
+                "
               >
                 进入直播（hls）
               </div>
@@ -125,7 +135,12 @@
             v-for="(iten, indey) in otherLiveRoomList"
             :key="indey"
             class="live-room"
-            @click="joinOtherRoom(iten.live_room!)"
+            @click="
+              joinRoom({
+                isFlv: false,
+                roomId: iten.live_room?.id!,
+              })
+            "
           >
             <div
               class="cover"
@@ -166,7 +181,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { fetchLiveList } from '@/api/live';
 import { usePull } from '@/hooks/use-pull';
-import { ILive, ILiveRoom, LiveRoomTypeEnum, liveTypeEnum } from '@/interface';
+import { ILive, LiveRoomTypeEnum, liveTypeEnum } from '@/interface';
 import { routerName } from '@/router';
 
 const route = useRoute();
@@ -238,11 +253,6 @@ onMounted(() => {
   getLiveRoomList();
 });
 
-function joinOtherRoom(item: ILiveRoom) {
-  currentLiveRoom.value = item;
-  joinRoom(false);
-}
-
 function joinRtcRoom() {
   if (currentLiveRoom.value?.live_room?.type === LiveRoomTypeEnum.user_srs) {
     router.push({
@@ -267,12 +277,12 @@ function joinRtcRoom() {
   }
 }
 
-function joinRoom(isFlv: boolean) {
+function joinRoom(data: { roomId: number; isFlv: boolean }) {
   router.push({
     name: routerName.pull,
-    params: { roomId: currentLiveRoom.value?.live_room_id },
+    params: { roomId: data.roomId },
     query: {
-      liveType: isFlv ? liveTypeEnum.srsFlvPull : liveTypeEnum.srsHlsPull,
+      liveType: data.isFlv ? liveTypeEnum.srsFlvPull : liveTypeEnum.srsHlsPull,
     },
   });
 }
@@ -387,14 +397,14 @@ function joinRoom(isFlv: boolean) {
 
           .btn {
             padding: 14px 26px;
-            border: 2px solid rgba($color: papayawhip, $alpha: 0.5);
+            border: 2px solid rgba($color: $theme-color-gold, $alpha: 0.5);
             border-radius: 6px;
             background-color: rgba(0, 0, 0, 0.3);
-            color: papayawhip;
+            color: $theme-color-gold;
             font-size: 16px;
             cursor: pointer;
             &:hover {
-              background-color: rgba($color: papayawhip, $alpha: 0.5);
+              background-color: $theme-color-gold;
               color: white;
             }
             &.webrtc {
@@ -441,7 +451,7 @@ function joinRoom(isFlv: boolean) {
               bottom: 0;
               left: 0;
               z-index: 1;
-              border: 2px solid papayawhip;
+              border: 2px solid $theme-color-gold;
               border-radius: 4px;
             }
             .triangle {
@@ -450,7 +460,7 @@ function joinRoom(isFlv: boolean) {
               left: 0;
               display: inline-block;
               border: 5px solid transparent;
-              border-right-color: papayawhip;
+              border-right-color: $theme-color-gold;
               transform: translate(-100%, -50%);
             }
             &.active {

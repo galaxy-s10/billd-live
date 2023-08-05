@@ -15,8 +15,8 @@ dependencies:
     specifier: ^1.2.1
     version: 1.3.4
   billd-html-webpack-plugin:
-    specifier: ^1.0.1
-    version: 1.0.1(@types/node@18.15.3)(esbuild@0.15.18)(sass@1.59.3)(terser@5.16.6)(webpack-cli@4.10.0)
+    specifier: ^1.0.4
+    version: 1.0.4(@types/node@18.15.3)(esbuild@0.15.18)(sass@1.59.3)(terser@5.16.6)(webpack-cli@4.10.0)
   billd-scss:
     specifier: ^0.0.7
     version: 0.0.7
@@ -56,6 +56,9 @@ dependencies:
   pinia:
     specifier: ^2.0.33
     version: 2.0.33(typescript@4.9.5)(vue@3.2.47)
+  pinia-plugin-persistedstate:
+    specifier: ^3.2.0
+    version: 3.2.0(pinia@2.0.33)
   qrcode:
     specifier: ^1.5.3
     version: 1.5.3
@@ -3313,8 +3316,8 @@ packages:
     resolution: {integrity: sha512-vyL2OymJxmarO8gxMr0mhChsO9QGwhynfuu4+MHTAW6czfq9humCB7rKpUjDd9YUiDPU4mzpyupFSvOClAwbmQ==}
     dev: true
 
-  /billd-html-webpack-plugin@1.0.1(@types/node@18.15.3)(esbuild@0.15.18)(sass@1.59.3)(terser@5.16.6)(webpack-cli@4.10.0):
-    resolution: {integrity: sha512-ktyHU31TP6VUvCYjy/HdzA6PlYs72VGTHx6Zd8p+cQba7M+pdR5y8lZKQe1JDYf/h1R7TnxrmmiU/tSsC6nLOg==}
+  /billd-html-webpack-plugin@1.0.4(@types/node@18.15.3)(esbuild@0.15.18)(sass@1.59.3)(terser@5.16.6)(webpack-cli@4.10.0):
+    resolution: {integrity: sha512-AMfNC14Ynu7Cs4+xsRFAROkHqDlhKD23KBdMSxueCAmW8/GxBOqUPrjO9r7nBhbL0MUP2lB0nOT5tPDHuUlSeQ==}
     requiresBuild: true
     dependencies:
       vite: 4.2.0(@types/node@18.15.3)(sass@1.59.3)(terser@5.16.6)
@@ -3490,7 +3493,7 @@ packages:
     resolution: {integrity: sha512-gxGWBrTT1JuMx6R+o5PTXMmUnhnVzLQ9SNutD4YqKtI6ap897t3tKECYla6gCWEkplXnlNybEkZg9GEGxKFCgw==}
     dependencies:
       pascal-case: 3.1.2
-      tslib: 2.5.0
+      tslib: 2.6.1
     dev: true
 
   /camelcase-keys@6.2.2:
@@ -7625,7 +7628,7 @@ packages:
     resolution: {integrity: sha512-RXlj7zCYokReqWpOPH9oYivUzLYZ5vAPIfEmCTNViosC78F8F0H9y7T7gG2M39ymgutxF5gcFEsyZQSph9Bp3A==}
     dependencies:
       dot-case: 3.0.4
-      tslib: 2.5.0
+      tslib: 2.6.1
     dev: true
 
   /parent-module@1.0.1:
@@ -7735,6 +7738,14 @@ packages:
     resolution: {integrity: sha512-C3FsVNH1udSEX48gGX1xfvwTWfsYWj5U+8/uK15BGzIGrKoUpghX8hWZwa/OFnakBiiVNmBvemTJR5mcy7iPcg==}
     engines: {node: '>=4'}
     dev: true
+
+  /pinia-plugin-persistedstate@3.2.0(pinia@2.0.33):
+    resolution: {integrity: sha512-tZbNGf2vjAQcIm7alK40sE51Qu/m9oWr+rEgNm/2AWr1huFxj72CjvpQcIQzMknDBJEkQznCLAGtJTIcLKrKdw==}
+    peerDependencies:
+      pinia: ^2.0.0
+    dependencies:
+      pinia: 2.0.33(typescript@4.9.5)(vue@3.2.47)
+    dev: false
 
   /pinia@2.0.33(typescript@4.9.5)(vue@3.2.47):
     resolution: {integrity: sha512-HOj1yVV2itw6rNIrR2f7+MirGNxhORjrULL8GWgRwXsGSvEqIQ+SE0MYt6cwtpegzCda3i+rVTZM+AM7CG+kRg==}
@@ -8863,7 +8874,7 @@ packages:
       fs-extra: 10.1.0
       resolve: 1.22.1
       rollup: 2.79.1
-      tslib: 2.5.0
+      tslib: 2.6.1
       typescript: 4.9.5
     dev: false
 
@@ -8909,7 +8920,7 @@ packages:
   /rxjs@7.8.0:
     resolution: {integrity: sha512-F2+gxDshqmIub1KdvZkaEfGDwLNpPvk9Fs6LD/MyQxNgMds/WH9OdDDXOmxUZpME+iSK3rQCctkL0DYyytUqMg==}
     dependencies:
-      tslib: 2.5.0
+      tslib: 2.6.1
     dev: true
 
   /safe-buffer@5.1.2:
@@ -9749,9 +9760,6 @@ packages:
   /tslib@1.14.1:
     resolution: {integrity: sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==}
     dev: true
-
-  /tslib@2.5.0:
-    resolution: {integrity: sha512-336iVw3rtn2BUK7ORdIAHTyxHGRIHVReokCR3XjbckJMK7ms8FysBfhLR8IXnAgy7T0PTPNBWKiH514FOW/WSg==}
 
   /tslib@2.6.1:
     resolution: {integrity: sha512-t0hLfiEKfMUoqhG+U1oid7Pva4bbDPHYfJNiB7BiIjRkj1pyC++4N3huJfqY6aRH6VTB0rvtzQwjM4K6qpfOig==}

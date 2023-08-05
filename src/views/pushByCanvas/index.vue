@@ -1,5 +1,10 @@
 <template>
   <div class="push-wrap">
+    <input
+      type="file"
+      @change="ddddd"
+    />
+    <div @click="aaaa">读取</div>
     <div
       ref="topRef"
       class="left"
@@ -14,7 +19,9 @@
           ref="pushCanvasRef"
         ></canvas>
         <div
-          v-if="!appStore.allTrack || appStore.allTrack.length <= 0"
+          v-if="
+            appCacheStore.allTrack.filter((item) => !item.hidden).length <= 0
+          "
           class="add-wrap"
         >
           <n-space>
@@ -133,18 +140,35 @@
         <div class="title">素材列表</div>
         <div class="list">
           <div
-            v-for="(item, index) in appStore.allTrack"
+            v-for="(item, index) in appCacheStore.allTrack.filter(
+              (item) => !item.hidden
+            )"
             :key="index"
             class="item"
           >
             <span class="name">
-              ({{ mediaTypeEnumMap[item.type] }}){{ item.mediaName }}
+              ({{ mediaTypeEnumMap[item.type] }}-{{
+                item.audio === 1 ? '音频' : '视频'
+              }}){{ item.mediaName }}
             </span>
-            <div
-              class="del"
-              @click="handleDelTrack(item)"
-            >
-              x
+            <div class="control">
+              <div class="control-item">
+                <n-icon
+                  size="16"
+                  @click="handleChangeMuted(item)"
+                >
+                  <VolumeMuteOutline v-if="item.muted"></VolumeMuteOutline>
+                  <VolumeHighOutline v-else></VolumeHighOutline>
+                </n-icon>
+              </div>
+              <div class="control-item">
+                <n-icon
+                  size="16"
+                  @click="handleDelTrack(item)"
+                >
+                  <Close></Close>
+                </n-icon>
+              </div>
             </div>
           </div>
         </div>
@@ -225,10 +249,15 @@
       @close="showMediaModalCpt = false"
       @ok="addMediaOk"
     ></MediaModalCpt>
+    <OpenMicophoneTipCpt
+      v-if="showOpenMicophoneTipCpt"
+      @close="showOpenMicophoneTipCpt = false"
+    ></OpenMicophoneTipCpt>
   </div>
 </template>
 
 <script lang="ts" setup>
+import { Close, VolumeHighOutline, VolumeMuteOutline } from '@vicons/ionicons5';
 import { fabric } from 'fabric';
 import { UploadFileInfo } from 'naive-ui';
 import { NODE_ENV } from 'script/constant';
@@ -238,17 +267,20 @@ import * as workerTimers from 'worker-timers';
 
 import { usePush } from '@/hooks/use-push';
 import { DanmuMsgTypeEnum, MediaTypeEnum, liveTypeEnum } from '@/interface';
-import { AppRootState, useAppStore } from '@/store/app';
+import { AppRootState } from '@/store/app';
+import { useAppCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
 import { createVideo, generateBase64, getRandomEnglishString } from '@/utils';
 
 import MediaModalCpt from './mediaModal/index.vue';
+import OpenMicophoneTipCpt from './openMicophoneTip/index.vue';
 import SelectMediaModalCpt from './selectMediaModal/index.vue';
 
 const route = useRoute();
 const userStore = useUserStore();
-const appStore = useAppStore();
+const appCacheStore = useAppCacheStore();
 const currentMediaType = ref(MediaTypeEnum.camera);
+const showOpenMicophoneTipCpt = ref(false);
 const showSelectMediaModalCpt = ref(false);
 const showMediaModalCpt = ref(false);
 const topRef = ref<HTMLDivElement>();
@@ -304,6 +336,7 @@ const mediaTypeEnumMap = {
   [MediaTypeEnum.screen]: '窗口',
   [MediaTypeEnum.img]: '图片',
   [MediaTypeEnum.txt]: '文字',
+  [MediaTypeEnum.media]: '视频',
 };
 
 watch(
@@ -338,26 +371,121 @@ function onPageVisibility() {
   }
 }
 
-function handleStartLive() {
-  lastCoverImg.value = generateBase64(pushCanvasRef.value!);
+function initUserMedia() {
+  navigator.mediaDevices
+    .getUserMedia({
+      video: true,
+      audio: false,
+    })
+    .then(() => {
+      console.log('初始化获取摄像头成功');
+    })
+    .catch(() => {
+      console.log('初始化获取摄像头失败');
+    })
+    .finally(() => {
+      navigator.mediaDevices
+        .getUserMedia({
+          video: false,
+          audio: true,
+        })
+        .then(() => {
+          console.log('初始化获取麦克风成功');
+        })
+        .catch(() => {
+          console.log('初始化获取麦克风失败');
+          showOpenMicophoneTipCpt.value = true;
+        });
+    });
+}
 
-  const allAudioTrack = appStore.allTrack.filter((item) => item.audio === 1);
-  if (allAudioTrack.length) {
-    audioCtx.value = new AudioContext();
+// 处理空音频轨
+function initNullAudio() {
+  // 创建一个AudioContext实例
+  const audioContext = new window.AudioContext();
+
+  // 创建一个GainNode实例来控制音频的音量
+  const gainNode = audioContext.createGain();
+
+  // 创建一个空的音频缓存
+  const buffer = audioContext.createBuffer(
+    2,
+    audioContext.sampleRate * 3,
+    audioContext.sampleRate
+  );
+
+  // 创建一个用于播放音频的AudioBufferSourceNode
+  const source = audioContext.createBufferSource();
+  source.buffer = buffer;
+
+  // 将源连接到gain node，再连接到输出
+  source.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+  const destination = audioContext.createMediaStreamDestination();
+
+  const audioTrack = {
+    id: getRandomEnglishString(8),
+    audio: 1,
+    video: 2,
+    mediaName: '',
+    type: MediaTypeEnum.webAudio,
+    track: destination.stream.getAudioTracks()[0],
+    trackid: destination.stream.getAudioTracks()[0].id,
+    stream: destination.stream,
+    streamid: destination.stream.id,
+    hidden: true,
+  };
+  appCacheStore.setAllTrack([...appCacheStore.allTrack, audioTrack]);
+  // const vel = createVideo({});
+  // vel.srcObject = destination.stream;
+  // document.body.appendChild(vel);
+}
+let streamTmp: MediaStream;
+let vel;
+
+function handleMixedAudio() {
+  const allAudioTrack = appCacheStore.allTrack.filter(
+    (item) => item.audio === 1
+  );
+  if (allAudioTrack.length && audioCtx.value) {
     const gainNode = audioCtx.value.createGain();
     allAudioTrack.forEach((item) => {
       if (!audioCtx.value) return;
-      // const destination = audioCtx.value.createMediaStreamDestination();
       const audioInput = audioCtx.value.createMediaStreamSource(item.stream!);
-      // gainNode.connect(destination);
       audioInput.connect(gainNode);
+      console.log('混流', item.stream?.id, item.stream);
     });
+    if (streamTmp) {
+      const destination = audioCtx.value.createMediaStreamDestination();
+      streamTmp.addTrack(destination.stream.getAudioTracks()[0]);
+      gainNode.connect(destination);
+      const mixedStream = new MediaStream();
+      mixedStream.addTrack(destination.stream.getAudioTracks()[0]);
+      mixedStream.addTrack(canvasVideoStream.value!.getVideoTracks()[0]);
+      canvasVideoStream.value = mixedStream;
+      console.log('替换了');
+      return;
+    }
     const destination = audioCtx.value.createMediaStreamDestination();
-    // video.onloadeddata = () => {
+    streamTmp = destination.stream;
     // @ts-ignore
     canvasVideoStream.value?.addTrack(destination.stream.getAudioTracks()[0]);
-    // video.srcObject = destination.stream;
     gainNode.connect(destination);
+    vel = createVideo({});
+    vel.srcObject = destination.stream;
+    document.body.appendChild(vel);
+  }
+}
+
+function handleStartLive() {
+  lastCoverImg.value = generateBase64(pushCanvasRef.value!);
+
+  const allAudioTrack = appCacheStore.allTrack.filter(
+    (item) => item.audio === 1
+  );
+  if (allAudioTrack.length) {
+    audioCtx.value = new AudioContext();
+    handleMixedAudio();
   }
   startLive();
 }
@@ -485,7 +613,7 @@ function changeCanvasAttr({
     // fabricCanvas.value.forEachObject((canvas) => {
     //   canvas.setCoords();
     // });
-    appStore.allTrack.forEach((item) => {
+    appCacheStore.allTrack.forEach((item) => {
       if (item.canvasDom) {
         // 分辨率变小了，将图片变小
         if (newHeight < oldHeight) {
@@ -562,6 +690,11 @@ function initCanvas() {
 }
 
 onMounted(() => {
+  setTimeout(() => {
+    scrollTo(0, 0);
+  }, 100);
+  initNullAudio();
+  initUserMedia();
   initCanvas();
   document.addEventListener('visibilitychange', onPageVisibility);
 });
@@ -582,6 +715,7 @@ async function addMediaOk(val: {
   mediaName: string;
   txtInfo?: { txt: string; color: string };
   imgInfo?: UploadFileInfo[];
+  mediaInfo?: UploadFileInfo[];
 }) {
   showMediaModalCpt.value = false;
   if (val.type === MediaTypeEnum.screen) {
@@ -600,9 +734,9 @@ async function addMediaOk(val: {
       mediaName: val.mediaName,
       type: MediaTypeEnum.screen,
       track: event.getVideoTracks()[0],
+      trackid: event.getVideoTracks()[0].id,
       stream: event,
       streamid: event.id,
-      trackid: event.getVideoTracks()[0].id,
     };
 
     const { canvasDom, initScale } = await autoCreateVideo({
@@ -622,15 +756,20 @@ async function addMediaOk(val: {
         mediaName: val.mediaName,
         type: MediaTypeEnum.screen,
         track: event.getAudioTracks()[0],
+        trackid: event.getAudioTracks()[0].id,
         stream: event,
         streamid: event.id,
-        trackid: event.getAudioTracks()[0].id,
       };
-      appStore.setAllTrack([...appStore.allTrack, videoTrack, audioTrack]);
+      appCacheStore.setAllTrack([
+        ...appCacheStore.allTrack,
+        videoTrack,
+        audioTrack,
+      ]);
+      handleMixedAudio();
       addTrack(videoTrack);
       addTrack(audioTrack);
     } else {
-      appStore.setAllTrack([...appStore.allTrack, videoTrack]);
+      appCacheStore.setAllTrack([...appCacheStore.allTrack, videoTrack]);
       addTrack(videoTrack);
     }
 
@@ -649,9 +788,9 @@ async function addMediaOk(val: {
       mediaName: val.mediaName,
       type: MediaTypeEnum.camera,
       track: event.getVideoTracks()[0],
+      trackid: event.getVideoTracks()[0].id,
       stream: event,
       streamid: event.id,
-      trackid: event.getVideoTracks()[0].id,
     };
     const { canvasDom, initScale } = await autoCreateVideo({
       stream: event,
@@ -661,7 +800,7 @@ async function addMediaOk(val: {
     // @ts-ignore
     videoTrack.initScale = initScale;
 
-    appStore.setAllTrack([...appStore.allTrack, videoTrack]);
+    appCacheStore.setAllTrack([...appCacheStore.allTrack, videoTrack]);
     addTrack(videoTrack);
     console.log('获取摄像头成功');
   } else if (val.type === MediaTypeEnum.microphone) {
@@ -676,11 +815,12 @@ async function addMediaOk(val: {
       mediaName: val.mediaName,
       type: MediaTypeEnum.microphone,
       track: event.getAudioTracks()[0],
+      trackid: event.getAudioTracks()[0].id,
       stream: event,
       streamid: event.id,
-      trackid: event.getAudioTracks()[0].id,
     };
-    appStore.setAllTrack([...appStore.allTrack, audioTrack]);
+    appCacheStore.setAllTrack([...appCacheStore.allTrack, audioTrack]);
+    handleMixedAudio();
     addTrack(audioTrack);
 
     console.log('获取麦克风成功');
@@ -688,13 +828,13 @@ async function addMediaOk(val: {
     const txtTrack = {
       id: getRandomEnglishString(8),
       audio: 2,
-      video: 2,
+      video: 1,
       mediaName: val.mediaName,
       type: MediaTypeEnum.txt,
       track: undefined,
+      trackid: undefined,
       stream: undefined,
       streamid: undefined,
-      trackid: undefined,
     };
     if (fabricCanvas.value) {
       const dom = markRaw(
@@ -710,7 +850,7 @@ async function addMediaOk(val: {
     }
 
     // @ts-ignore
-    appStore.setAllTrack([...appStore.allTrack, txtTrack]);
+    appCacheStore.setAllTrack([...appCacheStore.allTrack, txtTrack]);
     addTrack(txtTrack);
 
     console.log('获取文字成功', fabricCanvas.value);
@@ -718,13 +858,13 @@ async function addMediaOk(val: {
     const imgTrack = {
       id: getRandomEnglishString(8),
       audio: 2,
-      video: 2,
+      video: 1,
       mediaName: val.mediaName,
       type: MediaTypeEnum.img,
       track: undefined,
+      trackid: undefined,
       stream: undefined,
       streamid: undefined,
-      trackid: undefined,
     };
 
     if (fabricCanvas.value) {
@@ -772,13 +912,84 @@ async function addMediaOk(val: {
     }
 
     // @ts-ignore
-    appStore.setAllTrack([...appStore.allTrack, imgTrack]);
+    appCacheStore.setAllTrack([...appCacheStore.allTrack, imgTrack]);
     addTrack(imgTrack);
 
     console.log('获取图片成功', fabricCanvas.value);
+  } else if (val.type === MediaTypeEnum.media) {
+    const mediaVideoTrack = {
+      id: getRandomEnglishString(8),
+      audio: 2,
+      video: 1,
+      mediaName: val.mediaName,
+      type: MediaTypeEnum.media,
+      track: undefined,
+      trackid: undefined,
+      stream: undefined,
+      streamid: undefined,
+    };
+    if (fabricCanvas.value) {
+      if (!val.mediaInfo) return;
+      const file = val.mediaInfo[0].file!;
+      console.log(file);
+      console.log(file.name);
+      const url = URL.createObjectURL(file);
+      console.log(url);
+      const videoEl = createVideo({});
+      videoEl.src = url;
+      videoEl.muted = false;
+      videoEl.style.width = `1px`;
+      videoEl.style.height = `1px`;
+      videoEl.style.position = 'fixed';
+      videoEl.style.bottom = '0';
+      videoEl.style.right = '0';
+      videoEl.style.opacity = '0';
+      videoEl.style.pointerEvents = 'none';
+      document.body.appendChild(videoEl);
+      const videoRes = await new Promise<HTMLVideoElement>((resolve) => {
+        videoEl.onloadedmetadata = () => {
+          resolve(videoEl);
+        };
+      });
+      // @ts-ignore
+      const stream = videoRes.captureStream();
+      const { canvasDom, initScale } = await autoCreateVideo({
+        stream,
+      });
+      // @ts-ignore
+      mediaVideoTrack.canvasDom = canvasDom;
+      // @ts-ignore
+      mediaVideoTrack.initScale = initScale;
+      console.log('视频有音频', stream.getAudioTracks()[0]);
+      if (stream.getAudioTracks()[0]) {
+        const audioTrack = {
+          id: getRandomEnglishString(8),
+          audio: 1,
+          video: 2,
+          mediaName: val.mediaName,
+          type: MediaTypeEnum.media,
+          track: stream.getAudioTracks()[0],
+          trackid: stream.getAudioTracks()[0].id,
+          stream,
+          streamid: stream.id,
+        };
+        // @ts-ignore
+        appCacheStore.setAllTrack([...appCacheStore.allTrack, audioTrack]);
+        handleMixedAudio();
+        addTrack(audioTrack);
+      }
+    }
+    // @ts-ignore
+    appCacheStore.setAllTrack([...appCacheStore.allTrack, mediaVideoTrack]);
+    addTrack(mediaVideoTrack);
+
+    console.log('获取视频成功', fabricCanvas.value);
   }
+
   canvasVideoStream.value = pushCanvasRef.value!.captureStream();
 }
+
+function handleChangeMuted(item: AppRootState['allTrack'][0]) {}
 
 function handleDelTrack(item: AppRootState['allTrack'][0]) {
   console.log('handleDelTrack', item);
@@ -786,9 +997,134 @@ function handleDelTrack(item: AppRootState['allTrack'][0]) {
     // @ts-ignore
     fabricCanvas.value?.remove(item.canvasDom);
   }
-  const res = appStore.allTrack.filter((iten) => iten.id !== item.id);
-  appStore.setAllTrack(res);
+  const res = appCacheStore.allTrack.filter((iten) => iten.id !== item.id);
+  appCacheStore.setAllTrack(res);
   delTrack(item);
+}
+
+function aaaa(e) {
+  // @ts-ignore
+  const requestFileSystem =
+    // @ts-ignore
+    window.requestFileSystem || window.webkitRequestFileSystem;
+  // @ts-ignore
+  const directoryEntry = window.directoryEntry || window.webkitDirectoryEntry;
+  function onError(err) {
+    console.log(err);
+  }
+  function onFs(fs) {
+    fs.root.getFile(
+      'myvideo',
+      {},
+      function (fileEntry) {
+        fileEntry.file(function (file) {
+          console.log(file, 777);
+          const url = URL.createObjectURL(file);
+          console.log(url);
+          const videoEl = createVideo({});
+          videoEl.src = url;
+          // videoEl.muted = false;
+          // videoEl.style.width = `1px`;
+          // videoEl.style.height = `1px`;
+          // videoEl.style.position = 'fixed';
+          // videoEl.style.bottom = '0';
+          // videoEl.style.right = '0';
+          // videoEl.style.opacity = '0';
+          // videoEl.style.pointerEvents = 'none';
+          document.body.appendChild(videoEl);
+        }, onError);
+      },
+      onError
+    );
+  }
+
+  // Opening a file system with temporary storage
+  requestFileSystem(
+    // @ts-ignore
+    window.PERSISTENT,
+    1024 * 1024 * 1024 /* 1GB */,
+    onFs,
+    onError
+  );
+}
+function ddddd(e) {
+  const file = e.target.files[0] as File;
+  // @ts-ignore
+  const requestFileSystem =
+    // @ts-ignore
+    window.requestFileSystem || window.webkitRequestFileSystem;
+  // @ts-ignore
+  const directoryEntry = window.directoryEntry || window.webkitDirectoryEntry;
+  function onError(err) {
+    console.log(err);
+  }
+  function onFs(fs) {
+    // 创建文件
+    fs.root.getFile(
+      'myvideo',
+      { create: true },
+      function (fileEntry) {
+        // 创建文件写入流
+        fileEntry.createWriter(function (fileWriter) {
+          fileWriter.onwriteend = () => {
+            // 完成后关闭文件
+            fileWriter.abort();
+          };
+          // 写入文件内容
+          fileWriter.write(file);
+          console.log('写入文件内容');
+          // const content = new Blob([fileContent]);
+          // fileWriter.write(content);
+        });
+      },
+      () => {
+        console.log('err');
+      }
+    );
+    // fs.root.getDirectory(
+    //   'Documents',
+    //   { create: true },
+    //   function (directoryEntry) {
+    //     console.log(directoryEntry);
+    //     // directoryEntry.isFile === false
+    //     // directoryEntry.isDirectory === true
+    //     // directoryEntry.name === 'Documents'
+    //     // directoryEntry.fullPath === '/Documents'
+    //   },
+    //   onError
+    // );
+  }
+
+  // Opening a file system with temporary storage
+  requestFileSystem(
+    // @ts-ignore
+    window.PERSISTENT,
+    1024 * 1024 * 1024 /* 1GB */,
+    onFs,
+    onError
+  );
+}
+
+function readDirectory(directory) {
+  const dirReader = directory.createReader();
+  let entries = [];
+
+  const getEntries = () => {
+    dirReader.readEntries(
+      (results) => {
+        if (results.length) {
+          entries = entries.concat(toArray(results));
+          getEntries();
+        }
+      },
+      (error) => {
+        /* handle error — error is a FileError object */
+      }
+    );
+  };
+
+  getEntries();
+  return entries;
 }
 
 function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
@@ -935,15 +1271,21 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
         align-items: center;
         justify-content: space-between;
         margin: 5px 0;
-        font-size: 12px;
+        font-size: 14px;
         &:hover {
-          .del {
-            display: block;
+          .control {
+            display: flex;
+            align-items: center;
           }
         }
-        .del {
+        .control {
           display: none;
-          cursor: pointer;
+          .control-item {
+            cursor: pointer;
+            &:not(:last-child) {
+              margin-right: 6px;
+            }
+          }
         }
       }
       .bottom {

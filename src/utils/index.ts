@@ -99,7 +99,7 @@ export function videoToCanvas(data: {
     cancelAnimationFrame(timer);
   }
 
-  // document.body.appendChild(videoEl);
+  document.body.appendChild(videoEl);
 
   drawCanvas();
 

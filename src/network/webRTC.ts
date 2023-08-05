@@ -2,7 +2,8 @@ import { getRandomString } from 'billd-utils';
 import browserTool from 'browser-tool';
 
 import { ICandidate, MediaTypeEnum } from '@/interface';
-import { AppRootState, useAppStore } from '@/store/app';
+import { AppRootState } from '@/store/app';
+import { useAppCacheStore } from '@/store/cache';
 import { useNetworkStore } from '@/store/network';
 
 import { WsMsgTypeEnum } from './webSocket';
@@ -85,24 +86,24 @@ export class WebRTCClass {
     console.log('原本旧track的视频轨', this.localStream?.getVideoTracks());
     console.log('原本旧track的音频轨', this.localStream?.getAudioTracks());
 
-    const appStore = useAppStore();
+    const appCacheStore = useAppCacheStore();
     if (isCb) {
       stream.onremovetrack = (event) => {
         console.log('onremovetrack事件', event);
-        const res = appStore.allTrack.filter((info) => {
+        const res = appCacheStore.allTrack.filter((info) => {
           if (info.track?.id === event.track.id) {
             return false;
           }
           return true;
         });
-        appStore.setAllTrack(res);
+        appCacheStore.setAllTrack(res);
       };
     }
 
     const addTrack: AppRootState['allTrack'] = [];
 
     this.localStream?.getVideoTracks().forEach((track) => {
-      if (!appStore.allTrack.find((info) => info.track?.id === track.id)) {
+      if (!appCacheStore.allTrack.find((info) => info.track?.id === track.id)) {
         addTrack.push({
           id: getRandomString(8),
           track,
@@ -117,7 +118,7 @@ export class WebRTCClass {
       }
     });
     this.localStream?.getAudioTracks().forEach((track) => {
-      if (!appStore.allTrack.find((info) => info.track?.id === track.id)) {
+      if (!appCacheStore.allTrack.find((info) => info.track?.id === track.id)) {
         addTrack.push({
           id: getRandomString(8),
           track,
@@ -132,7 +133,7 @@ export class WebRTCClass {
       }
     });
     stream.getVideoTracks().forEach((track) => {
-      if (!appStore.allTrack.find((info) => info.track?.id === track.id)) {
+      if (!appCacheStore.allTrack.find((info) => info.track?.id === track.id)) {
         addTrack.push({
           id: getRandomString(8),
           track,
@@ -147,7 +148,7 @@ export class WebRTCClass {
       }
     });
     stream.getAudioTracks().forEach((track) => {
-      if (!appStore.allTrack.find((info) => info.track?.id === track.id)) {
+      if (!appCacheStore.allTrack.find((info) => info.track?.id === track.id)) {
         addTrack.push({
           id: getRandomString(8),
           track,
@@ -162,7 +163,7 @@ export class WebRTCClass {
       }
     });
     if (addTrack.length) {
-      appStore.setAllTrack([...appStore.allTrack, ...addTrack]);
+      appCacheStore.setAllTrack([...appCacheStore.allTrack, ...addTrack]);
     }
     this.localStream = stream;
 

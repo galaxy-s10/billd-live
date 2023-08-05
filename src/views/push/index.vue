@@ -13,10 +13,10 @@
           <div
             ref="localVideoRef"
             class="media-list"
-            :class="{ item: appStore.allTrack.length > 1 }"
+            :class="{ item: appCacheStore.allTrack.length > 1 }"
           ></div>
           <div
-            v-if="!appStore.allTrack || appStore.allTrack.length <= 0"
+            v-if="!appCacheStore.allTrack || appCacheStore.allTrack.length <= 0"
             class="add-wrap"
           >
             <n-space>
@@ -160,7 +160,7 @@
         <div class="title">素材列表</div>
         <div class="list">
           <div
-            v-for="(item, index) in appStore.allTrack"
+            v-for="(item, index) in appCacheStore.allTrack"
             :key="index"
             class="item"
           >
@@ -264,6 +264,7 @@ import { useRoute } from 'vue-router';
 import { usePush } from '@/hooks/use-push';
 import { DanmuMsgTypeEnum, MediaTypeEnum, liveTypeEnum } from '@/interface';
 import { AppRootState, useAppStore } from '@/store/app';
+import { useAppCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
 
 import MediaModalCpt from './mediaModal/index.vue';
@@ -272,6 +273,7 @@ import SelectMediaModalCpt from './selectMediaModal/index.vue';
 const route = useRoute();
 const userStore = useUserStore();
 const appStore = useAppStore();
+const appCacheStore = useAppCacheStore();
 const currentMediaType = ref(MediaTypeEnum.camera);
 const showSelectMediaModalCpt = ref(false);
 const showMediaModalCpt = ref(false);
@@ -357,15 +359,15 @@ async function addMediaOk(val: {
       mediaName: val.mediaName,
       type: MediaTypeEnum.screen,
       track: event.getVideoTracks()[0],
+      trackid: event.getVideoTracks()[0].id,
       stream: event,
       streamid: event.id,
-      trackid: event.getVideoTracks()[0].id,
     };
     const audio = event.getAudioTracks();
     if (audio.length) {
       if (
         isSRS &&
-        appStore.allTrack.filter((item) => item.audio === 1).length >= 1
+        appCacheStore.allTrack.filter((item) => item.audio === 1).length >= 1
       ) {
         window.$message.error('srs模式最多只能有一个音频');
         return;
@@ -377,22 +379,26 @@ async function addMediaOk(val: {
         mediaName: val.mediaName,
         type: MediaTypeEnum.screen,
         track: event.getAudioTracks()[0],
+        trackid: event.getAudioTracks()[0].id,
         stream: event,
         streamid: event.id,
-        trackid: event.getAudioTracks()[0].id,
       };
-      appStore.setAllTrack([...appStore.allTrack, videoTrack, audioTrack]);
+      appCacheStore.setAllTrack([
+        ...appCacheStore.allTrack,
+        videoTrack,
+        audioTrack,
+      ]);
       addTrack(videoTrack);
       addTrack(audioTrack);
     } else {
       if (
         isSRS &&
-        appStore.allTrack.filter((item) => item.video === 1).length >= 1
+        appCacheStore.allTrack.filter((item) => item.video === 1).length >= 1
       ) {
         window.$message.error('srs模式最多只能有一个视频');
         return;
       }
-      appStore.setAllTrack([...appStore.allTrack, videoTrack]);
+      appCacheStore.setAllTrack([...appCacheStore.allTrack, videoTrack]);
       addTrack(videoTrack);
     }
 
@@ -408,7 +414,7 @@ async function addMediaOk(val: {
     });
     if (
       isSRS &&
-      appStore.allTrack.filter((item) => item.video === 1).length >= 1
+      appCacheStore.allTrack.filter((item) => item.video === 1).length >= 1
     ) {
       window.$message.error('srs模式最多只能有一个视频');
       return;
@@ -420,11 +426,11 @@ async function addMediaOk(val: {
       mediaName: val.mediaName,
       type: MediaTypeEnum.camera,
       track: event.getVideoTracks()[0],
+      trackid: event.getVideoTracks()[0].id,
       stream: event,
       streamid: event.id,
-      trackid: event.getVideoTracks()[0].id,
     };
-    appStore.setAllTrack([...appStore.allTrack, track]);
+    appCacheStore.setAllTrack([...appCacheStore.allTrack, track]);
     addTrack(track);
     console.log('获取摄像头成功');
   } else if (val.type === MediaTypeEnum.microphone) {
@@ -434,7 +440,7 @@ async function addMediaOk(val: {
     });
     if (
       isSRS &&
-      appStore.allTrack.filter((item) => item.audio === 1).length >= 1
+      appCacheStore.allTrack.filter((item) => item.audio === 1).length >= 1
     ) {
       window.$message.error('srs模式最多只能有一个音频');
       return;
@@ -446,11 +452,11 @@ async function addMediaOk(val: {
       mediaName: val.mediaName,
       type: MediaTypeEnum.microphone,
       track: event.getAudioTracks()[0],
+      trackid: event.getAudioTracks()[0].id,
       stream: event,
       streamid: event.id,
-      trackid: event.getAudioTracks()[0].id,
     };
-    appStore.setAllTrack([...appStore.allTrack, track]);
+    appCacheStore.setAllTrack([...appCacheStore.allTrack, track]);
     addTrack(track);
     console.log('获取麦克风成功');
   }
@@ -458,8 +464,8 @@ async function addMediaOk(val: {
 
 function handleDelTrack(item: AppRootState['allTrack'][0]) {
   console.log('handleDelTrack', item);
-  const res = appStore.allTrack.filter((iten) => iten.id !== item.id);
-  appStore.setAllTrack(res);
+  const res = appCacheStore.allTrack.filter((iten) => iten.id !== item.id);
+  appCacheStore.setAllTrack(res);
   delTrack(item);
 }
 

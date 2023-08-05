@@ -272,7 +272,6 @@ export function usePull({
   }
 
   function sendDanmu() {
-    startFlvPlay({ flvurl: flvurl.value });
     if (!danmuStr.value.trim().length) {
       window.$message.warning('请输入弹幕内容！');
       return;

@@ -154,9 +154,9 @@ export function useHlsPlay() {
             console.log('hls-play');
             // console.log(hlsPlayer.value?.videoHeight()); // 获取到的是0！
           });
-          hlsPlayer.value?.on('playing', (event) => {
+          hlsPlayer.value?.on('playing', () => {
             console.log('hls-playing');
-            // document.body.appendChild(event.target);
+            setMuted(appStore.muted);
             // console.log(hlsPlayer.value?.videoHeight()); // 获取到的是正确的！
             const childNodes = hlsPlayer.value?.el().childNodes;
             if (childNodes) {
