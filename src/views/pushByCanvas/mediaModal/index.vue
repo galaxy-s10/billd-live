@@ -91,11 +91,11 @@ import { InputInst, UploadFileInfo } from 'naive-ui';
 import { defineEmits, defineProps, onMounted, ref, withDefaults } from 'vue';
 
 import { MediaTypeEnum } from '@/interface';
-import { useAppCacheStore } from '@/store/cache';
+import { useAppStore } from '@/store/app';
 
 const inputInstRef = ref<InputInst | null>(null);
 const mediaName = ref('');
-const appCacheStore = useAppCacheStore();
+const appStore = useAppStore();
 
 const props = withDefaults(
   defineProps<{
@@ -180,9 +180,8 @@ async function init() {
       type: MediaTypeEnum.microphone,
     };
     mediaName.value = `麦克风-${
-      appCacheStore.allTrack.filter(
-        (item) => item.type === MediaTypeEnum.microphone
-      ).length + 1
+      appStore.allTrack.filter((item) => item.type === MediaTypeEnum.microphone)
+        .length + 1
     }`;
   } else if (props.mediaType === MediaTypeEnum.camera) {
     res.forEach((item) => {
@@ -199,9 +198,8 @@ async function init() {
       type: MediaTypeEnum.camera,
     };
     mediaName.value = `摄像头-${
-      appCacheStore.allTrack.filter(
-        (item) => item.type === MediaTypeEnum.camera
-      ).length + 1
+      appStore.allTrack.filter((item) => item.type === MediaTypeEnum.camera)
+        .length + 1
     }`;
   } else if (props.mediaType === MediaTypeEnum.screen) {
     currentInput.value = {
@@ -209,9 +207,8 @@ async function init() {
       type: MediaTypeEnum.screen,
     };
     mediaName.value = `窗口-${
-      appCacheStore.allTrack.filter(
-        (item) => item.type === MediaTypeEnum.screen
-      ).length + 1
+      appStore.allTrack.filter((item) => item.type === MediaTypeEnum.screen)
+        .length + 1
     }`;
   } else if (props.mediaType === MediaTypeEnum.txt) {
     currentInput.value = {
@@ -220,7 +217,7 @@ async function init() {
     };
     txtInfo.value = { txt: '', color: 'rgba(255,215,0,1)' };
     mediaName.value = `文字-${
-      appCacheStore.allTrack.filter((item) => item.type === MediaTypeEnum.txt)
+      appStore.allTrack.filter((item) => item.type === MediaTypeEnum.txt)
         .length + 1
     }`;
     setTimeout(() => {
@@ -233,7 +230,7 @@ async function init() {
     };
     imgInfo.value = [];
     mediaName.value = `图片-${
-      appCacheStore.allTrack.filter((item) => item.type === MediaTypeEnum.img)
+      appStore.allTrack.filter((item) => item.type === MediaTypeEnum.img)
         .length + 1
     }`;
   } else if (props.mediaType === MediaTypeEnum.media) {
@@ -243,7 +240,7 @@ async function init() {
     };
     mediaInfo.value = [];
     mediaName.value = `视频-${
-      appCacheStore.allTrack.filter((item) => item.type === MediaTypeEnum.media)
+      appStore.allTrack.filter((item) => item.type === MediaTypeEnum.media)
         .length + 1
     }`;
   }

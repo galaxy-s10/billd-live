@@ -95,17 +95,17 @@ export function usePull({
     const { width, height } = await startFlvPlay({
       flvurl: flvurl.value,
     });
+    const size = { width, height };
     const initCanvas = videoToCanvas({
       videoEl: flvVideoEl.value!,
-      size: {
-        width,
-        height,
-      },
+      size,
     });
     stopDrawingArr.value.push(initCanvas.stopDrawing);
     canvasRef.value!.appendChild(initCanvas.canvas);
     flvPlayer.value!.on(mpegts.Events.MEDIA_INFO, () => {
-      initCanvas.videoEl = flvVideoEl.value!;
+      console.log('数据变了');
+      size.width = flvVideoEl.value!.videoWidth!;
+      size.height = flvVideoEl.value!.videoHeight!;
     });
     videoLoading.value = false;
   }

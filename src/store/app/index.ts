@@ -16,11 +16,15 @@ export type AppRootState = {
     type: MediaTypeEnum;
     track?: MediaStreamTrack;
     stream?: MediaStream;
-    streamid: string;
-    trackid: string;
-    canvasDom?: fabric.Image;
-    initScale?: number;
+    streamid?: string;
+    trackid?: string;
+    canvasDom?: fabric.Image | fabric.Text;
     hidden?: boolean;
+    muted?: boolean;
+    videoEl?: HTMLVideoElement;
+    txtInfo?: { txt: string; color: string };
+    rect?: { top: number; left: number };
+    scaleInfo?: { scaleX: number; scalcY: number };
   }[];
 };
 

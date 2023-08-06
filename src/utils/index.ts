@@ -45,6 +45,7 @@ export const createVideo = ({ muted = true, autoplay = true }) => {
   videoEl.autoplay = autoplay;
   videoEl.muted = muted;
   videoEl.playsInline = true;
+  videoEl.loop = true;
   videoEl.setAttribute('webkit-playsinline', 'true');
   videoEl.setAttribute('x5-video-player-type', 'h5');
   videoEl.setAttribute('x5-video-player-fullscreen', 'true');

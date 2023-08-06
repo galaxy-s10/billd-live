@@ -9,14 +9,13 @@
         class="container"
       >
         <div class="video-wrap">
-          <AudioRoomTip></AudioRoomTip>
           <div
             ref="localVideoRef"
             class="media-list"
-            :class="{ item: appCacheStore.allTrack.length > 1 }"
+            :class="{ item: appStore.allTrack.length > 1 }"
           ></div>
           <div
-            v-if="!appCacheStore.allTrack || appCacheStore.allTrack.length <= 0"
+            v-if="!appStore.allTrack || appStore.allTrack.length <= 0"
             class="add-wrap"
           >
             <n-space>
@@ -160,7 +159,7 @@
         <div class="title">素材列表</div>
         <div class="list">
           <div
-            v-for="(item, index) in appCacheStore.allTrack"
+            v-for="(item, index) in appStore.allTrack"
             :key="index"
             class="item"
           >
@@ -264,7 +263,6 @@ import { useRoute } from 'vue-router';
 import { usePush } from '@/hooks/use-push';
 import { DanmuMsgTypeEnum, MediaTypeEnum, liveTypeEnum } from '@/interface';
 import { AppRootState, useAppStore } from '@/store/app';
-import { useAppCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
 
 import MediaModalCpt from './mediaModal/index.vue';
@@ -273,7 +271,6 @@ import SelectMediaModalCpt from './selectMediaModal/index.vue';
 const route = useRoute();
 const userStore = useUserStore();
 const appStore = useAppStore();
-const appCacheStore = useAppCacheStore();
 const currentMediaType = ref(MediaTypeEnum.camera);
 const showSelectMediaModalCpt = ref(false);
 const showMediaModalCpt = ref(false);
@@ -367,7 +364,7 @@ async function addMediaOk(val: {
     if (audio.length) {
       if (
         isSRS &&
-        appCacheStore.allTrack.filter((item) => item.audio === 1).length >= 1
+        appStore.allTrack.filter((item) => item.audio === 1).length >= 1
       ) {
         window.$message.error('srs模式最多只能有一个音频');
         return;
@@ -383,22 +380,18 @@ async function addMediaOk(val: {
         stream: event,
         streamid: event.id,
       };
-      appCacheStore.setAllTrack([
-        ...appCacheStore.allTrack,
-        videoTrack,
-        audioTrack,
-      ]);
+      appStore.setAllTrack([...appStore.allTrack, videoTrack, audioTrack]);
       addTrack(videoTrack);
       addTrack(audioTrack);
     } else {
       if (
         isSRS &&
-        appCacheStore.allTrack.filter((item) => item.video === 1).length >= 1
+        appStore.allTrack.filter((item) => item.video === 1).length >= 1
       ) {
         window.$message.error('srs模式最多只能有一个视频');
         return;
       }
-      appCacheStore.setAllTrack([...appCacheStore.allTrack, videoTrack]);
+      appStore.setAllTrack([...appStore.allTrack, videoTrack]);
       addTrack(videoTrack);
     }
 
@@ -414,7 +407,7 @@ async function addMediaOk(val: {
     });
     if (
       isSRS &&
-      appCacheStore.allTrack.filter((item) => item.video === 1).length >= 1
+      appStore.allTrack.filter((item) => item.video === 1).length >= 1
     ) {
       window.$message.error('srs模式最多只能有一个视频');
       return;
@@ -430,7 +423,7 @@ async function addMediaOk(val: {
       stream: event,
       streamid: event.id,
     };
-    appCacheStore.setAllTrack([...appCacheStore.allTrack, track]);
+    appStore.setAllTrack([...appStore.allTrack, track]);
     addTrack(track);
     console.log('获取摄像头成功');
   } else if (val.type === MediaTypeEnum.microphone) {
@@ -440,7 +433,7 @@ async function addMediaOk(val: {
     });
     if (
       isSRS &&
-      appCacheStore.allTrack.filter((item) => item.audio === 1).length >= 1
+      appStore.allTrack.filter((item) => item.audio === 1).length >= 1
     ) {
       window.$message.error('srs模式最多只能有一个音频');
       return;
@@ -456,7 +449,7 @@ async function addMediaOk(val: {
       stream: event,
       streamid: event.id,
     };
-    appCacheStore.setAllTrack([...appCacheStore.allTrack, track]);
+    appStore.setAllTrack([...appStore.allTrack, track]);
     addTrack(track);
     console.log('获取麦克风成功');
   }
@@ -464,8 +457,8 @@ async function addMediaOk(val: {
 
 function handleDelTrack(item: AppRootState['allTrack'][0]) {
   console.log('handleDelTrack', item);
-  const res = appCacheStore.allTrack.filter((iten) => iten.id !== item.id);
-  appCacheStore.setAllTrack(res);
+  const res = appStore.allTrack.filter((iten) => iten.id !== item.id);
+  appStore.setAllTrack(res);
   delTrack(item);
 }
 

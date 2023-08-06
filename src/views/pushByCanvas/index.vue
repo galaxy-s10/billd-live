@@ -1,10 +1,5 @@
 <template>
   <div class="push-wrap">
-    <input
-      type="file"
-      @change="ddddd"
-    />
-    <div @click="aaaa">读取</div>
     <div
       ref="topRef"
       class="left"
@@ -13,15 +8,12 @@
         ref="containerRef"
         class="container"
       >
-        <AudioRoomTip></AudioRoomTip>
         <canvas
           id="pushCanvasRef"
           ref="pushCanvasRef"
         ></canvas>
         <div
-          v-if="
-            appCacheStore.allTrack.filter((item) => !item.hidden).length <= 0
-          "
+          v-if="appStore.allTrack.filter((item) => !item.hidden).length <= 0"
           class="add-wrap"
         >
           <n-space>
@@ -140,32 +132,39 @@
         <div class="title">素材列表</div>
         <div class="list">
           <div
-            v-for="(item, index) in appCacheStore.allTrack.filter(
+            v-for="(item, index) in appStore.allTrack.filter(
               (item) => !item.hidden
             )"
             :key="index"
             class="item"
           >
             <span class="name">
-              ({{ mediaTypeEnumMap[item.type] }}-{{
-                item.audio === 1 ? '音频' : '视频'
-              }}){{ item.mediaName }}
+              ({{ mediaTypeEnumMap[item.type] }}){{ item.mediaName }}
             </span>
             <div class="control">
-              <div class="control-item">
-                <n-icon
-                  size="16"
-                  @click="handleChangeMuted(item)"
-                >
+              <div
+                v-if="item.audio === 1"
+                class="control-item"
+                @click="handleChangeMuted(item)"
+              >
+                <n-icon size="16">
                   <VolumeMuteOutline v-if="item.muted"></VolumeMuteOutline>
                   <VolumeHighOutline v-else></VolumeHighOutline>
                 </n-icon>
               </div>
-              <div class="control-item">
-                <n-icon
-                  size="16"
-                  @click="handleDelTrack(item)"
-                >
+              <div
+                class="control-item"
+                @click="handleEdit(item)"
+              >
+                <n-icon size="16">
+                  <CreateOutline></CreateOutline>
+                </n-icon>
+              </div>
+              <div
+                class="control-item"
+                @click="handleDel(item)"
+              >
+                <n-icon size="16">
                   <Close></Close>
                 </n-icon>
               </div>
@@ -257,7 +256,12 @@
 </template>
 
 <script lang="ts" setup>
-import { Close, VolumeHighOutline, VolumeMuteOutline } from '@vicons/ionicons5';
+import {
+  Close,
+  CreateOutline,
+  VolumeHighOutline,
+  VolumeMuteOutline,
+} from '@vicons/ionicons5';
 import { fabric } from 'fabric';
 import { UploadFileInfo } from 'naive-ui';
 import { NODE_ENV } from 'script/constant';
@@ -267,8 +271,8 @@ import * as workerTimers from 'worker-timers';
 
 import { usePush } from '@/hooks/use-push';
 import { DanmuMsgTypeEnum, MediaTypeEnum, liveTypeEnum } from '@/interface';
-import { AppRootState } from '@/store/app';
-import { useAppCacheStore } from '@/store/cache';
+import { AppRootState, useAppStore } from '@/store/app';
+import { useResourceCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
 import { createVideo, generateBase64, getRandomEnglishString } from '@/utils';
 
@@ -278,7 +282,8 @@ import SelectMediaModalCpt from './selectMediaModal/index.vue';
 
 const route = useRoute();
 const userStore = useUserStore();
-const appCacheStore = useAppCacheStore();
+const appStore = useAppStore();
+const resourceCacheStore = useResourceCacheStore();
 const currentMediaType = ref(MediaTypeEnum.camera);
 const showOpenMicophoneTipCpt = ref(false);
 const showSelectMediaModalCpt = ref(false);
@@ -399,10 +404,16 @@ function initUserMedia() {
     });
 }
 
+function renderFrame() {
+  fabricCanvas.value?.renderAll();
+  window.requestAnimationFrame(renderFrame);
+}
+
 // 处理空音频轨
 function initNullAudio() {
+  console.warn('处理空音频轨');
   // 创建一个AudioContext实例
-  const audioContext = new window.AudioContext();
+  const audioContext = new AudioContext();
 
   // 创建一个GainNode实例来控制音频的音量
   const gainNode = audioContext.createGain();
@@ -423,35 +434,50 @@ function initNullAudio() {
   gainNode.connect(audioContext.destination);
   const destination = audioContext.createMediaStreamDestination();
 
-  const audioTrack = {
+  const audioTrack: AppRootState['allTrack'][0] = {
     id: getRandomEnglishString(8),
     audio: 1,
     video: 2,
-    mediaName: '',
+    mediaName: 'webAudio占位',
     type: MediaTypeEnum.webAudio,
     track: destination.stream.getAudioTracks()[0],
     trackid: destination.stream.getAudioTracks()[0].id,
     stream: destination.stream,
     streamid: destination.stream.id,
     hidden: true,
+    muted: false,
   };
-  appCacheStore.setAllTrack([...appCacheStore.allTrack, audioTrack]);
-  // const vel = createVideo({});
-  // vel.srcObject = destination.stream;
-  // document.body.appendChild(vel);
+  const res = [...appStore.allTrack, audioTrack];
+  appStore.setAllTrack(res);
+  const webAudioItem = resourceCacheStore.list.find(
+    (item) => item.type === MediaTypeEnum.webAudio
+  );
+  if (!webAudioItem) {
+    resourceCacheStore.setList([...resourceCacheStore.list, audioTrack]);
+  }
+  const vel = createVideo({});
+  // vel.style.width = `1px`;
+  // vel.style.height = `1px`;
+  vel.style.position = 'fixed';
+  vel.style.bottom = '0';
+  vel.style.right = '0';
+  // vel.style.opacity = '0';
+  // vel.style.pointerEvents = 'none';
+  vel.srcObject = destination.stream;
+  document.body.appendChild(vel);
 }
+
 let streamTmp: MediaStream;
 let vel;
 
 function handleMixedAudio() {
-  const allAudioTrack = appCacheStore.allTrack.filter(
-    (item) => item.audio === 1
-  );
-  if (allAudioTrack.length && audioCtx.value) {
+  const allAudioTrack = appStore.allTrack.filter((item) => item.audio === 1);
+  if (audioCtx.value) {
     const gainNode = audioCtx.value.createGain();
     allAudioTrack.forEach((item) => {
-      if (!audioCtx.value) return;
-      const audioInput = audioCtx.value.createMediaStreamSource(item.stream!);
+      console.log('llllllll', item);
+      if (!audioCtx.value || !item.stream) return;
+      const audioInput = audioCtx.value.createMediaStreamSource(item.stream);
       audioInput.connect(gainNode);
       console.log('混流', item.stream?.id, item.stream);
     });
@@ -472,21 +498,24 @@ function handleMixedAudio() {
     canvasVideoStream.value?.addTrack(destination.stream.getAudioTracks()[0]);
     gainNode.connect(destination);
     vel = createVideo({});
+    vel.style.width = `1px`;
+    vel.style.height = `1px`;
+    vel.style.position = 'fixed';
+    vel.style.bottom = '0';
+    vel.style.right = '0';
+    vel.style.opacity = '0';
+    vel.style.pointerEvents = 'none';
     vel.srcObject = destination.stream;
     document.body.appendChild(vel);
   }
 }
 
 function handleStartLive() {
-  lastCoverImg.value = generateBase64(pushCanvasRef.value!);
-
-  const allAudioTrack = appCacheStore.allTrack.filter(
-    (item) => item.audio === 1
-  );
-  if (allAudioTrack.length) {
+  if (!audioCtx.value) {
     audioCtx.value = new AudioContext();
-    handleMixedAudio();
   }
+  handleMixedAudio();
+  lastCoverImg.value = generateBase64(pushCanvasRef.value!);
   startLive();
 }
 
@@ -521,56 +550,83 @@ function handleScale({ width, height }: { width: number; height: number }) {
   return ratio;
 }
 
-function autoCreateVideo({ stream }: { stream: MediaStream }) {
-  const video = createVideo({});
-  video.srcObject = stream;
-  video.style.width = `1px`;
-  video.style.height = `1px`;
-  video.style.position = 'fixed';
-  video.style.bottom = '0';
-  video.style.right = '0';
-  video.style.opacity = '0';
-  video.style.pointerEvents = 'none';
-  document.body.appendChild(video);
-  return new Promise<{ canvasDom: fabric.Image; initScale: number }>(
-    (resolve) => {
-      video.onloadedmetadata = () => {
-        const width = stream.getVideoTracks()[0].getSettings().width!;
-        const height = stream.getVideoTracks()[0].getSettings().height!;
-        const ratio = handleScale({ width, height });
-        const initScale = 1;
-        video.width = width;
-        video.height = height;
+function autoCreateVideo({
+  stream,
+  id,
+  rect,
+  muted,
+}: {
+  stream: MediaStream;
+  id: string;
+  rect?: { left: number; top: number };
+  muted?: boolean;
+}) {
+  console.warn('autoCreateVideo', id);
+  const videoEl = createVideo({});
+  if (muted !== undefined) {
+    videoEl.muted = muted;
+  }
+  videoEl.srcObject = stream;
+  videoEl.style.width = `1px`;
+  videoEl.style.height = `1px`;
+  videoEl.style.position = 'fixed';
+  videoEl.style.bottom = '0';
+  videoEl.style.right = '0';
+  videoEl.style.opacity = '0';
+  videoEl.style.pointerEvents = 'none';
+  document.body.appendChild(videoEl);
+  return new Promise<{
+    canvasDom: fabric.Image;
+    videoEl: HTMLVideoElement;
+    clearFrame: any;
+    scale: number;
+  }>((resolve) => {
+    console.log(videoEl, 888888888);
+    videoEl.onloadedmetadata = () => {
+      console.log('kkkkkkkkkk', 123);
+      const width = stream.getVideoTracks()[0].getSettings().width!;
+      const height = stream.getVideoTracks()[0].getSettings().height!;
+      const ratio = handleScale({ width, height });
+      videoEl.width = width;
+      videoEl.height = height;
 
-        const canvasDom = markRaw(
-          new fabric.Image(video, {
-            top: 0,
-            left: 0,
-            width,
-            height,
-          })
-        );
-        console.log(
-          '初始化',
-          ratio,
-          canvasDom.width,
-          canvasDom.height,
-          canvasDom
-        );
+      const canvasDom = markRaw(
+        new fabric.Image(videoEl, {
+          top: rect?.top || 0,
+          left: rect?.left || 0,
+          width,
+          height,
+        })
+      );
+      console.log(
+        '初始化',
+        ratio,
+        canvasDom.width,
+        canvasDom.height,
+        canvasDom
+      );
+      canvasDom.on('moving', () => {
+        appStore.allTrack.forEach((item) => {
+          if (id === item.id) {
+            item.rect = { top: canvasDom.top!, left: canvasDom.left! };
+          }
+        });
+        resourceCacheStore.setList(appStore.allTrack);
+      });
 
-        canvasDom.scale(ratio);
-        fabricCanvas.value!.add(canvasDom);
-        function renderFrame() {
-          fabricCanvas.value?.renderAll();
-          window.requestAnimationFrame(renderFrame);
-        }
+      canvasDom.scale(ratio);
+      fabricCanvas.value!.add(canvasDom);
+      let timer;
 
-        renderFrame();
+      function clearFrame() {
+        window.cancelAnimationFrame(timer);
+      }
 
-        resolve({ canvasDom, initScale });
-      };
-    }
-  );
+      renderFrame();
+
+      resolve({ canvasDom, scale: ratio, videoEl, clearFrame });
+    };
+  });
 }
 
 watch(
@@ -613,7 +669,7 @@ function changeCanvasAttr({
     // fabricCanvas.value.forEachObject((canvas) => {
     //   canvas.setCoords();
     // });
-    appCacheStore.allTrack.forEach((item) => {
+    appStore.allTrack.forEach((item) => {
       if (item.canvasDom) {
         // 分辨率变小了，将图片变小
         if (newHeight < oldHeight) {
@@ -679,23 +735,214 @@ function initCanvas() {
   // lower-canvas: 实际的canvas画面，也就是pushCanvasRef
   // upper-canvas: 操作时候的canvas
   const ins = markRaw(new fabric.Canvas(pushCanvasRef.value!));
-  console.log('window.devicePixelRatio', window.devicePixelRatio);
   ins.setWidth(resolutionWidth);
   ins.setHeight(resolutionHeight);
-  ins.setBackgroundColor('black', () => {});
+  ins.setBackgroundColor('black', () => {
+    console.log('setBackgroundColor回调');
+  });
   wrapSize.width = wrapWidth;
   wrapSize.height = wrapHeight;
   fabricCanvas.value = ins;
   changeCanvasStyle();
 }
 
+async function handleCache() {
+  const res: AppRootState['allTrack'] = [];
+  const queue: any[] = [];
+  resourceCacheStore.list.forEach((item) => {
+    // @ts-ignore
+    const obj: AppRootState['allTrack'][0] = {};
+    obj.audio = item.audio;
+    obj.video = item.video;
+    obj.id = item.id;
+    obj.type = item.type;
+    obj.hidden = item.hidden;
+    obj.mediaName = item.mediaName;
+    obj.muted = item.muted;
+    obj.rect = item.rect;
+    obj.scaleInfo = item.scaleInfo;
+
+    async function handleMediaVideo() {
+      const file = await readFile(item.id);
+      const url = URL.createObjectURL(file);
+      console.log(file, file.name, url);
+      const videoEl = createVideo({});
+      videoEl.src = url;
+      videoEl.muted = item.muted ? item.muted : false;
+      videoEl.style.width = `1px`;
+      videoEl.style.height = `1px`;
+      videoEl.style.position = 'fixed';
+      videoEl.style.bottom = '0';
+      videoEl.style.right = '0';
+      videoEl.style.opacity = '0';
+      videoEl.style.pointerEvents = 'none';
+      document.body.appendChild(videoEl);
+      await new Promise((resolve) => {
+        videoEl.onloadedmetadata = () => {
+          const stream = videoEl
+            // @ts-ignore
+            .captureStream();
+          const width = stream.getVideoTracks()[0].getSettings().width!;
+          const height = stream.getVideoTracks()[0].getSettings().height!;
+          // const ratio = handleScale({ width, height });
+          videoEl.width = width;
+          videoEl.height = height;
+
+          const canvasDom = markRaw(
+            new fabric.Image(videoEl, {
+              top: item.rect?.top || 0,
+              left: item.rect?.left || 0,
+              width,
+              height,
+            })
+          );
+          canvasDom.on('moving', () => {
+            appStore.allTrack.forEach((iten) => {
+              if (item.id === iten.id) {
+                iten.rect = { top: canvasDom.top!, left: canvasDom.left! };
+              }
+            });
+            resourceCacheStore.setList(appStore.allTrack);
+          });
+          canvasDom.scale(item.scaleInfo?.scaleX || 1);
+          fabricCanvas.value!.add(canvasDom);
+
+          renderFrame();
+          obj.videoEl = videoEl;
+          obj.canvasDom = canvasDom;
+          resolve({ videoEl, canvasDom });
+        };
+      });
+      const stream = videoEl
+        // @ts-ignore
+        .captureStream() as MediaStream;
+      obj.stream = stream;
+      obj.streamid = stream.id;
+      obj.track = stream.getVideoTracks()[0];
+      obj.trackid = stream.getVideoTracks()[0].id;
+      // if (stream.getAudioTracks()[0]) {
+      //   console.log('视频有音频', stream.getAudioTracks()[0]);
+      //   mediaVideoTrack.audio = 1;
+      //   const audioTrack: AppRootState['allTrack'][0] = {
+      //     id: mediaVideoTrack.id,
+      //     audio: 1,
+      //     video: 2,
+      //     mediaName: val.mediaName,
+      //     type: MediaTypeEnum.media,
+      //     track: stream.getAudioTracks()[0],
+      //     trackid: stream.getAudioTracks()[0].id,
+      //     stream,
+      //     streamid: stream.id,
+      //     hidden: true,
+      //     muted: false,
+      //   };
+      //   // @ts-ignore
+      //   const res = [...appStore.allTrack, audioTrack];
+      //   appStore.setAllTrack(res);
+      //   resourceCacheStore.setList(res);
+      //   handleMixedAudio();
+      //   // @ts-ignore
+
+      //   addTrack(audioTrack);
+      // }
+    }
+
+    async function handleImg() {
+      const file = await readFile(item.id);
+      const imgEl = await new Promise<HTMLImageElement>((resolve) => {
+        const reader = new FileReader();
+        reader.addEventListener(
+          'load',
+          function () {
+            const img = document.createElement('img');
+            img.src = reader.result as string;
+            img.onload = () => {
+              resolve(img);
+            };
+          },
+          false
+        );
+        if (file) {
+          reader.readAsDataURL(file);
+        }
+      });
+      if (fabricCanvas.value) {
+        const canvasDom = markRaw(
+          new fabric.Image(imgEl, {
+            top: item.rect?.top || 0,
+            left: item.rect?.left || 0,
+            width: imgEl.width,
+            height: imgEl.height,
+          })
+        );
+        canvasDom.on('moving', () => {
+          appStore.allTrack.forEach((item) => {
+            if (obj.id === item.id) {
+              item.rect = { top: canvasDom.top!, left: canvasDom.left! };
+            }
+          });
+          resourceCacheStore.setList(appStore.allTrack);
+        });
+        canvasDom.on('scaling', () => {
+          appStore.allTrack.forEach((item) => {
+            if (obj.id === item.id) {
+              item.scaleInfo = {
+                scaleX: canvasDom.scaleX || 1,
+                scalcY: canvasDom.scaleY || 1,
+              };
+            }
+          });
+          resourceCacheStore.setList(appStore.allTrack);
+        });
+        canvasDom.scale(item.scaleInfo?.scaleX || 1);
+        fabricCanvas.value.add(canvasDom);
+        obj.canvasDom = canvasDom;
+        renderFrame();
+      }
+    }
+    if (item.type === MediaTypeEnum.media && item.video === 1) {
+      queue.push(handleMediaVideo());
+    } else if (item.type === MediaTypeEnum.txt) {
+      obj.txtInfo = item.txtInfo;
+      if (fabricCanvas.value) {
+        const canvasDom = markRaw(
+          new fabric.Text(item.txtInfo?.txt || '', {
+            top: item.rect?.top || 0,
+            left: item.rect?.left || 0,
+            fill: item.txtInfo?.color,
+          })
+        );
+        canvasDom.on('moving', () => {
+          appStore.allTrack.forEach((item) => {
+            if (obj.id === item.id) {
+              item.rect = { top: canvasDom.top!, left: canvasDom.left! };
+            }
+          });
+          resourceCacheStore.setList(appStore.allTrack);
+        });
+        canvasDom.scale(item.scaleInfo?.scaleX || 1);
+        fabricCanvas.value.add(canvasDom);
+        obj.canvasDom = canvasDom;
+        renderFrame();
+      }
+    } else if (item.type === MediaTypeEnum.img) {
+      queue.push(handleImg());
+    }
+    res.push(obj);
+  });
+  await Promise.all(queue);
+  canvasVideoStream.value = pushCanvasRef.value!.captureStream();
+  appStore.setAllTrack(res);
+}
+
 onMounted(() => {
   setTimeout(() => {
     scrollTo(0, 0);
   }, 100);
-  initNullAudio();
+  // initNullAudio();
   initUserMedia();
   initCanvas();
+  handleCache();
   document.addEventListener('visibilitychange', onPageVisibility);
 });
 
@@ -717,6 +964,9 @@ async function addMediaOk(val: {
   imgInfo?: UploadFileInfo[];
   mediaInfo?: UploadFileInfo[];
 }) {
+  if (!audioCtx.value) {
+    audioCtx.value = new AudioContext();
+  }
   showMediaModalCpt.value = false;
   if (val.type === MediaTypeEnum.screen) {
     const event = await navigator.mediaDevices.getDisplayMedia({
@@ -727,7 +977,7 @@ async function addMediaOk(val: {
       audio: true,
     });
 
-    const videoTrack = {
+    const videoTrack: AppRootState['allTrack'][0] = {
       id: getRandomEnglishString(8),
       audio: 2,
       video: 1,
@@ -737,20 +987,23 @@ async function addMediaOk(val: {
       trackid: event.getVideoTracks()[0].id,
       stream: event,
       streamid: event.id,
+      hidden: false,
+      muted: false,
     };
 
-    const { canvasDom, initScale } = await autoCreateVideo({
+    const { canvasDom, videoEl } = await autoCreateVideo({
       stream: event,
+      id: videoTrack.id,
     });
+    videoTrack.videoEl = videoEl;
     // @ts-ignore
     videoTrack.canvasDom = canvasDom;
-    // @ts-ignore
-    videoTrack.initScale = initScale;
 
     const audio = event.getAudioTracks();
     if (audio.length) {
-      const audioTrack = {
-        id: getRandomEnglishString(8),
+      videoTrack.audio = 1;
+      const audioTrack: AppRootState['allTrack'][0] = {
+        id: videoTrack.id,
         audio: 1,
         video: 2,
         mediaName: val.mediaName,
@@ -759,17 +1012,22 @@ async function addMediaOk(val: {
         trackid: event.getAudioTracks()[0].id,
         stream: event,
         streamid: event.id,
+        hidden: true,
+        muted: false,
       };
-      appCacheStore.setAllTrack([
-        ...appCacheStore.allTrack,
-        videoTrack,
-        audioTrack,
-      ]);
+      const res = [...appStore.allTrack, videoTrack, audioTrack];
+      appStore.setAllTrack(res);
+      resourceCacheStore.setList(res);
       handleMixedAudio();
+      // @ts-ignore
       addTrack(videoTrack);
+      // @ts-ignore
       addTrack(audioTrack);
     } else {
-      appCacheStore.setAllTrack([...appCacheStore.allTrack, videoTrack]);
+      const res = [...appStore.allTrack, videoTrack];
+      appStore.setAllTrack(res);
+      resourceCacheStore.setList(res);
+      // @ts-ignore
       addTrack(videoTrack);
     }
 
@@ -781,7 +1039,7 @@ async function addMediaOk(val: {
       },
       audio: false,
     });
-    const videoTrack = {
+    const videoTrack: AppRootState['allTrack'][0] = {
       id: getRandomEnglishString(8),
       audio: 2,
       video: 1,
@@ -791,16 +1049,21 @@ async function addMediaOk(val: {
       trackid: event.getVideoTracks()[0].id,
       stream: event,
       streamid: event.id,
+      hidden: false,
+      muted: false,
     };
-    const { canvasDom, initScale } = await autoCreateVideo({
+    const { canvasDom, videoEl } = await autoCreateVideo({
       stream: event,
+      id: videoTrack.id,
     });
+    videoTrack.videoEl = videoEl;
     // @ts-ignore
     videoTrack.canvasDom = canvasDom;
-    // @ts-ignore
-    videoTrack.initScale = initScale;
 
-    appCacheStore.setAllTrack([...appCacheStore.allTrack, videoTrack]);
+    const res = [...appStore.allTrack, videoTrack];
+    appStore.setAllTrack(res);
+    resourceCacheStore.setList(res);
+    // @ts-ignore
     addTrack(videoTrack);
     console.log('获取摄像头成功');
   } else if (val.type === MediaTypeEnum.microphone) {
@@ -808,7 +1071,7 @@ async function addMediaOk(val: {
       video: false,
       audio: { deviceId: val.deviceId },
     });
-    const audioTrack = {
+    const audioTrack: AppRootState['allTrack'][0] = {
       id: getRandomEnglishString(8),
       audio: 1,
       video: 2,
@@ -818,14 +1081,19 @@ async function addMediaOk(val: {
       trackid: event.getAudioTracks()[0].id,
       stream: event,
       streamid: event.id,
+      hidden: false,
+      muted: false,
     };
-    appCacheStore.setAllTrack([...appCacheStore.allTrack, audioTrack]);
+    const res = [...appStore.allTrack, audioTrack];
+    appStore.setAllTrack(res);
+    resourceCacheStore.setList(res);
     handleMixedAudio();
+    // @ts-ignore
     addTrack(audioTrack);
 
     console.log('获取麦克风成功');
   } else if (val.type === MediaTypeEnum.txt) {
-    const txtTrack = {
+    const txtTrack: AppRootState['allTrack'][0] = {
       id: getRandomEnglishString(8),
       audio: 2,
       video: 1,
@@ -835,27 +1103,43 @@ async function addMediaOk(val: {
       trackid: undefined,
       stream: undefined,
       streamid: undefined,
+      hidden: false,
+      muted: false,
     };
     if (fabricCanvas.value) {
-      const dom = markRaw(
+      const canvasDom = markRaw(
         new fabric.Text(val.txtInfo?.txt || '', {
           top: 0,
           left: 0,
           fill: val.txtInfo?.color,
         })
       );
+      canvasDom.on('moving', () => {
+        appStore.allTrack.forEach((item) => {
+          if (txtTrack.id === item.id) {
+            item.rect = { top: canvasDom.top!, left: canvasDom.left! };
+          }
+        });
+        resourceCacheStore.setList(appStore.allTrack);
+      });
+      txtTrack.txtInfo = val.txtInfo;
       // @ts-ignore
-      txtTrack.canvasDom = dom;
-      fabricCanvas.value.add(dom);
+      txtTrack.canvasDom = canvasDom;
+      fabricCanvas.value.add(canvasDom);
+      renderFrame();
     }
 
+    const res = [...appStore.allTrack, txtTrack];
     // @ts-ignore
-    appCacheStore.setAllTrack([...appCacheStore.allTrack, txtTrack]);
+    appStore.setAllTrack(res);
+    // @ts-ignore
+    resourceCacheStore.setList(res);
+    // @ts-ignore
     addTrack(txtTrack);
 
     console.log('获取文字成功', fabricCanvas.value);
   } else if (val.type === MediaTypeEnum.img) {
-    const imgTrack = {
+    const imgTrack: AppRootState['allTrack'][0] = {
       id: getRandomEnglishString(8),
       audio: 2,
       video: 1,
@@ -865,13 +1149,15 @@ async function addMediaOk(val: {
       trackid: undefined,
       stream: undefined,
       streamid: undefined,
+      hidden: false,
+      muted: false,
     };
 
     if (fabricCanvas.value) {
       const imgEl = await new Promise<HTMLImageElement>((resolve) => {
         if (!val.imgInfo) return;
-        const file = val.imgInfo[0].file;
-        console.log(file);
+        const file = val.imgInfo[0].file!;
+        saveFile({ file, fileName: imgTrack.id });
         const reader = new FileReader();
         reader.addEventListener(
           'load',
@@ -897,27 +1183,34 @@ async function addMediaOk(val: {
           height: imgEl.height,
         })
       );
+      canvasDom.on('moving', () => {
+        appStore.allTrack.forEach((item) => {
+          if (imgTrack.id === item.id) {
+            item.rect = { top: canvasDom.top!, left: canvasDom.left! };
+          }
+        });
+        resourceCacheStore.setList(appStore.allTrack);
+      });
       const ratio = handleScale({ width: imgEl.width, height: imgEl.height });
-      console.log(
-        '初始化',
-        ratio,
-        canvasDom.width,
-        canvasDom.height,
-        canvasDom
-      );
       // @ts-ignore
       imgTrack.canvasDom = canvasDom;
+      imgTrack.scaleInfo = { scaleX: ratio, scalcY: ratio };
       canvasDom.scale(ratio);
       fabricCanvas.value.add(canvasDom);
+      renderFrame();
     }
 
+    const res = [...appStore.allTrack, imgTrack];
     // @ts-ignore
-    appCacheStore.setAllTrack([...appCacheStore.allTrack, imgTrack]);
+    appStore.setAllTrack(res);
+    // @ts-ignore
+    resourceCacheStore.setList(res);
+    // @ts-ignore
     addTrack(imgTrack);
 
     console.log('获取图片成功', fabricCanvas.value);
   } else if (val.type === MediaTypeEnum.media) {
-    const mediaVideoTrack = {
+    const mediaVideoTrack: AppRootState['allTrack'][0] = {
       id: getRandomEnglishString(8),
       audio: 2,
       video: 1,
@@ -927,14 +1220,15 @@ async function addMediaOk(val: {
       trackid: undefined,
       stream: undefined,
       streamid: undefined,
+      hidden: false,
+      muted: false,
     };
     if (fabricCanvas.value) {
       if (!val.mediaInfo) return;
       const file = val.mediaInfo[0].file!;
-      console.log(file);
-      console.log(file.name);
+      saveFile({ file, fileName: mediaVideoTrack.id });
       const url = URL.createObjectURL(file);
-      console.log(url);
+      console.log(file, file.name, url);
       const videoEl = createVideo({});
       videoEl.src = url;
       videoEl.muted = false;
@@ -953,17 +1247,18 @@ async function addMediaOk(val: {
       });
       // @ts-ignore
       const stream = videoRes.captureStream();
-      const { canvasDom, initScale } = await autoCreateVideo({
+      const { canvasDom } = await autoCreateVideo({
         stream,
+        id: mediaVideoTrack.id,
       });
+      mediaVideoTrack.videoEl = videoEl;
       // @ts-ignore
       mediaVideoTrack.canvasDom = canvasDom;
-      // @ts-ignore
-      mediaVideoTrack.initScale = initScale;
-      console.log('视频有音频', stream.getAudioTracks()[0]);
       if (stream.getAudioTracks()[0]) {
-        const audioTrack = {
-          id: getRandomEnglishString(8),
+        console.log('视频有音频', stream.getAudioTracks()[0]);
+        mediaVideoTrack.audio = 1;
+        const audioTrack: AppRootState['allTrack'][0] = {
+          id: mediaVideoTrack.id,
           audio: 1,
           video: 2,
           mediaName: val.mediaName,
@@ -972,15 +1267,26 @@ async function addMediaOk(val: {
           trackid: stream.getAudioTracks()[0].id,
           stream,
           streamid: stream.id,
+          hidden: true,
+          muted: false,
         };
         // @ts-ignore
-        appCacheStore.setAllTrack([...appCacheStore.allTrack, audioTrack]);
+        const res = [...appStore.allTrack, audioTrack];
+        appStore.setAllTrack(res);
+        resourceCacheStore.setList(res);
         handleMixedAudio();
+        // @ts-ignore
+
         addTrack(audioTrack);
       }
     }
+    const res = [...appStore.allTrack, mediaVideoTrack];
     // @ts-ignore
-    appCacheStore.setAllTrack([...appCacheStore.allTrack, mediaVideoTrack]);
+    appStore.setAllTrack(res);
+    // @ts-ignore
+    resourceCacheStore.setList(res);
+    // @ts-ignore
+
     addTrack(mediaVideoTrack);
 
     console.log('获取视频成功', fabricCanvas.value);
@@ -989,79 +1295,46 @@ async function addMediaOk(val: {
   canvasVideoStream.value = pushCanvasRef.value!.captureStream();
 }
 
-function handleChangeMuted(item: AppRootState['allTrack'][0]) {}
+function handleChangeMuted(item: AppRootState['allTrack'][0]) {
+  console.log('handleChangeMuted', item);
+  if (item.videoEl) {
+    const res = !item.videoEl.muted;
+    item.videoEl.muted = res;
+    item.muted = res;
+    resourceCacheStore.setList(appStore.allTrack);
+  }
+}
 
-function handleDelTrack(item: AppRootState['allTrack'][0]) {
-  console.log('handleDelTrack', item);
+function handleEdit(item: AppRootState['allTrack'][0]) {
+  console.log('handleEdit', item);
+}
+
+function handleDel(item: AppRootState['allTrack'][0]) {
+  console.log('handleDel', item);
   if (item.canvasDom !== undefined) {
     // @ts-ignore
     fabricCanvas.value?.remove(item.canvasDom);
+    item.videoEl?.remove();
   }
-  const res = appCacheStore.allTrack.filter((iten) => iten.id !== item.id);
-  appCacheStore.setAllTrack(res);
+  const res = appStore.allTrack.filter((iten) => iten.id !== item.id);
+  appStore.setAllTrack(res);
+  resourceCacheStore.setList(res);
   delTrack(item);
 }
 
-function aaaa(e) {
-  // @ts-ignore
+function saveFile(data: { file: File; fileName: string }) {
+  const { file, fileName } = data;
   const requestFileSystem =
     // @ts-ignore
     window.requestFileSystem || window.webkitRequestFileSystem;
-  // @ts-ignore
-  const directoryEntry = window.directoryEntry || window.webkitDirectoryEntry;
   function onError(err) {
-    console.log(err);
-  }
-  function onFs(fs) {
-    fs.root.getFile(
-      'myvideo',
-      {},
-      function (fileEntry) {
-        fileEntry.file(function (file) {
-          console.log(file, 777);
-          const url = URL.createObjectURL(file);
-          console.log(url);
-          const videoEl = createVideo({});
-          videoEl.src = url;
-          // videoEl.muted = false;
-          // videoEl.style.width = `1px`;
-          // videoEl.style.height = `1px`;
-          // videoEl.style.position = 'fixed';
-          // videoEl.style.bottom = '0';
-          // videoEl.style.right = '0';
-          // videoEl.style.opacity = '0';
-          // videoEl.style.pointerEvents = 'none';
-          document.body.appendChild(videoEl);
-        }, onError);
-      },
-      onError
-    );
-  }
-
-  // Opening a file system with temporary storage
-  requestFileSystem(
-    // @ts-ignore
-    window.PERSISTENT,
-    1024 * 1024 * 1024 /* 1GB */,
-    onFs,
-    onError
-  );
-}
-function ddddd(e) {
-  const file = e.target.files[0] as File;
-  // @ts-ignore
-  const requestFileSystem =
-    // @ts-ignore
-    window.requestFileSystem || window.webkitRequestFileSystem;
-  // @ts-ignore
-  const directoryEntry = window.directoryEntry || window.webkitDirectoryEntry;
-  function onError(err) {
+    console.error('saveFile错误', data.fileName);
     console.log(err);
   }
   function onFs(fs) {
     // 创建文件
     fs.root.getFile(
-      'myvideo',
+      fileName,
       { create: true },
       function (fileEntry) {
         // 创建文件写入流
@@ -1072,59 +1345,57 @@ function ddddd(e) {
           };
           // 写入文件内容
           fileWriter.write(file);
-          console.log('写入文件内容');
-          // const content = new Blob([fileContent]);
-          // fileWriter.write(content);
         });
       },
       () => {
-        console.log('err');
+        console.log('写入文件失败');
       }
     );
-    // fs.root.getDirectory(
-    //   'Documents',
-    //   { create: true },
-    //   function (directoryEntry) {
-    //     console.log(directoryEntry);
-    //     // directoryEntry.isFile === false
-    //     // directoryEntry.isDirectory === true
-    //     // directoryEntry.name === 'Documents'
-    //     // directoryEntry.fullPath === '/Documents'
-    //   },
-    //   onError
-    // );
   }
-
   // Opening a file system with temporary storage
   requestFileSystem(
     // @ts-ignore
     window.PERSISTENT,
-    1024 * 1024 * 1024 /* 1GB */,
+    0,
     onFs,
     onError
   );
 }
 
-function readDirectory(directory) {
-  const dirReader = directory.createReader();
-  let entries = [];
-
-  const getEntries = () => {
-    dirReader.readEntries(
-      (results) => {
-        if (results.length) {
-          entries = entries.concat(toArray(results));
-          getEntries();
-        }
-      },
-      (error) => {
-        /* handle error — error is a FileError object */
-      }
+function readFile(fileName: string) {
+  return new Promise<File>((resolve) => {
+    const requestFileSystem =
+      // @ts-ignore
+      window.requestFileSystem || window.webkitRequestFileSystem;
+    function onError(err) {
+      console.error('readFile错误', fileName);
+      console.log(err);
+    }
+    function onFs(fs) {
+      fs.root.getFile(
+        fileName,
+        {},
+        function (fileEntry) {
+          fileEntry.file(function (file) {
+            resolve(file);
+            // const url = URL.createObjectURL(file);
+            // const videoEl = createVideo({});
+            // videoEl.src = url;
+            // document.body.appendChild(videoEl);
+          }, onError);
+        },
+        onError
+      );
+    }
+    // Opening a file system with temporary storage
+    requestFileSystem(
+      // @ts-ignore
+      window.PERSISTENT,
+      0,
+      onFs,
+      onError
     );
-  };
-
-  getEntries();
-  return entries;
+  });
 }
 
 function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
@@ -1272,14 +1543,15 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
         justify-content: space-between;
         margin: 5px 0;
         font-size: 14px;
-        &:hover {
-          .control {
-            display: flex;
-            align-items: center;
-          }
-        }
+        // &:hover {
+        //   .control {
+        //     display: flex;
+        //     align-items: center;
+        //   }
+        // }
         .control {
-          display: none;
+          display: flex;
+          align-items: center;
           .control-item {
             cursor: pointer;
             &:not(:last-child) {

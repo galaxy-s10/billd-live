@@ -34,7 +34,7 @@
       <div
         ref="canvasRef"
         class="media-list"
-        :class="{ item: appCacheStore.allTrack.length > 1 }"
+        :class="{ item: appStore.allTrack.length > 1 }"
       ></div>
       <div
         v-if="showPlayBtn"
@@ -107,10 +107,10 @@ import { fetchFindLiveRoom } from '@/api/liveRoom';
 import { usePull } from '@/hooks/use-pull';
 import { DanmuMsgTypeEnum, LiveRoomTypeEnum, liveTypeEnum } from '@/interface';
 import router, { mobileRouterName } from '@/router';
-import { useAppCacheStore } from '@/store/cache';
+import { useAppStore } from '@/store/app';
 
 const route = useRoute();
-const appCacheStore = useAppCacheStore();
+const appStore = useAppStore();
 
 const bottomRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();

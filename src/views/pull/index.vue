@@ -45,9 +45,8 @@
             <div
               ref="canvasRef"
               class="media-list"
-              :class="{ item: appCacheStore.allTrack.length > 1 }"
+              :class="{ item: appStore.allTrack.length > 1 }"
             ></div>
-            <AudioRoomTip></AudioRoomTip>
             <VideoControls></VideoControls>
           </div>
         </div>
@@ -189,14 +188,14 @@ import {
   IGoods,
   liveTypeEnum,
 } from '@/interface';
-import { useAppCacheStore } from '@/store/cache';
+import { useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
 
 import RechargeCpt from './recharge/index.vue';
 
 const route = useRoute();
 const userStore = useUserStore();
-const appCacheStore = useAppCacheStore();
+const appStore = useAppStore();
 const giftGoodsList = ref<IGoods[]>([]);
 const height = ref(0);
 const giftLoading = ref(false);

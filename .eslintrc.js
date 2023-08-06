@@ -19,7 +19,8 @@ module.exports = {
     'eslint:recommended',
     'plugin:import/recommended',
     'plugin:vue/vue3-recommended',
-    '@vue/eslint-config-typescript',
+    // '@vue/eslint-config-typescript', // 启用这个规则后，vscode保存文件时格式化很慢
+    '@vue/eslint-config-typescript/recommended', // 启用这个规则后，vscode保存文件时格式化很慢
     '@vue/eslint-config-prettier',
   ],
   parserOptions: {
