@@ -28,7 +28,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineEmits, defineProps, useSlots } from 'vue';
+import { useSlots } from 'vue';
 
 const slots = useSlots();
 const props = defineProps({

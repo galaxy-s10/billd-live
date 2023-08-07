@@ -8,15 +8,7 @@
 </template>
 
 <script lang="ts" setup>
-import {
-  defineEmits,
-  defineProps,
-  onMounted,
-  onUnmounted,
-  reactive,
-  ref,
-  withDefaults,
-} from 'vue';
+import { onMounted, onUnmounted, reactive, ref } from 'vue';
 
 const dndRef = ref<HTMLElement>();
 const offset = reactive({ x: 0, y: 0 }); // x:距离最左边多少px；y:距离最下边多少px

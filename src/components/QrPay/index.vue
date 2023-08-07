@@ -48,7 +48,7 @@
 <script lang="ts" setup>
 import { hrefToTarget, isMobile } from 'billd-utils';
 import QRCode from 'qrcode';
-import { defineProps, onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 
 import { fetchAliPay, fetchAliPayStatus } from '@/api/order';
 import { PayStatusEnum } from '@/interface';

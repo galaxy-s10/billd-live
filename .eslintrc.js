@@ -1,30 +1,43 @@
 console.log(
   '\x1B[0;37;44m INFO \x1B[0m',
   '\x1B[0;;34m ' +
-    `读取了: ${__filename.slice(__dirname.length + 1)}` +
+    `${new Date().toLocaleString()}读取了: ${__filename.slice(
+      __dirname.length + 1
+    )}` +
     ' \x1B[0m'
 );
 
 module.exports = {
   root: true,
   settings: {
-    // 'import/extensions': ['.js', '.jsx', '.ts', '.tsx'],
+    'import/parsers': {
+      '@typescript-eslint/parser': ['.ts', '.tsx'],
+    },
+    'import/resolver': {
+      typescript: {
+        alwaysTryTypes: true, // always try to resolve types under `<root>@types` directory even it doesn't contain any source code, like `@types/unist`
+        project: './tsconfig.json',
+      },
+    },
   },
   env: {
     browser: true,
     node: true,
   },
+
   extends: [
     // 'airbnb-base', // airbnb的eslint规范，它会对import和require进行排序，挺好的。如果不用它的话，需要在env添加node:true
     'eslint:recommended',
     'plugin:import/recommended',
-    'plugin:vue/vue3-recommended',
-    // '@vue/eslint-config-typescript', // 启用这个规则后，vscode保存文件时格式化很慢
-    '@vue/eslint-config-typescript/recommended', // 启用这个规则后，vscode保存文件时格式化很慢
+    'plugin:vue/vue3-essential', // plugin:vue/vue3-essential或plugin:vue/vue3-strongly-recommended或plugin:vue/vue3-recommended'
+    '@vue/eslint-config-typescript', // 启用这个规则后，vscode保存文件时格式化很慢
+    // '@vue/eslint-config-typescript/recommended', // 启用这个规则后，vscode保存文件时格式化很慢
     '@vue/eslint-config-prettier',
   ],
+  parser: 'vue-eslint-parser',
   parserOptions: {
-    ecmaVersion: 2020,
+    parser: '@typescript-eslint/parser',
+    ecmaVersion: 2022,
     tsconfigRootDir: __dirname, // https://typescript-eslint.io/docs/linting/typed-linting
     project: ['./tsconfig.json'], // https://typescript-eslint.io/docs/linting/typed-linting
   },
@@ -126,13 +139,7 @@ module.exports = {
     ],
     'import/newline-after-import': 2, // 强制在最后一个顶级导入语句或 require 调用之后有一个或多个空行
     'import/no-extraneous-dependencies': 2, // 禁止导入未在package.json中声明的外部模块。
-    /**
-     * import/named
-     * 在import { version } from 'vuex';的时候会验证vuex有没有具名导出version，
-     * 但是在vue3的时候，import { defineComponent } from 'vue';会报错defineComponent not found in 'vue'
-     * 因此vue3项目关闭该规则
-     */
-    'import/named': 0,
+
     /**
      * a.js
      * export const version = '1.0.0';
@@ -143,9 +150,18 @@ module.exports = {
      * console.log(bar.version); // 检测到你使用的version有具名导出，import/no-named-as-default-member就会提示`import {version} from './a'`
      */
     'import/no-named-as-default-member': 1, // https://github.com/import-js/eslint-plugin-import/blob/v2.26.0/docs/rules/no-named-as-default-member.md
-    'import/prefer-default-export': 0, // 当模块只有一个导出时，更喜欢使用默认导出而不是命名导出。
-    'import/extensions': 0, // 确保在导入路径中一致使用文件扩展名。在js/ts等文件里引其他文件都不能带后缀（比如.css和.jpg），因此关掉
-    'import/no-unresolved': 0, // 不能解析带别名的路径的模块，但实际上是不影响代码运行的。找不到解决办法，暂时关掉。
+
+    /**
+     * import/named
+     * 在import { version } from 'vuex';的时候会验证vuex有没有具名导出version，
+     * 但是在vue3的时候，import { defineComponent } from 'vue';会报错defineComponent not found in 'vue'
+     * 因此vue3项目关闭该规则
+     */
+    // 'import/named': 0,
+    // 'import/prefer-default-export': 0, // 当模块只有一个导出时，更喜欢使用默认导出而不是命名导出。
+    // 'import/extensions': 0, // 确保在导入路径中一致使用文件扩展名。在js/ts等文件里引其他文件都不能带后缀（比如.css和.jpg），因此关掉
+    // 'import/no-unresolved': 0, // 不能解析带别名的路径的模块，但实际上是不影响代码运行的。找不到解决办法，暂时关掉。
+
     /**
      * a.js
      * export const bar = 'bar';
@@ -159,6 +175,8 @@ module.exports = {
     'import/no-named-as-default': 0, // https://github.com/import-js/eslint-plugin-import/blob/v2.26.0/docs/rules/no-named-as-default.md
 
     // @typescript-eslint插件
+    '@typescript-eslint/no-unused-vars': 2,
+
     '@typescript-eslint/restrict-template-expressions': [
       'error',
       {
@@ -166,7 +184,6 @@ module.exports = {
         allowNumber: true,
       },
     ], // 强制模板文字表达式为string类型。即const a = {};console.log(`${a}`);会报错
-    '@typescript-eslint/no-unused-vars': 2,
     '@typescript-eslint/no-floating-promises': 0, // 要求适当处理类似 Promise 的语句。即将await或者return Promise，或者对promise进行.then或者.catch
     '@typescript-eslint/no-explicit-any': 0, // 不允许定义any类型。即let a: any;会报错
     '@typescript-eslint/no-non-null-assertion': 0, // 禁止使用非空断言（后缀运算符!）。即const el = document.querySelector('.app');console.log(el!.tagName);会报错

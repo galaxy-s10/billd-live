@@ -88,7 +88,7 @@
 
 <script lang="ts" setup>
 import { InputInst, UploadFileInfo } from 'naive-ui';
-import { defineEmits, defineProps, onMounted, ref, withDefaults } from 'vue';
+import { onMounted, ref } from 'vue';
 
 import { MediaTypeEnum } from '@/interface';
 import { useAppStore } from '@/store/app';

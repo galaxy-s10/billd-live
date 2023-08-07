@@ -14,7 +14,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineEmits, onMounted } from 'vue';
+import { onMounted } from 'vue';
 
 const emits = defineEmits(['close']);
 

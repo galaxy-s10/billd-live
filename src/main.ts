@@ -1,7 +1,6 @@
 import './main.scss';
 import './showBilldVersion';
 // import 'windi.css'; // windicss-webpack-plugin会解析windi.css这个MODULE_ID
-
 import { createApp } from 'vue';
 import adapter from 'webrtc-adapter';
 

@@ -21,7 +21,6 @@
 
 <script lang="ts" setup>
 import { isMobile } from 'billd-utils';
-import { defineProps } from 'vue';
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -53,7 +52,9 @@ const emits = defineEmits(['update:modelValue']);
       padding: 10px 0;
       border-radius: 5px;
       background-color: #fff;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.08);
+      box-shadow:
+        0 12px 32px rgba(0, 0, 0, 0.1),
+        0 2px 6px rgba(0, 0, 0, 0.08);
       color: black;
       font-size: 14px;
     }

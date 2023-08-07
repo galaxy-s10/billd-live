@@ -19,8 +19,6 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps } from 'vue';
-
 const props = defineProps({
   avatar: { type: String, default: '' },
   size: { type: Number, default: 100 },

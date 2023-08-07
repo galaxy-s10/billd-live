@@ -13,6 +13,7 @@
     "resolveJsonModule": true, //解析json模块
     "allowJs": true,
     "checkJs": true,
+    // "noErrorTruncation": true, // https://github.com/vuejs/language-tools/issues/2533#issuecomment-1543496140
     "baseUrl": "./",
     /**
      * 当 TypeScript 编译文件时，它在输出目录中保持与输入目录中相同的目录结构。

@@ -135,6 +135,46 @@ const prodConfig: Configuration = {
     //   name: 'runtime'
     // }
   },
+  // module: {
+  //   rules: [
+  //     {
+  //       test: /\.jsx?$/,
+  //       exclude: /node_modules/,
+  //       use: [
+  //         // 'thread-loader',
+  //         {
+  //           loader: 'babel-loader',
+  //           options: {
+  //             cacheDirectory: true,
+  //             cacheCompression: false, // https://github.com/facebook/create-react-app/issues/6846
+  //           },
+  //         },
+  //       ],
+  //     },
+  //     {
+  //       test: /\.tsx?$/,
+  //       exclude: /node_modules/,
+  //       use: [
+  //         {
+  //           loader: 'babel-loader',
+  //           options: {
+  //             cacheDirectory: true,
+  //             cacheCompression: false, // https://github.com/facebook/create-react-app/issues/6846
+  //           },
+  //         },
+  //         {
+  //           loader: 'ts-loader',
+  //           options: {
+  //             appendTsxSuffixTo: ['\\.vue$'],
+  //             // If you want to speed up compilation significantly you can set this flag. https://www.npmjs.com/package/ts-loader#transpileonly
+  //             transpileOnly: true,
+  //             happyPackMode: false,
+  //           },
+  //         },
+  //       ],
+  //     },
+  //   ],
+  // },
   plugins: [
     // 构建进度条
     new WebpackBar(),

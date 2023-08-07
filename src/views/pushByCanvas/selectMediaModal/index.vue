@@ -23,7 +23,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineEmits, defineProps, onMounted, withDefaults } from 'vue';
+import { onMounted } from 'vue';
 
 import { MediaTypeEnum } from '@/interface';
 

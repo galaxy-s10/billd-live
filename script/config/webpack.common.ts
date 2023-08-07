@@ -189,64 +189,64 @@ const commonConfig = (isProduction) => {
             },
           ],
         },
-        {
-          test: /\.jsx?$/,
-          exclude: /node_modules/,
-          use: [
-            // 'thread-loader',
-            {
-              loader: 'babel-loader',
-              options: {
-                cacheDirectory: true,
-                cacheCompression: false, // https://github.com/facebook/create-react-app/issues/6846
-              },
-            },
-          ],
-        },
-        {
-          test: /\.ts$/,
-          exclude: /node_modules/,
-          use: [
-            {
-              loader: 'babel-loader',
-              options: {
-                cacheDirectory: true,
-                cacheCompression: false, // https://github.com/facebook/create-react-app/issues/6846
-              },
-            },
-            {
-              loader: 'ts-loader',
-              options: {
-                appendTsSuffixTo: ['\\.vue$'],
-                // If you want to speed up compilation significantly you can set this flag. https://www.npmjs.com/package/ts-loader#transpileonly
-                transpileOnly: true,
-                happyPackMode: false,
-              },
-            },
-          ],
-        },
-        {
-          test: /\.tsx$/,
-          exclude: /node_modules/,
-          use: [
-            {
-              loader: 'babel-loader',
-              options: {
-                cacheDirectory: true,
-                cacheCompression: false, // https://github.com/facebook/create-react-app/issues/6846
-              },
-            },
-            {
-              loader: 'ts-loader',
-              options: {
-                appendTsxSuffixTo: ['\\.vue$'],
-                // If you want to speed up compilation significantly you can set this flag. https://www.npmjs.com/package/ts-loader#transpileonly
-                transpileOnly: true,
-                happyPackMode: false,
-              },
-            },
-          ],
-        },
+        // {
+        //   test: /\.jsx?$/,
+        //   exclude: /node_modules/,
+        //   use: [
+        //     // 'thread-loader',
+        //     {
+        //       loader: 'babel-loader',
+        //       options: {
+        //         cacheDirectory: true,
+        //         cacheCompression: false, // https://github.com/facebook/create-react-app/issues/6846
+        //       },
+        //     },
+        //   ],
+        // },
+        // {
+        //   test: /\.ts$/,
+        //   exclude: /node_modules/,
+        //   use: [
+        //     {
+        //       loader: 'babel-loader',
+        //       options: {
+        //         cacheDirectory: true,
+        //         cacheCompression: false, // https://github.com/facebook/create-react-app/issues/6846
+        //       },
+        //     },
+        //     {
+        //       loader: 'ts-loader',
+        //       options: {
+        //         appendTsSuffixTo: ['\\.vue$'],
+        //         // If you want to speed up compilation significantly you can set this flag. https://www.npmjs.com/package/ts-loader#transpileonly
+        //         transpileOnly: true,
+        //         happyPackMode: false,
+        //       },
+        //     },
+        //   ],
+        // },
+        // {
+        //   test: /\.tsx$/,
+        //   exclude: /node_modules/,
+        //   use: [
+        //     {
+        //       loader: 'babel-loader',
+        //       options: {
+        //         cacheDirectory: true,
+        //         cacheCompression: false, // https://github.com/facebook/create-react-app/issues/6846
+        //       },
+        //     },
+        //     {
+        //       loader: 'ts-loader',
+        //       options: {
+        //         appendTsxSuffixTo: ['\\.vue$'],
+        //         // If you want to speed up compilation significantly you can set this flag. https://www.npmjs.com/package/ts-loader#transpileonly
+        //         transpileOnly: true,
+        //         happyPackMode: false,
+        //       },
+        //     },
+        //   ],
+        // },
         {
           test: /\.css$/,
           oneOf: [
