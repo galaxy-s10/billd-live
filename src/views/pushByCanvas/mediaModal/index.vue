@@ -180,8 +180,9 @@ async function init() {
       type: MediaTypeEnum.microphone,
     };
     mediaName.value = `麦克风-${
-      appStore.allTrack.filter((item) => item.type === MediaTypeEnum.microphone)
-        .length + 1
+      appStore.allTrack
+        .filter((item) => item.type === MediaTypeEnum.microphone)
+        .filter((item) => !item.hidden).length + 1
     }`;
   } else if (props.mediaType === MediaTypeEnum.camera) {
     res.forEach((item) => {
@@ -198,8 +199,9 @@ async function init() {
       type: MediaTypeEnum.camera,
     };
     mediaName.value = `摄像头-${
-      appStore.allTrack.filter((item) => item.type === MediaTypeEnum.camera)
-        .length + 1
+      appStore.allTrack
+        .filter((item) => item.type === MediaTypeEnum.camera)
+        .filter((item) => !item.hidden).length + 1
     }`;
   } else if (props.mediaType === MediaTypeEnum.screen) {
     currentInput.value = {
@@ -207,8 +209,9 @@ async function init() {
       type: MediaTypeEnum.screen,
     };
     mediaName.value = `窗口-${
-      appStore.allTrack.filter((item) => item.type === MediaTypeEnum.screen)
-        .length + 1
+      appStore.allTrack
+        .filter((item) => item.type === MediaTypeEnum.screen)
+        .filter((item) => !item.hidden).length + 1
     }`;
   } else if (props.mediaType === MediaTypeEnum.txt) {
     currentInput.value = {
@@ -217,8 +220,9 @@ async function init() {
     };
     txtInfo.value = { txt: '', color: 'rgba(255,215,0,1)' };
     mediaName.value = `文字-${
-      appStore.allTrack.filter((item) => item.type === MediaTypeEnum.txt)
-        .length + 1
+      appStore.allTrack
+        .filter((item) => item.type === MediaTypeEnum.txt)
+        .filter((item) => !item.hidden).length + 1
     }`;
     setTimeout(() => {
       inputInstRef.value?.focus();
@@ -230,8 +234,9 @@ async function init() {
     };
     imgInfo.value = [];
     mediaName.value = `图片-${
-      appStore.allTrack.filter((item) => item.type === MediaTypeEnum.img)
-        .length + 1
+      appStore.allTrack
+        .filter((item) => item.type === MediaTypeEnum.img)
+        .filter((item) => !item.hidden).length + 1
     }`;
   } else if (props.mediaType === MediaTypeEnum.media) {
     currentInput.value = {
@@ -240,8 +245,9 @@ async function init() {
     };
     mediaInfo.value = [];
     mediaName.value = `视频-${
-      appStore.allTrack.filter((item) => item.type === MediaTypeEnum.media)
-        .length + 1
+      appStore.allTrack
+        .filter((item) => item.type === MediaTypeEnum.media)
+        .filter((item) => !item.hidden).length + 1
     }`;
   }
 }

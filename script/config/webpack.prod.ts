@@ -11,6 +11,7 @@ import TerserPlugin from 'terser-webpack-plugin';
 // import { version as vueVersion } from 'vue/package.json';
 import { Configuration } from 'webpack';
 import WebpackBar from 'webpackbar';
+import { VueLoaderPlugin } from 'vue-loader';
 
 import { gzipEnable } from '../constant';
 import { chalkINFO } from '../utils/chalkTip';
@@ -135,47 +136,48 @@ const prodConfig: Configuration = {
     //   name: 'runtime'
     // }
   },
-  // module: {
-  //   rules: [
-  //     {
-  //       test: /\.jsx?$/,
-  //       exclude: /node_modules/,
-  //       use: [
-  //         // 'thread-loader',
-  //         {
-  //           loader: 'babel-loader',
-  //           options: {
-  //             cacheDirectory: true,
-  //             cacheCompression: false, // https://github.com/facebook/create-react-app/issues/6846
-  //           },
-  //         },
-  //       ],
-  //     },
-  //     {
-  //       test: /\.tsx?$/,
-  //       exclude: /node_modules/,
-  //       use: [
-  //         {
-  //           loader: 'babel-loader',
-  //           options: {
-  //             cacheDirectory: true,
-  //             cacheCompression: false, // https://github.com/facebook/create-react-app/issues/6846
-  //           },
-  //         },
-  //         {
-  //           loader: 'ts-loader',
-  //           options: {
-  //             appendTsxSuffixTo: ['\\.vue$'],
-  //             // If you want to speed up compilation significantly you can set this flag. https://www.npmjs.com/package/ts-loader#transpileonly
-  //             transpileOnly: true,
-  //             happyPackMode: false,
-  //           },
-  //         },
-  //       ],
-  //     },
-  //   ],
-  // },
+  module: {
+    rules: [
+      {
+        test: /\.jsx?$/,
+        exclude: /node_modules/,
+        use: [
+          // 'thread-loader',
+          {
+            loader: 'babel-loader',
+            options: {
+              cacheDirectory: true,
+              cacheCompression: false, // https://github.com/facebook/create-react-app/issues/6846
+            },
+          },
+        ],
+      },
+      {
+        test: /\.tsx?$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'babel-loader',
+            options: {
+              cacheDirectory: true,
+              cacheCompression: false, // https://github.com/facebook/create-react-app/issues/6846
+            },
+          },
+          {
+            loader: 'ts-loader',
+            options: {
+              appendTsxSuffixTo: ['\\.vue$'],
+              // If you want to speed up compilation significantly you can set this flag. https://www.npmjs.com/package/ts-loader#transpileonly
+              transpileOnly: true,
+              happyPackMode: false,
+            },
+          },
+        ],
+      },
+    ],
+  },
   plugins: [
+    // new VueLoaderPlugin(),
     // 构建进度条
     new WebpackBar(),
     // http压缩

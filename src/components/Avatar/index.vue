@@ -19,7 +19,7 @@
 </template>
 
 <script lang="ts" setup>
-const props = defineProps({
+defineProps({
   avatar: { type: String, default: '' },
   size: { type: Number, default: 100 },
   living: { type: Boolean, default: false },

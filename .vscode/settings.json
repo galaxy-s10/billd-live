@@ -2,7 +2,7 @@
   // 指定行尾序列为\n（LF）或者\r\n（CRLF）或者auto
   // "files.eol": "\n",
 
-  "vue.codeActions.savingTimeLimit": 500,
+  "vue.codeActions.savingTimeLimit": 1000,
 
   // 在保存时格式化
   "editor.formatOnSave": true,
@@ -13,8 +13,8 @@
 
   // 保存时进行一些操作
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": false, // 运行eslint
-    "source.organizeImports": false // 整理import语句(包括import的成员),以及会删掉未使用的导入,注意:会删掉declare global {import utils from 'billd-utils';}的import utils from 'billd-utils';
+    "source.fixAll.eslint": true, // 运行eslint
+    "source.organizeImports": true // 整理import语句(包括import的成员),以及会删掉未使用的导入,注意:会删掉declare global {import utils from 'billd-utils';}的import utils from 'billd-utils';
     // "source.sortImports": true // 对您的导入进行排序,然而,与organizeImports不同,它不会删除任何未使用的导入,也不会对import里面的成员进行排序
   },
 

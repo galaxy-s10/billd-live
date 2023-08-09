@@ -10,12 +10,13 @@ import {
   IDanmu,
   IHeartbeat,
   IJoin,
-  ILive,
+  ILiveRoom,
   ILiveUser,
   IMessage,
   IOffer,
   IOtherJoin,
   IUpdateJoinInfo,
+  IUser,
   LiveRoomTypeEnum,
   liveTypeEnum,
 } from '@/interface';
@@ -41,7 +42,8 @@ export const useWs = () => {
   const roomName = ref('');
   const roomNoLive = ref(false);
   const roomLiveing = ref<IJoin['data']>();
-  const liveRoomInfo = ref<ILive>();
+  const liveRoomInfo = ref<ILiveRoom>();
+  const anchorInfo = ref<IUser>();
   const isAnchor = ref(false);
   const roomLiveType = ref(liveTypeEnum.srsFlvPull);
   const joined = ref(false);
@@ -781,7 +783,9 @@ export const useWs = () => {
     // 用户加入房间完成
     ws.socketIo.on(WsMsgTypeEnum.joined, (data: IJoin) => {
       prettierReceiveWebsocket(WsMsgTypeEnum.joined, data);
-      handleHeartbeat(data.data.live?.id || -1);
+      if (data.data.live) {
+        handleHeartbeat(data.data.live.id!);
+      }
       joined.value = true;
       trackInfo.track_audio = data.data.live?.track_audio!;
       trackInfo.track_video = data.data.live?.track_video!;
@@ -789,9 +793,8 @@ export const useWs = () => {
         id: `${getSocketId()}`,
         userInfo: data.user_info,
       });
-      if (!isAnchor.value) {
-        liveRoomInfo.value = data.data;
-      }
+      liveRoomInfo.value = data.data.live_room;
+      anchorInfo.value = data.data.anchor_info;
       // 如果是srs开播，则不需要等有人进来了才new webrtc，只要Websocket连上了就开始new webrtc
       if (isSRS.value) {
         if (!isPull.value) {
@@ -808,12 +811,12 @@ export const useWs = () => {
       prettierReceiveWebsocket(WsMsgTypeEnum.otherJoin, data);
       liveUserList.value.push({
         id: data.data.join_socket_id,
-        userInfo: data.data.liveRoom.user,
+        userInfo: data.data.join_user_info,
       });
       const danmu: IDanmu = {
         msgType: DanmuMsgTypeEnum.otherJoin,
         socket_id: data.data.join_socket_id,
-        userInfo: data.data.liveRoom.user,
+        userInfo: data.data.join_user_info,
         msg: '',
       };
       damuList.value.push(danmu);
@@ -897,6 +900,7 @@ export const useWs = () => {
     lastCoverImg,
     roomLiveing,
     liveRoomInfo,
+    anchorInfo,
     roomNoLive,
     loopHeartbeatTimer,
     localStream,

@@ -386,7 +386,7 @@ function joinRoom(data: { roomId: number; isFlv: boolean }) {
           position: absolute;
           top: 50%;
           left: 50%;
-          z-index: 1;
+          z-index: 20;
           display: none;
           align-items: center;
           align-items: center;

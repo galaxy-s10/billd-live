@@ -264,17 +264,24 @@ import {
 } from '@vicons/ionicons5';
 import { fabric } from 'fabric';
 import { UploadFileInfo } from 'naive-ui';
-import { NODE_ENV } from 'script/constant';
 import { markRaw, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import * as workerTimers from 'worker-timers';
 
+import { mediaTypeEnumMap } from '@/constant';
 import { usePush } from '@/hooks/use-push';
 import { DanmuMsgTypeEnum, MediaTypeEnum, liveTypeEnum } from '@/interface';
 import { AppRootState, useAppStore } from '@/store/app';
 import { useResourceCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
-import { createVideo, generateBase64, getRandomEnglishString } from '@/utils';
+import {
+  createVideo,
+  generateBase64,
+  getRandomEnglishString,
+  readFile,
+  saveFile,
+} from '@/utils';
+import { NODE_ENV } from 'script/constant';
 
 import MediaModalCpt from './mediaModal/index.vue';
 import OpenMicophoneTipCpt from './openMicophoneTip/index.vue';
@@ -302,9 +309,8 @@ const wrapSize = reactive({
   width: 0,
   height: 0,
 });
-
-const scaleRatio = ref(0);
-const timerId = ref(-1);
+const workerTimerId = ref(-1);
+const requestAnimationFrameId = ref(-1);
 const videoRatio = ref(16 / 9);
 const {
   confirmRoomName,
@@ -329,20 +335,12 @@ const {
   liveUserList,
   addTrack,
   delTrack,
+  connectWs,
 } = usePush({
   localVideoRef,
   remoteVideoRef,
   isSRS,
 });
-
-const mediaTypeEnumMap = {
-  [MediaTypeEnum.camera]: '摄像头',
-  [MediaTypeEnum.microphone]: '麦克风',
-  [MediaTypeEnum.screen]: '窗口',
-  [MediaTypeEnum.img]: '图片',
-  [MediaTypeEnum.txt]: '文字',
-  [MediaTypeEnum.media]: '视频',
-};
 
 watch(
   () => damuList.value.length,
@@ -355,23 +353,43 @@ watch(
   }
 );
 
+onMounted(() => {
+  setTimeout(() => {
+    scrollTo(0, 0);
+  }, 100);
+  // initNullAudio();
+  initUserMedia();
+  initCanvas();
+  handleCache();
+  connectWs();
+  document.addEventListener('visibilitychange', onPageVisibility);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('visibilitychange', onPageVisibility);
+  if (workerTimerId.value !== -1) {
+    workerTimers.clearInterval(workerTimerId.value);
+  }
+  clearFrame();
+});
+
 // 处理页面显示/隐藏
 function onPageVisibility() {
   // 注意：此属性在Page Visibility Level 2 规范中被描述为“历史” 。考虑改用该Document.visibilityState 属性。
   // const isHidden = document.hidden;
 
   if (document.visibilityState === 'hidden') {
-    console.log(new Date().toLocaleString(), '页面隐藏了', timerId.value);
+    console.log(new Date().toLocaleString(), '页面隐藏了', workerTimerId.value);
     if (isLiving.value) {
       const delay = 1000 / 60; // 16.666666666666668
-      timerId.value = workerTimers.setInterval(() => {
+      workerTimerId.value = workerTimers.setInterval(() => {
         fabricCanvas.value?.renderAll();
       }, delay);
     }
   } else {
-    console.log(new Date().toLocaleString(), '页面显示了', timerId.value);
+    console.log(new Date().toLocaleString(), '页面显示了', workerTimerId.value);
     if (isLiving.value) {
-      workerTimers.clearInterval(timerId.value);
+      workerTimers.clearInterval(workerTimerId.value);
     }
   }
 }
@@ -404,9 +422,13 @@ function initUserMedia() {
     });
 }
 
+function clearFrame() {
+  window.cancelAnimationFrame(requestAnimationFrameId.value);
+}
+
 function renderFrame() {
   fabricCanvas.value?.renderAll();
-  window.requestAnimationFrame(renderFrame);
+  requestAnimationFrameId.value = window.requestAnimationFrame(renderFrame);
 }
 
 // 处理空音频轨
@@ -577,12 +599,9 @@ function autoCreateVideo({
   return new Promise<{
     canvasDom: fabric.Image;
     videoEl: HTMLVideoElement;
-    clearFrame: any;
     scale: number;
   }>((resolve) => {
-    console.log(videoEl, 888211888888);
     videoEl.onloadedmetadata = () => {
-      console.log('kkkkkkk2kkk', 123);
       const width = stream.getVideoTracks()[0].getSettings().width!;
       const height = stream.getVideoTracks()[0].getSettings().height!;
       const ratio = handleScale({ width, height });
@@ -604,26 +623,12 @@ function autoCreateVideo({
         canvasDom.height,
         canvasDom
       );
-      canvasDom.on('moving', () => {
-        appStore.allTrack.forEach((item) => {
-          if (id === item.id) {
-            item.rect = { top: canvasDom.top!, left: canvasDom.left! };
-          }
-        });
-        resourceCacheStore.setList(appStore.allTrack);
-      });
-
+      handleMoving({ canvasDom, id });
+      handleScaling({ canvasDom, id });
       canvasDom.scale(ratio);
       fabricCanvas.value!.add(canvasDom);
-      let timer;
 
-      function clearFrame() {
-        window.cancelAnimationFrame(timer);
-      }
-
-      renderFrame();
-
-      resolve({ canvasDom, scale: ratio, videoEl, clearFrame });
+      resolve({ canvasDom, scale: ratio, videoEl });
     };
   });
 }
@@ -728,7 +733,6 @@ function initCanvas() {
   const wrapWidth = containerRef.value!.getBoundingClientRect().width;
   // const wrapWidth = 1920;
   const ratio = wrapWidth / resolutionWidth;
-  scaleRatio.value = resolutionWidth / wrapWidth;
   const wrapHeight = resolutionHeight * ratio;
   // const wrapHeight = 1080;
   // lower-canvas: 实际的canvas画面，也就是pushCanvasRef
@@ -742,7 +746,32 @@ function initCanvas() {
   wrapSize.width = wrapWidth;
   wrapSize.height = wrapHeight;
   fabricCanvas.value = ins;
+  renderFrame();
   changeCanvasStyle();
+}
+
+function handleScaling({ canvasDom, id }) {
+  canvasDom.on('scaling', () => {
+    appStore.allTrack.forEach((item) => {
+      if (id === item.id) {
+        item.scaleInfo = {
+          scaleX: canvasDom.scaleX || 1,
+          scaleY: canvasDom.scaleY || 1,
+        };
+      }
+    });
+    resourceCacheStore.setList(appStore.allTrack);
+  });
+}
+function handleMoving({ canvasDom, id }) {
+  canvasDom.on('moving', () => {
+    appStore.allTrack.forEach((item) => {
+      if (id === item.id) {
+        item.rect = { top: canvasDom.top || 0, left: canvasDom.left || 0 };
+      }
+    });
+    resourceCacheStore.setList(appStore.allTrack);
+  });
 }
 
 async function handleCache() {
@@ -762,141 +791,98 @@ async function handleCache() {
     obj.scaleInfo = item.scaleInfo;
 
     async function handleMediaVideo() {
-      const file = await readFile(item.id);
-      const url = URL.createObjectURL(file);
-      console.log(file, file.name, url);
-      const videoEl = createVideo({});
-      videoEl.src = url;
-      videoEl.muted = item.muted ? item.muted : false;
-      videoEl.style.width = `1px`;
-      videoEl.style.height = `1px`;
-      videoEl.style.position = 'fixed';
-      videoEl.style.bottom = '0';
-      videoEl.style.right = '0';
-      videoEl.style.opacity = '0';
-      videoEl.style.pointerEvents = 'none';
-      document.body.appendChild(videoEl);
-      await new Promise((resolve) => {
-        videoEl.onloadedmetadata = () => {
-          const stream = videoEl
-            // @ts-ignore
-            .captureStream();
-          const width = stream.getVideoTracks()[0].getSettings().width!;
-          const height = stream.getVideoTracks()[0].getSettings().height!;
-          // const ratio = handleScale({ width, height });
-          videoEl.width = width;
-          videoEl.height = height;
+      const { code, file } = await readFile(item.id);
+      if (code === 1 && file) {
+        const url = URL.createObjectURL(file);
+        console.log(file, file.name, url);
+        const videoEl = createVideo({});
+        videoEl.src = url;
+        videoEl.muted = item.muted ? item.muted : false;
+        videoEl.style.width = `1px`;
+        videoEl.style.height = `1px`;
+        videoEl.style.position = 'fixed';
+        videoEl.style.bottom = '0';
+        videoEl.style.right = '0';
+        videoEl.style.opacity = '0';
+        videoEl.style.pointerEvents = 'none';
+        document.body.appendChild(videoEl);
+        await new Promise((resolve) => {
+          videoEl.onloadedmetadata = () => {
+            const stream = videoEl
+              // @ts-ignore
+              .captureStream();
+            const width = stream.getVideoTracks()[0].getSettings().width!;
+            const height = stream.getVideoTracks()[0].getSettings().height!;
+            // const ratio = handleScale({ width, height });
+            videoEl.width = width;
+            videoEl.height = height;
 
-          const canvasDom = markRaw(
-            new fabric.Image(videoEl, {
-              top: item.rect?.top || 0,
-              left: item.rect?.left || 0,
-              width,
-              height,
-            })
-          );
-          canvasDom.on('moving', () => {
-            appStore.allTrack.forEach((iten) => {
-              if (item.id === iten.id) {
-                iten.rect = { top: canvasDom.top!, left: canvasDom.left! };
-              }
-            });
-            resourceCacheStore.setList(appStore.allTrack);
-          });
-          canvasDom.scale(item.scaleInfo?.scaleX || 1);
-          fabricCanvas.value!.add(canvasDom);
-
-          renderFrame();
-          obj.videoEl = videoEl;
-          obj.canvasDom = canvasDom;
-          resolve({ videoEl, canvasDom });
-        };
-      });
-      const stream = videoEl
-        // @ts-ignore
-        .captureStream() as MediaStream;
-      obj.stream = stream;
-      obj.streamid = stream.id;
-      obj.track = stream.getVideoTracks()[0];
-      obj.trackid = stream.getVideoTracks()[0].id;
-      // if (stream.getAudioTracks()[0]) {
-      //   console.log('视频有音频', stream.getAudioTracks()[0]);
-      //   mediaVideoTrack.audio = 1;
-      //   const audioTrack: AppRootState['allTrack'][0] = {
-      //     id: mediaVideoTrack.id,
-      //     audio: 1,
-      //     video: 2,
-      //     mediaName: val.mediaName,
-      //     type: MediaTypeEnum.media,
-      //     track: stream.getAudioTracks()[0],
-      //     trackid: stream.getAudioTracks()[0].id,
-      //     stream,
-      //     streamid: stream.id,
-      //     hidden: true,
-      //     muted: false,
-      //   };
-      //   // @ts-ignore
-      //   const res = [...appStore.allTrack, audioTrack];
-      //   appStore.setAllTrack(res);
-      //   resourceCacheStore.setList(res);
-      //   handleMixedAudio();
-      //   // @ts-ignore
-
-      //   addTrack(audioTrack);
-      // }
+            const canvasDom = markRaw(
+              new fabric.Image(videoEl, {
+                top: item.rect?.top || 0,
+                left: item.rect?.left || 0,
+                width,
+                height,
+              })
+            );
+            handleMoving({ canvasDom, id: item.id });
+            handleScaling({ canvasDom, id: item.id });
+            canvasDom.scale(item.scaleInfo?.scaleX || 1);
+            fabricCanvas.value!.add(canvasDom);
+            obj.videoEl = videoEl;
+            obj.canvasDom = canvasDom;
+            resolve({ videoEl, canvasDom });
+          };
+        });
+        const stream = videoEl
+          // @ts-ignore
+          .captureStream() as MediaStream;
+        obj.stream = stream;
+        obj.streamid = stream.id;
+        obj.track = stream.getVideoTracks()[0];
+        obj.trackid = stream.getVideoTracks()[0].id;
+      } else {
+        console.error('读取文件失败');
+      }
     }
 
     async function handleImg() {
-      const file = await readFile(item.id);
-      const imgEl = await new Promise<HTMLImageElement>((resolve) => {
-        const reader = new FileReader();
-        reader.addEventListener(
-          'load',
-          function () {
-            const img = document.createElement('img');
-            img.src = reader.result as string;
-            img.onload = () => {
-              resolve(img);
-            };
-          },
-          false
-        );
-        if (file) {
-          reader.readAsDataURL(file);
-        }
-      });
-      if (fabricCanvas.value) {
-        const canvasDom = markRaw(
-          new fabric.Image(imgEl, {
-            top: item.rect?.top || 0,
-            left: item.rect?.left || 0,
-            width: imgEl.width,
-            height: imgEl.height,
-          })
-        );
-        canvasDom.on('moving', () => {
-          appStore.allTrack.forEach((item) => {
-            if (obj.id === item.id) {
-              item.rect = { top: canvasDom.top!, left: canvasDom.left! };
-            }
-          });
-          resourceCacheStore.setList(appStore.allTrack);
-        });
-        canvasDom.on('scaling', () => {
-          appStore.allTrack.forEach((item) => {
-            if (obj.id === item.id) {
-              item.scaleInfo = {
-                scaleX: canvasDom.scaleX || 1,
-                scalcY: canvasDom.scaleY || 1,
+      const { code, file } = await readFile(item.id);
+      if (code === 1 && file) {
+        const imgEl = await new Promise<HTMLImageElement>((resolve) => {
+          const reader = new FileReader();
+          reader.addEventListener(
+            'load',
+            function () {
+              const img = document.createElement('img');
+              img.src = reader.result as string;
+              img.onload = () => {
+                resolve(img);
               };
-            }
-          });
-          resourceCacheStore.setList(appStore.allTrack);
+            },
+            false
+          );
+          if (file) {
+            reader.readAsDataURL(file);
+          }
         });
-        canvasDom.scale(item.scaleInfo?.scaleX || 1);
-        fabricCanvas.value.add(canvasDom);
-        obj.canvasDom = canvasDom;
-        renderFrame();
+        if (fabricCanvas.value) {
+          const canvasDom = markRaw(
+            new fabric.Image(imgEl, {
+              top: item.rect?.top || 0,
+              left: item.rect?.left || 0,
+              width: imgEl.width,
+              height: imgEl.height,
+            })
+          );
+          handleMoving({ canvasDom, id: obj.id });
+          handleScaling({ canvasDom, id: obj.id });
+          canvasDom.scale(item.scaleInfo?.scaleX || 1);
+          fabricCanvas.value.add(canvasDom);
+          obj.canvasDom = canvasDom;
+        }
+      } else {
+        console.error('读取文件失败');
       }
     }
     if (item.type === MediaTypeEnum.media && item.video === 1) {
@@ -911,18 +897,11 @@ async function handleCache() {
             fill: item.txtInfo?.color,
           })
         );
-        canvasDom.on('moving', () => {
-          appStore.allTrack.forEach((item) => {
-            if (obj.id === item.id) {
-              item.rect = { top: canvasDom.top!, left: canvasDom.left! };
-            }
-          });
-          resourceCacheStore.setList(appStore.allTrack);
-        });
+        handleMoving({ canvasDom, id: obj.id });
+        handleScaling({ canvasDom, id: obj.id });
         canvasDom.scale(item.scaleInfo?.scaleX || 1);
         fabricCanvas.value.add(canvasDom);
         obj.canvasDom = canvasDom;
-        renderFrame();
       }
     } else if (item.type === MediaTypeEnum.img) {
       queue.push(handleImg());
@@ -933,21 +912,6 @@ async function handleCache() {
   canvasVideoStream.value = pushCanvasRef.value!.captureStream();
   appStore.setAllTrack(res);
 }
-
-onMounted(() => {
-  setTimeout(() => {
-    scrollTo(0, 0);
-  }, 100);
-  // initNullAudio();
-  initUserMedia();
-  initCanvas();
-  handleCache();
-  document.addEventListener('visibilitychange', onPageVisibility);
-});
-
-onUnmounted(() => {
-  document.removeEventListener('visibilitychange', onPageVisibility);
-});
 
 function selectMediaOk(val: MediaTypeEnum) {
   showMediaModalCpt.value = true;
@@ -1113,19 +1077,12 @@ async function addMediaOk(val: {
           fill: val.txtInfo?.color,
         })
       );
-      canvasDom.on('moving', () => {
-        appStore.allTrack.forEach((item) => {
-          if (txtTrack.id === item.id) {
-            item.rect = { top: canvasDom.top!, left: canvasDom.left! };
-          }
-        });
-        resourceCacheStore.setList(appStore.allTrack);
-      });
+      handleMoving({ canvasDom, id: txtTrack.id });
+      handleScaling({ canvasDom, id: txtTrack.id });
       txtTrack.txtInfo = val.txtInfo;
       // @ts-ignore
       txtTrack.canvasDom = canvasDom;
       fabricCanvas.value.add(canvasDom);
-      renderFrame();
     }
 
     const res = [...appStore.allTrack, txtTrack];
@@ -1153,10 +1110,11 @@ async function addMediaOk(val: {
     };
 
     if (fabricCanvas.value) {
+      if (!val.imgInfo) return;
+      const file = val.imgInfo[0].file!;
+      const { code } = await saveFile({ file, fileName: imgTrack.id });
+      if (code !== 1) return;
       const imgEl = await new Promise<HTMLImageElement>((resolve) => {
-        if (!val.imgInfo) return;
-        const file = val.imgInfo[0].file!;
-        saveFile({ file, fileName: imgTrack.id });
         const reader = new FileReader();
         reader.addEventListener(
           'load',
@@ -1182,21 +1140,14 @@ async function addMediaOk(val: {
           height: imgEl.height,
         })
       );
-      canvasDom.on('moving', () => {
-        appStore.allTrack.forEach((item) => {
-          if (imgTrack.id === item.id) {
-            item.rect = { top: canvasDom.top!, left: canvasDom.left! };
-          }
-        });
-        resourceCacheStore.setList(appStore.allTrack);
-      });
+      handleMoving({ canvasDom, id: imgTrack.id });
+      handleScaling({ canvasDom, id: imgTrack.id });
       const ratio = handleScale({ width: imgEl.width, height: imgEl.height });
       // @ts-ignore
       imgTrack.canvasDom = canvasDom;
-      imgTrack.scaleInfo = { scaleX: ratio, scalcY: ratio };
+      imgTrack.scaleInfo = { scaleX: ratio, scaleY: ratio };
       canvasDom.scale(ratio);
       fabricCanvas.value.add(canvasDom);
-      renderFrame();
     }
 
     const res = [...appStore.allTrack, imgTrack];
@@ -1225,7 +1176,8 @@ async function addMediaOk(val: {
     if (fabricCanvas.value) {
       if (!val.mediaInfo) return;
       const file = val.mediaInfo[0].file!;
-      saveFile({ file, fileName: mediaVideoTrack.id });
+      const { code } = await saveFile({ file, fileName: mediaVideoTrack.id });
+      if (code !== 1) return;
       const url = URL.createObjectURL(file);
       console.log(file, file.name, url);
       const videoEl = createVideo({});
@@ -1295,7 +1247,6 @@ async function addMediaOk(val: {
 }
 
 function handleChangeMuted(item: AppRootState['allTrack'][0]) {
-  console.log('handleChangeMuted', item);
   if (item.videoEl) {
     const res = !item.videoEl.muted;
     item.videoEl.muted = res;
@@ -1319,82 +1270,6 @@ function handleDel(item: AppRootState['allTrack'][0]) {
   appStore.setAllTrack(res);
   resourceCacheStore.setList(res);
   delTrack(item);
-}
-
-function saveFile(data: { file: File; fileName: string }) {
-  const { file, fileName } = data;
-  const requestFileSystem =
-    // @ts-ignore
-    window.requestFileSystem || window.webkitRequestFileSystem;
-  function onError(err) {
-    console.error('saveFile错误', data.fileName);
-    console.log(err);
-  }
-  function onFs(fs) {
-    // 创建文件
-    fs.root.getFile(
-      fileName,
-      { create: true },
-      function (fileEntry) {
-        // 创建文件写入流
-        fileEntry.createWriter(function (fileWriter) {
-          fileWriter.onwriteend = () => {
-            // 完成后关闭文件
-            fileWriter.abort();
-          };
-          // 写入文件内容
-          fileWriter.write(file);
-        });
-      },
-      () => {
-        console.log('写入文件失败');
-      }
-    );
-  }
-  // Opening a file system with temporary storage
-  requestFileSystem(
-    // @ts-ignore
-    window.PERSISTENT,
-    0,
-    onFs,
-    onError
-  );
-}
-
-function readFile(fileName: string) {
-  return new Promise<File>((resolve) => {
-    const requestFileSystem =
-      // @ts-ignore
-      window.requestFileSystem || window.webkitRequestFileSystem;
-    function onError(err) {
-      console.error('readFile错误', fileName);
-      console.log(err);
-    }
-    function onFs(fs) {
-      fs.root.getFile(
-        fileName,
-        {},
-        function (fileEntry) {
-          fileEntry.file(function (file) {
-            resolve(file);
-            // const url = URL.createObjectURL(file);
-            // const videoEl = createVideo({});
-            // videoEl.src = url;
-            // document.body.appendChild(videoEl);
-          }, onError);
-        },
-        onError
-      );
-    }
-    // Opening a file system with temporary storage
-    requestFileSystem(
-      // @ts-ignore
-      window.PERSISTENT,
-      0,
-      onFs,
-      onError
-    );
-  });
 }
 
 function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {

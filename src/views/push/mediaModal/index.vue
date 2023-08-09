@@ -45,10 +45,8 @@ import { onMounted, ref } from 'vue';
 
 import { MediaTypeEnum } from '@/interface';
 import { useAppStore } from '@/store/app';
-import { useNetworkStore } from '@/store/network';
 
 const mediaName = ref('');
-const networkStore = useNetworkStore();
 const appStore = useAppStore();
 
 const props = withDefaults(

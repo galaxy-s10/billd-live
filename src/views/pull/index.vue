@@ -1,181 +1,182 @@
 <template>
   <div class="pull-wrap">
-    <template v-if="roomNoLive">当前房间没在直播~</template>
-    <template v-else>
-      <div class="left">
+    <div class="left">
+      <div
+        ref="topRef"
+        class="head"
+      >
+        <div class="info">
+          <div
+            class="avatar"
+            :style="{
+              backgroundImage: `url(${anchorInfo?.avatar})`,
+            }"
+          ></div>
+          <div class="detail">
+            <div class="top">{{ anchorInfo?.username }}</div>
+            <div class="bottom">
+              <span>{{ liveRoomInfo?.name }}</span>
+              <span v-if="NODE_ENV === 'development'">
+                socketId:{{ getSocketId() }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        ref="containerRef"
+        class="container"
+      >
         <div
-          ref="topRef"
-          class="head"
+          class="no-live"
+          v-if="roomNoLive"
+        >
+          当前房间没在直播~
+        </div>
+        <div
+          v-else
+          v-loading="videoLoading"
+          class="video-wrap"
+        >
+          <div
+            class="cover"
+            :style="{
+              backgroundImage: `url(${
+                liveRoomInfo?.cover_img || anchorInfo?.avatar
+              })`,
+            }"
+          ></div>
+          <div
+            ref="canvasRef"
+            class="media-list"
+            :class="{ item: appStore.allTrack.length > 1 }"
+          ></div>
+          <VideoControls></VideoControls>
+        </div>
+      </div>
+
+      <div
+        ref="bottomRef"
+        v-loading="giftLoading"
+        class="gift-list"
+      >
+        <div
+          v-for="(item, index) in giftGoodsList"
+          :key="index"
+          class="item"
+        >
+          <div
+            class="ico"
+            :style="{ backgroundImage: `url(${item.cover})` }"
+          >
+            <div
+              v-if="item.badge"
+              class="badge"
+              :style="{ backgroundColor: item.badge_bg }"
+            >
+              <span class="txt">{{ item.badge }}</span>
+            </div>
+          </div>
+          <div class="name">{{ item.name }}</div>
+          <div class="price">￥{{ item.price }}</div>
+        </div>
+        <div
+          class="item"
+          @click="handleRecharge"
+        >
+          <div class="ico wallet"></div>
+          <div class="name">余额:{{ userStore.userInfo?.wallet?.balance }}</div>
+          <div class="price">立即充值</div>
+        </div>
+      </div>
+    </div>
+    <div class="right">
+      <div class="tab">
+        <span>在线用户</span>
+        <span> | </span>
+        <span>排行榜</span>
+      </div>
+      <div class="user-list">
+        <div
+          v-for="(item, index) in liveUserList.filter(
+            (item) => item.id !== getSocketId()
+          )"
+          :key="index"
+          class="item"
         >
           <div class="info">
             <div
               class="avatar"
-              :style="{
-                backgroundImage: `url(${roomLiveing?.live?.user?.avatar})`,
-              }"
+              :style="{ backgroundImage: `url(${item.userInfo?.avatar})` }"
             ></div>
-            <div class="detail">
-              <div class="top">{{ roomLiveing?.live?.user?.username }}</div>
-              <div class="bottom">
-                <span>{{ roomLiveing?.live?.live_room?.name }}</span>
-                <span v-if="NODE_ENV === 'development'">
-                  socketId:{{ getSocketId() }}
-                </span>
-              </div>
+            <div class="username">
+              {{ item.userInfo?.username || item.id }}
             </div>
           </div>
         </div>
         <div
-          ref="containerRef"
-          class="container"
+          v-if="userStore.userInfo"
+          class="item"
         >
-          <div
-            v-loading="videoLoading"
-            class="video-wrap"
-          >
-            <div
-              class="cover"
-              :style="{
-                backgroundImage: `url(${
-                  roomLiveing?.live?.live_room?.cover_img ||
-                  roomLiveing?.live?.user?.avatar
-                })`,
-              }"
-            ></div>
-            <div
-              ref="canvasRef"
-              class="media-list"
-              :class="{ item: appStore.allTrack.length > 1 }"
-            ></div>
-            <VideoControls></VideoControls>
-          </div>
-        </div>
-
-        <div
-          ref="bottomRef"
-          v-loading="giftLoading"
-          class="gift-list"
-        >
-          <div
-            v-for="(item, index) in giftGoodsList"
-            :key="index"
-            class="item"
-          >
-            <div
-              class="ico"
-              :style="{ backgroundImage: `url(${item.cover})` }"
-            >
-              <div
-                v-if="item.badge"
-                class="badge"
-                :style="{ backgroundColor: item.badge_bg }"
-              >
-                <span class="txt">{{ item.badge }}</span>
-              </div>
-            </div>
-            <div class="name">{{ item.name }}</div>
-            <div class="price">￥{{ item.price }}</div>
-          </div>
-          <div
-            class="item"
-            @click="handleRecharge"
-          >
-            <div class="ico wallet"></div>
-            <div class="name">
-              余额:{{ userStore.userInfo?.wallet?.balance }}
-            </div>
-            <div class="price">立即充值</div>
+          <div class="info">
+            <img
+              :src="userStore.userInfo.avatar"
+              class="avatar"
+              alt=""
+            />
+            <div class="username">{{ userStore.userInfo.username }}</div>
           </div>
         </div>
       </div>
-      <div class="right">
-        <div class="tab">
-          <span>在线用户</span>
-          <span> | </span>
-          <span>排行榜</span>
-        </div>
-        <div class="user-list">
-          <div
-            v-for="(item, index) in liveUserList.filter(
-              (item) => item.id !== getSocketId()
-            )"
-            :key="index"
-            class="item"
-          >
-            <div class="info">
-              <div
-                class="avatar"
-                :style="{ backgroundImage: `url(${item.userInfo?.avatar})` }"
-              ></div>
-              <div class="username">
-                {{ item.userInfo?.username || item.id }}
-              </div>
-            </div>
-          </div>
-          <div
-            v-if="userStore.userInfo"
-            class="item"
-          >
-            <div class="info">
-              <img
-                :src="userStore.userInfo.avatar"
-                class="avatar"
-                alt=""
-              />
-              <div class="username">{{ userStore.userInfo.username }}</div>
-            </div>
-          </div>
-        </div>
+      <div
+        ref="danmuListRef"
+        class="danmu-list"
+      >
         <div
-          ref="danmuListRef"
-          class="danmu-list"
+          v-for="(item, index) in damuList"
+          :key="index"
+          class="item"
         >
-          <div
-            v-for="(item, index) in damuList"
-            :key="index"
-            class="item"
-          >
-            <template v-if="item.msgType === DanmuMsgTypeEnum.danmu">
-              <span class="name">
-                {{ item.userInfo?.username || item.socket_id }}：
-              </span>
-              <span class="msg">{{ item.msg }}</span>
-            </template>
-            <template v-else-if="item.msgType === DanmuMsgTypeEnum.otherJoin">
-              <span class="name system">系统通知：</span>
-              <span class="msg">
-                {{ item.userInfo?.username || item.socket_id }}进入直播！
-              </span>
-            </template>
-            <template v-else-if="item.msgType === DanmuMsgTypeEnum.userLeaved">
-              <span class="name system">系统通知：</span>
-              <span class="msg">
-                {{ item.userInfo?.username || item.socket_id }}离开直播！
-              </span>
-            </template>
-          </div>
-        </div>
-        <div class="send-msg">
-          <textarea
-            v-model="danmuStr"
-            class="ipt"
-            @keydown="keydownDanmu"
-          ></textarea>
-          <div
-            class="btn"
-            @click="sendDanmu"
-          >
-            发送
-          </div>
+          <template v-if="item.msgType === DanmuMsgTypeEnum.danmu">
+            <span class="name">
+              {{ item.userInfo?.username || item.socket_id }}：
+            </span>
+            <span class="msg">{{ item.msg }}</span>
+          </template>
+          <template v-else-if="item.msgType === DanmuMsgTypeEnum.otherJoin">
+            <span class="name system">系统通知：</span>
+            <span class="msg">
+              {{ item.userInfo?.username || item.socket_id }}进入直播！
+            </span>
+          </template>
+          <template v-else-if="item.msgType === DanmuMsgTypeEnum.userLeaved">
+            <span class="name system">系统通知：</span>
+            <span class="msg">
+              {{ item.userInfo?.username || item.socket_id }}离开直播！
+            </span>
+          </template>
         </div>
       </div>
-      <RechargeCpt v-if="showRecharge"></RechargeCpt>
-    </template>
+      <div class="send-msg">
+        <textarea
+          v-model="danmuStr"
+          class="ipt"
+          @keydown="keydownDanmu"
+        ></textarea>
+        <div
+          class="btn"
+          @click="sendDanmu"
+        >
+          发送
+        </div>
+      </div>
+    </div>
+    <RechargeCpt v-if="showRecharge"></RechargeCpt>
+    <!-- </template> -->
   </div>
 </template>
 
 <script lang="ts" setup>
-import { NODE_ENV } from 'script/constant';
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -190,6 +191,7 @@ import {
 } from '@/interface';
 import { useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
+import { NODE_ENV } from 'script/constant';
 
 import RechargeCpt from './recharge/index.vue';
 
@@ -216,15 +218,13 @@ const {
   keydownDanmu,
   sendDanmu,
   addVideo,
-  roomLiveing,
-  autoplayVal,
   videoLoading,
   roomNoLive,
   damuList,
   liveUserList,
-  sidebarList,
   danmuStr,
   liveRoomInfo,
+  anchorInfo,
 } = usePull({
   localVideoRef,
   canvasRef,
@@ -382,12 +382,23 @@ onMounted(() => {
       align-items: center;
       justify-content: space-between;
       height: 562px;
+      background-color: rgba($color: #000000, $alpha: 0.5);
+
+      .no-live {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        z-index: 20;
+        color: white;
+        font-size: 28px;
+        transform: translate(-50%, -50%);
+      }
       .video-wrap {
         position: relative;
         overflow: hidden;
         flex: 1;
         height: 100%;
-        background-color: rgba($color: #000000, $alpha: 0.5);
+
         .cover {
           position: absolute;
           background-position: center center;

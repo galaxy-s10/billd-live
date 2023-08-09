@@ -22,7 +22,7 @@
 <script lang="ts" setup>
 import { isMobile } from 'billd-utils';
 
-const props = defineProps({
+defineProps({
   modelValue: { type: Boolean, default: false },
 });
 const emits = defineEmits(['update:modelValue']);

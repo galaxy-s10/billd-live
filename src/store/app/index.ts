@@ -24,7 +24,7 @@ export type AppRootState = {
     videoEl?: HTMLVideoElement;
     txtInfo?: { txt: string; color: string };
     rect?: { top: number; left: number };
-    scaleInfo?: { scaleX: number; scalcY: number };
+    scaleInfo?: { scaleX: number; scaleY: number };
   }[];
 };
 

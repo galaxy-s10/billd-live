@@ -42,8 +42,13 @@ export function usePull({
   const {
     getSocketId,
     initWs,
+    addTrack,
+    delTrack,
+    canvasVideoStream,
+    lastCoverImg,
     roomLiveing,
     liveRoomInfo,
+    anchorInfo,
     roomNoLive,
     loopHeartbeatTimer,
     localStream,
@@ -55,8 +60,6 @@ export function usePull({
     currentMaxFramerate,
     currentMaxBitrate,
     currentResolutionRatio,
-    addTrack,
-    delTrack,
   } = useWs();
 
   const { flvPlayer, flvVideoEl, startFlvPlay, destroyFlv } = useFlvPlay();
@@ -317,5 +320,6 @@ export function usePull({
     sidebarList,
     danmuStr,
     liveRoomInfo,
+    anchorInfo,
   };
 }

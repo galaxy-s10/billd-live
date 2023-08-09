@@ -371,12 +371,15 @@ export interface IMessage {
   };
 }
 
-export type IOtherJoin = {
+export interface IOtherJoin {
   data: {
-    liveRoom: IUserLiveRoom;
+    live_room: ILiveRoom;
+    live_room_user_info: IUser;
+    join_user_info?: IUser;
     join_socket_id: string;
   };
-};
+}
+
 export interface IJoin {
   socket_id: string;
   is_anchor: boolean;
@@ -384,6 +387,7 @@ export interface IJoin {
   data: {
     live?: ILive;
     live_room: ILiveRoom;
+    anchor_info?: IUser;
     // track: { audio: number; video: number };
   };
 }

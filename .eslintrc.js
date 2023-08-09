@@ -37,7 +37,10 @@ module.exports = {
   parser: 'vue-eslint-parser',
   parserOptions: {
     parser: '@typescript-eslint/parser',
-    ecmaVersion: 2022,
+    ecmaVersion: 'latest',
+    ecmaFeatures: {
+      jsx: true,
+    },
     tsconfigRootDir: __dirname, // https://typescript-eslint.io/docs/linting/typed-linting
     project: ['./tsconfig.json'], // https://typescript-eslint.io/docs/linting/typed-linting
   },

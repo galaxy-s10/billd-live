@@ -2,6 +2,7 @@ import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import portfinder from 'portfinder';
 import { Configuration } from 'webpack';
 import WebpackBar from 'webpackbar';
+import { VueLoaderPlugin } from 'vue-loader';
 
 import { outputStaticUrl, webpackBarEnable } from '../constant';
 import TerminalPrintPlugin from '../TerminalPrintPlugin';
@@ -24,23 +25,9 @@ export default new Promise((resolve) => {
         // https://github.com/webpack/webpack/blob/main/lib/config/defaults.js
         mode: 'development',
         stats: 'none',
-        // cache: {
-        //   type: 'filesystem',
-        //   allowCollectingMemory: true, // 它在生产模式中默认为false，并且在开发模式下默认为true。https://webpack.js.org/configuration/cache/#cacheallowcollectingmemory
-        //   buildDependencies: {
-        //     // 建议cache.buildDependencies.config: [__filename]在您的 webpack 配置中设置以获取最新配置和所有依赖项。
-        //     config: [
-        //       resolveApp('./script/config/webpack.common.ts'),
-        //       resolveApp('./script/config/webpack.dev.ts'),
-        //       resolveApp('./script/config/webpack.prod.ts'),
-        //       resolveApp('.browserslistrc'), // 防止修改了.browserslistrc文件后，但没修改webpack配置文件，webpack不读取最新更新后的.browserslistrc
-        //       resolveApp('babel.config.js'), // 防止修改了babel.config.js文件后，但没修改webpack配置文件，webpack不读取最新更新后的babel.config.js
-        //     ],
-        //   },
-        // },
         // https://webpack.docschina.org/configuration/devtool/
-        // devtool: 'eval-cheap-module-source-map',
-        devtool: 'eval', // eval，具有最高性能的开发构建的推荐选择。
+        devtool: 'eval-cheap-module-source-map',
+        // devtool: 'eval', // eval，具有最高性能的开发构建的推荐选择。
         // 这个infrastructureLogging设置参考了vuecli5，如果不设置，webpack-dev-server会打印一些信息
         infrastructureLogging: {
           level: 'none',
@@ -106,20 +93,7 @@ export default new Promise((resolve) => {
         module: {
           rules: [
             {
-              test: /\.jsx?$/,
-              exclude: /node_modules/,
-              use: [
-                {
-                  loader: 'esbuild-loader',
-                  options: {
-                    loader: 'jsx', // Remove this if you're not using JSX
-                    target: 'esnext', // Syntax to compile to (see options below for possible values)
-                  },
-                },
-              ],
-            },
-            {
-              test: /\.tsx?$/,
+              test: /\.(js|mjs|jsx|ts|tsx)$/,
               exclude: /node_modules/,
               use: [
                 {
@@ -135,6 +109,7 @@ export default new Promise((resolve) => {
         },
         // @ts-ignore
         plugins: [
+          // new VueLoaderPlugin(),
           // 构建进度条
           webpackBarEnable && new WebpackBar(),
           // 终端打印调试地址

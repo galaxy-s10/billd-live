@@ -181,6 +181,19 @@ export function usePush({
     }
   }
 
+  function connectWs() {
+    initWs({
+      isAnchor: true,
+      roomId: roomId.value,
+      isSRS,
+      isPull: false,
+      currentMaxBitrate: currentMaxBitrate.value,
+      currentMaxFramerate: currentMaxFramerate.value,
+      currentResolutionRatio: currentResolutionRatio.value,
+      roomLiveType: isSRS ? liveTypeEnum.srsPush : liveTypeEnum.webrtcPush,
+    });
+  }
+
   async function startLive() {
     if (!loginTip()) return;
     const flag = await userHasLiveRoom();
@@ -208,17 +221,6 @@ export function usePush({
         }
       }
     }
-    initWs({
-      isAnchor: true,
-      roomId: roomId.value,
-      isSRS,
-      isPull: false,
-      currentMaxBitrate: currentMaxBitrate.value,
-      currentMaxFramerate: currentMaxFramerate.value,
-      currentResolutionRatio: currentResolutionRatio.value,
-      roomLiveType: isSRS ? liveTypeEnum.srsPush : liveTypeEnum.webrtcPush,
-    });
-    return;
   }
 
   /** 结束直播 */
@@ -313,6 +315,7 @@ export function usePush({
     roomName,
     damuList,
     liveUserList,
+    connectWs,
     addTrack,
     delTrack,
   };

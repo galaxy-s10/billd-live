@@ -69,7 +69,7 @@ function goRoom(item: ILiveRoom) {
     name: routerName.pull,
     params: { roomId: item.id },
     query: {
-      liveType: liveTypeEnum.srsFlvPull,
+      liveType: liveTypeEnum.srsHlsPull,
     },
   });
 }
