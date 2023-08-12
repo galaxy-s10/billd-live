@@ -472,6 +472,7 @@ export const useWs = () => {
       }
       if (res.data.code !== 0) {
         console.error('/rtc/v1/publish/拿不到sdp');
+        window.$message.error('/rtc/v1/publish/拿不到sdp');
         return;
       }
       await rtc.setRemoteDescription(

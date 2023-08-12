@@ -103,7 +103,6 @@ export function usePull({
   }
 
   async function handlePlay() {
-    console.log('kkkk21', roomLiveType.value);
     if (roomLiveType.value === liveTypeEnum.srsFlvPull) {
       if (!autoplayVal.value) return;
       await handleFlvPlay();

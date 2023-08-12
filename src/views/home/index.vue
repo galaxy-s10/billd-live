@@ -22,7 +22,7 @@
           <div v-loading="videoLoading">
             <div
               v-if="currentLiveRoom?.live_room?.flv_url"
-              ref="canvasRef"
+              ref="remoteVideoRef"
             ></div>
           </div>
           <template v-if="currentLiveRoom">
@@ -176,7 +176,7 @@
 
 <script lang="ts" setup>
 import { isMobile } from 'billd-utils';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { fetchLiveList } from '@/api/live';
@@ -193,10 +193,10 @@ const topLiveRoomList = ref<ILive[]>([]);
 const otherLiveRoomList = ref<ILive[]>([]);
 const currentLiveRoom = ref<ILive>();
 const localVideoRef = ref<HTMLVideoElement[]>([]);
+const remoteVideoRef = ref<HTMLDivElement>();
 
-const { handleHlsPlay, videoLoading } = usePull({
+const { handleHlsPlay, videoLoading, remoteVideo } = usePull({
   localVideoRef,
-  canvasRef,
   liveType: route.query.liveType as liveTypeEnum,
   isSRS: [
     liveTypeEnum.srsWebrtcPull,
@@ -204,6 +204,19 @@ const { handleHlsPlay, videoLoading } = usePull({
     liveTypeEnum.srsHlsPull,
   ].includes(route.query.liveType as liveTypeEnum),
 });
+
+watch(
+  () => remoteVideo.value,
+  (newVal) => {
+    newVal.forEach((item) => {
+      remoteVideoRef.value?.appendChild(item);
+    });
+  },
+  {
+    deep: true,
+    immediate: true,
+  }
+);
 
 function changeLiveRoom(item: ILive) {
   if (item.id === currentLiveRoom.value?.id) return;

@@ -5,11 +5,11 @@
         <div
           class="avatar"
           :style="{
-            backgroundImage: `url(${roomLiveing?.live?.user?.avatar})`,
+            backgroundImage: `url(${anchorInfo?.avatar})`,
           }"
         ></div>
         <div class="username">
-          {{ roomLiveing?.live?.user?.username }}
+          {{ anchorInfo?.username }}
         </div>
       </div>
       <div class="right">
@@ -24,16 +24,17 @@
     <div
       v-loading="videoLoading"
       class="video-wrap"
+      :style="{ height: videoWrapHeight + 'px' }"
     >
       <div
         class="cover"
         :style="{
-          backgroundImage: `url(${roomLiveing?.live?.live_room?.cover_img})`,
+          backgroundImage: `url(${liveRoomInfo?.cover_img})`,
         }"
       ></div>
       <div
-        ref="canvasRef"
         class="media-list"
+        ref="remoteVideoRef"
         :class="{ item: appStore.allTrack.length > 1 }"
       ></div>
       <div
@@ -50,7 +51,7 @@
       <div
         ref="containerRef"
         class="list"
-        :style="{ height: height + 'px' }"
+        :style="{ height: containerHeight + 'px' }"
       >
         <div
           v-for="(item, index) in damuList"
@@ -100,7 +101,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, watch } from 'vue';
+import { nextTick, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchFindLiveRoom } from '@/api/liveRoom';
@@ -114,36 +115,44 @@ const appStore = useAppStore();
 
 const bottomRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
-const canvasRef = ref<HTMLVideoElement>();
 const localVideoRef = ref<HTMLVideoElement[]>([]);
 const showPlayBtn = ref(false);
-const height = ref(0);
+const containerHeight = ref(0);
+const videoRatio = ref(16 / 9);
+const videoWrapHeight = ref(0);
+const remoteVideoRef = ref<HTMLDivElement>();
 
 const {
   initPull,
-  closeWs,
-  closeRtc,
-  getSocketId,
   keydownDanmu,
   sendDanmu,
-  addVideo,
   handleHlsPlay,
   roomLiveType,
-  roomLiveing,
   autoplayVal,
   videoLoading,
-  roomNoLive,
   damuList,
-  liveUserList,
-  sidebarList,
   danmuStr,
   liveRoomInfo,
+  anchorInfo,
+  remoteVideo,
 } = usePull({
   localVideoRef,
-  canvasRef,
   liveType: liveTypeEnum.srsHlsPull,
   isSRS: false,
 });
+
+watch(
+  () => remoteVideo.value,
+  (newVal) => {
+    newVal.forEach((item) => {
+      remoteVideoRef.value?.appendChild(item);
+    });
+  },
+  {
+    deep: true,
+    immediate: true,
+  }
+);
 
 watch(
   () => damuList.value.length,
@@ -179,20 +188,24 @@ async function getLiveRoomInfo() {
 
 function startPull() {
   showPlayBtn.value = false;
-  handleHlsPlay();
+  handleHlsPlay(liveRoomInfo.value?.hls_url);
 }
 
 onMounted(() => {
   setTimeout(() => {
     scrollTo(0, 0);
   }, 100);
+  videoWrapHeight.value =
+    document.documentElement.clientWidth / videoRatio.value;
+  nextTick(() => {
+    if (containerRef.value && bottomRef.value) {
+      const res =
+        bottomRef.value.getBoundingClientRect().top -
+        containerRef.value.getBoundingClientRect().top;
+      containerHeight.value = res;
+    }
+  });
   getLiveRoomInfo();
-  if (containerRef.value && bottomRef.value) {
-    const res =
-      bottomRef.value.getBoundingClientRect().top -
-      containerRef.value.getBoundingClientRect().top;
-    height.value = res;
-  }
 });
 </script>
 
@@ -231,7 +244,6 @@ onMounted(() => {
     position: relative;
     overflow: hidden;
     flex: 1;
-    height: 230px;
     background-color: rgba($color: #000000, $alpha: 0.5);
     .cover {
       position: absolute;
@@ -244,7 +256,6 @@ onMounted(() => {
     .media-list {
       position: relative;
       overflow-y: scroll;
-      height: 230px;
       :deep(video) {
         display: block;
         width: 100%;
