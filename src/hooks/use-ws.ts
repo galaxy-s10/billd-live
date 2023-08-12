@@ -5,27 +5,33 @@ import { fetchRtcV1Play, fetchRtcV1Publish } from '@/api/srs';
 import { WEBSOCKET_URL } from '@/constant';
 import {
   DanmuMsgTypeEnum,
-  IAnswer,
-  ICandidate,
   IDanmu,
-  IHeartbeat,
-  IJoin,
   ILiveRoom,
   ILiveUser,
-  IMessage,
-  IOffer,
-  IOtherJoin,
-  IUpdateJoinInfo,
   IUser,
   LiveRoomTypeEnum,
   liveTypeEnum,
 } from '@/interface';
+import {
+  WSGetRoomAllUserType,
+  WsAnswerType,
+  WsCandidateType,
+  WsGetLiveUserType,
+  WsHeartbeatType,
+  WsJoinType,
+  WsLeavedType,
+  WsMessageType,
+  WsOfferType,
+  WsOtherJoinType,
+  WsRoomLivingType,
+  WsUpdateJoinInfoType,
+} from '@/interface-ws';
 import { WebRTCClass } from '@/network/webRTC';
 import {
   WebSocketClass,
   WsConnectStatusEnum,
   WsMsgTypeEnum,
-  prettierReceiveWebsocket,
+  prettierReceiveWsMsg,
 } from '@/network/webSocket';
 import { AppRootState, useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
@@ -41,7 +47,7 @@ export const useWs = () => {
   const roomId = ref('');
   const roomName = ref('');
   const roomNoLive = ref(false);
-  const roomLiveing = ref<IJoin['data']>();
+  const roomLiving = ref(false);
   const liveRoomInfo = ref<ILiveRoom>();
   const anchorInfo = ref<IUser>();
   const isAnchor = ref(false);
@@ -281,7 +287,7 @@ export const useWs = () => {
             ?.replaceTrack(canvasVideoStream.value!.getAudioTracks()[0]);
           const vel = createVideo({});
           vel.srcObject = canvasVideoStream.value!;
-          document.body.appendChild(vel);
+          // document.body.appendChild(vel);
           console.log(
             rtc.peerConnection
               ?.getSenders()
@@ -319,7 +325,7 @@ export const useWs = () => {
           }`
         );
       }
-      const data: IUpdateJoinInfo['data'] = {
+      const data: WsUpdateJoinInfoType['data'] = {
         live_room_id: Number(roomId.value),
         track: {
           audio: appStore.getTrackInfo().audio > 0 ? 1 : 2,
@@ -372,7 +378,7 @@ export const useWs = () => {
           }`
         );
       }
-      const data: IUpdateJoinInfo['data'] = {
+      const data: WsUpdateJoinInfoType['data'] = {
         live_room_id: Number(roomId.value),
         track: {
           audio: appStore.getTrackInfo().audio > 0 ? 1 : 2,
@@ -391,17 +397,15 @@ export const useWs = () => {
     return networkStore.wsMap.get(roomId.value)?.socketIo?.id || '-1';
   }
 
-  function handleHeartbeat(liveId: number) {
+  function handleHeartbeat(socketId: string) {
     loopHeartbeatTimer.value = setInterval(() => {
-      const instance = networkStore.wsMap.get(roomId.value);
-      if (!instance) return;
-      const heartbeatData: IHeartbeat['data'] = {
-        live_id: liveId,
-        live_room_id: Number(roomId.value),
-      };
-      instance.send({
+      const ws = networkStore.wsMap.get(roomId.value);
+      if (!ws) return;
+      ws.send<WsHeartbeatType['data']>({
         msgType: WsMsgTypeEnum.heartbeat,
-        data: heartbeatData,
+        data: {
+          socket_id: socketId,
+        },
       });
     }, 1000 * 5);
   }
@@ -436,22 +440,11 @@ export const useWs = () => {
       let res;
 
       if (isPull.value) {
-        console.log(
-          roomLiveing.value,
-          2222222222,
-          roomLiveing.value!.live!.live_room!.rtmp_url!.replace(
-            'rtmp',
-            'webrtc'
-          )
-        );
         res = await fetchRtcV1Play({
           api: `/rtc/v1/play/`,
           clientip: null,
           sdp: sdp!.sdp!,
-          streamurl: roomLiveing.value!.live!.live_room!.rtmp_url!.replace(
-            'rtmp',
-            'webrtc'
-          ),
+          streamurl: liveRoomInfo.value!.rtmp_url!.replace('rtmp', 'webrtc'),
           tid: getRandomString(10),
         });
       } else {
@@ -465,7 +458,7 @@ export const useWs = () => {
           ),
           tid: getRandomString(10),
         });
-        const data: IUpdateJoinInfo['data'] = {
+        const data: WsUpdateJoinInfoType['data'] = {
           live_room_id: Number(roomId.value),
           track: {
             audio: appStore.getTrackInfo().audio > 0 ? 1 : 2,
@@ -485,6 +478,12 @@ export const useWs = () => {
         new RTCSessionDescription({ type: 'answer', sdp: res.data.sdp })
       );
     }
+  }
+
+  function sendStartLive() {
+    networkStore.wsMap.get(roomId.value)?.send({
+      msgType: WsMsgTypeEnum.startLive,
+    });
   }
 
   function sendJoin() {
@@ -509,24 +508,20 @@ export const useWs = () => {
         );
       }
     }
-    const joinData: IJoin['data'] = {
-      live_room: {
-        id: Number(roomId.value),
-        name: roomName.value,
-        cover_img: lastCoverImg.value,
-        type: isSRS.value
-          ? LiveRoomTypeEnum.user_srs
-          : LiveRoomTypeEnum.user_wertc,
-        rtmp_url: resUrl,
-      },
-      live: {
-        track_audio: appStore.getTrackInfo().audio > 0 ? 1 : 2,
-        track_video: appStore.getTrackInfo().video > 0 ? 1 : 2,
-      },
-    };
-    instance.send({
+    instance.send<WsJoinType['data']>({
       msgType: WsMsgTypeEnum.join,
-      data: joinData,
+      data: {
+        socket_id: getSocketId(),
+        live_room: {
+          id: Number(roomId.value),
+          name: roomName.value,
+          cover_img: lastCoverImg.value,
+          type: isSRS.value
+            ? LiveRoomTypeEnum.user_srs
+            : LiveRoomTypeEnum.user_wertc,
+          rtmp_url: resUrl,
+        },
+      },
     });
   }
 
@@ -633,7 +628,8 @@ export const useWs = () => {
     if (!ws?.socketIo) return;
     // websocket连接成功
     ws.socketIo.on(WsConnectStatusEnum.connect, () => {
-      prettierReceiveWebsocket(WsConnectStatusEnum.connect);
+      prettierReceiveWsMsg(WsConnectStatusEnum.connect, ws.socketIo);
+      handleHeartbeat(ws.socketIo!.id);
       if (!ws) return;
       ws.status = WsConnectStatusEnum.connect;
       ws.update();
@@ -642,15 +638,15 @@ export const useWs = () => {
 
     // websocket连接断开
     ws.socketIo.on(WsConnectStatusEnum.disconnect, () => {
-      prettierReceiveWebsocket(WsConnectStatusEnum.disconnect, ws);
+      prettierReceiveWsMsg(WsConnectStatusEnum.disconnect, ws);
       if (!ws) return;
       ws.status = WsConnectStatusEnum.disconnect;
       ws.update();
     });
 
     // 收到offer
-    ws.socketIo.on(WsMsgTypeEnum.offer, async (data: IOffer) => {
-      prettierReceiveWebsocket(
+    ws.socketIo.on(WsMsgTypeEnum.offer, async (data: WsOfferType) => {
+      prettierReceiveWsMsg(
         WsMsgTypeEnum.offer,
         `发送者：${data.data.sender}，接收者：${data.data.receiver}`,
         data
@@ -673,7 +669,7 @@ export const useWs = () => {
           await rtc.setRemoteDescription(data.data.sdp);
           const sdp = await rtc.createAnswer();
           await rtc.setLocalDescription(sdp!);
-          const answerData: IAnswer = {
+          const answerData: WsAnswerType['data'] = {
             sdp,
             sender: getSocketId(),
             receiver: data.data.sender,
@@ -690,8 +686,8 @@ export const useWs = () => {
     });
 
     // 收到answer
-    ws.socketIo.on(WsMsgTypeEnum.answer, async (data: IOffer) => {
-      prettierReceiveWebsocket(
+    ws.socketIo.on(WsMsgTypeEnum.answer, async (data: WsOfferType) => {
+      prettierReceiveWsMsg(
         WsMsgTypeEnum.answer,
         `发送者：${data.data.sender}，接收者：${data.data.receiver}`,
         data
@@ -710,22 +706,22 @@ export const useWs = () => {
     });
 
     // 收到candidate
-    ws.socketIo.on(WsMsgTypeEnum.candidate, (data: ICandidate) => {
-      prettierReceiveWebsocket(
+    ws.socketIo.on(WsMsgTypeEnum.candidate, (data: WsCandidateType['data']) => {
+      prettierReceiveWsMsg(
         WsMsgTypeEnum.candidate,
-        `发送者：${data.data.sender}，接收者：${data.data.receiver}`,
+        `发送者：${data.sender}，接收者：${data.receiver}`,
         data
       );
       if (isSRS.value) return;
       if (!ws) return;
-      const rtc = networkStore.getRtcMap(`${roomId.value}___${data.socket_id}`);
+      const rtc = networkStore.getRtcMap(`${roomId.value}___${data.sender}`);
       if (!rtc) return;
-      if (data.socket_id !== getSocketId()) {
+      if (data.sender !== getSocketId()) {
         console.log('不是我发的candidate');
         const candidate = new RTCIceCandidate({
-          sdpMid: data.data.sdpMid,
-          sdpMLineIndex: data.data.sdpMLineIndex,
-          candidate: data.data.candidate,
+          sdpMid: data.sdpMid,
+          sdpMLineIndex: data.sdpMLineIndex,
+          candidate: data.candidate,
         });
         rtc.peerConnection
           ?.addIceCandidate(candidate)
@@ -741,9 +737,10 @@ export const useWs = () => {
     });
 
     // 管理员正在直播
-    ws.socketIo.on(WsMsgTypeEnum.roomLiveing, (data: IJoin) => {
-      prettierReceiveWebsocket(WsMsgTypeEnum.roomLiveing, data);
-      roomLiveing.value = data.data;
+    ws.socketIo.on(WsMsgTypeEnum.roomLiving, (data: WsRoomLivingType) => {
+      prettierReceiveWsMsg(WsMsgTypeEnum.roomLiving, data);
+      roomLiving.value = true;
+      roomNoLive.value = false;
       // 如果是srs开播，则不需要等有人进来了才new webrtc，只要Websocket连上了就开始new webrtc
       if (isSRS.value) {
         if (isPull.value) {
@@ -759,18 +756,29 @@ export const useWs = () => {
 
     // 管理员不在直播
     ws.socketIo.on(WsMsgTypeEnum.roomNoLive, (data) => {
-      prettierReceiveWebsocket(WsMsgTypeEnum.roomNoLive, data);
+      prettierReceiveWsMsg(WsMsgTypeEnum.roomNoLive, data);
       roomNoLive.value = true;
+      roomLiving.value = false;
     });
 
     // 当前所有在线用户
-    ws.socketIo.on(WsMsgTypeEnum.liveUser, (data) => {
-      prettierReceiveWebsocket(WsMsgTypeEnum.liveUser, data);
-    });
+    ws.socketIo.on(
+      WsMsgTypeEnum.liveUser,
+      (data: WSGetRoomAllUserType['data']) => {
+        prettierReceiveWsMsg(WsMsgTypeEnum.liveUser, data);
+        const res = data.liveUser.map((item) => {
+          return {
+            id: item.id,
+            // userInfo: item.id,
+          };
+        });
+        liveUserList.value = res;
+      }
+    );
 
     // 收到用户发送消息
-    ws.socketIo.on(WsMsgTypeEnum.message, (data: IMessage) => {
-      prettierReceiveWebsocket(WsMsgTypeEnum.message, data);
+    ws.socketIo.on(WsMsgTypeEnum.message, (data: WsMessageType) => {
+      prettierReceiveWsMsg(WsMsgTypeEnum.message, data);
       if (!ws) return;
       damuList.value.push({
         socket_id: data.socket_id,
@@ -781,58 +789,67 @@ export const useWs = () => {
     });
 
     // 用户加入房间完成
-    ws.socketIo.on(WsMsgTypeEnum.joined, (data: IJoin) => {
-      prettierReceiveWebsocket(WsMsgTypeEnum.joined, data);
-      if (data.data.live) {
-        handleHeartbeat(data.data.live.id!);
-      }
+    ws.socketIo.on(WsMsgTypeEnum.joined, (data: WsJoinType['data']) => {
+      prettierReceiveWsMsg(WsMsgTypeEnum.joined, data);
       joined.value = true;
-      trackInfo.track_audio = data.data.live?.track_audio!;
-      trackInfo.track_video = data.data.live?.track_video!;
+      trackInfo.track_audio = 1;
+      trackInfo.track_video = 1;
       liveUserList.value.push({
-        id: `${getSocketId()}`,
+        id: data.socket_id,
         userInfo: data.user_info,
       });
-      liveRoomInfo.value = data.data.live_room;
-      anchorInfo.value = data.data.anchor_info;
+      liveRoomInfo.value = data.live_room;
+      anchorInfo.value = data.anchor_info;
+      ws.send<WsGetLiveUserType['data']>({
+        msgType: WsMsgTypeEnum.getLiveUser,
+        data: {
+          live_room_id: data.live_room.id!,
+        },
+      });
       // 如果是srs开播，则不需要等有人进来了才new webrtc，只要Websocket连上了就开始new webrtc
-      if (isSRS.value) {
-        if (!isPull.value) {
-          startNewWebRtc({
-            receiver: 'srs',
-            videoEl: localVideo.value,
-          });
-        }
-      }
+      // if (isSRS.value) {
+      //   if (!isPull.value) {
+      //     startNewWebRtc({
+      //       receiver: 'srs',
+      //       videoEl: localVideo.value,
+      //     });
+      //   }
+      // }
     });
 
     // 其他用户加入房间
-    ws.socketIo.on(WsMsgTypeEnum.otherJoin, (data: IOtherJoin) => {
-      prettierReceiveWebsocket(WsMsgTypeEnum.otherJoin, data);
+    ws.socketIo.on(WsMsgTypeEnum.otherJoin, (data: WsOtherJoinType['data']) => {
+      prettierReceiveWsMsg(WsMsgTypeEnum.otherJoin, data);
       liveUserList.value.push({
-        id: data.data.join_socket_id,
-        userInfo: data.data.join_user_info,
+        id: data.join_socket_id,
+        userInfo: data.join_user_info,
       });
       const danmu: IDanmu = {
         msgType: DanmuMsgTypeEnum.otherJoin,
-        socket_id: data.data.join_socket_id,
-        userInfo: data.data.join_user_info,
+        socket_id: data.join_socket_id,
+        userInfo: data.join_user_info,
         msg: '',
       };
       damuList.value.push(danmu);
+      ws.send<WsGetLiveUserType['data']>({
+        msgType: WsMsgTypeEnum.getLiveUser,
+        data: {
+          live_room_id: data.live_room.id!,
+        },
+      });
       // 如果是srs开播，且进来的用户不是srs-webrtc-pull，则不能再new webrtc了
       if (isSRS.value) return;
       if (joined.value) {
-        startNewWebRtc({
-          receiver: data.data.join_socket_id,
-          videoEl: localVideo.value,
-        });
+        // startNewWebRtc({
+        //   receiver: data.join_socket_id,
+        //   videoEl: localVideo.value,
+        // });
       }
     });
 
     // 用户离开房间
     ws.socketIo.on(WsMsgTypeEnum.leave, (data) => {
-      prettierReceiveWebsocket(WsMsgTypeEnum.leave, data);
+      prettierReceiveWsMsg(WsMsgTypeEnum.leave, data);
       if (!ws) return;
       ws.send({
         msgType: WsMsgTypeEnum.leave,
@@ -841,19 +858,20 @@ export const useWs = () => {
     });
 
     // 用户离开房间完成
-    ws.socketIo.on(WsMsgTypeEnum.leaved, (data) => {
-      prettierReceiveWebsocket(WsMsgTypeEnum.leaved, data);
+    ws.socketIo.on(WsMsgTypeEnum.leaved, (data: WsLeavedType['data']) => {
+      prettierReceiveWsMsg(WsMsgTypeEnum.leaved, data);
       networkStore.rtcMap
-        .get(`${roomId.value}___${data.socketId as string}`)
+        .get(`${roomId.value}___${data.socket_id as string}`)
         ?.close();
-      networkStore.removeRtc(`${roomId.value}___${data.socketId as string}`);
+      networkStore.removeRtc(`${roomId.value}___${data.socket_id as string}`);
       const res = liveUserList.value.filter(
-        (item) => item.id !== data.socketId
+        (item) => item.id !== data.socket_id
       );
       liveUserList.value = res;
       damuList.value.push({
-        socket_id: data.socketId,
+        socket_id: data.socket_id,
         msgType: DanmuMsgTypeEnum.userLeaved,
+        userInfo: data.user_info,
         msg: '',
       });
     });
@@ -896,9 +914,11 @@ export const useWs = () => {
     initWs,
     addTrack,
     delTrack,
+    startNewWebRtc,
+    sendStartLive,
     canvasVideoStream,
     lastCoverImg,
-    roomLiveing,
+    roomLiving,
     liveRoomInfo,
     anchorInfo,
     roomNoLive,

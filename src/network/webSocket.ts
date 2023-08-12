@@ -1,5 +1,6 @@
 import { Socket, io } from 'socket.io-client';
 
+import { IWsFormat } from '@/interface-ws';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 
@@ -38,7 +39,7 @@ export enum WsMsgTypeEnum {
   /** 用户发送消息 */
   message = 'message',
   /** 房间正在直播 */
-  roomLiveing = 'roomLiveing',
+  roomLiving = 'roomLiving',
   /** 房间不在直播 */
   roomNoLive = 'roomNoLive',
   /** sendBlob */
@@ -52,10 +53,14 @@ export enum WsMsgTypeEnum {
   offer = 'offer',
   answer = 'answer',
   candidate = 'candidate',
+  startLive = 'startLive',
 }
 
-export function prettierReceiveWebsocket(...arg) {
+export function prettierReceiveWsMsg(...arg) {
   console.warn('【websocket】收到消息', ...arg);
+}
+export function prettierSendWsMsg(...arg) {
+  console.warn('【websocket】发送消息', ...arg);
 }
 
 export class WebSocketClass {
@@ -82,7 +87,14 @@ export class WebSocketClass {
   }
 
   // 发送websocket消息
-  send = ({ msgType, data }: { msgType: WsMsgTypeEnum; data?: any }) => {
+  send = <T extends unknown>({
+    // 写成<T extends unknown>而不是<T>是为了避免eslint将箭头函数的<T>后面的内容识别成jsx语法
+    msgType,
+    data,
+  }: {
+    msgType: WsMsgTypeEnum;
+    data?: T;
+  }) => {
     if (!this.socketIo?.connected) {
       console.error(
         '【websocket】未连接成功，不发送websocket消息！',
@@ -91,13 +103,13 @@ export class WebSocketClass {
       );
       return;
     }
-    console.warn('【websocket】发送消息', msgType, data);
+    prettierSendWsMsg(msgType, data);
     const userStore = useUserStore();
-    const sendData = {
+    const sendData: IWsFormat<any> = {
       socket_id: this.socketIo.id,
       is_anchor: this.isAnchor,
       user_info: userStore.userInfo,
-      data,
+      data: data || {},
     };
     this.socketIo?.emit(msgType, sendData);
   };

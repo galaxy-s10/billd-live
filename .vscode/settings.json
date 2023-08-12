@@ -2,8 +2,6 @@
   // 指定行尾序列为\n（LF）或者\r\n（CRLF）或者auto
   // "files.eol": "\n",
 
-  "vue.codeActions.savingTimeLimit": 1000,
-
   // 在保存时格式化
   "editor.formatOnSave": true,
   "editor.formatOnSaveMode": "file",
@@ -44,5 +42,6 @@
     "tsx",
     "vue"
   ],
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "vue.codeActions.savingTimeLimit": 1000
 }

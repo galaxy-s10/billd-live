@@ -45,6 +45,7 @@ export function useFlvPlay() {
   }
 
   function startFlvPlay(data: { flvurl: string }) {
+    console.log('startFlvPlay', data.flvurl);
     destroyFlv();
     return new Promise<{ width: number; height: number }>((resolve) => {
       if (mpegts.getFeatureList().mseLivePlayback && mpegts.isSupported()) {
@@ -128,6 +129,7 @@ export function useHlsPlay() {
   );
 
   function startHlsPlay(data: { hlsurl: string }) {
+    console.log('startHlsPlay', data.hlsurl);
     destroyHls();
     const videoEl = createVideo({ muted: appStore.muted, autoplay: true });
     hlsVideoEl.value = videoEl;

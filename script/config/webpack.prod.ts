@@ -11,7 +11,6 @@ import TerserPlugin from 'terser-webpack-plugin';
 // import { version as vueVersion } from 'vue/package.json';
 import { Configuration } from 'webpack';
 import WebpackBar from 'webpackbar';
-import { VueLoaderPlugin } from 'vue-loader';
 
 import { gzipEnable } from '../constant';
 import { chalkINFO } from '../utils/chalkTip';
@@ -177,7 +176,6 @@ const prodConfig: Configuration = {
     ],
   },
   plugins: [
-    // new VueLoaderPlugin(),
     // 构建进度条
     new WebpackBar(),
     // http压缩

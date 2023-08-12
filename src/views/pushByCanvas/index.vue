@@ -264,7 +264,15 @@ import {
 } from '@vicons/ionicons5';
 import { fabric } from 'fabric';
 import { UploadFileInfo } from 'naive-ui';
-import { markRaw, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
+import {
+  Raw,
+  markRaw,
+  onMounted,
+  onUnmounted,
+  reactive,
+  ref,
+  watch,
+} from 'vue';
 import { useRoute } from 'vue-router';
 import * as workerTimers from 'worker-timers';
 
@@ -304,6 +312,7 @@ const fabricCanvas = ref<fabric.Canvas>();
 const localVideoRef = ref<HTMLVideoElement>();
 const audioCtx = ref<AudioContext>();
 const remoteVideoRef = ref<HTMLVideoElement[]>([]);
+const timeCanvasDom = ref<Raw<fabric.Text>[]>([]);
 const isSRS = route.query.liveType === liveTypeEnum.srsPush;
 const wrapSize = reactive({
   width: 0,
@@ -319,8 +328,8 @@ const {
   endLive,
   sendDanmu,
   keydownDanmu,
-  lastCoverImg,
   canvasVideoStream,
+  lastCoverImg,
   isLiving,
   allMediaTypeList,
   currentResolutionRatio,
@@ -357,7 +366,6 @@ onMounted(() => {
   setTimeout(() => {
     scrollTo(0, 0);
   }, 100);
-  // initNullAudio();
   initUserMedia();
   initCanvas();
   handleCache();
@@ -383,7 +391,7 @@ function onPageVisibility() {
     if (isLiving.value) {
       const delay = 1000 / 60; // 16.666666666666668
       workerTimerId.value = workerTimers.setInterval(() => {
-        fabricCanvas.value?.renderAll();
+        renderAll();
       }, delay);
     }
   } else {
@@ -422,12 +430,19 @@ function initUserMedia() {
     });
 }
 
+function renderAll() {
+  timeCanvasDom.value.forEach((item) => {
+    item.text = new Date().toLocaleString();
+  });
+  fabricCanvas.value?.renderAll();
+}
+
 function clearFrame() {
   window.cancelAnimationFrame(requestAnimationFrameId.value);
 }
 
 function renderFrame() {
-  fabricCanvas.value?.renderAll();
+  renderAll();
   requestAnimationFrameId.value = window.requestAnimationFrame(renderFrame);
 }
 
@@ -456,7 +471,7 @@ function initNullAudio() {
   gainNode.connect(audioContext.destination);
   const destination = audioContext.createMediaStreamDestination();
 
-  const audioTrack: AppRootState['allTrack'][0] = {
+  const webAudioTrack: AppRootState['allTrack'][0] = {
     id: getRandomEnglishString(8),
     audio: 1,
     video: 2,
@@ -469,22 +484,16 @@ function initNullAudio() {
     hidden: true,
     muted: false,
   };
-  const res = [...appStore.allTrack, audioTrack];
+  const res = [...appStore.allTrack, webAudioTrack];
   appStore.setAllTrack(res);
-  const webAudioItem = resourceCacheStore.list.find(
-    (item) => item.type === MediaTypeEnum.webAudio
-  );
-  if (!webAudioItem) {
-    resourceCacheStore.setList([...resourceCacheStore.list, audioTrack]);
-  }
   const vel = createVideo({});
-  // vel.style.width = `1px`;
-  // vel.style.height = `1px`;
+  vel.style.width = `1px`;
+  vel.style.height = `1px`;
   vel.style.position = 'fixed';
   vel.style.bottom = '0';
   vel.style.right = '0';
-  // vel.style.opacity = '0';
-  // vel.style.pointerEvents = 'none';
+  vel.style.opacity = '0';
+  vel.style.pointerEvents = 'none';
   vel.srcObject = destination.stream;
   document.body.appendChild(vel);
 }
@@ -493,6 +502,7 @@ let streamTmp: MediaStream;
 let vel;
 
 function handleMixedAudio() {
+  console.log('handleMixedAudiohandleMixedAudio');
   const allAudioTrack = appStore.allTrack.filter((item) => item.audio === 1);
   if (audioCtx.value) {
     const gainNode = audioCtx.value.createGain();
@@ -532,6 +542,10 @@ function handleMixedAudio() {
 }
 
 function handleStartLive() {
+  // WARN 不能省略initNullAudio，否则开播时候没有音频的时候，srs那边的audio是 Stream #0:0: Audio: aac, 44100 Hz, stereo, 128 kb/s
+  // 会导致加载直播很慢，正常的audio应该是Stream #0:0: Audio: aac (LC), 48000 Hz, stereo, fltp
+  // 开播前执行initNullAudio，audio就会是正常的
+  initNullAudio();
   if (!audioCtx.value) {
     audioCtx.value = new AudioContext();
   }
@@ -582,7 +596,7 @@ function autoCreateVideo({
   rect?: { left: number; top: number };
   muted?: boolean;
 }) {
-  console.warn('autoCreateVideo', id);
+  console.warn('autoCreateVideoautoCreateVideo', id);
   const videoEl = createVideo({});
   if (muted !== undefined) {
     videoEl.muted = muted;
@@ -670,42 +684,62 @@ function changeCanvasAttr({
       videoRatio.value;
     fabricCanvas.value.setWidth(resolutionWidth);
     fabricCanvas.value.setHeight(resolutionHeight);
-    // fabricCanvas.value.forEachObject((canvas) => {
-    //   canvas.setCoords();
-    // });
-    appStore.allTrack.forEach((item) => {
-      if (item.canvasDom) {
-        // 分辨率变小了，将图片变小
-        if (newHeight < oldHeight) {
-          const ratio = newHeight / oldHeight;
-          const ratio1 = (item.canvasDom.scaleX || 1) * ratio;
-          const ratio2 = oldHeight / newHeight;
-          console.log(
-            ratio,
-            ratio1,
-            '分辨率变小了，将图片变小-----',
-            item.canvasDom
-          );
-          item.canvasDom.scale(ratio1);
-          item.canvasDom.left = item.canvasDom.left! / ratio2;
-          item.canvasDom.top = item.canvasDom.top! / ratio2;
-        } else {
-          // 分辨率变大了，将图片变大
-          const ratio = newHeight / oldHeight;
-          const ratio1 = (item.canvasDom.scaleX || 1) * ratio;
-          const ratio2 = oldHeight / newHeight;
-          console.log(
-            ratio,
-            ratio1,
-            '分辨率变大了，将图片变大-----',
-            item.canvasDom
-          );
-          item.canvasDom.scale(ratio1);
-          item.canvasDom.left = item.canvasDom.left! / ratio2;
-          item.canvasDom.top = item.canvasDom.top! / ratio2;
-        }
+    fabricCanvas.value.forEachObject((item) => {
+      // 分辨率变小了，将图片变小
+      if (newHeight < oldHeight) {
+        const ratio = newHeight / oldHeight;
+        const ratio1 = (item.scaleX || 1) * ratio;
+        const ratio2 = oldHeight / newHeight;
+        console.log(ratio, ratio1, '分辨率变小了，将图片变小-----', item);
+        item.scale(ratio1);
+        item.left = item.left! / ratio2;
+        item.top = item.top! / ratio2;
+        fabricCanvas.value?.renderAndReset();
+      } else {
+        // 分辨率变大了，将图片变大
+        // const ratio = newHeight / oldHeight;
+        // const ratio1 = (item.scaleX || 1) * ratio;
+        // const ratio2 = oldHeight / newHeight;
+        // console.log(ratio, ratio1, '分辨率变大了，将图片变大-----', item);
+        // item.scale(ratio1);
+        // item.left = item.left! / ratio2;
+        // item.top = item.top! / ratio2;
       }
     });
+    // appStore.allTrack.forEach((item) => {
+    //   console.log('当前类型', item.type);
+    //   if (item.canvasDom) {
+    //     // 分辨率变小了，将图片变小
+    //     if (newHeight < oldHeight) {
+    //       const ratio = newHeight / oldHeight;
+    //       const ratio1 = (item.canvasDom.scaleX || 1) * ratio;
+    //       const ratio2 = oldHeight / newHeight;
+    //       console.log(
+    //         ratio,
+    //         ratio1,
+    //         '分辨率变小了，将图片变小-----',
+    //         item.canvasDom
+    //       );
+    //       item.canvasDom.scale(ratio1);
+    //       item.canvasDom.left = item.canvasDom.left! / ratio2;
+    //       item.canvasDom.top = item.canvasDom.top! / ratio2;
+    //     } else {
+    //       // 分辨率变大了，将图片变大
+    //       const ratio = newHeight / oldHeight;
+    //       const ratio1 = (item.canvasDom.scaleX || 1) * ratio;
+    //       const ratio2 = oldHeight / newHeight;
+    //       console.log(
+    //         ratio,
+    //         ratio1,
+    //         '分辨率变大了，将图片变大-----',
+    //         item.canvasDom
+    //       );
+    //       item.canvasDom.scale(ratio1);
+    //       item.canvasDom.left = item.canvasDom.left! / ratio2;
+    //       item.canvasDom.top = item.canvasDom.top! / ratio2;
+    //     }
+    //   }
+    // });
     changeCanvasStyle();
   }
 }
@@ -903,6 +937,23 @@ async function handleCache() {
         fabricCanvas.value.add(canvasDom);
         obj.canvasDom = canvasDom;
       }
+    } else if (item.type === MediaTypeEnum.time) {
+      obj.timeInfo = item.timeInfo;
+      if (fabricCanvas.value) {
+        const canvasDom = markRaw(
+          new fabric.Text(new Date().toLocaleString(), {
+            top: item.rect?.top || 0,
+            left: item.rect?.left || 0,
+            fill: item.timeInfo?.color,
+          })
+        );
+        timeCanvasDom.value.push(canvasDom);
+        handleMoving({ canvasDom, id: obj.id });
+        handleScaling({ canvasDom, id: obj.id });
+        canvasDom.scale(item.scaleInfo?.scaleX || 1);
+        fabricCanvas.value.add(canvasDom);
+        obj.canvasDom = canvasDom;
+      }
     } else if (item.type === MediaTypeEnum.img) {
       queue.push(handleImg());
     }
@@ -924,6 +975,7 @@ async function addMediaOk(val: {
   deviceId: string;
   mediaName: string;
   txtInfo?: { txt: string; color: string };
+  timeInfo?: { color: string };
   imgInfo?: UploadFileInfo[];
   mediaInfo?: UploadFileInfo[];
 }) {
@@ -1092,6 +1144,46 @@ async function addMediaOk(val: {
     resourceCacheStore.setList(res);
     // @ts-ignore
     addTrack(txtTrack);
+
+    console.log('获取文字成功', fabricCanvas.value);
+  } else if (val.type === MediaTypeEnum.time) {
+    const timeTrack: AppRootState['allTrack'][0] = {
+      id: getRandomEnglishString(8),
+      audio: 2,
+      video: 1,
+      mediaName: val.mediaName,
+      type: MediaTypeEnum.time,
+      track: undefined,
+      trackid: undefined,
+      stream: undefined,
+      streamid: undefined,
+      hidden: false,
+      muted: false,
+    };
+    if (fabricCanvas.value) {
+      const canvasDom = markRaw(
+        new fabric.Text(new Date().toLocaleString(), {
+          top: 0,
+          left: 0,
+          fill: val.timeInfo?.color,
+        })
+      );
+      timeCanvasDom.value.push(canvasDom);
+      handleMoving({ canvasDom, id: timeTrack.id });
+      handleScaling({ canvasDom, id: timeTrack.id });
+      timeTrack.timeInfo = val.timeInfo;
+      // @ts-ignore
+      timeTrack.canvasDom = canvasDom;
+      fabricCanvas.value.add(canvasDom);
+    }
+
+    const res = [...appStore.allTrack, timeTrack];
+    // @ts-ignore
+    appStore.setAllTrack(res);
+    // @ts-ignore
+    resourceCacheStore.setList(res);
+    // @ts-ignore
+    addTrack(timeTrack);
 
     console.log('获取文字成功', fabricCanvas.value);
   } else if (val.type === MediaTypeEnum.img) {

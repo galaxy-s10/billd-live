@@ -23,6 +23,7 @@ export type AppRootState = {
     muted?: boolean;
     videoEl?: HTMLVideoElement;
     txtInfo?: { txt: string; color: string };
+    timeInfo?: { color: string };
     rect?: { top: number; left: number };
     scaleInfo?: { scaleX: number; scaleY: number };
   }[];

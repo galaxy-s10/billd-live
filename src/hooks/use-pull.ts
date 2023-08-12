@@ -13,12 +13,10 @@ import { createVideo, videoToCanvas } from '@/utils';
 
 export function usePull({
   localVideoRef,
-  canvasRef,
   isSRS,
   liveType,
 }: {
   localVideoRef: Ref<HTMLVideoElement[]>;
-  canvasRef: Ref<Element | undefined>;
   isSRS: boolean;
   liveType: liveTypeEnum;
 }) {
@@ -39,14 +37,11 @@ export function usePull({
     }[]
   >([]);
   const videoElArr = ref<HTMLVideoElement[]>([]);
+  const remoteVideo = ref<HTMLElement[]>([]);
   const {
     getSocketId,
     initWs,
-    addTrack,
-    delTrack,
-    canvasVideoStream,
-    lastCoverImg,
-    roomLiveing,
+    roomLiving,
     liveRoomInfo,
     anchorInfo,
     roomNoLive,
@@ -54,12 +49,6 @@ export function usePull({
     localStream,
     liveUserList,
     damuList,
-    maxBitrate,
-    maxFramerate,
-    resolutionRatio,
-    currentMaxFramerate,
-    currentMaxBitrate,
-    currentResolutionRatio,
   } = useWs();
 
   const { flvPlayer, flvVideoEl, startFlvPlay, destroyFlv } = useFlvPlay();
@@ -88,7 +77,7 @@ export function usePull({
       size: { width, height },
     });
     stopDrawingArr.value.push(stopDrawing);
-    canvasRef.value!.appendChild(canvas);
+    remoteVideo.value.push(canvas);
     videoLoading.value = false;
   }
 
@@ -104,7 +93,7 @@ export function usePull({
       size,
     });
     stopDrawingArr.value.push(initCanvas.stopDrawing);
-    canvasRef.value!.appendChild(initCanvas.canvas);
+    remoteVideo.value.push(initCanvas.canvas);
     flvPlayer.value!.on(mpegts.Events.MEDIA_INFO, () => {
       console.log('数据变了');
       size.width = flvVideoEl.value!.videoWidth!;
@@ -114,6 +103,7 @@ export function usePull({
   }
 
   async function handlePlay() {
+    console.log('kkkk21', roomLiveType.value);
     if (roomLiveType.value === liveTypeEnum.srsFlvPull) {
       if (!autoplayVal.value) return;
       await handleFlvPlay();
@@ -134,14 +124,12 @@ export function usePull({
   );
 
   watch(
-    () => roomLiveing.value,
+    () => roomLiving.value,
     (val) => {
       if (val) {
-        flvurl.value = val.live?.live_room?.flv_url!;
-        hlsurl.value = val.live?.live_room?.hls_url!;
-        // if (val && roomLiveType.value === liveTypeEnum.webrtcPull) {
+        flvurl.value = liveRoomInfo.value?.flv_url!;
+        hlsurl.value = liveRoomInfo.value?.hls_url!;
         handlePlay();
-        // }
       }
     }
   );
@@ -171,7 +159,7 @@ export function usePull({
             const video = createVideo({});
             video.setAttribute('track-id', track.id);
             video.srcObject = new MediaStream([track]);
-            canvasRef.value?.appendChild(video);
+            remoteVideo.value.push(video);
             videoElArr.value.push(video);
           });
           stream.value?.getAudioTracks().forEach((track) => {
@@ -179,7 +167,7 @@ export function usePull({
             const video = createVideo({});
             video.setAttribute('track-id', track.id);
             video.srcObject = new MediaStream([track]);
-            canvasRef.value?.appendChild(video);
+            remoteVideo.value.push(video);
             videoElArr.value.push(video);
           });
           videoLoading.value = false;
@@ -193,8 +181,7 @@ export function usePull({
             video.setAttribute('track-id', track.id);
             video.srcObject = new MediaStream([track]);
             // document.body.appendChild(video);
-            // console.log('kkkk', video);
-            canvasRef.value?.appendChild(video);
+            remoteVideo.value.push(video);
             videoElArr.value.push(video);
           });
           stream.value?.getAudioTracks().forEach((track) => {
@@ -202,7 +189,7 @@ export function usePull({
             const video = createVideo({});
             video.setAttribute('track-id', track.id);
             video.srcObject = new MediaStream([track]);
-            canvasRef.value?.appendChild(video);
+            remoteVideo.value.push(video);
             videoElArr.value.push(video);
           });
           videoLoading.value = false;
@@ -310,8 +297,9 @@ export function usePull({
     addVideo,
     handleHlsPlay,
     handleFlvPlay,
+    remoteVideo,
     roomLiveType,
-    roomLiveing,
+    roomLiving,
     autoplayVal,
     videoLoading,
     roomNoLive,

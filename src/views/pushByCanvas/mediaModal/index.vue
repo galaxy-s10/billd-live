@@ -42,6 +42,14 @@
             </div>
           </div>
         </template>
+        <template v-if="props.mediaType === MediaTypeEnum.time && timeInfo">
+          <div class="item">
+            <div class="label">颜色</div>
+            <div class="value">
+              <n-color-picker v-model:value="timeInfo.color" />
+            </div>
+          </div>
+        </template>
         <template v-if="props.mediaType === MediaTypeEnum.img">
           <div class="item">
             <div class="label">图片</div>
@@ -109,6 +117,7 @@ const emits = defineEmits(['close', 'ok']);
 
 const inputOptions = ref<{ label: string; value: string }[]>([]);
 const txtInfo = ref<{ txt: string; color: string }>();
+const timeInfo = ref<{ color: string }>();
 const imgInfo = ref<UploadFileInfo[]>();
 const mediaInfo = ref<UploadFileInfo[]>();
 const currentInput = ref<{
@@ -160,6 +169,7 @@ function handleOk() {
     txtInfo: txtInfo.value,
     imgInfo: imgInfo.value,
     mediaInfo: mediaInfo.value,
+    timeInfo: timeInfo.value,
   });
 }
 
@@ -227,6 +237,17 @@ async function init() {
     setTimeout(() => {
       inputInstRef.value?.focus();
     }, 100);
+  } else if (props.mediaType === MediaTypeEnum.time) {
+    currentInput.value = {
+      ...currentInput.value,
+      type: MediaTypeEnum.time,
+    };
+    timeInfo.value = { color: 'rgba(255,215,0,1)' };
+    mediaName.value = `时间-${
+      appStore.allTrack
+        .filter((item) => item.type === MediaTypeEnum.time)
+        .filter((item) => !item.hidden).length + 1
+    }`;
   } else if (props.mediaType === MediaTypeEnum.img) {
     currentInput.value = {
       ...currentInput.value,

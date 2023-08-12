@@ -22,6 +22,7 @@
             </div>
           </div>
         </div>
+        <div class="other">在线人数：{{ liveUserList.length }}</div>
       </div>
       <div
         ref="containerRef"
@@ -47,10 +48,15 @@
             }"
           ></div>
           <div
-            ref="canvasRef"
+            ref="remoteVideoRef"
             class="media-list"
             :class="{ item: appStore.allTrack.length > 1 }"
           ></div>
+          <!-- <div
+            ref="remoteVideoRef"
+            class="media-list"
+            :class="{ item: appStore.allTrack.length > 1 }"
+          ></div> -->
           <VideoControls></VideoControls>
         </div>
       </div>
@@ -64,6 +70,7 @@
           v-for="(item, index) in giftGoodsList"
           :key="index"
           class="item"
+          @click="handlePay()"
         >
           <div
             class="ico"
@@ -171,8 +178,10 @@
         </div>
       </div>
     </div>
-    <RechargeCpt v-if="showRecharge"></RechargeCpt>
-    <!-- </template> -->
+    <RechargeCpt
+      :show="showRecharge"
+      @close="(v) => (showRecharge = v)"
+    ></RechargeCpt>
   </div>
 </template>
 
@@ -207,7 +216,7 @@ const showSidebar = ref(true);
 const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
 const danmuListRef = ref<HTMLDivElement>();
-const canvasRef = ref<HTMLDivElement>();
+const remoteVideoRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
 const localVideoRef = ref<HTMLVideoElement[]>([]);
 const {
@@ -219,6 +228,7 @@ const {
   sendDanmu,
   addVideo,
   videoLoading,
+  remoteVideo,
   roomNoLive,
   damuList,
   liveUserList,
@@ -227,7 +237,6 @@ const {
   anchorInfo,
 } = usePull({
   localVideoRef,
-  canvasRef,
   liveType: route.query.liveType as liveTypeEnum,
   isSRS: [
     liveTypeEnum.srsWebrtcPull,
@@ -235,6 +244,52 @@ const {
     liveTypeEnum.srsHlsPull,
   ].includes(route.query.liveType as liveTypeEnum),
 });
+
+onUnmounted(() => {
+  closeWs();
+  closeRtc();
+});
+
+watch(
+  () => remoteVideo.value,
+  (newVal) => {
+    newVal.forEach((item) => {
+      remoteVideoRef.value?.appendChild(item);
+    });
+  },
+  {
+    deep: true,
+    immediate: true,
+  }
+);
+
+onMounted(() => {
+  setTimeout(() => {
+    scrollTo(0, 0);
+  }, 100);
+  getGoodsList();
+  if (
+    [
+      liveTypeEnum.srsHlsPull,
+      liveTypeEnum.srsFlvPull,
+      liveTypeEnum.srsWebrtcPull,
+    ].includes(route.query.liveType as liveTypeEnum)
+  ) {
+    showSidebar.value = false;
+  }
+  if (topRef.value && bottomRef.value && containerRef.value) {
+    const res =
+      bottomRef.value.getBoundingClientRect().top -
+      (topRef.value.getBoundingClientRect().top +
+        topRef.value.getBoundingClientRect().height);
+    height.value = res;
+  }
+  initPull();
+});
+
+function handlePay() {
+  window.$message.info('敬请期待~');
+}
 
 async function getGoodsList() {
   try {
@@ -255,8 +310,9 @@ async function getGoodsList() {
 }
 
 function handleRecharge() {
+  console.log(showRecharge.value);
   if (!loginTip()) return;
-  showRecharge.value = !showRecharge.value;
+  showRecharge.value = true;
 }
 
 function handleJoin() {
@@ -278,32 +334,6 @@ watch(
     }, 0);
   }
 );
-
-onUnmounted(() => {
-  closeWs();
-  closeRtc();
-});
-
-onMounted(() => {
-  getGoodsList();
-  if (
-    [
-      liveTypeEnum.srsHlsPull,
-      liveTypeEnum.srsFlvPull,
-      liveTypeEnum.srsWebrtcPull,
-    ].includes(route.query.liveType as liveTypeEnum)
-  ) {
-    showSidebar.value = false;
-  }
-  if (topRef.value && bottomRef.value && containerRef.value) {
-    const res =
-      bottomRef.value.getBoundingClientRect().top -
-      (topRef.value.getBoundingClientRect().top +
-        topRef.value.getBoundingClientRect().height);
-    height.value = res;
-  }
-  initPull();
-});
 </script>
 
 <style lang="scss" scoped>
@@ -355,26 +385,7 @@ onMounted(() => {
         display: flex;
         flex-direction: column;
         justify-content: center;
-        font-size: 12px;
-        .top {
-          display: flex;
-          align-items: center;
-          .item {
-            display: flex;
-            align-items: center;
-            margin-right: 20px;
-            .ico {
-              display: inline-block;
-              margin-right: 4px;
-              width: 10px;
-              height: 10px;
-              border-radius: 50%;
-            }
-          }
-        }
-        .bottom {
-          margin-top: 10px;
-        }
+        font-size: 14px;
       }
     }
     .container {
@@ -419,16 +430,16 @@ onMounted(() => {
             width: 100%;
             height: 100%;
           }
-          &.item {
-            :deep(video) {
-              width: 50%;
-              height: initial !important;
-            }
-            :deep(canvas) {
-              width: 50%;
-              height: initial !important;
-            }
-          }
+          // &.item {
+          //   :deep(video) {
+          //     width: 50%;
+          //     height: initial !important;
+          //   }
+          //   :deep(canvas) {
+          //     width: 50%;
+          //     height: initial !important;
+          //   }
+          // }
         }
 
         .controls {
@@ -481,6 +492,9 @@ onMounted(() => {
       box-sizing: border-box;
       margin: 5px 0;
       height: 100px;
+      > :last-child {
+        position: absolute;
+      }
       .item {
         display: flex;
         align-items: center;
@@ -494,6 +508,7 @@ onMounted(() => {
         &:hover {
           background-color: #ebe0ce;
         }
+
         .ico {
           position: relative;
           width: 45px;

@@ -327,6 +327,7 @@ export enum MediaTypeEnum {
   txt,
   img,
   media,
+  time,
   webAudio,
 }
 
@@ -377,6 +378,24 @@ export interface IOtherJoin {
     live_room_user_info: IUser;
     join_user_info?: IUser;
     join_socket_id: string;
+  };
+}
+
+export interface IRoomNoLive {
+  data: {
+    live_room: ILiveRoom;
+  };
+}
+
+export interface IStartLive {
+  socket_id: string;
+  user_info: IUser;
+  data: any;
+}
+
+export interface IRoomLiving {
+  data: {
+    live_room: ILiveRoom;
   };
 }
 

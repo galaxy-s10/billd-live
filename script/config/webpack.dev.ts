@@ -2,7 +2,6 @@ import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import portfinder from 'portfinder';
 import { Configuration } from 'webpack';
 import WebpackBar from 'webpackbar';
-import { VueLoaderPlugin } from 'vue-loader';
 
 import { outputStaticUrl, webpackBarEnable } from '../constant';
 import TerminalPrintPlugin from '../TerminalPrintPlugin';

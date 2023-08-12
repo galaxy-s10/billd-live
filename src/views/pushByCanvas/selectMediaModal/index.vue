@@ -27,7 +27,7 @@ import { onMounted } from 'vue';
 
 import { MediaTypeEnum } from '@/interface';
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
     allMediaTypeList: {
       [index: string]: {

@@ -32,4 +32,5 @@ export const mediaTypeEnumMap = {
   [MediaTypeEnum.img]: '图片',
   [MediaTypeEnum.txt]: '文字',
   [MediaTypeEnum.media]: '视频',
+  [MediaTypeEnum.time]: '时间',
 };

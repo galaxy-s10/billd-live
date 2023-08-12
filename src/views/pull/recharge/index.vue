@@ -6,6 +6,7 @@
       title="充值"
       preset="card"
       class="container"
+      @update:show="handleOnClose"
     >
       <div>
         充值金额（最低充值{{ minMoney }}元，最高充值{{ maxMoney }}元）
@@ -36,13 +37,13 @@
 </template>
 
 <script lang="ts" setup>
-import { nextTick, reactive, ref } from 'vue';
+import { nextTick, reactive, ref, watch } from 'vue';
 
 import { fetchFindByTypeGoods } from '@/api/goods';
 import QrPayCpt from '@/components/QrPay/index.vue';
 import { GoodsTypeEnum } from '@/interface';
 
-const showModal = ref(true);
+const showModal = ref(false);
 const maxMoney = 200;
 const minMoney = 0.1;
 const money = ref(minMoney);
@@ -53,6 +54,24 @@ const goodsInfo = reactive({
   goodsId: -1,
   liveRoomId: -1,
 });
+
+const props = defineProps({
+  show: { type: Boolean, default: false },
+});
+
+const emits = defineEmits(['close']);
+
+watch(
+  () => props.show,
+  (v) => {
+    showModal.value = v;
+  }
+);
+
+function handleOnClose(v) {
+  emits('close', v);
+  showQrPay.value = false;
+}
 
 async function startPay() {
   if (money.value < minMoney) {
@@ -71,7 +90,4 @@ async function startPay() {
 }
 </script>
 
-<style lang="scss" scoped>
-.recharge-wrap {
-}
-</style>
+<style lang="scss" scoped></style>

@@ -393,17 +393,17 @@ export class WebRTCClass {
         console.log('准备发送candidate', event.candidate.candidate);
         const roomId = this.roomId.split('___')[0];
         const receiver = this.roomId.split('___')[1];
-        const data: ICandidate['data'] = {
-          candidate: event.candidate.candidate,
-          sdpMid: event.candidate.sdpMid,
-          sdpMLineIndex: event.candidate.sdpMLineIndex,
-          sender: networkStore.wsMap.get(roomId)?.socketIo?.id || '',
-          receiver,
-          live_room_id: Number(roomId),
-        };
-        networkStore.wsMap
-          .get(roomId)
-          ?.send({ msgType: WsMsgTypeEnum.candidate, data });
+        networkStore.wsMap.get(roomId)?.send<ICandidate['data']>({
+          msgType: WsMsgTypeEnum.candidate,
+          data: {
+            candidate: event.candidate.candidate,
+            sdpMid: event.candidate.sdpMid,
+            sdpMLineIndex: event.candidate.sdpMLineIndex,
+            sender: networkStore.wsMap.get(roomId)?.socketIo?.id || '',
+            receiver,
+            live_room_id: Number(roomId),
+          },
+        });
       } else {
         console.log('没有候选者了');
       }

@@ -70,6 +70,10 @@ export function usePush({
       type: MediaTypeEnum.media,
       txt: '视频',
     },
+    [MediaTypeEnum.time]: {
+      type: MediaTypeEnum.time,
+      txt: '时间',
+    },
   };
 
   const {
@@ -89,6 +93,8 @@ export function usePush({
     currentResolutionRatio,
     addTrack,
     delTrack,
+    sendStartLive,
+    startNewWebRtc,
   } = useWs();
 
   watch(
@@ -105,7 +111,7 @@ export function usePush({
         const video = createVideo({});
         video.setAttribute('track-id', track.id);
         video.srcObject = new MediaStream([track]);
-        localVideoRef.value?.appendChild(video);
+        // localVideoRef.value?.appendChild(video);
         videoElArr.value.push(video);
       });
       stream?.getAudioTracks().forEach((track) => {
@@ -113,7 +119,7 @@ export function usePush({
         const video = createVideo({});
         video.setAttribute('track-id', track.id);
         video.srcObject = new MediaStream([track]);
-        localVideoRef.value?.appendChild(video);
+        // localVideoRef.value?.appendChild(video);
         videoElArr.value.push(video);
       });
     },
@@ -221,6 +227,11 @@ export function usePush({
         }
       }
     }
+    sendStartLive();
+    startNewWebRtc({
+      videoEl: document.createElement('video'),
+      receiver: 'srs',
+    });
   }
 
   /** 结束直播 */
