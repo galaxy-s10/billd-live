@@ -309,9 +309,7 @@ const danmuListRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
 const pushCanvasRef = ref<HTMLCanvasElement>();
 const fabricCanvas = ref<fabric.Canvas>();
-const localVideoRef = ref<HTMLVideoElement>();
 const audioCtx = ref<AudioContext>();
-const remoteVideoRef = ref<HTMLVideoElement[]>([]);
 const timeCanvasDom = ref<Raw<fabric.Text>[]>([]);
 const stopwatchCanvasDom = ref<Raw<fabric.Text>[]>([]);
 const isSRS = route.query.liveType === liveTypeEnum.srsPush;
@@ -347,8 +345,6 @@ const {
   delTrack,
   connectWs,
 } = usePush({
-  localVideoRef,
-  remoteVideoRef,
   isSRS,
 });
 

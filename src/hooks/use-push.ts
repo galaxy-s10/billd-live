@@ -1,5 +1,5 @@
 import { windowReload } from 'billd-utils';
-import { Ref, onMounted, onUnmounted, ref, watch } from 'vue';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import {
@@ -8,6 +8,7 @@ import {
 } from '@/api/userLiveRoom';
 import {
   DanmuMsgTypeEnum,
+  ILiveRoom,
   IMessage,
   MediaTypeEnum,
   liveTypeEnum,
@@ -22,15 +23,7 @@ import { loginTip } from './use-login';
 import { useTip } from './use-tip';
 import { useWs } from './use-ws';
 
-export function usePush({
-  localVideoRef,
-  remoteVideoRef,
-  isSRS,
-}: {
-  localVideoRef: Ref<HTMLVideoElement | undefined>;
-  remoteVideoRef: Ref<HTMLVideoElement[]>;
-  isSRS: boolean;
-}) {
+export function usePush({ isSRS }: { isSRS: boolean }) {
   const route = useRoute();
   const router = useRouter();
   const appStore = useAppStore();
@@ -41,6 +34,7 @@ export function usePush({
   const roomName = ref('');
   const danmuStr = ref('');
   const isLiving = ref(false);
+  const liveRoomInfo = ref<ILiveRoom>();
   const videoElArr = ref<HTMLVideoElement[]>([]);
 
   const allMediaTypeList: {
@@ -138,6 +132,9 @@ export function usePush({
         if (!res) {
           await useTip('你还没有直播间，是否立即开通？');
           await handleCreateUserLiveRoom();
+        } else {
+          roomName.value = liveRoomInfo.value?.name || '';
+          roomId.value = `${liveRoomInfo.value?.id || ''}`;
         }
       }
     },
@@ -169,8 +166,7 @@ export function usePush({
   async function userHasLiveRoom() {
     const res = await fetchUserHasLiveRoom(userStore.userInfo?.id!);
     if (res.code === 200 && res.data) {
-      roomName.value = res.data.live_room?.name || '';
-      roomId.value = `${res.data.live_room?.id || ''}`;
+      liveRoomInfo.value = res.data.live_room;
       router.push({ query: { ...route.query, roomId: roomId.value } });
       return true;
     }
@@ -231,7 +227,7 @@ export function usePush({
         }
       }
     }
-    sendStartLive();
+    sendStartLive({ coverImg: lastCoverImg.value, name: roomName.value });
     startNewWebRtc({
       videoEl: document.createElement('video'),
       receiver: 'srs',
@@ -330,6 +326,7 @@ export function usePush({
     roomName,
     damuList,
     liveUserList,
+    liveRoomInfo,
     connectWs,
     addTrack,
     delTrack,

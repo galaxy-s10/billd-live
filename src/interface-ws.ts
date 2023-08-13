@@ -45,6 +45,11 @@ export type WsRoomNoLiveType = IWsFormat<{
   live_room: ILiveRoom;
 }>;
 
+export type WsStartLiveType = IWsFormat<{
+  cover_img: string;
+  name: string;
+}>;
+
 export type WsJoinType = IWsFormat<{
   socket_id: string;
   live_room: ILiveRoom;
@@ -55,12 +60,6 @@ export type WsJoinType = IWsFormat<{
 export type WsLeavedType = IWsFormat<{
   socket_id: string;
   user_info?: IUser;
-}>;
-
-export type WsStartLiveType = IWsFormat<{
-  socket_id: string;
-  user_info: IUser;
-  data: any;
 }>;
 
 export interface IRoomLiving {

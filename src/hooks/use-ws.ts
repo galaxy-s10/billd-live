@@ -24,6 +24,7 @@ import {
   WsOfferType,
   WsOtherJoinType,
   WsRoomLivingType,
+  WsStartLiveType,
   WsUpdateJoinInfoType,
 } from '@/interface-ws';
 import { WebRTCClass } from '@/network/webRTC';
@@ -481,9 +482,13 @@ export const useWs = () => {
     }
   }
 
-  function sendStartLive() {
-    networkStore.wsMap.get(roomId.value)?.send({
+  function sendStartLive({ coverImg, name }) {
+    networkStore.wsMap.get(roomId.value)?.send<WsStartLiveType['data']>({
       msgType: WsMsgTypeEnum.startLive,
+      data: {
+        cover_img: coverImg,
+        name,
+      },
     });
   }
 
