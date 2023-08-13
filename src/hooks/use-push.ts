@@ -74,6 +74,10 @@ export function usePush({
       type: MediaTypeEnum.time,
       txt: '时间',
     },
+    [MediaTypeEnum.stopwatch]: {
+      type: MediaTypeEnum.stopwatch,
+      txt: '秒表',
+    },
   };
 
   const {

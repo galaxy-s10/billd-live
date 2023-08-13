@@ -18,12 +18,13 @@ export type AppRootState = {
     stream?: MediaStream;
     streamid?: string;
     trackid?: string;
-    canvasDom?: fabric.Image | fabric.Text;
+    canvasDom?: fabric.Image | fabric.Text | fabric.IText;
     hidden?: boolean;
     muted?: boolean;
     videoEl?: HTMLVideoElement;
     txtInfo?: { txt: string; color: string };
     timeInfo?: { color: string };
+    stopwatchInfo?: { color: string };
     rect?: { top: number; left: number };
     scaleInfo?: { scaleX: number; scaleY: number };
   }[];

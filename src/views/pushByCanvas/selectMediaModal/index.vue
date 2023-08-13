@@ -5,18 +5,16 @@
       :mask-closable="false"
       @close="emits('close')"
     >
-      <div class="container">
-        <n-space justify="center">
-          <n-button
-            v-for="(item, index) in allMediaTypeList"
-            :key="index"
-            class="item"
-            @click="emits('ok', item.type)"
-          >
-            {{ item.txt }}
-          </n-button>
-        </n-space>
-      </div>
+      <n-space justify="center">
+        <n-button
+          v-for="(item, index) in allMediaTypeList"
+          :key="index"
+          class="item"
+          @click="emits('ok', item.type)"
+        >
+          {{ item.txt }}
+        </n-button>
+      </n-space>
       <template #footer></template>
     </Modal>
   </div>
@@ -46,7 +44,9 @@ onMounted(() => {});
 <style lang="scss" scoped>
 .select-media-wrap {
   text-align: initial;
-
+  :deep(.container) {
+    width: 350px;
+  }
   .container {
     padding-top: 10px;
   }

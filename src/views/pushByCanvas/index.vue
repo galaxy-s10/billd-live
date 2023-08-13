@@ -313,6 +313,7 @@ const localVideoRef = ref<HTMLVideoElement>();
 const audioCtx = ref<AudioContext>();
 const remoteVideoRef = ref<HTMLVideoElement[]>([]);
 const timeCanvasDom = ref<Raw<fabric.Text>[]>([]);
+const stopwatchCanvasDom = ref<Raw<fabric.Text>[]>([]);
 const isSRS = route.query.liveType === liveTypeEnum.srsPush;
 const wrapSize = reactive({
   width: 0,
@@ -351,6 +352,8 @@ const {
   isSRS,
 });
 
+const bodyAppendChildElArr = ref<HTMLElement[]>([]);
+
 watch(
   () => damuList.value.length,
   () => {
@@ -374,6 +377,9 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  bodyAppendChildElArr.value.forEach((el) => {
+    el.remove();
+  });
   document.removeEventListener('visibilitychange', onPageVisibility);
   if (workerTimerId.value !== -1) {
     workerTimers.clearInterval(workerTimerId.value);
@@ -430,9 +436,55 @@ function initUserMedia() {
     });
 }
 
+function formatDownTime(endTime: number, startTime: number) {
+  const times = (endTime - startTime) / 1000;
+  // js获取剩余天数
+  const d = parseInt(String(times / 60 / 60 / 24));
+  // js获取剩余小时
+  let h = parseInt(String((times / 60 / 60) % 24));
+  // js获取剩余分钟
+  let m = parseInt(String((times / 60) % 60));
+  // js获取剩余秒
+  let s = parseInt(String(times % 60));
+  let ms = new Date(endTime).getMilliseconds();
+
+  if (h < 10) {
+    // @ts-ignore
+    h = `0${h}`;
+  }
+  if (m < 10) {
+    // @ts-ignore
+    m = `0${m}`;
+  }
+  if (s < 10) {
+    // @ts-ignore
+    s = `0${s}`;
+  }
+  if (Number(ms) < 100) {
+    if (ms < 10) {
+      // @ts-ignore
+      ms = `00${ms}`;
+    } else {
+      // @ts-ignore
+      ms = `0${ms}`;
+    }
+  }
+  if (d > 0) {
+    return `${d}:${h}:${m}:${s}.${ms}`;
+  } else if (h > 0) {
+    return `${h}:${m}:${s}.${ms}`;
+  } else {
+    return `${m}:${s}.${ms}`;
+  }
+}
+
+const startTime = +new Date();
 function renderAll() {
   timeCanvasDom.value.forEach((item) => {
     item.text = new Date().toLocaleString();
+  });
+  stopwatchCanvasDom.value.forEach((item) => {
+    item.text = formatDownTime(+new Date(), startTime);
   });
   fabricCanvas.value?.renderAll();
 }
@@ -496,6 +548,7 @@ function initNullAudio() {
   vel.style.pointerEvents = 'none';
   vel.srcObject = destination.stream;
   document.body.appendChild(vel);
+  bodyAppendChildElArr.value.push(vel);
 }
 
 let streamTmp: MediaStream;
@@ -538,6 +591,7 @@ function handleMixedAudio() {
     vel.style.pointerEvents = 'none';
     vel.srcObject = destination.stream;
     document.body.appendChild(vel);
+    bodyAppendChildElArr.value.push(vel);
   }
 }
 
@@ -556,10 +610,15 @@ function handleStartLive() {
 
 function handleScale({ width, height }: { width: number; height: number }) {
   const resolutionHeight =
-    currentResolutionRatio.value / window.devicePixelRatio;
+    currentResolutionRatio.value * window.devicePixelRatio;
   const resolutionWidth =
-    (currentResolutionRatio.value / window.devicePixelRatio) * videoRatio.value;
-  console.log('当前分辨率', { resolutionWidth, resolutionHeight });
+    currentResolutionRatio.value * window.devicePixelRatio * videoRatio.value;
+  console.log(
+    '当前分辨率',
+    { resolutionWidth, resolutionHeight },
+    { width, height },
+    { devicePixelRatio, currentResolutionRatio: currentResolutionRatio.value }
+  );
   let ratio = 1;
   if (width > resolutionWidth) {
     const r1 = resolutionWidth / width;
@@ -571,6 +630,7 @@ function handleScale({ width, height }: { width: number; height: number }) {
       ratio = r1;
     }
   }
+  console.log({ ratio });
   // if (width > wrapSize.width) {
   //   const r1 = wrapSize.width / width;
   //   ratio = r1;
@@ -610,6 +670,7 @@ function autoCreateVideo({
   videoEl.style.opacity = '0';
   videoEl.style.pointerEvents = 'none';
   document.body.appendChild(videoEl);
+  bodyAppendChildElArr.value.push(videoEl);
   return new Promise<{
     canvasDom: fabric.Image;
     videoEl: HTMLVideoElement;
@@ -635,11 +696,15 @@ function autoCreateVideo({
         ratio,
         canvasDom.width,
         canvasDom.height,
+        width * ratio,
+        height * ratio,
         canvasDom
       );
       handleMoving({ canvasDom, id });
       handleScaling({ canvasDom, id });
-      canvasDom.scale(ratio);
+      canvasDom.scale(ratio / window.devicePixelRatio);
+      // canvasDom.scaleToWidth((width * ratio) / window.devicePixelRatio);
+      // canvasDom.scaleToHeight((height * ratio) / window.devicePixelRatio);
       fabricCanvas.value!.add(canvasDom);
 
       resolve({ canvasDom, scale: ratio, videoEl });
@@ -684,62 +749,43 @@ function changeCanvasAttr({
       videoRatio.value;
     fabricCanvas.value.setWidth(resolutionWidth);
     fabricCanvas.value.setHeight(resolutionHeight);
-    fabricCanvas.value.forEachObject((item) => {
-      // 分辨率变小了，将图片变小
-      if (newHeight < oldHeight) {
-        const ratio = newHeight / oldHeight;
-        const ratio1 = (item.scaleX || 1) * ratio;
-        const ratio2 = oldHeight / newHeight;
-        console.log(ratio, ratio1, '分辨率变小了，将图片变小-----', item);
-        item.scale(ratio1);
-        item.left = item.left! / ratio2;
-        item.top = item.top! / ratio2;
-        fabricCanvas.value?.renderAndReset();
-      } else {
-        // 分辨率变大了，将图片变大
-        // const ratio = newHeight / oldHeight;
-        // const ratio1 = (item.scaleX || 1) * ratio;
-        // const ratio2 = oldHeight / newHeight;
-        // console.log(ratio, ratio1, '分辨率变大了，将图片变大-----', item);
-        // item.scale(ratio1);
-        // item.left = item.left! / ratio2;
-        // item.top = item.top! / ratio2;
+    appStore.allTrack.forEach((iten) => {
+      console.log('当前类型', iten.type);
+      const item = iten.canvasDom;
+
+      if (item) {
+        // 分辨率变小了，将图片变小
+        if (newHeight < oldHeight) {
+          const ratio2 = oldHeight / newHeight;
+          item.left = item.left! / ratio2;
+          item.top = item.top! / ratio2;
+        } else {
+          // 分辨率变大了，将图片变大
+          const ratio2 = oldHeight / newHeight;
+          item.left = item.left! / ratio2;
+          item.top = item.top! / ratio2;
+        }
       }
     });
-    // appStore.allTrack.forEach((item) => {
-    //   console.log('当前类型', item.type);
-    //   if (item.canvasDom) {
-    //     // 分辨率变小了，将图片变小
-    //     if (newHeight < oldHeight) {
-    //       const ratio = newHeight / oldHeight;
-    //       const ratio1 = (item.canvasDom.scaleX || 1) * ratio;
-    //       const ratio2 = oldHeight / newHeight;
-    //       console.log(
-    //         ratio,
-    //         ratio1,
-    //         '分辨率变小了，将图片变小-----',
-    //         item.canvasDom
-    //       );
-    //       item.canvasDom.scale(ratio1);
-    //       item.canvasDom.left = item.canvasDom.left! / ratio2;
-    //       item.canvasDom.top = item.canvasDom.top! / ratio2;
-    //     } else {
-    //       // 分辨率变大了，将图片变大
-    //       const ratio = newHeight / oldHeight;
-    //       const ratio1 = (item.canvasDom.scaleX || 1) * ratio;
-    //       const ratio2 = oldHeight / newHeight;
-    //       console.log(
-    //         ratio,
-    //         ratio1,
-    //         '分辨率变大了，将图片变大-----',
-    //         item.canvasDom
-    //       );
-    //       item.canvasDom.scale(ratio1);
-    //       item.canvasDom.left = item.canvasDom.left! / ratio2;
-    //       item.canvasDom.top = item.canvasDom.top! / ratio2;
-    //     }
-    //   }
-    // });
+    appStore.allTrack.forEach((iten) => {
+      console.log('当前类型', iten.type);
+      const item = iten.canvasDom;
+
+      if (item) {
+        // 分辨率变小了，将图片变小
+        if (newHeight < oldHeight) {
+          const ratio = newHeight / oldHeight;
+          const ratio1 = (item.scaleX || 1) * ratio;
+          item.scale(ratio1);
+        } else {
+          // 分辨率变大了，将图片变大
+          const ratio = newHeight / oldHeight;
+          const ratio1 = (item.scaleX || 1) * ratio;
+          item.scale(ratio1);
+        }
+      }
+    });
+
     changeCanvasStyle();
   }
 }
@@ -774,6 +820,7 @@ function initCanvas() {
   const ins = markRaw(new fabric.Canvas(pushCanvasRef.value!));
   ins.setWidth(resolutionWidth);
   ins.setHeight(resolutionHeight);
+  console.log('initCanvas', { resolutionWidth, resolutionHeight });
   ins.setBackgroundColor('black', () => {
     console.log('setBackgroundColor回调');
   });
@@ -797,11 +844,27 @@ function handleScaling({ canvasDom, id }) {
     resourceCacheStore.setList(appStore.allTrack);
   });
 }
-function handleMoving({ canvasDom, id }) {
+function handleMoving({
+  canvasDom,
+  id,
+}: {
+  canvasDom: fabric.Image | fabric.Text;
+  id: string;
+}) {
   canvasDom.on('moving', () => {
+    console.log(
+      'moving',
+      canvasDom.width,
+      canvasDom.height,
+      canvasDom.scaleX,
+      canvasDom.scaleY
+    );
     appStore.allTrack.forEach((item) => {
       if (id === item.id) {
-        item.rect = { top: canvasDom.top || 0, left: canvasDom.left || 0 };
+        item.rect = {
+          top: (canvasDom.top || 0) * window.devicePixelRatio,
+          left: (canvasDom.left || 0) * window.devicePixelRatio,
+        };
       }
     });
     resourceCacheStore.setList(appStore.allTrack);
@@ -823,12 +886,12 @@ async function handleCache() {
     obj.muted = item.muted;
     obj.rect = item.rect;
     obj.scaleInfo = item.scaleInfo;
+    obj.stopwatchInfo = item.stopwatchInfo;
 
     async function handleMediaVideo() {
       const { code, file } = await readFile(item.id);
       if (code === 1 && file) {
         const url = URL.createObjectURL(file);
-        console.log(file, file.name, url);
         const videoEl = createVideo({});
         videoEl.src = url;
         videoEl.muted = item.muted ? item.muted : false;
@@ -840,6 +903,7 @@ async function handleCache() {
         videoEl.style.opacity = '0';
         videoEl.style.pointerEvents = 'none';
         document.body.appendChild(videoEl);
+        bodyAppendChildElArr.value.push(videoEl);
         await new Promise((resolve) => {
           videoEl.onloadedmetadata = () => {
             const stream = videoEl
@@ -847,21 +911,22 @@ async function handleCache() {
               .captureStream();
             const width = stream.getVideoTracks()[0].getSettings().width!;
             const height = stream.getVideoTracks()[0].getSettings().height!;
-            // const ratio = handleScale({ width, height });
             videoEl.width = width;
             videoEl.height = height;
 
             const canvasDom = markRaw(
               new fabric.Image(videoEl, {
-                top: item.rect?.top || 0,
-                left: item.rect?.left || 0,
+                top: (item.rect?.top || 0) / window.devicePixelRatio,
+                left: (item.rect?.left || 0) / window.devicePixelRatio,
                 width,
                 height,
               })
             );
             handleMoving({ canvasDom, id: item.id });
             handleScaling({ canvasDom, id: item.id });
-            canvasDom.scale(item.scaleInfo?.scaleX || 1);
+            canvasDom.scale(
+              (item.scaleInfo?.scaleX || 1) / window.devicePixelRatio
+            );
             fabricCanvas.value!.add(canvasDom);
             obj.videoEl = videoEl;
             obj.canvasDom = canvasDom;
@@ -903,15 +968,17 @@ async function handleCache() {
         if (fabricCanvas.value) {
           const canvasDom = markRaw(
             new fabric.Image(imgEl, {
-              top: item.rect?.top || 0,
-              left: item.rect?.left || 0,
+              top: (item.rect?.top || 0) / window.devicePixelRatio,
+              left: (item.rect?.left || 0) / window.devicePixelRatio,
               width: imgEl.width,
               height: imgEl.height,
             })
           );
           handleMoving({ canvasDom, id: obj.id });
           handleScaling({ canvasDom, id: obj.id });
-          canvasDom.scale(item.scaleInfo?.scaleX || 1);
+          canvasDom.scale(
+            (item.scaleInfo?.scaleX || 1) / window.devicePixelRatio
+          );
           fabricCanvas.value.add(canvasDom);
           obj.canvasDom = canvasDom;
         }
@@ -926,14 +993,16 @@ async function handleCache() {
       if (fabricCanvas.value) {
         const canvasDom = markRaw(
           new fabric.Text(item.txtInfo?.txt || '', {
-            top: item.rect?.top || 0,
-            left: item.rect?.left || 0,
+            top: (item.rect?.top || 0) / window.devicePixelRatio,
+            left: (item.rect?.left || 0) / window.devicePixelRatio,
             fill: item.txtInfo?.color,
           })
         );
         handleMoving({ canvasDom, id: obj.id });
         handleScaling({ canvasDom, id: obj.id });
-        canvasDom.scale(item.scaleInfo?.scaleX || 1);
+        canvasDom.scale(
+          (item.scaleInfo?.scaleX || 1) / window.devicePixelRatio
+        );
         fabricCanvas.value.add(canvasDom);
         obj.canvasDom = canvasDom;
       }
@@ -942,15 +1011,38 @@ async function handleCache() {
       if (fabricCanvas.value) {
         const canvasDom = markRaw(
           new fabric.Text(new Date().toLocaleString(), {
-            top: item.rect?.top || 0,
-            left: item.rect?.left || 0,
+            top: (item.rect?.top || 0) / window.devicePixelRatio,
+            left: (item.rect?.left || 0) / window.devicePixelRatio,
             fill: item.timeInfo?.color,
           })
         );
         timeCanvasDom.value.push(canvasDom);
         handleMoving({ canvasDom, id: obj.id });
         handleScaling({ canvasDom, id: obj.id });
-        canvasDom.scale(item.scaleInfo?.scaleX || 1);
+        canvasDom.scale(
+          (item.scaleInfo?.scaleX || 1) / window.devicePixelRatio
+        );
+        fabricCanvas.value.add(canvasDom);
+        obj.canvasDom = canvasDom;
+      }
+    } else if (item.type === MediaTypeEnum.stopwatch) {
+      obj.stopwatchInfo = item.stopwatchInfo;
+      console.log('kkkkkk12k', item.stopwatchInfo?.color);
+      if (fabricCanvas.value) {
+        const canvasDom = markRaw(
+          new fabric.Text('00:00:00.000', {
+            top: (item.rect?.top || 0) / window.devicePixelRatio,
+            left: (item.rect?.left || 0) / window.devicePixelRatio,
+            fill: item.stopwatchInfo?.color,
+            // editable: true,
+          })
+        );
+        stopwatchCanvasDom.value.push(canvasDom);
+        handleMoving({ canvasDom, id: obj.id });
+        handleScaling({ canvasDom, id: obj.id });
+        canvasDom.scale(
+          (item.scaleInfo?.scaleX || 1) / window.devicePixelRatio
+        );
         fabricCanvas.value.add(canvasDom);
         obj.canvasDom = canvasDom;
       }
@@ -976,6 +1068,7 @@ async function addMediaOk(val: {
   mediaName: string;
   txtInfo?: { txt: string; color: string };
   timeInfo?: { color: string };
+  stopwatchInfo?: { color: string };
   imgInfo?: UploadFileInfo[];
   mediaInfo?: UploadFileInfo[];
 }) {
@@ -1006,10 +1099,11 @@ async function addMediaOk(val: {
       muted: false,
     };
 
-    const { canvasDom, videoEl } = await autoCreateVideo({
+    const { canvasDom, videoEl, scale } = await autoCreateVideo({
       stream: event,
       id: videoTrack.id,
     });
+    videoTrack.scaleInfo = { scaleX: scale, scaleY: scale };
     videoTrack.videoEl = videoEl;
     // @ts-ignore
     videoTrack.canvasDom = canvasDom;
@@ -1067,10 +1161,11 @@ async function addMediaOk(val: {
       hidden: false,
       muted: false,
     };
-    const { canvasDom, videoEl } = await autoCreateVideo({
+    const { canvasDom, videoEl, scale } = await autoCreateVideo({
       stream: event,
       id: videoTrack.id,
     });
+    videoTrack.scaleInfo = { scaleX: scale, scaleY: scale };
     videoTrack.videoEl = videoEl;
     // @ts-ignore
     videoTrack.canvasDom = canvasDom;
@@ -1185,7 +1280,48 @@ async function addMediaOk(val: {
     // @ts-ignore
     addTrack(timeTrack);
 
-    console.log('获取文字成功', fabricCanvas.value);
+    console.log('获取时间成功', fabricCanvas.value);
+  } else if (val.type === MediaTypeEnum.stopwatch) {
+    const stopwatchTrack: AppRootState['allTrack'][0] = {
+      id: getRandomEnglishString(8),
+      audio: 2,
+      video: 1,
+      mediaName: val.mediaName,
+      type: MediaTypeEnum.stopwatch,
+      track: undefined,
+      trackid: undefined,
+      stream: undefined,
+      streamid: undefined,
+      hidden: false,
+      muted: false,
+    };
+    if (fabricCanvas.value) {
+      const canvasDom = markRaw(
+        new fabric.Text('00:00:00.000', {
+          top: 0,
+          left: 0,
+          fill: val.stopwatchInfo?.color,
+          // editable: true,
+        })
+      );
+      stopwatchCanvasDom.value.push(canvasDom);
+      handleMoving({ canvasDom, id: stopwatchTrack.id });
+      handleScaling({ canvasDom, id: stopwatchTrack.id });
+      stopwatchTrack.stopwatchInfo = val.stopwatchInfo;
+      // @ts-ignore
+      stopwatchTrack.canvasDom = canvasDom;
+      fabricCanvas.value.add(canvasDom);
+    }
+
+    const res = [...appStore.allTrack, stopwatchTrack];
+    // @ts-ignore
+    appStore.setAllTrack(res);
+    // @ts-ignore
+    resourceCacheStore.setList(res);
+    // @ts-ignore
+    addTrack(stopwatchTrack);
+
+    console.log('获取秒表成功', fabricCanvas.value);
   } else if (val.type === MediaTypeEnum.img) {
     const imgTrack: AppRootState['allTrack'][0] = {
       id: getRandomEnglishString(8),
@@ -1238,7 +1374,7 @@ async function addMediaOk(val: {
       // @ts-ignore
       imgTrack.canvasDom = canvasDom;
       imgTrack.scaleInfo = { scaleX: ratio, scaleY: ratio };
-      canvasDom.scale(ratio);
+      canvasDom.scale(ratio / window.devicePixelRatio);
       fabricCanvas.value.add(canvasDom);
     }
 
@@ -1271,7 +1407,6 @@ async function addMediaOk(val: {
       const { code } = await saveFile({ file, fileName: mediaVideoTrack.id });
       if (code !== 1) return;
       const url = URL.createObjectURL(file);
-      console.log(file, file.name, url);
       const videoEl = createVideo({});
       videoEl.src = url;
       videoEl.muted = false;
@@ -1283,6 +1418,7 @@ async function addMediaOk(val: {
       videoEl.style.opacity = '0';
       videoEl.style.pointerEvents = 'none';
       document.body.appendChild(videoEl);
+      bodyAppendChildElArr.value.push(videoEl);
       const videoRes = await new Promise<HTMLVideoElement>((resolve) => {
         videoEl.onloadedmetadata = () => {
           resolve(videoEl);
@@ -1290,10 +1426,11 @@ async function addMediaOk(val: {
       });
       // @ts-ignore
       const stream = videoRes.captureStream();
-      const { canvasDom } = await autoCreateVideo({
+      const { canvasDom, scale } = await autoCreateVideo({
         stream,
         id: mediaVideoTrack.id,
       });
+      mediaVideoTrack.scaleInfo = { scaleX: scale, scaleY: scale };
       mediaVideoTrack.videoEl = videoEl;
       // @ts-ignore
       mediaVideoTrack.canvasDom = canvasDom;
@@ -1400,6 +1537,7 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
       }
 
       .add-wrap {
+        width: 50%;
         position: absolute;
         top: 50%;
         left: 50%;

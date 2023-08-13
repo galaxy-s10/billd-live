@@ -328,6 +328,7 @@ export enum MediaTypeEnum {
   img,
   media,
   time,
+  stopwatch,
   webAudio,
 }
 

@@ -50,6 +50,16 @@
             </div>
           </div>
         </template>
+        <template
+          v-if="props.mediaType === MediaTypeEnum.stopwatch && stopwatchInfo"
+        >
+          <div class="item">
+            <div class="label">颜色</div>
+            <div class="value">
+              <n-color-picker v-model:value="stopwatchInfo.color" />
+            </div>
+          </div>
+        </template>
         <template v-if="props.mediaType === MediaTypeEnum.img">
           <div class="item">
             <div class="label">图片</div>
@@ -118,6 +128,7 @@ const emits = defineEmits(['close', 'ok']);
 const inputOptions = ref<{ label: string; value: string }[]>([]);
 const txtInfo = ref<{ txt: string; color: string }>();
 const timeInfo = ref<{ color: string }>();
+const stopwatchInfo = ref<{ color: string }>();
 const imgInfo = ref<UploadFileInfo[]>();
 const mediaInfo = ref<UploadFileInfo[]>();
 const currentInput = ref<{
@@ -170,6 +181,7 @@ function handleOk() {
     imgInfo: imgInfo.value,
     mediaInfo: mediaInfo.value,
     timeInfo: timeInfo.value,
+    stopwatchInfo: stopwatchInfo.value,
   });
 }
 
@@ -246,6 +258,17 @@ async function init() {
     mediaName.value = `时间-${
       appStore.allTrack
         .filter((item) => item.type === MediaTypeEnum.time)
+        .filter((item) => !item.hidden).length + 1
+    }`;
+  } else if (props.mediaType === MediaTypeEnum.stopwatch) {
+    currentInput.value = {
+      ...currentInput.value,
+      type: MediaTypeEnum.stopwatch,
+    };
+    stopwatchInfo.value = { color: 'rgba(255,215,0,1)' };
+    mediaName.value = `秒表-${
+      appStore.allTrack
+        .filter((item) => item.type === MediaTypeEnum.stopwatch)
         .filter((item) => !item.hidden).length + 1
     }`;
   } else if (props.mediaType === MediaTypeEnum.img) {
