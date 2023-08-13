@@ -135,6 +135,7 @@ export function usePush({ isSRS }: { isSRS: boolean }) {
         } else {
           roomName.value = liveRoomInfo.value?.name || '';
           roomId.value = `${liveRoomInfo.value?.id || ''}`;
+          connectWs();
         }
       }
     },
@@ -327,7 +328,6 @@ export function usePush({ isSRS }: { isSRS: boolean }) {
     damuList,
     liveUserList,
     liveRoomInfo,
-    connectWs,
     addTrack,
     delTrack,
   };

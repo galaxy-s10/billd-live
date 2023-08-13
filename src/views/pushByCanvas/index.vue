@@ -343,7 +343,6 @@ const {
   liveUserList,
   addTrack,
   delTrack,
-  connectWs,
 } = usePush({
   isSRS,
 });
@@ -368,7 +367,6 @@ onMounted(() => {
   initUserMedia();
   initCanvas();
   handleCache();
-  connectWs();
   document.addEventListener('visibilitychange', onPageVisibility);
 });
 
