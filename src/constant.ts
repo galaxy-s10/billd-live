@@ -33,4 +33,5 @@ export const mediaTypeEnumMap = {
   [MediaTypeEnum.txt]: '文字',
   [MediaTypeEnum.media]: '视频',
   [MediaTypeEnum.time]: '时间',
+  [MediaTypeEnum.stopwatch]: '秒表',
 };
