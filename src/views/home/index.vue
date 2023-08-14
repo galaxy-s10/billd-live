@@ -2,6 +2,13 @@
   <div class="home-wrap">
     <div class="play-container">
       <div class="bg"></div>
+      <div class="slider-wrap">
+        <Slider
+          v-if="interactionList.length"
+          :list="interactionList"
+          :row="2"
+        ></Slider>
+      </div>
       <div class="container">
         <div class="left">
           <div
@@ -180,6 +187,7 @@ import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { fetchLiveList } from '@/api/live';
+import { sliderList } from '@/constant';
 import { usePull } from '@/hooks/use-pull';
 import { ILive, LiveRoomTypeEnum, liveTypeEnum } from '@/interface';
 import { routerName } from '@/router';
@@ -192,6 +200,7 @@ const topNums = ref(6);
 const topLiveRoomList = ref<ILive[]>([]);
 const otherLiveRoomList = ref<ILive[]>([]);
 const currentLiveRoom = ref<ILive>();
+const interactionList = ref(sliderList);
 const localVideoRef = ref<HTMLVideoElement[]>([]);
 const remoteVideoRef = ref<HTMLDivElement>();
 
