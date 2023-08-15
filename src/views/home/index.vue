@@ -6,7 +6,8 @@
         <Slider
           v-if="interactionList.length"
           :list="interactionList"
-          :row="2"
+          :row="3"
+          :speed="60"
         ></Slider>
       </div>
       <div class="container">
@@ -326,20 +327,22 @@ function joinRoom(data: { roomId: number; isFlv: boolean }) {
       background-position: center;
       background-repeat: no-repeat;
     }
+    .slider-wrap {
+      padding: 2px 0 4px 0;
+    }
     .container {
       display: flex;
+      justify-content: center;
       box-sizing: border-box;
       margin: 0 auto;
-      padding: 15px 0;
-      justify-content: center;
       height: calc($w-1100 / $video-ratio);
 
       .left {
         position: relative;
         display: inline-block;
         overflow: hidden;
-        box-sizing: border-box;
         flex-shrink: 0;
+        box-sizing: border-box;
         margin-right: 20px;
         width: $w-1100;
         height: 100%;
@@ -439,9 +442,9 @@ function joinRoom(data: { roomId: number; isFlv: boolean }) {
         }
       }
       .right {
-        flex-shrink: 0;
         display: inline-block;
         overflow: scroll;
+        flex-shrink: 0;
         box-sizing: border-box;
         padding: 12px 10px;
         height: 100%;
@@ -536,9 +539,9 @@ function joinRoom(data: { roomId: number; isFlv: boolean }) {
     }
   }
   .area-container {
+    box-sizing: border-box;
     margin: 10px auto;
     width: $w-1350;
-    box-sizing: border-box;
 
     .area-item {
       .title {

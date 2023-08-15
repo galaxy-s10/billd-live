@@ -7,6 +7,9 @@
       :style="{
         '--width': widthMap[index] / 2,
         '--speed': widthMap[index] / 2 / speed + 's',
+        width: widthMap[index] / 2 + 'px',
+        // background: 'red',
+        margin: '0 auto',
       }"
     >
       <div
@@ -17,6 +20,7 @@
           v-for="(slide, indey) in slider"
           :key="'slide-' + indey"
           class="slide"
+          :data-txt="slide.txt"
         >
           <div class="avatar">
             <div
@@ -60,7 +64,8 @@ const props = defineProps({
 
 const containerRef = ref<HTMLDivElement[]>([]);
 const sliderList = ref<any[]>([]);
-const widthMap = ref<any>({});
+const widthMap = ref<Record<number, number>>({});
+const min = ref(0);
 
 onMounted(() => {
   const res: any[] = [];
@@ -77,14 +82,26 @@ onMounted(() => {
         const slideList = container.children;
         for (let y = 0; y < slideList.length; y += 1) {
           const slide = slideList[y];
+          console.log(slide, 211);
           if (index === i) {
             res[index] = res[index] || 0;
             res[index] += slide.getBoundingClientRect().width;
           }
         }
+        console.log('endddd');
+      }
+    });
+
+    Object.keys(res).forEach((item) => {
+      if (min.value === 0) {
+        min.value = res[item];
+      }
+      if (res[item] < min.value) {
+        min.value = res[item];
       }
     });
     widthMap.value = res;
+    console.log(widthMap.value, res, min.value, 33333);
   });
 });
 </script>
@@ -131,7 +148,7 @@ onMounted(() => {
     }
 
     .container {
-      display: flex;
+      display: inline-flex;
 
       .slide {
         display: flex;
@@ -145,29 +162,24 @@ onMounted(() => {
           overflow: hidden;
           align-items: center;
           justify-content: center;
-          margin-right: 10px;
+          margin-right: 8px;
           width: 30px;
           height: 30px;
           border-radius: 50%;
           background-color: #fff;
 
           .img {
-            width: 30px;
-            height: 30px;
+            width: 25px;
+            height: 25px;
 
             @extend %containBg;
           }
         }
         .txt {
-          display: flex;
-          align-items: center;
+          max-width: 130px;
           font-size: 14px;
-          .msg {
-            display: inline-block;
-            max-width: 150px;
 
-            @extend %singleEllipsis;
-          }
+          @extend %singleEllipsis;
         }
       }
     }
