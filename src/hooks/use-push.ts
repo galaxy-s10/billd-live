@@ -244,7 +244,6 @@ export function usePush({ isSRS }: { isSRS: boolean }) {
     if (instance) {
       instance.send({
         msgType: WsMsgTypeEnum.roomNoLive,
-        data: {},
       });
     }
     setTimeout(() => {

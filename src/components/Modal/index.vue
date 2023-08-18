@@ -52,8 +52,8 @@ const emits = defineEmits(['close']);
 
 <style lang="scss" scoped>
 .modal-wrap {
-  z-index: 1;
-  background-color: rgba(0, 0, 0, 0.7) !important;
+  z-index: 100;
+  background-color: rgba(0, 0, 0, 0.6) !important;
 
   @extend %maskBg;
   .container {
@@ -62,7 +62,6 @@ const emits = defineEmits(['close']);
     left: 50%;
     box-sizing: border-box;
     padding: 20px;
-    // min-height: 200px;
     width: 320px;
     border-radius: 10px;
     background-color: #fff;
@@ -83,10 +82,9 @@ const emits = defineEmits(['close']);
       @include cross(#ccc, 3px);
     }
     .content {
-      margin-top: 10px;
+      margin: 10px 0;
     }
     .footer {
-      margin-top: 10px;
       .btn {
         width: 280px;
         height: 44px;

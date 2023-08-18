@@ -89,9 +89,17 @@ export default defineComponent({
         font-size: 14px;
       }
       &.next {
-        background: linear-gradient(270deg, #929dff 4.71%, #3cfdfd 103.24%),
-          linear-gradient(270deg, #b3acff 4.71%, #3ccffd 103.24%),
-          linear-gradient(270deg, #b3acff 4.71%, #3ccffd 103.24%);
+        background: #fceabb; /* fallback for old browsers */
+        background: -webkit-linear-gradient(
+          to left,
+          #f8b500,
+          #fceabb
+        ); /* Chrome 10-25, Safari 5.1-6 */
+        background: linear-gradient(
+          to left,
+          #f8b500,
+          #fceabb
+        ); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
         color: white;
         font-weight: 700;
         font-size: 16px;

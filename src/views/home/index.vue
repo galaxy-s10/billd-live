@@ -6,7 +6,7 @@
         <Slider
           v-if="interactionList.length"
           :list="interactionList"
-          :row="3"
+          :row="2"
           :speed="60"
         ></Slider>
       </div>
@@ -315,6 +315,7 @@ function joinRoom(data: { roomId: number; isFlv: boolean }) {
 .home-wrap {
   .play-container {
     position: relative;
+    z-index: 1;
     .bg {
       position: absolute;
       top: 0;

@@ -1,7 +1,8 @@
 import { getRandomString } from 'billd-utils';
 import browserTool from 'browser-tool';
 
-import { ICandidate, MediaTypeEnum } from '@/interface';
+import { MediaTypeEnum } from '@/interface';
+import { WsCandidateType } from '@/interface-ws';
 import { AppRootState, useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 
@@ -393,12 +394,10 @@ export class WebRTCClass {
         console.log('准备发送candidate', event.candidate.candidate);
         const roomId = this.roomId.split('___')[0];
         const receiver = this.roomId.split('___')[1];
-        networkStore.wsMap.get(roomId)?.send<ICandidate['data']>({
+        networkStore.wsMap.get(roomId)?.send<WsCandidateType['data']>({
           msgType: WsMsgTypeEnum.candidate,
           data: {
-            candidate: event.candidate.candidate,
-            sdpMid: event.candidate.sdpMid,
-            sdpMLineIndex: event.candidate.sdpMLineIndex,
+            candidate: event.candidate,
             sender: networkStore.wsMap.get(roomId)?.socketIo?.id || '',
             receiver,
             live_room_id: Number(roomId),

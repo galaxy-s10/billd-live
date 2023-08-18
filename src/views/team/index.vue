@@ -134,6 +134,10 @@ const list = ref([
         github: 'https://github.com/galaxy-s10/billd-live',
       },
       {
+        label: 'billd-live-admin',
+        github: 'https://github.com/galaxy-s10/billd-live-admin',
+      },
+      {
         label: 'billd-live-server',
         github: 'https://github.com/galaxy-s10/billd-live-server',
       },

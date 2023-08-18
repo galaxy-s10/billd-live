@@ -724,13 +724,8 @@ export const useWs = () => {
       if (!rtc) return;
       if (data.sender !== getSocketId()) {
         console.log('不是我发的candidate');
-        const candidate = new RTCIceCandidate({
-          sdpMid: data.sdpMid,
-          sdpMLineIndex: data.sdpMLineIndex,
-          candidate: data.candidate,
-        });
         rtc.peerConnection
-          ?.addIceCandidate(candidate)
+          ?.addIceCandidate(data.candidate)
           .then(() => {
             console.log('candidate成功');
           })
@@ -742,7 +737,7 @@ export const useWs = () => {
       }
     });
 
-    // 管理员正在直播
+    // 主播正在直播
     ws.socketIo.on(WsMsgTypeEnum.roomLiving, (data: WsRoomLivingType) => {
       prettierReceiveWsMsg(WsMsgTypeEnum.roomLiving, data);
       roomLiving.value = true;
@@ -760,7 +755,7 @@ export const useWs = () => {
       }
     });
 
-    // 管理员不在直播
+    // 主播不在直播
     ws.socketIo.on(WsMsgTypeEnum.roomNoLive, (data) => {
       prettierReceiveWsMsg(WsMsgTypeEnum.roomNoLive, data);
       roomNoLive.value = true;

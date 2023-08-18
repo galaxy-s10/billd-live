@@ -567,7 +567,6 @@ function handleMixedAudio() {
       mixedStream.addTrack(destination.stream.getAudioTracks()[0]);
       mixedStream.addTrack(canvasVideoStream.value!.getVideoTracks()[0]);
       canvasVideoStream.value = mixedStream;
-      console.log('替换了21111');
       return;
     }
     const destination = audioCtx.value.createMediaStreamDestination();

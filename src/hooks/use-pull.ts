@@ -51,8 +51,8 @@ export function usePull({
     damuList,
   } = useWs();
 
-  const { flvPlayer, flvVideoEl, startFlvPlay, destroyFlv } = useFlvPlay();
-  const { hlsVideoEl, startHlsPlay, destroyHls } = useHlsPlay();
+  const { flvPlayer, flvVideoEl, startFlvPlay } = useFlvPlay();
+  const { hlsVideoEl, startHlsPlay } = useHlsPlay();
   const stopDrawingArr = ref<any[]>([]);
 
   onUnmounted(() => {

@@ -82,13 +82,11 @@ onMounted(() => {
         const slideList = container.children;
         for (let y = 0; y < slideList.length; y += 1) {
           const slide = slideList[y];
-          console.log(slide, 211);
           if (index === i) {
             res[index] = res[index] || 0;
             res[index] += slide.getBoundingClientRect().width;
           }
         }
-        console.log('endddd');
       }
     });
 
@@ -101,7 +99,6 @@ onMounted(() => {
       }
     });
     widthMap.value = res;
-    console.log(widthMap.value, res, min.value, 33333);
   });
 });
 </script>
@@ -155,7 +152,7 @@ onMounted(() => {
         align-items: center;
         flex-shrink: 0;
         box-sizing: border-box;
-        padding-right: 40px;
+        padding-right: 30px;
         height: 40px;
         .avatar {
           display: flex;

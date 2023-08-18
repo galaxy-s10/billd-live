@@ -41,10 +41,6 @@ export type WsOtherJoinType = IWsFormat<{
   join_socket_id: string;
 }>;
 
-export type WsRoomNoLiveType = IWsFormat<{
-  live_room: ILiveRoom;
-}>;
-
 export type WsStartLiveType = IWsFormat<{
   cover_img: string;
   name: string;
@@ -62,9 +58,9 @@ export type WsLeavedType = IWsFormat<{
   user_info?: IUser;
 }>;
 
-export interface IRoomLiving {
+export type IRoomLiving = IWsFormat<{
   live_room: ILiveRoom;
-}
+}>;
 
 export type WsOfferType = IWsFormat<{
   sdp: any;
@@ -86,9 +82,7 @@ export type WsHeartbeatType = IWsFormat<{
 
 export type WsCandidateType = IWsFormat<{
   live_room_id: number;
-  candidate: string;
-  sdpMid: string | null;
-  sdpMLineIndex: number | null;
+  candidate: RTCIceCandidate;
   receiver: string;
   sender: string;
 }>;
