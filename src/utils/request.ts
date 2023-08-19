@@ -117,7 +117,10 @@ class MyAxios {
 }
 
 export default new MyAxios({
-  baseURL: '/api',
+  baseURL:
+    process.env.NODE_ENV === 'development'
+      ? '/api'
+      : 'https://live-api.hsslive.cn',
   // baseURL: '/prodapi',
   timeout: 1000 * 5,
 });
