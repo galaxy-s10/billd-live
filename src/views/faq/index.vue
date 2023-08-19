@@ -13,7 +13,8 @@
               @click="
                 openToTarget('https://github.com/galaxy-s10/billd-live#readme')
               "
-              >billd-live的readme
+            >
+              billd-live的readme
             </span>
           </p>
           <p>
@@ -25,7 +26,8 @@
                   'https://github.com/galaxy-s10/billd-live-server#readme'
                 )
               "
-              >billd-live-server的readme
+            >
+              billd-live-server的readme
             </span>
           </p>
         </div>
@@ -74,6 +76,13 @@
         </div>
         <div class="hr"></div>
         <div class="item">
+          <h2>obs/ffmpeg推流到billd-live失败</h2>
+          <p>
+            服务器性能有限，限制了推流码率为：<b>3000kbps</b>，超过则会导致推流失败！
+          </p>
+        </div>
+        <div class="hr"></div>
+        <div class="item">
           <h2>如何参与贡献？</h2>
           <p>非常欢迎！欢迎提Issue 或 PR！</p>
         </div>
@@ -85,6 +94,7 @@
       <div class="item">billd-live是什么？</div>
       <div class="item">谁在维护billd-live？</div>
       <div class="item">billd-live使用了什么技术栈？</div>
+      <div class="item">obs/ffmpeg推流到billd-live失败</div>
       <div class="item">如何参与贡献？</div>
     </div>
   </div>
@@ -92,11 +102,8 @@
 
 <script lang="ts" setup>
 import { openToTarget } from 'billd-utils';
-import { ref } from 'vue';
 
 import { AUTHOR_GITHUB } from '@/constant';
-
-const list = ref([]);
 </script>
 
 <style lang="scss" scoped>
