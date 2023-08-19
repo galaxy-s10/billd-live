@@ -85,30 +85,27 @@ export const useWs = () => {
     {
       label: '4000',
       value: 4000,
+      disabled: true,
     },
     {
       label: '5000',
       value: 5000,
+      disabled: true,
     },
     {
       label: '6000',
       value: 6000,
+      disabled: true,
     },
     {
       label: '7000',
       value: 7000,
+      disabled: true,
     },
     {
       label: '8000',
       value: 8000,
-    },
-    {
-      label: '9000',
-      value: 9000,
-    },
-    {
-      label: '10000',
-      value: 10000,
+      disabled: true,
     },
   ]);
   const maxFramerate = ref([
@@ -121,8 +118,8 @@ export const useWs = () => {
       value: 10,
     },
     {
-      label: '20帧',
-      value: 20,
+      label: '24帧',
+      value: 24,
     },
     {
       label: '30帧',
@@ -131,6 +128,7 @@ export const useWs = () => {
     {
       label: '60帧',
       value: 60,
+      disabled: true,
     },
   ]);
   const resolutionRatio = ref([
@@ -153,6 +151,7 @@ export const useWs = () => {
     {
       label: '1440P',
       value: 1440,
+      disabled: true,
     },
   ]);
   const currentMaxBitrate = ref(maxBitrate.value[2].value);

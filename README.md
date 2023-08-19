@@ -35,6 +35,8 @@
 billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://live.bilibili.com)功能，即你（房主）可以发布直播，别人进入你的直播间后能看到你的直播内容；而你也可以作为观众，进入别人的直播间看别人的直播内容。
 
 > 后端：[https://github.com/galaxy-s10/billd-live-server](https://github.com/galaxy-s10/billd-live-server)
+>
+> 后台：[https://github.com/galaxy-s10/billd-live-admin](https://github.com/galaxy-s10/billd-live-admin)
 
 ## 功能
 
