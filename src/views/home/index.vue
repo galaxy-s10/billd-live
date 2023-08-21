@@ -51,7 +51,7 @@
               >
                 进入直播（webrtc）
               </div>
-              <div
+              <!-- <div
                 v-if="
                   currentLiveRoom.live_room?.type === LiveRoomTypeEnum.user_srs
                 "
@@ -59,7 +59,7 @@
                 @click="joinRtcRoom()"
               >
                 进入直播（srs-webrtc）
-              </div>
+              </div> -->
               <div
                 v-if="
                   currentLiveRoom.live_room?.type !==

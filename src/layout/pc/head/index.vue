@@ -195,21 +195,15 @@
           <div class="list">
             <a
               class="item"
-              @click.prevent="handleStartLive(liveTypeEnum.canvasPush)"
+              @click.prevent="handleStartLive(liveTypeEnum.srsPush)"
             >
-              <div class="txt">canvas混流开播</div>
+              <div class="txt">srs开播</div>
             </a>
             <a
-              class="item disabled"
+              class="item"
               @click.prevent="handleStartLive(liveTypeEnum.webrtcPush)"
             >
               <div class="txt">webrtc开播</div>
-            </a>
-            <a
-              class="item disabled"
-              @click.prevent="handleStartLive(liveTypeEnum.srsPush)"
-            >
-              <div class="txt">srs-webrtc开播</div>
             </a>
           </div>
         </template>
@@ -371,21 +365,19 @@ function handleStartLive(key: liveTypeEnum) {
   if (!loginTip()) {
     return;
   }
-  let url;
-  if (key === liveTypeEnum.canvasPush) {
-    url = router.resolve({
-      name: routerName.pushByCanvas,
-      query: { liveType: liveTypeEnum.srsPush },
-    });
-  } else {
-    window.$message.info('请体验canvas混流开播~');
-    return;
-    url = router.resolve({
-      name: routerName.push,
-      query: { liveType: key },
-    });
-  }
-
+  // if (key === liveTypeEnum.canvasPush) {
+  const url = router.resolve({
+    name: routerName.push,
+    query: { liveType: key },
+  });
+  // } else {
+  //   window.$message.info('请体验canvas混流开播~');
+  //   return;
+  //   url = router.resolve({
+  //     name: routerName.push,
+  //     query: { liveType: key },
+  //   });
+  // }
   openToTarget(url.href);
 }
 </script>

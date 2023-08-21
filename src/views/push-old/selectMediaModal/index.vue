@@ -5,16 +5,18 @@
       :mask-closable="false"
       @close="emits('close')"
     >
-      <n-space justify="center">
-        <n-button
-          v-for="(item, index) in allMediaTypeList"
-          :key="index"
-          class="item"
-          @click="emits('ok', item.type)"
-        >
-          {{ item.txt }}
-        </n-button>
-      </n-space>
+      <div class="container">
+        <n-space justify="center">
+          <n-button
+            v-for="(item, index) in allMediaTypeList"
+            :key="index"
+            class="item"
+            @click="emits('ok', item.type)"
+          >
+            {{ item.txt }}
+          </n-button>
+        </n-space>
+      </div>
       <template #footer></template>
     </Modal>
   </div>
@@ -25,7 +27,7 @@ import { onMounted } from 'vue';
 
 import { MediaTypeEnum } from '@/interface';
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     allMediaTypeList: {
       [index: string]: {
@@ -44,9 +46,7 @@ onMounted(() => {});
 <style lang="scss" scoped>
 .select-media-wrap {
   text-align: initial;
-  :deep(.container) {
-    width: 350px;
-  }
+
   .container {
     padding-top: 10px;
   }

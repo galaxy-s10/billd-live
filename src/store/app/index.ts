@@ -18,7 +18,7 @@ export type AppRootState = {
     stream?: MediaStream;
     streamid?: string;
     trackid?: string;
-    canvasDom?: fabric.Image | fabric.Text | fabric.IText;
+    canvasDom?: fabric.Image | fabric.Text;
     hidden?: boolean;
     muted?: boolean;
     videoEl?: HTMLVideoElement;

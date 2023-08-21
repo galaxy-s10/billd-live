@@ -18,12 +18,76 @@
             />
           </div>
         </div>
+
         <div class="item">
           <div class="label">名称</div>
           <div class="value">
             <n-input v-model:value="mediaName" />
           </div>
         </div>
+        <template v-if="props.mediaType === MediaTypeEnum.txt && txtInfo">
+          <div class="item">
+            <div class="label">内容</div>
+            <div class="value">
+              <n-input
+                ref="inputInstRef"
+                v-model:value="txtInfo.txt"
+              />
+            </div>
+          </div>
+          <div class="item">
+            <div class="label">颜色</div>
+            <div class="value">
+              <n-color-picker v-model:value="txtInfo.color" />
+            </div>
+          </div>
+        </template>
+        <template v-if="props.mediaType === MediaTypeEnum.time && timeInfo">
+          <div class="item">
+            <div class="label">颜色</div>
+            <div class="value">
+              <n-color-picker v-model:value="timeInfo.color" />
+            </div>
+          </div>
+        </template>
+        <template
+          v-if="props.mediaType === MediaTypeEnum.stopwatch && stopwatchInfo"
+        >
+          <div class="item">
+            <div class="label">颜色</div>
+            <div class="value">
+              <n-color-picker v-model:value="stopwatchInfo.color" />
+            </div>
+          </div>
+        </template>
+        <template v-if="props.mediaType === MediaTypeEnum.img">
+          <div class="item">
+            <div class="label">图片</div>
+            <div class="value">
+              <n-upload
+                :max="1"
+                accept="image/png, image/jpeg, image/webp"
+                :on-update:file-list="changImg"
+              >
+                <n-button>选择文件</n-button>
+              </n-upload>
+            </div>
+          </div>
+        </template>
+        <template v-if="props.mediaType === MediaTypeEnum.media">
+          <div class="item">
+            <div class="label">视频</div>
+            <div class="value">
+              <n-upload
+                :max="1"
+                accept="video/mp4, video/quicktime"
+                :on-update:file-list="changMedia"
+              >
+                <n-button>选择文件</n-button>
+              </n-upload>
+            </div>
+          </div>
+        </template>
       </div>
 
       <template #footer>
@@ -41,11 +105,13 @@
 </template>
 
 <script lang="ts" setup>
+import { InputInst, UploadFileInfo } from 'naive-ui';
 import { onMounted, ref } from 'vue';
 
 import { MediaTypeEnum } from '@/interface';
 import { useAppStore } from '@/store/app';
 
+const inputInstRef = ref<InputInst | null>(null);
 const mediaName = ref('');
 const appStore = useAppStore();
 
@@ -60,6 +126,11 @@ const props = withDefaults(
 const emits = defineEmits(['close', 'ok']);
 
 const inputOptions = ref<{ label: string; value: string }[]>([]);
+const txtInfo = ref<{ txt: string; color: string }>();
+const timeInfo = ref<{ color: string }>();
+const stopwatchInfo = ref<{ color: string }>();
+const imgInfo = ref<UploadFileInfo[]>();
+const mediaInfo = ref<UploadFileInfo[]>();
 const currentInput = ref<{
   type: MediaTypeEnum;
   deviceId: string;
@@ -72,8 +143,46 @@ onMounted(() => {
   init();
 });
 
+function changImg(list: UploadFileInfo[]) {
+  imgInfo.value = list;
+}
+function changMedia(list: UploadFileInfo[]) {
+  mediaInfo.value = list;
+}
+
 function handleOk() {
-  emits('ok', { ...currentInput.value, mediaName: mediaName.value });
+  if (mediaName.value.length < 4 || mediaName.value.length > 10) {
+    window.$message.info('名称要求4-10个字符！');
+    return;
+  }
+  if (props.mediaType === MediaTypeEnum.txt) {
+    if (txtInfo.value?.txt?.length! < 3 || txtInfo.value?.txt?.length! > 100) {
+      window.$message.info('内容要求3-100个字符！');
+      return;
+    }
+  }
+  if (props.mediaType === MediaTypeEnum.img) {
+    if (imgInfo.value?.length! !== 1) {
+      window.$message.info('请选择图片！');
+      return;
+    }
+  }
+  if (props.mediaType === MediaTypeEnum.media) {
+    if (mediaInfo.value?.length! !== 1) {
+      window.$message.info('请选择视频！');
+      return;
+    }
+  }
+
+  emits('ok', {
+    ...currentInput.value,
+    mediaName: mediaName.value,
+    txtInfo: txtInfo.value,
+    imgInfo: imgInfo.value,
+    mediaInfo: mediaInfo.value,
+    timeInfo: timeInfo.value,
+    stopwatchInfo: stopwatchInfo.value,
+  });
 }
 
 async function init() {
@@ -93,8 +202,9 @@ async function init() {
       type: MediaTypeEnum.microphone,
     };
     mediaName.value = `麦克风-${
-      appStore.allTrack.filter((item) => item.type === MediaTypeEnum.microphone)
-        .length + 1
+      appStore.allTrack
+        .filter((item) => item.type === MediaTypeEnum.microphone)
+        .filter((item) => !item.hidden).length + 1
     }`;
   } else if (props.mediaType === MediaTypeEnum.camera) {
     res.forEach((item) => {
@@ -111,8 +221,9 @@ async function init() {
       type: MediaTypeEnum.camera,
     };
     mediaName.value = `摄像头-${
-      appStore.allTrack.filter((item) => item.type === MediaTypeEnum.camera)
-        .length + 1
+      appStore.allTrack
+        .filter((item) => item.type === MediaTypeEnum.camera)
+        .filter((item) => !item.hidden).length + 1
     }`;
   } else if (props.mediaType === MediaTypeEnum.screen) {
     currentInput.value = {
@@ -120,8 +231,67 @@ async function init() {
       type: MediaTypeEnum.screen,
     };
     mediaName.value = `窗口-${
-      appStore.allTrack.filter((item) => item.type === MediaTypeEnum.screen)
-        .length + 1
+      appStore.allTrack
+        .filter((item) => item.type === MediaTypeEnum.screen)
+        .filter((item) => !item.hidden).length + 1
+    }`;
+  } else if (props.mediaType === MediaTypeEnum.txt) {
+    currentInput.value = {
+      ...currentInput.value,
+      type: MediaTypeEnum.txt,
+    };
+    txtInfo.value = { txt: '', color: 'rgba(255,215,0,1)' };
+    mediaName.value = `文字-${
+      appStore.allTrack
+        .filter((item) => item.type === MediaTypeEnum.txt)
+        .filter((item) => !item.hidden).length + 1
+    }`;
+    setTimeout(() => {
+      inputInstRef.value?.focus();
+    }, 100);
+  } else if (props.mediaType === MediaTypeEnum.time) {
+    currentInput.value = {
+      ...currentInput.value,
+      type: MediaTypeEnum.time,
+    };
+    timeInfo.value = { color: 'rgba(255,215,0,1)' };
+    mediaName.value = `时间-${
+      appStore.allTrack
+        .filter((item) => item.type === MediaTypeEnum.time)
+        .filter((item) => !item.hidden).length + 1
+    }`;
+  } else if (props.mediaType === MediaTypeEnum.stopwatch) {
+    currentInput.value = {
+      ...currentInput.value,
+      type: MediaTypeEnum.stopwatch,
+    };
+    stopwatchInfo.value = { color: 'rgba(255,215,0,1)' };
+    mediaName.value = `秒表-${
+      appStore.allTrack
+        .filter((item) => item.type === MediaTypeEnum.stopwatch)
+        .filter((item) => !item.hidden).length + 1
+    }`;
+  } else if (props.mediaType === MediaTypeEnum.img) {
+    currentInput.value = {
+      ...currentInput.value,
+      type: MediaTypeEnum.img,
+    };
+    imgInfo.value = [];
+    mediaName.value = `图片-${
+      appStore.allTrack
+        .filter((item) => item.type === MediaTypeEnum.img)
+        .filter((item) => !item.hidden).length + 1
+    }`;
+  } else if (props.mediaType === MediaTypeEnum.media) {
+    currentInput.value = {
+      ...currentInput.value,
+      type: MediaTypeEnum.media,
+    };
+    mediaInfo.value = [];
+    mediaName.value = `视频-${
+      appStore.allTrack
+        .filter((item) => item.type === MediaTypeEnum.media)
+        .filter((item) => !item.hidden).length + 1
     }`;
   }
 }
