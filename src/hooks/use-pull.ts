@@ -3,7 +3,7 @@ import { Ref, nextTick, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { useFlvPlay, useHlsPlay } from '@/hooks/use-play';
-import { useWs } from '@/hooks/use-ws';
+import { useSrsWs } from '@/hooks/use-srs-ws';
 import { DanmuMsgTypeEnum, IDanmu, IMessage, liveTypeEnum } from '@/interface';
 import { WsMsgTypeEnum } from '@/network/webSocket';
 import { useAppStore } from '@/store/app';
@@ -39,24 +39,22 @@ export function usePull({
   const videoElArr = ref<HTMLVideoElement[]>([]);
   const remoteVideo = ref<HTMLElement[]>([]);
   const {
-    getSocketId,
-    initWs,
+    mySocketId,
+    initSrsWs,
     roomLiving,
     liveRoomInfo,
     anchorInfo,
     roomNoLive,
-    loopHeartbeatTimer,
     localStream,
     liveUserList,
     damuList,
-  } = useWs();
+  } = useSrsWs();
 
   const { flvPlayer, flvVideoEl, startFlvPlay } = useFlvPlay();
   const { hlsVideoEl, startHlsPlay } = useHlsPlay();
   const stopDrawingArr = ref<any[]>([]);
 
   onUnmounted(() => {
-    clearInterval(loopHeartbeatTimer.value);
     handleStopDrawing();
   });
 
@@ -220,12 +218,9 @@ export function usePull({
     if (autoplayVal.value) {
       videoLoading.value = true;
     }
-    initWs({
+    initSrsWs({
       roomId: roomId.value,
-      isSRS,
       isAnchor: false,
-      isPull: true,
-      roomLiveType: roomLiveType.value,
     });
   }
 
@@ -241,12 +236,12 @@ export function usePull({
   }
 
   function addVideo() {
-    sidebarList.value.push({ socketId: getSocketId() });
+    sidebarList.value.push({ socketId: mySocketId.value });
     nextTick(() => {
       liveUserList.value.forEach((item) => {
         const socketId = item.id;
-        if (socketId === getSocketId()) {
-          localVideoRef.value[getSocketId()].srcObject = localStream.value;
+        if (socketId === mySocketId.value) {
+          localVideoRef.value[mySocketId.value].srcObject = localStream.value;
         }
       });
     });
@@ -268,7 +263,7 @@ export function usePull({
     const instance = networkStore.wsMap.get(roomId.value);
     if (!instance) return;
     const danmu: IDanmu = {
-      socket_id: getSocketId(),
+      socket_id: mySocketId.value,
       userInfo: userStore.userInfo,
       msgType: DanmuMsgTypeEnum.danmu,
       msg: danmuStr.value,
@@ -290,7 +285,7 @@ export function usePull({
     initPull,
     closeWs,
     closeRtc,
-    getSocketId,
+    mySocketId,
     keydownDanmu,
     sendDanmu,
     addVideo,

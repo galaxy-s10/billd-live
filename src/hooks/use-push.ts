@@ -10,8 +10,8 @@ import {
   DanmuMsgTypeEnum,
   ILiveRoom,
   IMessage,
+  LiveRoomTypeEnum,
   MediaTypeEnum,
-  liveTypeEnum,
 } from '@/interface';
 import { WsMsgTypeEnum } from '@/network/webSocket';
 import { useAppStore } from '@/store/app';
@@ -20,10 +20,11 @@ import { useUserStore } from '@/store/user';
 import { createVideo, generateBase64 } from '@/utils';
 
 import { loginTip } from './use-login';
+import { useSrsWs } from './use-srs-ws';
 import { useTip } from './use-tip';
-import { useWs } from './use-ws';
 
 export function usePush({ isSRS }: { isSRS: boolean }) {
+  console.log('usePushusePush', isSRS);
   const route = useRoute();
   const router = useRouter();
   const appStore = useAppStore();
@@ -37,63 +38,57 @@ export function usePush({ isSRS }: { isSRS: boolean }) {
   const liveRoomInfo = ref<ILiveRoom>();
   const videoElArr = ref<HTMLVideoElement[]>([]);
 
-  const allMediaTypeList: {
-    [index: string]: { type: MediaTypeEnum; txt: string };
-  } = {
-    [MediaTypeEnum.camera]: {
-      type: MediaTypeEnum.camera,
-      txt: '摄像头',
-    },
-    [MediaTypeEnum.screen]: {
-      type: MediaTypeEnum.screen,
-      txt: '窗口',
-    },
-    [MediaTypeEnum.microphone]: {
-      type: MediaTypeEnum.microphone,
-      txt: '麦克风',
-    },
-    [MediaTypeEnum.txt]: {
-      type: MediaTypeEnum.txt,
-      txt: '文字',
-    },
-    [MediaTypeEnum.img]: {
-      type: MediaTypeEnum.img,
-      txt: '图片',
-    },
-    [MediaTypeEnum.media]: {
-      type: MediaTypeEnum.media,
-      txt: '视频',
-    },
-    [MediaTypeEnum.time]: {
-      type: MediaTypeEnum.time,
-      txt: '时间',
-    },
-    [MediaTypeEnum.stopwatch]: {
-      type: MediaTypeEnum.stopwatch,
-      txt: '秒表',
-    },
-  };
+  const allMediaTypeList: Record<string, { type: MediaTypeEnum; txt: string }> =
+    {
+      [MediaTypeEnum.camera]: {
+        type: MediaTypeEnum.camera,
+        txt: '摄像头',
+      },
+      [MediaTypeEnum.screen]: {
+        type: MediaTypeEnum.screen,
+        txt: '窗口',
+      },
+      [MediaTypeEnum.microphone]: {
+        type: MediaTypeEnum.microphone,
+        txt: '麦克风',
+      },
+      [MediaTypeEnum.txt]: {
+        type: MediaTypeEnum.txt,
+        txt: '文字',
+      },
+      [MediaTypeEnum.img]: {
+        type: MediaTypeEnum.img,
+        txt: '图片',
+      },
+      [MediaTypeEnum.media]: {
+        type: MediaTypeEnum.media,
+        txt: '视频',
+      },
+      [MediaTypeEnum.time]: {
+        type: MediaTypeEnum.time,
+        txt: '时间',
+      },
+      [MediaTypeEnum.stopwatch]: {
+        type: MediaTypeEnum.stopwatch,
+        txt: '秒表',
+      },
+    };
 
   const {
-    getSocketId,
-    initWs,
+    mySocketId,
+    initSrsWs,
     canvasVideoStream,
     lastCoverImg,
-    loopHeartbeatTimer,
     localStream,
     liveUserList,
     damuList,
-    maxBitrate,
-    maxFramerate,
-    resolutionRatio,
     currentMaxFramerate,
     currentMaxBitrate,
     currentResolutionRatio,
     addTrack,
     delTrack,
-    sendStartLive,
-    startNewWebRtc,
-  } = useWs();
+    handleStartLive,
+  } = useSrsWs();
 
   watch(
     () => localStream.value,
@@ -148,7 +143,6 @@ export function usePush({ isSRS }: { isSRS: boolean }) {
   });
 
   onUnmounted(() => {
-    clearInterval(loopHeartbeatTimer.value);
     closeWs();
     closeRtc();
   });
@@ -189,19 +183,17 @@ export function usePush({ isSRS }: { isSRS: boolean }) {
   }
 
   function connectWs() {
-    initWs({
+    initSrsWs({
       isAnchor: true,
       roomId: roomId.value,
-      isSRS,
-      isPull: false,
       currentMaxBitrate: currentMaxBitrate.value,
       currentMaxFramerate: currentMaxFramerate.value,
       currentResolutionRatio: currentResolutionRatio.value,
-      roomLiveType: isSRS ? liveTypeEnum.srsPush : liveTypeEnum.webrtcPush,
     });
   }
 
-  async function startLive() {
+  async function startLive(type: LiveRoomTypeEnum) {
+    console.log('startLivestartLive', type);
     if (!loginTip()) return;
     const flag = await userHasLiveRoom();
     if (!flag) {
@@ -228,18 +220,13 @@ export function usePush({ isSRS }: { isSRS: boolean }) {
         }
       }
     }
-    sendStartLive({ coverImg: lastCoverImg.value, name: roomName.value });
-    startNewWebRtc({
-      videoEl: document.createElement('video'),
-      receiver: 'srs',
-    });
+    handleStartLive({ coverImg: lastCoverImg.value, name: roomName.value });
   }
 
   /** 结束直播 */
   function endLive() {
     isLiving.value = false;
     localStream.value = undefined;
-    clearInterval(loopHeartbeatTimer.value);
     const instance = networkStore.wsMap.get(roomId.value);
     if (instance) {
       instance.send({
@@ -296,7 +283,7 @@ export function usePush({ isSRS }: { isSRS: boolean }) {
       data: messageData,
     });
     damuList.value.push({
-      socket_id: getSocketId(),
+      socket_id: mySocketId.value,
       msgType: DanmuMsgTypeEnum.danmu,
       msg: danmuStr.value,
       userInfo: userStore.userInfo,
@@ -306,7 +293,7 @@ export function usePush({ isSRS }: { isSRS: boolean }) {
 
   return {
     confirmRoomName,
-    getSocketId,
+    mySocketId,
     startLive,
     endLive,
     sendDanmu,
@@ -319,9 +306,6 @@ export function usePush({ isSRS }: { isSRS: boolean }) {
     currentResolutionRatio,
     currentMaxBitrate,
     currentMaxFramerate,
-    resolutionRatio,
-    maxBitrate,
-    maxFramerate,
     danmuStr,
     roomName,
     damuList,

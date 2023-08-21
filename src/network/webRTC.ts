@@ -277,41 +277,9 @@ export class WebRTCClass {
     if (!this.peerConnection) return;
     this.prettierLog('createOffer开始', 'warn');
     try {
-      const description = await this.peerConnection.createOffer({
-        iceRestart: true,
-      });
-      this.prettierLog('createOffer成功', 'warn', description);
-      // const sdpStr = description.sdp;
-
-      // const sdpObj = SDPTransform.parse(sdpStr);
-
-      // // Get all m-lines
-      // const mlines = sdpObj.media;
-
-      // // Map to store unique m-lines
-      // const mLineMap = new Map();
-
-      // mlines.forEach((mLine) => {
-      //   const key = `${mLine.type}_${mLine.port}`;
-      //   if (!mLineMap.has(key)) {
-      //     mLineMap.set(key, mLine);
-      //   }
-      // });
-
-      // // Clear media array and only keep m-lines from map
-      // sdpObj.media = [];
-
-      // mLineMap.forEach((mLine) => {
-      //   sdpObj.media.push(mLine);
-      // });
-
-      // // Write new SDP string
-      // const newSdpStr = SDPTransform.write(sdpObj);
-      // console.log('old', description.sdp);
-      // console.log('newSdpStr', newSdpStr);
-      // Use new SDP string ...
-      // description.sdp = newSdpStr;
-      return description;
+      const sdp = await this.peerConnection.createOffer();
+      this.prettierLog('createOffer成功', 'warn', sdp);
+      return sdp;
     } catch (error) {
       this.prettierLog('createOffer失败', 'error');
       console.log(error);
@@ -323,9 +291,9 @@ export class WebRTCClass {
     if (!this.peerConnection) return;
     this.prettierLog('createAnswer开始', 'warn');
     try {
-      const description = await this.peerConnection.createAnswer();
-      this.prettierLog('createAnswer成功', 'warn', description);
-      return description;
+      const sdp = await this.peerConnection.createAnswer();
+      this.prettierLog('createAnswer成功', 'warn', sdp);
+      return sdp;
     } catch (error) {
       this.prettierLog('createAnswer失败', 'error');
       console.log(error);
@@ -333,29 +301,29 @@ export class WebRTCClass {
   };
 
   // 设置本地描述
-  setLocalDescription = async (desc: RTCLocalSessionDescriptionInit) => {
+  setLocalDescription = async (sdp: RTCLocalSessionDescriptionInit) => {
     if (!this.peerConnection) return;
     this.prettierLog('setLocalDescription开始', 'warn');
     try {
-      await this.peerConnection.setLocalDescription(desc);
-      this.prettierLog('setLocalDescription成功', 'warn', desc);
+      await this.peerConnection.setLocalDescription(sdp);
+      this.prettierLog('setLocalDescription成功', 'warn', sdp);
     } catch (error) {
       this.prettierLog('setLocalDescription失败', 'error');
-      console.error('setLocalDescription', desc);
+      console.error('setLocalDescription', sdp);
       console.error(error);
     }
   };
 
   // 设置远端描述
-  setRemoteDescription = async (desc: RTCSessionDescriptionInit) => {
+  setRemoteDescription = async (sdp: RTCSessionDescriptionInit) => {
     if (!this.peerConnection) return;
     this.prettierLog(`setRemoteDescription开始`, 'warn');
     try {
-      await this.peerConnection.setRemoteDescription(desc);
-      this.prettierLog('setRemoteDescription成功', 'warn', desc);
+      await this.peerConnection.setRemoteDescription(sdp);
+      this.prettierLog('setRemoteDescription成功', 'warn', sdp);
     } catch (error) {
       this.prettierLog('setRemoteDescription失败', 'error');
-      console.error('setRemoteDescription', desc);
+      console.error('setRemoteDescription', sdp);
       console.error(error);
     }
   };
@@ -395,7 +363,7 @@ export class WebRTCClass {
         const roomId = this.roomId.split('___')[0];
         const receiver = this.roomId.split('___')[1];
         networkStore.wsMap.get(roomId)?.send<WsCandidateType['data']>({
-          msgType: WsMsgTypeEnum.candidate,
+          msgType: WsMsgTypeEnum.srsCandidate,
           data: {
             candidate: event.candidate,
             sender: networkStore.wsMap.get(roomId)?.socketIo?.id || '',

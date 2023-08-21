@@ -17,7 +17,7 @@
             <div class="bottom">
               <span>{{ liveRoomInfo?.name }}</span>
               <span v-if="NODE_ENV === 'development'">
-                socketId:{{ getSocketId() }}
+                socketId:{{ mySocketId }}
               </span>
             </div>
           </div>
@@ -106,7 +106,7 @@
       <div class="user-list">
         <div
           v-for="(item, index) in liveUserList.filter(
-            (item) => item.id !== getSocketId()
+            (item) => item.id !== mySocketId
           )"
           :key="index"
           class="item"
@@ -223,7 +223,7 @@ const {
   initPull,
   closeWs,
   closeRtc,
-  getSocketId,
+  mySocketId,
   keydownDanmu,
   sendDanmu,
   addVideo,

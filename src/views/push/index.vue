@@ -58,7 +58,7 @@
             </div>
             <div class="bottom">
               <span v-if="NODE_ENV === 'development'">
-                {{ getSocketId() }}
+                {{ mySocketId }}
               </span>
             </div>
           </div>
@@ -99,8 +99,7 @@
               <span>
                 正在观看：
                 {{
-                  liveUserList.filter((item) => item.id !== getSocketId())
-                    .length
+                  liveUserList.filter((item) => item.id !== mySocketId).length
                 }}
               </span>
             </span>
@@ -278,7 +277,13 @@ import * as workerTimers from 'worker-timers';
 
 import { mediaTypeEnumMap } from '@/constant';
 import { usePush } from '@/hooks/use-push';
-import { DanmuMsgTypeEnum, MediaTypeEnum, liveTypeEnum } from '@/interface';
+import { useRTCParams } from '@/hooks/use-rtc-params';
+import {
+  DanmuMsgTypeEnum,
+  LiveRoomTypeEnum,
+  MediaTypeEnum,
+  liveTypeEnum,
+} from '@/interface';
 import { AppRootState, useAppStore } from '@/store/app';
 import { useResourceCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
@@ -313,16 +318,18 @@ const audioCtx = ref<AudioContext>();
 const timeCanvasDom = ref<Raw<fabric.Text>[]>([]);
 const stopwatchCanvasDom = ref<Raw<fabric.Text>[]>([]);
 const isSRS = route.query.liveType === liveTypeEnum.srsPush;
+console.log(route.query.liveType, liveTypeEnum.srsPush, 22222121);
 const wrapSize = reactive({
   width: 0,
   height: 0,
 });
 const workerTimerId = ref(-1);
-const requestAnimationFrameId = ref(-1);
 const videoRatio = ref(16 / 9);
+const { maxBitrate, maxFramerate, resolutionRatio } = useRTCParams();
+
 const {
   confirmRoomName,
-  getSocketId,
+  mySocketId,
   startLive,
   endLive,
   sendDanmu,
@@ -334,9 +341,6 @@ const {
   currentResolutionRatio,
   currentMaxBitrate,
   currentMaxFramerate,
-  resolutionRatio,
-  maxBitrate,
-  maxFramerate,
   danmuStr,
   roomName,
   damuList,
@@ -367,39 +371,14 @@ onMounted(() => {
   initUserMedia();
   initCanvas();
   handleCache();
-  document.addEventListener('visibilitychange', onPageVisibility);
 });
 
 onUnmounted(() => {
   bodyAppendChildElArr.value.forEach((el) => {
     el.remove();
   });
-  document.removeEventListener('visibilitychange', onPageVisibility);
-  if (workerTimerId.value !== -1) {
-    workerTimers.clearInterval(workerTimerId.value);
-  }
   clearFrame();
 });
-
-// 处理页面显示/隐藏
-function onPageVisibility() {
-  // 注意：此属性在Page Visibility Level 2 规范中被描述为“历史” 。考虑改用该Document.visibilityState 属性。
-  // const isHidden = document.hidden;
-  if (document.visibilityState === 'hidden') {
-    console.log(new Date().toLocaleString(), '页面隐藏了', workerTimerId.value);
-    if (isLiving.value) {
-      const delay = 1000 / 60; // 16.666666666666668
-      workerTimerId.value = workerTimers.setInterval(() => {
-        renderAll();
-      }, delay);
-    }
-  } else {
-    console.log(new Date().toLocaleString(), '页面显示了', workerTimerId.value);
-    if (isLiving.value) {
-      workerTimers.clearInterval(workerTimerId.value);
-    }
-  }
-}
 
 function initUserMedia() {
   navigator.mediaDevices
@@ -492,6 +471,7 @@ function renderFrame() {
   workerTimerId.value = workerTimers.setInterval(() => {
     renderAll();
   }, delay);
+  console.log('workerTimerId.value', workerTimerId.value);
 }
 
 // 处理空音频轨
@@ -600,7 +580,7 @@ function handleStartLive() {
   }
   handleMixedAudio();
   lastCoverImg.value = generateBase64(pushCanvasRef.value!);
-  startLive();
+  startLive(isSRS ? LiveRoomTypeEnum.user_srs : LiveRoomTypeEnum.user_wertc);
 }
 
 function handleScale({ width, height }: { width: number; height: number }) {

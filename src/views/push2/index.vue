@@ -256,7 +256,7 @@
 
 <script lang="ts" setup>
 import { getRandomString } from 'billd-utils';
-import { NODE_ENV } from 'script/constant';
+
 import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -264,6 +264,7 @@ import { usePush } from '@/hooks/use-push';
 import { DanmuMsgTypeEnum, MediaTypeEnum, liveTypeEnum } from '@/interface';
 import { AppRootState, useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
+import { NODE_ENV } from 'script/constant';
 
 import MediaModalCpt from './mediaModal/index.vue';
 import SelectMediaModalCpt from './selectMediaModal/index.vue';
@@ -294,9 +295,6 @@ const {
   currentResolutionRatio,
   currentMaxBitrate,
   currentMaxFramerate,
-  resolutionRatio,
-  maxBitrate,
-  maxFramerate,
   danmuStr,
   roomName,
   damuList,
