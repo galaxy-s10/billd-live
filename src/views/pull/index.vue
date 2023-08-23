@@ -30,7 +30,7 @@
       >
         <div
           class="no-live"
-          v-if="roomNoLive"
+          v-if="!roomLiving"
         >
           当前房间没在直播~
         </div>
@@ -229,7 +229,7 @@ const {
   addVideo,
   videoLoading,
   remoteVideo,
-  roomNoLive,
+  roomLiving,
   damuList,
   liveUserList,
   danmuStr,

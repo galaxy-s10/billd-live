@@ -6,13 +6,7 @@ import {
   fetchCreateUserLiveRoom,
   fetchUserHasLiveRoom,
 } from '@/api/userLiveRoom';
-import {
-  DanmuMsgTypeEnum,
-  ILiveRoom,
-  IMessage,
-  LiveRoomTypeEnum,
-  MediaTypeEnum,
-} from '@/interface';
+import { DanmuMsgTypeEnum, ILiveRoom, IMessage } from '@/interface';
 import { WsMsgTypeEnum } from '@/network/webSocket';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
@@ -23,8 +17,7 @@ import { loginTip } from './use-login';
 import { useSrsWs } from './use-srs-ws';
 import { useTip } from './use-tip';
 
-export function usePush({ isSRS }: { isSRS: boolean }) {
-  console.log('usePushusePush', isSRS);
+export function usePush() {
   const route = useRoute();
   const router = useRouter();
   const appStore = useAppStore();
@@ -38,45 +31,12 @@ export function usePush({ isSRS }: { isSRS: boolean }) {
   const liveRoomInfo = ref<ILiveRoom>();
   const videoElArr = ref<HTMLVideoElement[]>([]);
 
-  const allMediaTypeList: Record<string, { type: MediaTypeEnum; txt: string }> =
-    {
-      [MediaTypeEnum.camera]: {
-        type: MediaTypeEnum.camera,
-        txt: '摄像头',
-      },
-      [MediaTypeEnum.screen]: {
-        type: MediaTypeEnum.screen,
-        txt: '窗口',
-      },
-      [MediaTypeEnum.microphone]: {
-        type: MediaTypeEnum.microphone,
-        txt: '麦克风',
-      },
-      [MediaTypeEnum.txt]: {
-        type: MediaTypeEnum.txt,
-        txt: '文字',
-      },
-      [MediaTypeEnum.img]: {
-        type: MediaTypeEnum.img,
-        txt: '图片',
-      },
-      [MediaTypeEnum.media]: {
-        type: MediaTypeEnum.media,
-        txt: '视频',
-      },
-      [MediaTypeEnum.time]: {
-        type: MediaTypeEnum.time,
-        txt: '时间',
-      },
-      [MediaTypeEnum.stopwatch]: {
-        type: MediaTypeEnum.stopwatch,
-        txt: '秒表',
-      },
-    };
-
   const {
-    mySocketId,
     initSrsWs,
+    addTrack,
+    delTrack,
+    handleStartLive,
+    mySocketId,
     canvasVideoStream,
     lastCoverImg,
     localStream,
@@ -85,9 +45,6 @@ export function usePush({ isSRS }: { isSRS: boolean }) {
     currentMaxFramerate,
     currentMaxBitrate,
     currentResolutionRatio,
-    addTrack,
-    delTrack,
-    handleStartLive,
   } = useSrsWs();
 
   watch(
@@ -104,7 +61,6 @@ export function usePush({ isSRS }: { isSRS: boolean }) {
         const video = createVideo({});
         video.setAttribute('track-id', track.id);
         video.srcObject = new MediaStream([track]);
-        // localVideoRef.value?.appendChild(video);
         videoElArr.value.push(video);
       });
       stream?.getAudioTracks().forEach((track) => {
@@ -112,7 +68,6 @@ export function usePush({ isSRS }: { isSRS: boolean }) {
         const video = createVideo({});
         video.setAttribute('track-id', track.id);
         video.srcObject = new MediaStream([track]);
-        // localVideoRef.value?.appendChild(video);
         videoElArr.value.push(video);
       });
     },
@@ -192,8 +147,7 @@ export function usePush({ isSRS }: { isSRS: boolean }) {
     });
   }
 
-  async function startLive(type: LiveRoomTypeEnum) {
-    console.log('startLivestartLive', type);
+  async function startLive() {
     if (!loginTip()) return;
     const flag = await userHasLiveRoom();
     if (!flag) {
@@ -233,10 +187,7 @@ export function usePush({ isSRS }: { isSRS: boolean }) {
         msgType: WsMsgTypeEnum.roomNoLive,
       });
     }
-    setTimeout(() => {
-      closeWs();
-      closeRtc();
-    }, 500);
+    closeRtc();
   }
 
   function roomNameIsOk() {
@@ -273,14 +224,13 @@ export function usePush({ isSRS }: { isSRS: boolean }) {
       window.$message.error('还没开播，不能发送弹幕！');
       return;
     }
-    const messageData: IMessage['data'] = {
-      msg: danmuStr.value,
-      msgType: DanmuMsgTypeEnum.danmu,
-      live_room_id: Number(roomId.value),
-    };
-    instance.send({
+    instance.send<IMessage['data']>({
       msgType: WsMsgTypeEnum.message,
-      data: messageData,
+      data: {
+        msg: danmuStr.value,
+        msgType: DanmuMsgTypeEnum.danmu,
+        live_room_id: Number(roomId.value),
+      },
     });
     damuList.value.push({
       socket_id: mySocketId.value,
@@ -293,16 +243,17 @@ export function usePush({ isSRS }: { isSRS: boolean }) {
 
   return {
     confirmRoomName,
-    mySocketId,
     startLive,
     endLive,
     sendDanmu,
     keydownDanmu,
+    addTrack,
+    delTrack,
+    mySocketId,
     lastCoverImg,
     localStream,
     canvasVideoStream,
     isLiving,
-    allMediaTypeList,
     currentResolutionRatio,
     currentMaxBitrate,
     currentMaxFramerate,
@@ -311,7 +262,5 @@ export function usePush({ isSRS }: { isSRS: boolean }) {
     damuList,
     liveUserList,
     liveRoomInfo,
-    addTrack,
-    delTrack,
   };
 }

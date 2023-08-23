@@ -44,7 +44,6 @@ export function usePull({
     roomLiving,
     liveRoomInfo,
     anchorInfo,
-    roomNoLive,
     localStream,
     liveUserList,
     damuList,
@@ -141,17 +140,17 @@ export function usePull({
   );
 
   watch(
-    () => localStream,
-    (stream) => {
-      if (stream.value) {
+    () => localStream.value,
+    (val) => {
+      if (val) {
         console.log('localStream变了');
-        console.log('音频轨：', stream.value?.getAudioTracks());
-        console.log('视频轨：', stream.value?.getVideoTracks());
+        console.log('音频轨：', val?.getAudioTracks());
+        console.log('视频轨：', val?.getVideoTracks());
         if (roomLiveType.value === liveTypeEnum.webrtcPull) {
           videoElArr.value.forEach((dom) => {
             dom.remove();
           });
-          stream.value?.getVideoTracks().forEach((track) => {
+          val?.getVideoTracks().forEach((track) => {
             console.log('视频轨enabled：', track.id, track.enabled);
             const video = createVideo({});
             video.setAttribute('track-id', track.id);
@@ -159,7 +158,7 @@ export function usePull({
             remoteVideo.value.push(video);
             videoElArr.value.push(video);
           });
-          stream.value?.getAudioTracks().forEach((track) => {
+          val?.getAudioTracks().forEach((track) => {
             console.log('音频轨enabled：', track.id, track.enabled);
             const video = createVideo({});
             video.setAttribute('track-id', track.id);
@@ -172,7 +171,7 @@ export function usePull({
           videoElArr.value.forEach((dom) => {
             dom.remove();
           });
-          stream.value?.getVideoTracks().forEach((track) => {
+          val?.getVideoTracks().forEach((track) => {
             console.log('视频轨enabled：', track.id, track.enabled);
             const video = createVideo({});
             video.setAttribute('track-id', track.id);
@@ -181,7 +180,7 @@ export function usePull({
             remoteVideo.value.push(video);
             videoElArr.value.push(video);
           });
-          stream.value?.getAudioTracks().forEach((track) => {
+          val?.getAudioTracks().forEach((track) => {
             console.log('音频轨enabled：', track.id, track.enabled);
             const video = createVideo({});
             video.setAttribute('track-id', track.id);
@@ -296,7 +295,6 @@ export function usePull({
     roomLiving,
     autoplayVal,
     videoLoading,
-    roomNoLive,
     damuList,
     liveUserList,
     sidebarList,

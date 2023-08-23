@@ -33,25 +33,25 @@ import {
 import { AppRootState, useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
+import { createVideo } from '@/utils';
 
 import { useRTCParams } from './use-rtc-params';
 
-export const useSrsWs = () => {
+export const useRtcWs = () => {
   const appStore = useAppStore();
   const userStore = useUserStore();
   const networkStore = useNetworkStore();
-  const { maxBitrate, maxFramerate, resolutionRatio } = useRTCParams();
-
   const loopHeartbeatTimer = ref();
   const liveUserList = ref<ILiveUser[]>([]);
   const roomId = ref('');
   const roomLiving = ref(false);
-  const isAnchor = ref(false);
   const liveRoomInfo = ref<ILiveRoom>();
   const anchorInfo = ref<IUser>();
+  const isAnchor = ref(false);
   const localStream = ref<MediaStream>();
   const canvasVideoStream = ref<MediaStream>();
   const lastCoverImg = ref('');
+  const { maxBitrate, maxFramerate, resolutionRatio } = useRTCParams();
   const currentMaxBitrate = ref(maxBitrate.value[2].value);
   const currentResolutionRatio = ref(resolutionRatio.value[3].value);
   const currentMaxFramerate = ref(maxFramerate.value[2].value);
@@ -163,14 +163,13 @@ export const useSrsWs = () => {
           ?.getSenders()
           .find((sender) => sender.track?.id === addTrackInfo.track?.id);
         if (!sender) {
-          console.log(
-            'pc添加track-开播后中途添加，替换它',
-            addTrackInfo.track?.id
-          );
+          console.log('pc添加track-开播后中途添加', addTrackInfo.track?.id);
           rtc.peerConnection
             ?.getSenders()
             ?.find((sender) => sender.track?.kind === 'audio')
             ?.replaceTrack(canvasVideoStream.value!.getAudioTracks()[0]);
+          const vel = createVideo({});
+          vel.srcObject = canvasVideoStream.value!;
         }
       });
     }
@@ -314,6 +313,7 @@ export const useSrsWs = () => {
     });
     if (canvasVideoStream.value) {
       localStream.value = canvasVideoStream.value;
+      rtc.localStream = canvasVideoStream.value;
       canvasVideoStream.value.getTracks().forEach((track) => {
         console.log('pc添加track-srs', track.kind, track.id);
         rtc.peerConnection?.addTrack(track, localStream.value!);

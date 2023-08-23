@@ -47,12 +47,9 @@ export enum WsMsgTypeEnum {
   heartbeat = 'heartbeat',
   startLive = 'startLive',
 
-  srsOffer = 'srsOffer',
-  srsAnswer = 'srsAnswer',
-  srsCandidate = 'srsCandidate',
-  webrtcOffer = 'webrtcOffer',
-  webrtcAnswer = 'webrtcAnswer',
-  webrtcCandidate = 'webrtcCandidate',
+  offer = 'offer',
+  answer = 'answer',
+  candidate = 'candidate',
 }
 
 export function prettierReceiveWsMsg(...arg) {
