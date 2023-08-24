@@ -286,6 +286,16 @@ export class WebRTCClass {
     }
   };
 
+  addIceCandidate = async (candidate: RTCIceCandidateInit) => {
+    try {
+      await this.peerConnection?.addIceCandidate(candidate);
+      console.log('addIceCandidate成功');
+    } catch (error) {
+      console.error('addIceCandidate错误');
+      console.log(error);
+    }
+  };
+
   // 创建answer
   createAnswer = async () => {
     if (!this.peerConnection) return;

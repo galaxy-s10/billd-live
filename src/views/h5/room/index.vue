@@ -138,7 +138,6 @@ const {
 } = usePull({
   localVideoRef,
   liveType: liveTypeEnum.srsHlsPull,
-  isSRS: false,
 });
 
 watch(

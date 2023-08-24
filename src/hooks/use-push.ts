@@ -8,7 +8,7 @@ import {
 } from '@/api/userLiveRoom';
 import { DanmuMsgTypeEnum, ILiveRoom, IMessage } from '@/interface';
 import { WsMsgTypeEnum } from '@/network/webSocket';
-import { useAppStore } from '@/store/app';
+import { AppRootState, useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 import { createVideo, generateBase64 } from '@/utils';
@@ -29,23 +29,117 @@ export function usePush() {
   const danmuStr = ref('');
   const isLiving = ref(false);
   const liveRoomInfo = ref<ILiveRoom>();
+  const localStream = ref<MediaStream>();
   const videoElArr = ref<HTMLVideoElement[]>([]);
 
   const {
+    isPull,
     initSrsWs,
-    addTrack,
-    delTrack,
     handleStartLive,
     mySocketId,
     canvasVideoStream,
     lastCoverImg,
-    localStream,
     liveUserList,
     damuList,
     currentMaxFramerate,
     currentMaxBitrate,
     currentResolutionRatio,
   } = useSrsWs();
+  isPull.value = false;
+
+  watch(
+    () => appStore.allTrack,
+    (newTrack, oldTrack) => {
+      console.log('appStore.allTrack变了', newTrack, oldTrack);
+      const mixedStream = new MediaStream();
+      newTrack.forEach((item) => {
+        if (item.track) {
+          mixedStream.addTrack(item.track);
+        }
+      });
+      console.log('新的allTrack音频轨', mixedStream.getAudioTracks());
+      console.log('新的allTrack视频轨', mixedStream.getVideoTracks());
+      console.log('旧的allTrack音频轨', localStream.value?.getAudioTracks());
+      console.log('旧的allTrack视频轨', localStream.value?.getVideoTracks());
+      localStream.value = mixedStream;
+    },
+    { deep: true }
+  );
+
+  watch(
+    () => currentResolutionRatio.value,
+    (newVal) => {
+      if (canvasVideoStream.value) {
+        canvasVideoStream.value.getVideoTracks().forEach((track) => {
+          track.applyConstraints({
+            frameRate: { max: currentMaxFramerate.value },
+            height: newVal,
+          });
+        });
+      } else {
+        appStore.allTrack.forEach((info) => {
+          info.track?.applyConstraints({
+            frameRate: { max: currentMaxFramerate.value },
+            height: newVal,
+          });
+        });
+      }
+
+      networkStore.rtcMap.forEach(async (rtc) => {
+        const res = await rtc.setResolutionRatio(newVal);
+        if (res === 1) {
+          window.$message.success('切换分辨率成功！');
+        } else {
+          window.$message.success('切换分辨率失败！');
+        }
+      });
+    }
+  );
+
+  watch(
+    () => currentMaxFramerate.value,
+    (newVal) => {
+      console.log(currentMaxFramerate.value, 'currentMaxFramerate.value');
+      if (canvasVideoStream.value) {
+        canvasVideoStream.value.getVideoTracks().forEach((track) => {
+          track.applyConstraints({
+            frameRate: { max: newVal },
+            height: currentResolutionRatio.value,
+          });
+        });
+      } else {
+        appStore.allTrack.forEach((info) => {
+          info.track?.applyConstraints({
+            frameRate: { max: newVal },
+            height: currentResolutionRatio.value,
+          });
+        });
+      }
+
+      networkStore.rtcMap.forEach(async (rtc) => {
+        const res = await rtc.setMaxFramerate(newVal);
+        if (res === 1) {
+          window.$message.success('切换帧率成功！');
+        } else {
+          window.$message.success('切换帧率失败！');
+        }
+      });
+    }
+  );
+
+  watch(
+    () => currentMaxBitrate.value,
+    (newVal) => {
+      networkStore.rtcMap.forEach(async (rtc) => {
+        const res = await rtc.setMaxBitrate(newVal);
+        if (res === 1) {
+          window.$message.success('切换码率成功！');
+        } else {
+          window.$message.success('切换码率失败！');
+        }
+      });
+    }
+  );
 
   watch(
     () => localStream.value,
@@ -101,6 +195,53 @@ export function usePush() {
     closeWs();
     closeRtc();
   });
+  function addTrack(addTrackInfo: { track; stream }) {
+    networkStore.rtcMap.forEach((rtc) => {
+      const sender = rtc.peerConnection
+        ?.getSenders()
+        .find((sender) => sender.track?.id === addTrackInfo.track?.id);
+      if (!sender) {
+        console.log(
+          'pc添加track-开播后中途添加，替换它',
+          addTrackInfo.track?.id
+        );
+        rtc.peerConnection
+          ?.getSenders()
+          ?.find((sender) => sender.track?.kind === 'audio')
+          ?.replaceTrack(canvasVideoStream.value!.getAudioTracks()[0]);
+      }
+    });
+    const mixedStream = new MediaStream();
+    appStore.allTrack.forEach((item) => {
+      if (item.track) {
+        mixedStream.addTrack(item.track);
+      }
+    });
+    console.log('addTrack后结果的音频轨', mixedStream.getAudioTracks());
+    console.log('addTrack后结果的视频轨', mixedStream.getVideoTracks());
+    localStream.value = mixedStream;
+  }
+
+  function delTrack(delTrackInfo: AppRootState['allTrack'][0]) {
+    networkStore.rtcMap.forEach((rtc) => {
+      const sender = rtc.peerConnection
+        ?.getSenders()
+        .find((sender) => sender.track?.id === delTrackInfo.track?.id);
+      if (sender) {
+        console.log('删除track', delTrackInfo, sender);
+        rtc.peerConnection?.removeTrack(sender);
+      }
+    });
+    const mixedStream = new MediaStream();
+    appStore.allTrack.forEach((item) => {
+      if (item.track) {
+        mixedStream.addTrack(item.track);
+      }
+    });
+    console.log('delTrack后结果的音频轨', mixedStream.getAudioTracks());
+    console.log('delTrack后结果的视频轨', mixedStream.getVideoTracks());
+    localStream.value = mixedStream;
+  }
 
   function closeWs() {
     const instance = networkStore.wsMap.get(roomId.value);
@@ -147,7 +288,7 @@ export function usePush() {
     });
   }
 
-  async function startLive() {
+  async function startLive({ type, receiver }) {
     if (!loginTip()) return;
     const flag = await userHasLiveRoom();
     if (!flag) {
@@ -155,7 +296,9 @@ export function usePush() {
       await handleCreateUserLiveRoom();
       return;
     }
-    if (!roomNameIsOk()) return;
+    if (!roomNameIsOk()) {
+      return;
+    }
 
     isLiving.value = true;
     const el = appStore.allTrack.find((item) => {
@@ -174,7 +317,12 @@ export function usePush() {
         }
       }
     }
-    handleStartLive({ coverImg: lastCoverImg.value, name: roomName.value });
+    handleStartLive({
+      coverImg: lastCoverImg.value,
+      name: roomName.value,
+      type,
+      receiver,
+    });
   }
 
   /** 结束直播 */

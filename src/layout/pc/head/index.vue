@@ -289,7 +289,7 @@ const about = ref([
   },
   {
     label: 'b站视频',
-    url: 'https://space.bilibili.com/381307133/channel/seriesdetail?sid=3285689',
+    url: 'https://space.bilibili.com/381307133/channel/collectiondetail?sid=1458070&ctype=0',
   },
 ]);
 const resource = ref([

@@ -218,7 +218,6 @@ const bottomRef = ref<HTMLDivElement>();
 const danmuListRef = ref<HTMLDivElement>();
 const remoteVideoRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
-const localVideoRef = ref<HTMLVideoElement[]>([]);
 const {
   initPull,
   closeWs,
@@ -236,13 +235,8 @@ const {
   liveRoomInfo,
   anchorInfo,
 } = usePull({
-  localVideoRef,
+  remoteVideoRef,
   liveType: route.query.liveType as liveTypeEnum,
-  isSRS: [
-    liveTypeEnum.srsWebrtcPull,
-    liveTypeEnum.srsFlvPull,
-    liveTypeEnum.srsHlsPull,
-  ].includes(route.query.liveType as liveTypeEnum),
 });
 
 onUnmounted(() => {

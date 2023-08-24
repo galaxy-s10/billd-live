@@ -208,11 +208,6 @@ const remoteVideoRef = ref<HTMLDivElement>();
 const { handleHlsPlay, videoLoading, remoteVideo } = usePull({
   localVideoRef,
   liveType: route.query.liveType as liveTypeEnum,
-  isSRS: [
-    liveTypeEnum.srsWebrtcPull,
-    liveTypeEnum.srsFlvPull,
-    liveTypeEnum.srsHlsPull,
-  ].includes(route.query.liveType as liveTypeEnum),
 });
 
 watch(

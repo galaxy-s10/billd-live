@@ -272,23 +272,18 @@ import {
   ref,
   watch,
 } from 'vue';
-import { useRoute } from 'vue-router';
 import * as workerTimers from 'worker-timers';
 
 import { mediaTypeEnumMap } from '@/constant';
 import { usePush } from '@/hooks/use-push';
 import { useRTCParams } from '@/hooks/use-rtc-params';
-import {
-  DanmuMsgTypeEnum,
-  LiveRoomTypeEnum,
-  MediaTypeEnum,
-  liveTypeEnum,
-} from '@/interface';
+import { DanmuMsgTypeEnum, LiveRoomTypeEnum, MediaTypeEnum } from '@/interface';
 import { AppRootState, useAppStore } from '@/store/app';
 import { useResourceCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
 import {
   createVideo,
+  formatDownTime,
   generateBase64,
   getRandomEnglishString,
   readFile,
@@ -300,7 +295,6 @@ import MediaModalCpt from '../mediaModal/index.vue';
 import OpenMicophoneTipCpt from '../openMicophoneTip/index.vue';
 import SelectMediaModalCpt from '../selectMediaModal/index.vue';
 
-const route = useRoute();
 const userStore = useUserStore();
 const appStore = useAppStore();
 const resourceCacheStore = useResourceCacheStore();
@@ -348,7 +342,6 @@ const wrapSize = reactive({
 const workerTimerId = ref(-1);
 const videoRatio = ref(16 / 9);
 const bodyAppendChildElArr = ref<HTMLElement[]>([]);
-const isSRS = route.query.liveType === liveTypeEnum.srsPush;
 
 watch(
   () => damuList.value.length,
@@ -403,48 +396,6 @@ function initUserMedia() {
           showOpenMicophoneTipCpt.value = true;
         });
     });
-}
-
-function formatDownTime(endTime: number, startTime: number) {
-  const times = (endTime - startTime) / 1000;
-  // js获取剩余天数
-  const d = parseInt(String(times / 60 / 60 / 24));
-  // js获取剩余小时
-  let h = parseInt(String((times / 60 / 60) % 24));
-  // js获取剩余分钟
-  let m = parseInt(String((times / 60) % 60));
-  // js获取剩余秒
-  let s = parseInt(String(times % 60));
-  let ms = new Date(endTime).getMilliseconds();
-
-  if (h < 10) {
-    // @ts-ignore
-    h = `0${h}`;
-  }
-  if (m < 10) {
-    // @ts-ignore
-    m = `0${m}`;
-  }
-  if (s < 10) {
-    // @ts-ignore
-    s = `0${s}`;
-  }
-  if (Number(ms) < 100) {
-    if (ms < 10) {
-      // @ts-ignore
-      ms = `00${ms}`;
-    } else {
-      // @ts-ignore
-      ms = `0${ms}`;
-    }
-  }
-  if (d > 0) {
-    return `${d}:${h}:${m}:${s}.${ms}`;
-  } else if (h > 0) {
-    return `${h}:${m}:${s}.${ms}`;
-  } else {
-    return `${m}:${s}.${ms}`;
-  }
 }
 
 function renderAll() {
@@ -577,7 +528,7 @@ function handleStartLive() {
   }
   handleMixedAudio();
   lastCoverImg.value = generateBase64(pushCanvasRef.value!);
-  startLive(isSRS ? LiveRoomTypeEnum.user_srs : LiveRoomTypeEnum.user_wertc);
+  startLive({ type: LiveRoomTypeEnum.user_wertc, receiver: mySocketId });
 }
 
 function handleScale({ width, height }: { width: number; height: number }) {

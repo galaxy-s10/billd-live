@@ -1,5 +1,5 @@
 import mpegts from 'mpegts.js';
-import { Ref, nextTick, onUnmounted, ref, watch } from 'vue';
+import { Ref, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { useFlvPlay, useHlsPlay } from '@/hooks/use-play';
@@ -12,12 +12,10 @@ import { useUserStore } from '@/store/user';
 import { createVideo, videoToCanvas } from '@/utils';
 
 export function usePull({
-  localVideoRef,
-  isSRS,
+  remoteVideoRef,
   liveType,
 }: {
-  localVideoRef: Ref<HTMLVideoElement[]>;
-  isSRS: boolean;
+  remoteVideoRef: Ref<HTMLDivElement>;
   liveType: liveTypeEnum;
 }) {
   const route = useRoute();
@@ -26,6 +24,7 @@ export function usePull({
   const appStore = useAppStore();
   const roomId = ref(route.params.roomId as string);
   const roomLiveType = ref<liveTypeEnum>(liveType);
+  const localStream = ref<MediaStream>();
   const danmuStr = ref('');
   const autoplayVal = ref(false);
   const videoLoading = ref(false);
@@ -39,16 +38,17 @@ export function usePull({
   const videoElArr = ref<HTMLVideoElement[]>([]);
   const remoteVideo = ref<HTMLElement[]>([]);
   const {
+    isPull,
     mySocketId,
     initSrsWs,
+    handleStartLive,
     roomLiving,
     liveRoomInfo,
     anchorInfo,
-    localStream,
     liveUserList,
     damuList,
   } = useSrsWs();
-
+  isPull.value = true;
   const { flvPlayer, flvVideoEl, startFlvPlay } = useFlvPlay();
   const { hlsVideoEl, startHlsPlay } = useHlsPlay();
   const stopDrawingArr = ref<any[]>([]);
@@ -100,6 +100,7 @@ export function usePull({
   }
 
   async function handlePlay() {
+    console.warn('handlePlay');
     if (roomLiveType.value === liveTypeEnum.srsFlvPull) {
       if (!autoplayVal.value) return;
       await handleFlvPlay();
@@ -123,9 +124,18 @@ export function usePull({
     () => roomLiving.value,
     (val) => {
       if (val) {
-        flvurl.value = liveRoomInfo.value?.flv_url!;
-        hlsurl.value = liveRoomInfo.value?.hls_url!;
-        handlePlay();
+        console.log(roomLiveType.value, '32323312');
+        if (roomLiveType.value === liveTypeEnum.webrtcPull) {
+          // handleStartLive({
+          //   type: LiveRoomTypeEnum.user_wertc,
+          //   receiver: '',
+          //   videoEl: document.createElement('video'),
+          // });
+        } else {
+          flvurl.value = liveRoomInfo.value?.flv_url!;
+          hlsurl.value = liveRoomInfo.value?.hls_url!;
+          handlePlay();
+        }
       }
     }
   );
@@ -236,14 +246,14 @@ export function usePull({
 
   function addVideo() {
     sidebarList.value.push({ socketId: mySocketId.value });
-    nextTick(() => {
-      liveUserList.value.forEach((item) => {
-        const socketId = item.id;
-        if (socketId === mySocketId.value) {
-          localVideoRef.value[mySocketId.value].srcObject = localStream.value;
-        }
-      });
-    });
+    // nextTick(() => {
+    //   liveUserList.value.forEach((item) => {
+    //     const socketId = item.id;
+    //     if (socketId === mySocketId.value) {
+    //       remoteVideoRef.value[mySocketId.value].srcObject = localStream.value;
+    //     }
+    //   });
+    // });
   }
 
   function keydownDanmu(event: KeyboardEvent) {

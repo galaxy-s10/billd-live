@@ -52,6 +52,7 @@ import { onMounted, onUnmounted, ref } from 'vue';
 
 import { fetchAliPay, fetchAliPayStatus } from '@/api/order';
 import { PayStatusEnum } from '@/interface';
+import { formatDownTime } from '@/utils';
 
 const payOk = ref(false);
 const aliPayBase64 = ref('');
@@ -79,25 +80,6 @@ onMounted(() => {
     money: props.money,
   });
 });
-
-function formatDownTime(endTime: number, startTime: number) {
-  const times = (endTime - startTime) / 1000;
-  // js获取剩余天数
-  const d = parseInt(String(times / 60 / 60 / 24));
-  // js获取剩余小时
-  const h = parseInt(String((times / 60 / 60) % 24));
-  // js获取剩余分钟
-  const m = parseInt(String((times / 60) % 60));
-  // js获取剩余秒
-  const s = parseInt(String(times % 60));
-  if (d > 0) {
-    return `${d}天${h}时`;
-  } else if (h > 0) {
-    return `${h}时${m}分`;
-  } else {
-    return `${m}分${s}秒`;
-  }
-}
 
 async function generateQR(text) {
   let base64 = '';

@@ -13,11 +13,14 @@ import {
 } from '@/interface';
 import {
   WSGetRoomAllUserType,
+  WsAnswerType,
+  WsCandidateType,
   WsGetLiveUserType,
   WsHeartbeatType,
   WsJoinType,
   WsLeavedType,
   WsMessageType,
+  WsOfferType,
   WsOtherJoinType,
   WsRoomLivingType,
   WsStartLiveType,
@@ -30,14 +33,12 @@ import {
   WsMsgTypeEnum,
   prettierReceiveWsMsg,
 } from '@/network/webSocket';
-import { AppRootState, useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 
 import { useRTCParams } from './use-rtc-params';
 
 export const useSrsWs = () => {
-  const appStore = useAppStore();
   const userStore = useUserStore();
   const networkStore = useNetworkStore();
   const { maxBitrate, maxFramerate, resolutionRatio } = useRTCParams();
@@ -45,11 +46,11 @@ export const useSrsWs = () => {
   const loopHeartbeatTimer = ref();
   const liveUserList = ref<ILiveUser[]>([]);
   const roomId = ref('');
+  const isPull = ref(false);
   const roomLiving = ref(false);
   const isAnchor = ref(false);
   const liveRoomInfo = ref<ILiveRoom>();
   const anchorInfo = ref<IUser>();
-  const localStream = ref<MediaStream>();
   const canvasVideoStream = ref<MediaStream>();
   const lastCoverImg = ref('');
   const currentMaxBitrate = ref(maxBitrate.value[2].value);
@@ -58,155 +59,9 @@ export const useSrsWs = () => {
 
   const damuList = ref<IDanmu[]>([]);
 
-  watch(
-    () => appStore.allTrack,
-    (newTrack, oldTrack) => {
-      console.log('appStore.allTrack变了', newTrack, oldTrack);
-      const mixedStream = new MediaStream();
-      newTrack.forEach((item) => {
-        if (item.track) {
-          mixedStream.addTrack(item.track);
-        }
-      });
-      console.log('新的allTrack音频轨', mixedStream.getAudioTracks());
-      console.log('新的allTrack视频轨', mixedStream.getVideoTracks());
-      console.log('旧的allTrack音频轨', localStream.value?.getAudioTracks());
-      console.log('旧的allTrack视频轨', localStream.value?.getVideoTracks());
-      localStream.value = mixedStream;
-    },
-    { deep: true }
-  );
-
   onUnmounted(() => {
     clearInterval(loopHeartbeatTimer.value);
   });
-
-  watch(
-    () => currentResolutionRatio.value,
-    (newVal) => {
-      if (canvasVideoStream.value) {
-        canvasVideoStream.value.getVideoTracks().forEach((track) => {
-          track.applyConstraints({
-            frameRate: { max: currentMaxFramerate.value },
-            height: newVal,
-          });
-        });
-      } else {
-        appStore.allTrack.forEach((info) => {
-          info.track?.applyConstraints({
-            frameRate: { max: currentMaxFramerate.value },
-            height: newVal,
-          });
-        });
-      }
-
-      networkStore.rtcMap.forEach(async (rtc) => {
-        const res = await rtc.setResolutionRatio(newVal);
-        if (res === 1) {
-          window.$message.success('切换分辨率成功！');
-        } else {
-          window.$message.success('切换分辨率失败！');
-        }
-      });
-    }
-  );
-
-  watch(
-    () => currentMaxFramerate.value,
-    (newVal) => {
-      console.log(currentMaxFramerate.value, 'currentMaxFramerate.value');
-      if (canvasVideoStream.value) {
-        canvasVideoStream.value.getVideoTracks().forEach((track) => {
-          track.applyConstraints({
-            frameRate: { max: newVal },
-            height: currentResolutionRatio.value,
-          });
-        });
-      } else {
-        appStore.allTrack.forEach((info) => {
-          info.track?.applyConstraints({
-            frameRate: { max: newVal },
-            height: currentResolutionRatio.value,
-          });
-        });
-      }
-
-      networkStore.rtcMap.forEach(async (rtc) => {
-        const res = await rtc.setMaxFramerate(newVal);
-        if (res === 1) {
-          window.$message.success('切换帧率成功！');
-        } else {
-          window.$message.success('切换帧率失败！');
-        }
-      });
-    }
-  );
-
-  watch(
-    () => currentMaxBitrate.value,
-    (newVal) => {
-      networkStore.rtcMap.forEach(async (rtc) => {
-        const res = await rtc.setMaxBitrate(newVal);
-        if (res === 1) {
-          window.$message.success('切换码率成功！');
-        } else {
-          window.$message.success('切换码率失败！');
-        }
-      });
-    }
-  );
-
-  function addTrack(addTrackInfo: { track; stream }) {
-    if (isAnchor.value) {
-      networkStore.rtcMap.forEach((rtc) => {
-        const sender = rtc.peerConnection
-          ?.getSenders()
-          .find((sender) => sender.track?.id === addTrackInfo.track?.id);
-        if (!sender) {
-          console.log(
-            'pc添加track-开播后中途添加，替换它',
-            addTrackInfo.track?.id
-          );
-          rtc.peerConnection
-            ?.getSenders()
-            ?.find((sender) => sender.track?.kind === 'audio')
-            ?.replaceTrack(canvasVideoStream.value!.getAudioTracks()[0]);
-        }
-      });
-    }
-    const mixedStream = new MediaStream();
-    appStore.allTrack.forEach((item) => {
-      if (item.track) {
-        mixedStream.addTrack(item.track);
-      }
-    });
-    console.log('addTrack后结果的音频轨', mixedStream.getAudioTracks());
-    console.log('addTrack后结果的视频轨', mixedStream.getVideoTracks());
-    localStream.value = mixedStream;
-  }
-
-  function delTrack(delTrackInfo: AppRootState['allTrack'][0]) {
-    if (isAnchor.value) {
-      networkStore.rtcMap.forEach((rtc) => {
-        const sender = rtc.peerConnection
-          ?.getSenders()
-          .find((sender) => sender.track?.id === delTrackInfo.track?.id);
-        if (sender) {
-          console.log('删除track', delTrackInfo, sender);
-          rtc.peerConnection?.removeTrack(sender);
-        }
-      });
-    }
-    const mixedStream = new MediaStream();
-    appStore.allTrack.forEach((item) => {
-      if (item.track) {
-        mixedStream.addTrack(item.track);
-      }
-    });
-    console.log('delTrack后结果的音频轨', mixedStream.getAudioTracks());
-    console.log('delTrack后结果的视频轨', mixedStream.getVideoTracks());
-    localStream.value = mixedStream;
-  }
 
   const mySocketId = computed(() => {
     return networkStore.wsMap.get(roomId.value)?.socketIo?.id || '-1';
@@ -225,15 +80,20 @@ export const useSrsWs = () => {
     }, 1000 * 5);
   }
 
-  async function sendOffer({ receiver }: { receiver: string }) {
-    console.log('开始sendOffer');
+  async function handleSendOffer({
+    receiver,
+    type,
+  }: {
+    receiver: string;
+    type: LiveRoomTypeEnum;
+  }) {
+    console.log('开始handleSendOffer');
     const ws = networkStore.wsMap.get(roomId.value);
     if (!ws) return;
     const rtc = networkStore.getRtcMap(`${roomId.value}___${receiver}`);
     if (!rtc) return;
     const sdp = await rtc.createOffer();
     await rtc.setLocalDescription(sdp!);
-
     const myLiveRoom = userStore.userInfo!.live_rooms![0];
     const res = await fetchRtcV1Publish({
       api: `/rtc/v1/publish/`,
@@ -264,18 +124,66 @@ export const useSrsWs = () => {
     );
   }
 
-  function handleStartLive({ coverImg, name }) {
+  watch(liveUserList, () => {
+    // if (!isPull.value) return;
+    // console.log('>>>>>');
+    // liveUserList.value.forEach(async (item) => {
+    //   console.log(item);
+    //   const receiver = item.id;
+    //   if (receiver === mySocketId.value) return;
+    //   console.log(receiver, 'ppdpsd');
+    //   const rtc = new WebRTCClass({
+    //     maxBitrate: currentMaxBitrate.value,
+    //     maxFramerate: currentMaxFramerate.value,
+    //     resolutionRatio: currentResolutionRatio.value,
+    //     roomId: `${roomId.value}___${receiver!}`,
+    //     videoEl: document.createElement('video'),
+    //     isSRS: false,
+    //     receiver,
+    //   });
+    //   const ws = networkStore.wsMap.get(roomId.value)!;
+    //   const offer = await rtc.createOffer();
+    //   await rtc.setLocalDescription(offer!);
+    //   ws.send<WsOfferType['data']>({
+    //     msgType: WsMsgTypeEnum.offer,
+    //     data: {
+    //       sdp: offer,
+    //       live_room_id: Number(roomId.value),
+    //       sender: mySocketId.value,
+    //       receiver,
+    //     },
+    //   });
+    // });
+  });
+
+  function handleStartLive({
+    coverImg,
+    name,
+    type,
+    receiver,
+  }: {
+    coverImg?: string;
+    name?: string;
+    type: LiveRoomTypeEnum;
+    receiver: string;
+    videoEl?: HTMLVideoElement;
+  }) {
     networkStore.wsMap.get(roomId.value)?.send<WsStartLiveType['data']>({
       msgType: WsMsgTypeEnum.startLive,
       data: {
-        cover_img: coverImg,
-        name,
-        type: LiveRoomTypeEnum.user_srs,
+        cover_img: coverImg!,
+        name: name!,
+        type,
       },
     });
-    startNewSrsWebRtc({
+    if (type === LiveRoomTypeEnum.user_wertc) {
+      console.log(liveUserList.value.length, 'kkk1123');
+      return;
+    }
+    startNewWebRtc({
       videoEl: document.createElement('video'),
-      receiver: 'srs',
+      receiver,
+      type,
     });
   }
 
@@ -295,15 +203,17 @@ export const useSrsWs = () => {
   }
 
   /** 原生的webrtc时，receiver必传 */
-  function startNewSrsWebRtc({
+  function startNewWebRtc({
     receiver,
     videoEl,
+    type,
   }: {
     receiver: string;
     videoEl: HTMLVideoElement;
+    type: LiveRoomTypeEnum;
   }) {
-    console.warn('SRS开始new WebRTCClass', `${roomId.value}___${receiver!}`);
-    const rtc = new WebRTCClass({
+    console.warn('开始new WebRTCClass', `${roomId.value}___${receiver!}`);
+    new WebRTCClass({
       maxBitrate: currentMaxBitrate.value,
       maxFramerate: currentMaxFramerate.value,
       resolutionRatio: currentResolutionRatio.value,
@@ -312,16 +222,10 @@ export const useSrsWs = () => {
       isSRS: true,
       receiver,
     });
-    if (canvasVideoStream.value) {
-      localStream.value = canvasVideoStream.value;
-      canvasVideoStream.value.getTracks().forEach((track) => {
-        console.log('pc添加track-srs', track.kind, track.id);
-        rtc.peerConnection?.addTrack(track, localStream.value!);
-      });
-    }
 
-    sendOffer({
+    handleSendOffer({
       receiver,
+      type,
     });
   }
 
@@ -344,6 +248,68 @@ export const useSrsWs = () => {
       if (!ws) return;
       ws.status = WsConnectStatusEnum.disconnect;
       ws.update();
+    });
+    ws.socketIo.on(WsMsgTypeEnum.offer, async (data: WsOfferType['data']) => {
+      console.log('收到offer', data);
+      if (data.receiver === mySocketId.value) {
+        console.warn('是发给我的offer');
+        const rtc = new WebRTCClass({
+          maxBitrate: currentMaxBitrate.value,
+          maxFramerate: currentMaxFramerate.value,
+          resolutionRatio: currentResolutionRatio.value,
+          roomId: `${roomId.value}___${data.receiver!}`,
+          videoEl: document.createElement('video'),
+          isSRS: true,
+          receiver: data.receiver,
+        });
+        canvasVideoStream.value?.getTracks().forEach((track) => {
+          if (rtc && canvasVideoStream.value) {
+            console.log('插入track', track);
+            rtc.peerConnection?.addTrack(track, canvasVideoStream.value);
+          }
+        });
+        await rtc.setRemoteDescription(data.sdp);
+        const answer = await rtc.createAnswer();
+        if (answer) {
+          await rtc.setLocalDescription(answer);
+          ws.send<WsAnswerType['data']>({
+            msgType: WsMsgTypeEnum.answer,
+            data: {
+              live_room_id: Number(roomId.value),
+              sdp: answer,
+              receiver: data.sender,
+              sender: mySocketId.value,
+            },
+          });
+        } else {
+          console.error('没有answer');
+        }
+      } else {
+        console.error('不是发给我的offer');
+      }
+    });
+    ws.socketIo.on(WsMsgTypeEnum.answer, (data: WsAnswerType['data']) => {
+      console.log('收到answer', data);
+      if (data.receiver === mySocketId.value) {
+        console.warn('是发给我的answer', `${roomId.value}___${data.receiver}`);
+        const rtc = networkStore.getRtcMap(`${roomId.value}___${data.sender}`)!;
+        console.log(rtc, 'll');
+        rtc.setRemoteDescription(data.sdp);
+      } else {
+        console.error('不是发给我的answer');
+      }
+    });
+    ws.socketIo.on(WsMsgTypeEnum.candidate, (data: WsCandidateType['data']) => {
+      console.log('收到candidate', data);
+      if (data.receiver === mySocketId.value) {
+        console.warn('是发给我的candidate');
+        const rtc = networkStore.getRtcMap(
+          `${roomId.value}___${data.receiver}`
+        )!;
+        rtc.addIceCandidate(data.candidate);
+      } else {
+        console.error('不是发给我的candidate');
+      }
     });
 
     // 主播正在直播
@@ -421,6 +387,41 @@ export const useSrsWs = () => {
           live_room_id: data.live_room.id!,
         },
       });
+      if (!isPull.value) {
+        console.log('>>>>>');
+        liveUserList.value.forEach(async (item) => {
+          console.log(item);
+          const receiver = item.id;
+          if (
+            receiver === mySocketId.value ||
+            networkStore.getRtcMap(`${roomId.value}___${receiver!}`)
+          )
+            return;
+          console.log(receiver, 'ppdpsd');
+          const rtc = new WebRTCClass({
+            maxBitrate: currentMaxBitrate.value,
+            maxFramerate: currentMaxFramerate.value,
+            resolutionRatio: currentResolutionRatio.value,
+            roomId: `${roomId.value}___${receiver!}`,
+            videoEl: document.createElement('video'),
+            isSRS: false,
+            receiver,
+          });
+          networkStore.updateRtcMap(`${roomId.value}___${receiver!}`, rtc);
+          const ws = networkStore.wsMap.get(roomId.value)!;
+          const offer = await rtc.createOffer();
+          await rtc.setLocalDescription(offer!);
+          ws.send<WsOfferType['data']>({
+            msgType: WsMsgTypeEnum.offer,
+            data: {
+              sdp: offer,
+              live_room_id: Number(roomId.value),
+              sender: mySocketId.value,
+              receiver,
+            },
+          });
+        });
+      }
     });
 
     // 用户离开房间
@@ -475,9 +476,8 @@ export const useSrsWs = () => {
   }
 
   return {
+    isPull,
     initSrsWs,
-    addTrack,
-    delTrack,
     handleStartLive,
     mySocketId,
     canvasVideoStream,
@@ -485,7 +485,6 @@ export const useSrsWs = () => {
     roomLiving,
     liveRoomInfo,
     anchorInfo,
-    localStream,
     liveUserList,
     damuList,
     currentMaxFramerate,
