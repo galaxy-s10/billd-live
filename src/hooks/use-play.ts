@@ -65,6 +65,10 @@ export function useFlvPlay() {
           });
           videoEl.addEventListener('playing', () => {
             console.log('flv-playing');
+            retry.value = 0;
+            setMuted(appStore.muted);
+            flvVideoEl.value = videoEl;
+            resolve('');
           });
           videoEl.addEventListener('loadedmetadata', () => {
             console.log('flv-loadedmetadata');
@@ -89,10 +93,6 @@ export function useFlvPlay() {
           });
           flvPlayer.value.on(mpegts.Events.MEDIA_INFO, () => {
             console.log('mpegts消息：mpegts.Events.MEDIA_INFO');
-            retry.value = 0;
-            setMuted(appStore.muted);
-            flvVideoEl.value = videoEl;
-            resolve('');
           });
           try {
             console.log(`开始播放flv，muted:${appStore.muted}`);

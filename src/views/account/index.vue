@@ -41,7 +41,11 @@
         >
           <span>
             推流地址：{{
-              newRtmpUrl || handleUrl(userInfo?.live_rooms?.[0].rtmp_url!)
+              newRtmpUrl ||
+              handleUrl({
+                url: userInfo?.live_rooms?.[0].rtmp_url!,
+                token: userInfo?.live_rooms?.[0].key!,
+              })
             }}，
           </span>
           <span
@@ -89,7 +93,11 @@ async function handleUserInfo() {
 
 function handleCopy() {
   copyToClipBoard(
-    newRtmpUrl.value || handleUrl(userInfo.value?.live_rooms?.[0].rtmp_url!)
+    newRtmpUrl.value ||
+      handleUrl({
+        url: userInfo.value?.live_rooms?.[0].rtmp_url!,
+        token: userInfo.value?.live_rooms?.[0].key!,
+      })
   );
   window.$message.success('复制成功！');
 }
@@ -105,17 +113,8 @@ function openLiveRoom() {
   openToTarget(url.href);
 }
 
-function handleUrl(rtmpUrl: string) {
-  let resUrl = '';
-  if (rtmpUrl.indexOf('type=') === -1) {
-    resUrl += `${rtmpUrl}&type=${LiveRoomTypeEnum.user_obs}`;
-  } else {
-    resUrl = rtmpUrl.replace(
-      /type=([0-9]+)/,
-      `type=${LiveRoomTypeEnum.user_obs}`
-    );
-  }
-  return resUrl;
+function handleUrl(data: { url: string; token: string }) {
+  return `${data.url}?token=${data.token}&type=${LiveRoomTypeEnum.user_obs}`;
 }
 
 async function handleUpdateKey() {
@@ -123,7 +122,7 @@ async function handleUpdateKey() {
     keyLoading.value = true;
     const res = await fetchUpdateLiveRoomKey();
     if (res.code === 200) {
-      const resUrl = handleUrl(res.data.rtmp_url as string);
+      const resUrl = handleUrl({ url: res.data.rtmp_url, token: res.data.key });
       newRtmpUrl.value = resUrl;
     }
   } catch (error) {
