@@ -27,12 +27,12 @@ export function usePush() {
   const roomId = ref('');
   const roomName = ref('');
   const danmuStr = ref('');
-  const isLiving = ref(false);
   const liveRoomInfo = ref<ILiveRoom>();
   const localStream = ref<MediaStream>();
   const videoElArr = ref<HTMLVideoElement[]>([]);
 
   const {
+    roomLiving,
     isPull,
     initSrsWs,
     handleStartLive,
@@ -251,6 +251,7 @@ export function usePush() {
   function closeRtc() {
     networkStore.rtcMap.forEach((rtc) => {
       rtc.close();
+      networkStore.removeRtc(rtc.roomId);
     });
   }
 
@@ -300,7 +301,7 @@ export function usePush() {
       return;
     }
 
-    isLiving.value = true;
+    roomLiving.value = true;
     const el = appStore.allTrack.find((item) => {
       if (item.video === 1) {
         return true;
@@ -327,7 +328,7 @@ export function usePush() {
 
   /** 结束直播 */
   function endLive() {
-    isLiving.value = false;
+    roomLiving.value = false;
     localStream.value = undefined;
     const instance = networkStore.wsMap.get(roomId.value);
     if (instance) {
@@ -401,7 +402,7 @@ export function usePush() {
     lastCoverImg,
     localStream,
     canvasVideoStream,
-    isLiving,
+    roomLiving,
     currentResolutionRatio,
     currentMaxBitrate,
     currentMaxFramerate,

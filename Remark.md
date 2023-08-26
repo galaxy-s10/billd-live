@@ -1,3 +1,18 @@
+## 测试
+
+播放错误，重连测试：
+
+```sh
+## 找到ffmpeg进程
+ps aux|grep ffmpeg
+
+## 断掉进程
+kill -9 xxxx
+
+## 重新推流
+ffmpeg -loglevel quiet -readrate 1 -stream_loop -1 -i /Users/huangshuisheng/Desktop/hss/galaxy-s10/billd-live-server/src/video/fddm_mhsw.mp4 -vcodec copy -acodec copy -f flv 'rtmp://localhost/livestream/roomId___2?token=47b650e1196e9c9d5b30f18cbd7a3cf1&random_id=B86Os2F5sf'
+```
+
 ### 破音问题
 
 当前电脑正在播放音频，如果此时开始直播，添加了一个视频素材（有声音的），然后拖拽这个视频素材，就会出现类似破音问题。如果把电脑的外放音频都关闭了，再开始直播添加视频素材，拖拽就不会出现破音问题。

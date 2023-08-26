@@ -43,7 +43,7 @@ import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchLiveRoomList } from '@/api/area';
-import { ILiveRoom, liveTypeEnum } from '@/interface';
+import { ILiveRoom, LiveTypeEnum } from '@/interface';
 import router, { routerName } from '@/router';
 
 const liveRoomList = ref<ILiveRoom[]>([]);
@@ -69,7 +69,7 @@ function goRoom(item: ILiveRoom) {
     name: routerName.pull,
     params: { roomId: item.id },
     query: {
-      liveType: liveTypeEnum.srsHlsPull,
+      liveType: LiveTypeEnum.srsHlsPull,
     },
   });
 }

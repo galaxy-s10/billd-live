@@ -106,7 +106,7 @@ import { useRoute } from 'vue-router';
 
 import { fetchFindLiveRoom } from '@/api/liveRoom';
 import { usePull } from '@/hooks/use-pull';
-import { DanmuMsgTypeEnum, LiveRoomTypeEnum, liveTypeEnum } from '@/interface';
+import { DanmuMsgTypeEnum, LiveRoomTypeEnum, LiveTypeEnum } from '@/interface';
 import router, { mobileRouterName } from '@/router';
 import { useAppStore } from '@/store/app';
 
@@ -136,8 +136,7 @@ const {
   anchorInfo,
   remoteVideo,
 } = usePull({
-  localVideoRef,
-  liveType: liveTypeEnum.srsHlsPull,
+  liveType: LiveTypeEnum.srsHlsPull,
 });
 
 watch(
@@ -171,7 +170,7 @@ async function getLiveRoomInfo() {
     if (res.code === 200) {
       if (res.data.type === LiveRoomTypeEnum.user_wertc) {
         autoplayVal.value = true;
-        roomLiveType.value = liveTypeEnum.webrtcPull;
+        roomLiveType.value = LiveTypeEnum.webrtcPull;
         showPlayBtn.value = false;
       } else {
         showPlayBtn.value = true;

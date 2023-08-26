@@ -1,5 +1,5 @@
 import { getRandomString } from 'billd-utils';
-import { computed, onUnmounted, ref, watch } from 'vue';
+import { computed, onUnmounted, ref } from 'vue';
 
 import { fetchRtcV1Publish } from '@/api/srs';
 import { WEBSOCKET_URL } from '@/constant';
@@ -33,12 +33,15 @@ import {
   WsMsgTypeEnum,
   prettierReceiveWsMsg,
 } from '@/network/webSocket';
+import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
+import { createVideo } from '@/utils';
 
 import { useRTCParams } from './use-rtc-params';
 
 export const useSrsWs = () => {
+  const appStore = useAppStore();
   const userStore = useUserStore();
   const networkStore = useNetworkStore();
   const { maxBitrate, maxFramerate, resolutionRatio } = useRTCParams();
@@ -124,38 +127,6 @@ export const useSrsWs = () => {
     );
   }
 
-  watch(liveUserList, () => {
-    // if (!isPull.value) return;
-    // console.log('>>>>>');
-    // liveUserList.value.forEach(async (item) => {
-    //   console.log(item);
-    //   const receiver = item.id;
-    //   if (receiver === mySocketId.value) return;
-    //   console.log(receiver, 'ppdpsd');
-    //   const rtc = new WebRTCClass({
-    //     maxBitrate: currentMaxBitrate.value,
-    //     maxFramerate: currentMaxFramerate.value,
-    //     resolutionRatio: currentResolutionRatio.value,
-    //     roomId: `${roomId.value}___${receiver!}`,
-    //     videoEl: document.createElement('video'),
-    //     isSRS: false,
-    //     receiver,
-    //   });
-    //   const ws = networkStore.wsMap.get(roomId.value)!;
-    //   const offer = await rtc.createOffer();
-    //   await rtc.setLocalDescription(offer!);
-    //   ws.send<WsOfferType['data']>({
-    //     msgType: WsMsgTypeEnum.offer,
-    //     data: {
-    //       sdp: offer,
-    //       live_room_id: Number(roomId.value),
-    //       sender: mySocketId.value,
-    //       receiver,
-    //     },
-    //   });
-    // });
-  });
-
   function handleStartLive({
     coverImg,
     name,
@@ -181,7 +152,7 @@ export const useSrsWs = () => {
       return;
     }
     startNewWebRtc({
-      videoEl: document.createElement('video'),
+      videoEl: createVideo({}),
       receiver,
       type,
     });
@@ -212,7 +183,7 @@ export const useSrsWs = () => {
     videoEl: HTMLVideoElement;
     type: LiveRoomTypeEnum;
   }) {
-    console.warn('开始new WebRTCClass', `${roomId.value}___${receiver!}`);
+    console.warn('33开始new WebRTCClass', `${roomId.value}___${receiver!}`);
     new WebRTCClass({
       maxBitrate: currentMaxBitrate.value,
       maxFramerate: currentMaxFramerate.value,
@@ -253,20 +224,19 @@ export const useSrsWs = () => {
       console.log('收到offer', data);
       if (data.receiver === mySocketId.value) {
         console.warn('是发给我的offer');
+        console.warn(
+          '11开始new WebRTCClass',
+          `${roomId.value}___${data.sender}`
+        );
+        const videoEl = createVideo({ appendChild: true });
         const rtc = new WebRTCClass({
           maxBitrate: currentMaxBitrate.value,
           maxFramerate: currentMaxFramerate.value,
           resolutionRatio: currentResolutionRatio.value,
-          roomId: `${roomId.value}___${data.receiver!}`,
-          videoEl: document.createElement('video'),
+          roomId: `${roomId.value}___${data.sender}`,
+          videoEl,
           isSRS: true,
           receiver: data.receiver,
-        });
-        canvasVideoStream.value?.getTracks().forEach((track) => {
-          if (rtc && canvasVideoStream.value) {
-            console.log('插入track', track);
-            rtc.peerConnection?.addTrack(track, canvasVideoStream.value);
-          }
         });
         await rtc.setRemoteDescription(data.sdp);
         const answer = await rtc.createAnswer();
@@ -303,9 +273,7 @@ export const useSrsWs = () => {
       console.log('收到candidate', data);
       if (data.receiver === mySocketId.value) {
         console.warn('是发给我的candidate');
-        const rtc = networkStore.getRtcMap(
-          `${roomId.value}___${data.receiver}`
-        )!;
+        const rtc = networkStore.getRtcMap(`${roomId.value}___${data.sender}`)!;
         rtc.addIceCandidate(data.candidate);
       } else {
         console.error('不是发给我的candidate');
@@ -388,6 +356,7 @@ export const useSrsWs = () => {
         },
       });
       if (!isPull.value) {
+        if (!roomLiving.value) return;
         console.log('>>>>>');
         liveUserList.value.forEach(async (item) => {
           console.log(item);
@@ -398,16 +367,26 @@ export const useSrsWs = () => {
           )
             return;
           console.log(receiver, 'ppdpsd');
+          console.warn(
+            '22开始new WebRTCClass',
+            `${roomId.value}___${receiver!}`
+          );
           const rtc = new WebRTCClass({
             maxBitrate: currentMaxBitrate.value,
             maxFramerate: currentMaxFramerate.value,
             resolutionRatio: currentResolutionRatio.value,
             roomId: `${roomId.value}___${receiver!}`,
-            videoEl: document.createElement('video'),
+            videoEl: createVideo({}),
             isSRS: false,
             receiver,
           });
           networkStore.updateRtcMap(`${roomId.value}___${receiver!}`, rtc);
+          canvasVideoStream.value?.getTracks().forEach((track) => {
+            if (rtc && canvasVideoStream.value) {
+              console.log('插入track', track);
+              rtc.peerConnection?.addTrack(track, canvasVideoStream.value);
+            }
+          });
           const ws = networkStore.wsMap.get(roomId.value)!;
           const offer = await rtc.createOffer();
           await rtc.setLocalDescription(offer!);

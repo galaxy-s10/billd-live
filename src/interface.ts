@@ -177,7 +177,7 @@ export interface IUserLiveRoom {
   deleted_at?: string;
 }
 
-export enum liveTypeEnum {
+export enum LiveTypeEnum {
   webrtcPull = 'webrtcPull',
   srsWebrtcPull = 'srsWebrtcPull',
   srsFlvPull = 'srsFlvPull',

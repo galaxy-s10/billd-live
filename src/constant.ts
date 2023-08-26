@@ -25,6 +25,9 @@ export const LOCALSTORAGE_KEY = {
   verion: '0.0.1',
 };
 
+export const bilibiliCollectiondetail =
+  'https://space.bilibili.com/381307133/channel/collectiondetail?sid=1458070&ctype=0';
+
 export const mediaTypeEnumMap = {
   [MediaTypeEnum.camera]: '摄像头',
   [MediaTypeEnum.microphone]: '麦克风',

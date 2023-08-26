@@ -195,13 +195,13 @@
           <div class="list">
             <a
               class="item"
-              @click.prevent="handleStartLive(liveTypeEnum.srsPush)"
+              @click.prevent="handleStartLive(LiveTypeEnum.srsPush)"
             >
               <div class="txt">srs开播</div>
             </a>
             <a
               class="item"
-              @click.prevent="handleStartLive(liveTypeEnum.webrtcPush)"
+              @click.prevent="handleStartLive(LiveTypeEnum.webrtcPush)"
             >
               <div class="txt">webrtc开播</div>
             </a>
@@ -256,9 +256,9 @@ import { fetchAreaList } from '@/api/area';
 import Dropdown from '@/components/Dropdown/index.vue';
 import VPIconChevronDown from '@/components/icons/VPIconChevronDown.vue';
 import VPIconExternalLink from '@/components/icons/VPIconExternalLink.vue';
-import { APIFOX_URL } from '@/constant';
+import { APIFOX_URL, bilibiliCollectiondetail } from '@/constant';
 import { loginTip, useQQLogin } from '@/hooks/use-login';
-import { IArea, liveTypeEnum } from '@/interface';
+import { IArea, LiveTypeEnum } from '@/interface';
 import { routerName } from '@/router';
 import { useUserStore } from '@/store/user';
 
@@ -289,7 +289,7 @@ const about = ref([
   },
   {
     label: 'b站视频',
-    url: 'https://space.bilibili.com/381307133/channel/collectiondetail?sid=1458070&ctype=0',
+    url: bilibiliCollectiondetail,
   },
 ]);
 const resource = ref([
@@ -361,11 +361,11 @@ function quickStart() {
   window.$message.info('敬请期待！');
 }
 
-function handleStartLive(key: liveTypeEnum) {
+function handleStartLive(key: LiveTypeEnum) {
   if (!loginTip()) {
     return;
   }
-  // if (key === liveTypeEnum.canvasPush) {
+  // if (key === LiveTypeEnum.canvasPush) {
   const url = router.resolve({
     name: routerName.push,
     query: { liveType: key },

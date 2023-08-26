@@ -100,8 +100,8 @@ import {
   ILiveRoom,
   IUser,
   LiveRoomTypeEnum,
+  LiveTypeEnum,
   RankTypeEnum,
-  liveTypeEnum,
 } from '@/interface';
 import router, { routerName } from '@/router';
 
@@ -193,14 +193,14 @@ const mockRank: {
 const rankList = ref(mockRank);
 
 function handleJoin(item) {
-  let liveType: liveTypeEnum = liveTypeEnum.webrtcPull;
+  let liveType: LiveTypeEnum = LiveTypeEnum.webrtcPull;
   if (
     item?.type === LiveRoomTypeEnum.system ||
     item?.type === LiveRoomTypeEnum.user_obs
   ) {
-    liveType = liveTypeEnum.srsFlvPull;
+    liveType = LiveTypeEnum.srsFlvPull;
   } else if (item?.type === LiveRoomTypeEnum.user_srs) {
-    liveType = liveTypeEnum.srsWebrtcPull;
+    liveType = LiveTypeEnum.srsWebrtcPull;
   }
   router.push({
     name: routerName.pull,

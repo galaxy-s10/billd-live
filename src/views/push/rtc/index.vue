@@ -106,12 +106,12 @@
           </div>
           <div class="bottom">
             <n-button
-              v-if="!isLiving"
+              v-if="!roomLiving"
               type="info"
               size="small"
               @click="handleStartLive"
             >
-              开始rtc直播
+              开始直播
             </n-button>
             <n-button
               v-else
@@ -312,7 +312,7 @@ const {
   mySocketId,
   lastCoverImg,
   canvasVideoStream,
-  isLiving,
+  roomLiving,
   currentResolutionRatio,
   currentMaxBitrate,
   currentMaxFramerate,
@@ -333,6 +333,9 @@ const containerRef = ref<HTMLDivElement>();
 const pushCanvasRef = ref<HTMLCanvasElement>();
 const fabricCanvas = ref<fabric.Canvas>();
 const audioCtx = ref<AudioContext>();
+const startTime = ref(+new Date());
+// const startTime = ref(1692807352565); // 1693027352565
+
 const timeCanvasDom = ref<Raw<fabric.Text>[]>([]);
 const stopwatchCanvasDom = ref<Raw<fabric.Text>[]>([]);
 const wrapSize = reactive({
@@ -403,7 +406,7 @@ function renderAll() {
     item.text = new Date().toLocaleString();
   });
   stopwatchCanvasDom.value.forEach((item) => {
-    item.text = formatDownTime(+new Date(), +new Date());
+    item.text = formatDownTime(+new Date(), startTime.value);
   });
   fabricCanvas.value?.renderAll();
 }
@@ -462,17 +465,9 @@ function initNullAudio() {
   };
   const res = [...appStore.allTrack, webAudioTrack];
   appStore.setAllTrack(res);
-  const vel = createVideo({});
-  vel.style.width = `1px`;
-  vel.style.height = `1px`;
-  vel.style.position = 'fixed';
-  vel.style.bottom = '0';
-  vel.style.right = '0';
-  vel.style.opacity = '0';
-  vel.style.pointerEvents = 'none';
-  vel.srcObject = destination.stream;
-  document.body.appendChild(vel);
-  bodyAppendChildElArr.value.push(vel);
+  const videoEl = createVideo({ appendChild: true });
+  videoEl.srcObject = destination.stream;
+  bodyAppendChildElArr.value.push(videoEl);
 }
 
 let streamTmp: MediaStream;
@@ -504,16 +499,8 @@ function handleMixedAudio() {
     // @ts-ignore
     canvasVideoStream.value?.addTrack(destination.stream.getAudioTracks()[0]);
     gainNode.connect(destination);
-    vel = createVideo({});
-    vel.style.width = `1px`;
-    vel.style.height = `1px`;
-    vel.style.position = 'fixed';
-    vel.style.bottom = '0';
-    vel.style.right = '0';
-    vel.style.opacity = '0';
-    vel.style.pointerEvents = 'none';
+    vel = createVideo({ appendChild: true });
     vel.srcObject = destination.stream;
-    document.body.appendChild(vel);
     bodyAppendChildElArr.value.push(vel);
   }
 }
@@ -562,19 +549,11 @@ function autoCreateVideo({
   muted?: boolean;
 }) {
   console.warn('autoCreateVideoautoCreateVideo', id);
-  const videoEl = createVideo({});
+  const videoEl = createVideo({ appendChild: true });
   if (muted !== undefined) {
     videoEl.muted = muted;
   }
   videoEl.srcObject = stream;
-  videoEl.style.width = `1px`;
-  videoEl.style.height = `1px`;
-  videoEl.style.position = 'fixed';
-  videoEl.style.bottom = '0';
-  videoEl.style.right = '0';
-  videoEl.style.opacity = '0';
-  videoEl.style.pointerEvents = 'none';
-  document.body.appendChild(videoEl);
   bodyAppendChildElArr.value.push(videoEl);
   return new Promise<{
     canvasDom: fabric.Image;
@@ -795,17 +774,11 @@ async function handleCache() {
       const { code, file } = await readFile(item.id);
       if (code === 1 && file) {
         const url = URL.createObjectURL(file);
-        const videoEl = createVideo({});
+        const videoEl = createVideo({
+          muted: item.muted ? item.muted : false,
+          appendChild: true,
+        });
         videoEl.src = url;
-        videoEl.muted = item.muted ? item.muted : false;
-        videoEl.style.width = `1px`;
-        videoEl.style.height = `1px`;
-        videoEl.style.position = 'fixed';
-        videoEl.style.bottom = '0';
-        videoEl.style.right = '0';
-        videoEl.style.opacity = '0';
-        videoEl.style.pointerEvents = 'none';
-        document.body.appendChild(videoEl);
         bodyAppendChildElArr.value.push(videoEl);
         await new Promise((resolve) => {
           videoEl.onloadedmetadata = () => {
@@ -935,7 +908,7 @@ async function handleCache() {
       obj.scaleInfo = item.scaleInfo;
       if (fabricCanvas.value) {
         const canvasDom = markRaw(
-          new fabric.Text('00:00:00.000', {
+          new fabric.Text('00天00时00分00秒000毫秒', {
             top: (item.rect?.top || 0) / window.devicePixelRatio,
             left: (item.rect?.left || 0) / window.devicePixelRatio,
             fill: item.stopwatchInfo?.color,
@@ -1202,7 +1175,7 @@ async function addMediaOk(val: {
     };
     if (fabricCanvas.value) {
       const canvasDom = markRaw(
-        new fabric.Text('00:00:00.000', {
+        new fabric.Text('00天00时00分00秒000毫秒', {
           top: 0,
           left: 0,
           fill: val.stopwatchInfo?.color,
@@ -1312,17 +1285,9 @@ async function addMediaOk(val: {
       const { code } = await saveFile({ file, fileName: mediaVideoTrack.id });
       if (code !== 1) return;
       const url = URL.createObjectURL(file);
-      const videoEl = createVideo({});
+      const videoEl = createVideo({ muted: false, appendChild: true });
       videoEl.src = url;
       videoEl.muted = false;
-      videoEl.style.width = `1px`;
-      videoEl.style.height = `1px`;
-      videoEl.style.position = 'fixed';
-      videoEl.style.bottom = '0';
-      videoEl.style.right = '0';
-      videoEl.style.opacity = '0';
-      videoEl.style.pointerEvents = 'none';
-      document.body.appendChild(videoEl);
       bodyAppendChildElArr.value.push(videoEl);
       const videoRes = await new Promise<HTMLVideoElement>((resolve) => {
         videoEl.onloadedmetadata = () => {

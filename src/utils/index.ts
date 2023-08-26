@@ -41,11 +41,11 @@ export function formatDownTime(endTime: number, startTime: number) {
     }
   }
   if (d > 0) {
-    return `${d}:${h}:${m}:${s}.${ms}`;
+    return `${d}天${h}时${m}分${s}秒${ms}毫秒`;
   } else if (h > 0) {
-    return `${h}:${m}:${s}.${ms}`;
+    return `${h}时${m}分${s}秒${ms}毫秒`;
   } else {
-    return `${m}:${s}.${ms}`;
+    return `${m}分${s}秒${ms}毫秒`;
   }
 }
 
@@ -180,12 +180,17 @@ export const getRandomEnglishString = (length: number): string => {
   return res;
 };
 
-export const createVideo = ({ muted = true, autoplay = true }) => {
+export const createVideo = ({
+  muted = true,
+  autoplay = true,
+  appendChild = false,
+}) => {
   const videoEl = document.createElement('video');
   videoEl.autoplay = autoplay;
   videoEl.muted = muted;
   videoEl.playsInline = true;
   videoEl.loop = true;
+  videoEl.controls = true;
   videoEl.setAttribute('webkit-playsinline', 'true');
   videoEl.setAttribute('x5-video-player-type', 'h5');
   videoEl.setAttribute('x5-video-player-fullscreen', 'true');
@@ -193,9 +198,16 @@ export const createVideo = ({ muted = true, autoplay = true }) => {
   videoEl.oncontextmenu = (e) => {
     e.preventDefault();
   };
-  // if (NODE_ENV === 'development') {
-  videoEl.controls = true;
-  // }
+  if (appendChild) {
+    videoEl.style.width = `1px`;
+    videoEl.style.height = `1px`;
+    videoEl.style.position = 'fixed';
+    videoEl.style.bottom = '0';
+    videoEl.style.right = '0';
+    videoEl.style.opacity = '0';
+    videoEl.style.pointerEvents = 'none';
+    document.body.appendChild(videoEl);
+  }
   return videoEl;
 };
 
@@ -210,8 +222,7 @@ export function videoToCanvas(data: {
   const canvas = document.createElement('canvas');
 
   const ctx = canvas.getContext('2d')!;
-
-  let timer;
+  let timer = -1;
   function drawCanvas() {
     if (data.size) {
       const { width, height } = data.size;
@@ -233,14 +244,21 @@ export function videoToCanvas(data: {
         // console.log('没有size', width, height, performance.now());
       }
     }
+
     timer = requestAnimationFrame(drawCanvas);
   }
 
   function stopDrawing() {
+    // if (timer !== -1) {
+    //   workerTimers.clearInterval(timer);
+    // }
     cancelAnimationFrame(timer);
   }
 
-  // document.body.appendChild(videoEl);
+  // const delay = 1000 / 60; // 16.666666666666668
+  // timer = workerTimers.setInterval(() => {
+  //   drawCanvas();
+  // }, delay);
 
   drawCanvas();
 

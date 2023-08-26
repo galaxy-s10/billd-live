@@ -8,8 +8,6 @@ import { useNetworkStore } from '@/store/network';
 
 import { WsMsgTypeEnum } from './webSocket';
 
-export const audioElArr: HTMLVideoElement[] = [];
-
 export class WebRTCClass {
   roomId = '-1';
   receiver = '';
@@ -357,6 +355,7 @@ export class WebRTCClass {
       console.log('track事件的视频轨', event.streams[0].getVideoTracks());
       console.log('track事件的音频轨', event.streams[0].getAudioTracks());
       this.addTrack(event.streams[0], true);
+      this.videoEl.srcObject = event.streams[0];
     });
   };
 

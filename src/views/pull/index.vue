@@ -52,11 +52,6 @@
             class="media-list"
             :class="{ item: appStore.allTrack.length > 1 }"
           ></div>
-          <!-- <div
-            ref="remoteVideoRef"
-            class="media-list"
-            :class="{ item: appStore.allTrack.length > 1 }"
-          ></div> -->
           <VideoControls></VideoControls>
         </div>
       </div>
@@ -186,7 +181,7 @@
 </template>
 
 <script lang="ts" setup>
-import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchGoodsList } from '@/api/goods';
@@ -196,9 +191,10 @@ import {
   DanmuMsgTypeEnum,
   GoodsTypeEnum,
   IGoods,
-  liveTypeEnum,
+  LiveTypeEnum,
 } from '@/interface';
 import { useAppStore } from '@/store/app';
+import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 import { NODE_ENV } from 'script/constant';
 
@@ -207,17 +203,18 @@ import RechargeCpt from './recharge/index.vue';
 const route = useRoute();
 const userStore = useUserStore();
 const appStore = useAppStore();
+const networkStore = useNetworkStore();
 const giftGoodsList = ref<IGoods[]>([]);
 const height = ref(0);
 const giftLoading = ref(false);
 const showRecharge = ref(false);
-const showJoin = ref(true);
 const showSidebar = ref(true);
 const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
 const danmuListRef = ref<HTMLDivElement>();
 const remoteVideoRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
+const queryLiveType = ref(route.query.liveType as LiveTypeEnum);
 const {
   initPull,
   closeWs,
@@ -225,7 +222,6 @@ const {
   mySocketId,
   keydownDanmu,
   sendDanmu,
-  addVideo,
   videoLoading,
   remoteVideo,
   roomLiving,
@@ -235,8 +231,7 @@ const {
   liveRoomInfo,
   anchorInfo,
 } = usePull({
-  remoteVideoRef,
-  liveType: route.query.liveType as liveTypeEnum,
+  liveType: queryLiveType.value,
 });
 
 onUnmounted(() => {
@@ -264,10 +259,10 @@ onMounted(() => {
   getGoodsList();
   if (
     [
-      liveTypeEnum.srsHlsPull,
-      liveTypeEnum.srsFlvPull,
-      liveTypeEnum.srsWebrtcPull,
-    ].includes(route.query.liveType as liveTypeEnum)
+      LiveTypeEnum.srsHlsPull,
+      LiveTypeEnum.srsFlvPull,
+      LiveTypeEnum.srsWebrtcPull,
+    ].includes(route.query.liveType as LiveTypeEnum)
   ) {
     showSidebar.value = false;
   }
@@ -304,18 +299,8 @@ async function getGoodsList() {
 }
 
 function handleRecharge() {
-  console.log(showRecharge.value);
   if (!loginTip()) return;
   showRecharge.value = true;
-}
-
-function handleJoin() {
-  window.$message.info('维护中~');
-  return;
-  showJoin.value = !showJoin.value;
-  nextTick(() => {
-    addVideo();
-  });
 }
 
 watch(

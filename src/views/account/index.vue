@@ -71,7 +71,7 @@ import { useRouter } from 'vue-router';
 import { fetchUpdateLiveRoomKey } from '@/api/liveRoom';
 import { fetchUserInfo } from '@/api/user';
 import { loginTip } from '@/hooks/use-login';
-import { IUser, LiveRoomTypeEnum, liveTypeEnum } from '@/interface';
+import { IUser, LiveRoomTypeEnum, LiveTypeEnum } from '@/interface';
 import { routerName } from '@/router';
 
 const newRtmpUrl = ref();
@@ -100,7 +100,7 @@ function openLiveRoom() {
   }
   const url = router.resolve({
     name: routerName.push,
-    query: { liveType: liveTypeEnum.srsWebrtcPull },
+    query: { liveType: LiveTypeEnum.srsWebrtcPull },
   });
   openToTarget(url.href);
 }

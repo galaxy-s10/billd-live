@@ -51,15 +51,6 @@
               >
                 进入直播（webrtc）
               </div>
-              <!-- <div
-                v-if="
-                  currentLiveRoom.live_room?.type === LiveRoomTypeEnum.user_srs
-                "
-                class="btn webrtc"
-                @click="joinRtcRoom()"
-              >
-                进入直播（srs-webrtc）
-              </div> -->
               <div
                 v-if="
                   currentLiveRoom.live_room?.type !==
@@ -190,7 +181,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { fetchLiveList } from '@/api/live';
 import { sliderList } from '@/constant';
 import { usePull } from '@/hooks/use-pull';
-import { ILive, LiveRoomTypeEnum, liveTypeEnum } from '@/interface';
+import { ILive, LiveRoomTypeEnum, LiveTypeEnum } from '@/interface';
 import { routerName } from '@/router';
 
 const route = useRoute();
@@ -202,13 +193,13 @@ const topLiveRoomList = ref<ILive[]>([]);
 const otherLiveRoomList = ref<ILive[]>([]);
 const currentLiveRoom = ref<ILive>();
 const interactionList = ref(sliderList);
-const localVideoRef = ref<HTMLVideoElement[]>([]);
 const remoteVideoRef = ref<HTMLDivElement>();
 
-const { handleHlsPlay, videoLoading, remoteVideo } = usePull({
-  localVideoRef,
-  liveType: route.query.liveType as liveTypeEnum,
-});
+const { handleHlsPlay, videoLoading, remoteVideo, handleStopDrawing } = usePull(
+  {
+    liveType: route.query.liveType as LiveTypeEnum,
+  }
+);
 
 watch(
   () => remoteVideo.value,
@@ -224,6 +215,8 @@ watch(
 );
 
 function changeLiveRoom(item: ILive) {
+  console.log(item, 'llkk');
+  handleStopDrawing();
   if (item.id === currentLiveRoom.value?.id) return;
   currentLiveRoom.value = item;
   canvasRef.value?.childNodes?.forEach((item) => {
@@ -279,7 +272,7 @@ function joinRtcRoom() {
         roomId: currentLiveRoom.value.live_room_id,
       },
       query: {
-        liveType: liveTypeEnum.srsWebrtcPull,
+        liveType: LiveTypeEnum.srsWebrtcPull,
       },
     });
   } else {
@@ -289,7 +282,7 @@ function joinRtcRoom() {
         roomId: currentLiveRoom.value?.live_room_id,
       },
       query: {
-        liveType: liveTypeEnum.webrtcPull,
+        liveType: LiveTypeEnum.webrtcPull,
       },
     });
   }
@@ -300,7 +293,7 @@ function joinRoom(data: { roomId: number; isFlv: boolean }) {
     name: routerName.pull,
     params: { roomId: data.roomId },
     query: {
-      liveType: data.isFlv ? liveTypeEnum.srsFlvPull : liveTypeEnum.srsHlsPull,
+      liveType: data.isFlv ? LiveTypeEnum.srsFlvPull : LiveTypeEnum.srsHlsPull,
     },
   });
 }
