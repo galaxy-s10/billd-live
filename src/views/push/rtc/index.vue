@@ -343,7 +343,6 @@ const wrapSize = reactive({
   height: 0,
 });
 const workerTimerId = ref(-1);
-const videoRatio = ref(16 / 9);
 const bodyAppendChildElArr = ref<HTMLElement[]>([]);
 
 watch(
@@ -406,7 +405,11 @@ function renderAll() {
     item.text = new Date().toLocaleString();
   });
   stopwatchCanvasDom.value.forEach((item) => {
-    item.text = formatDownTime(+new Date(), startTime.value);
+    item.text = formatDownTime({
+      endTime: +new Date(),
+      startTime: startTime.value,
+      showMs: true,
+    });
   });
   fabricCanvas.value?.renderAll();
 }
@@ -522,7 +525,9 @@ function handleScale({ width, height }: { width: number; height: number }) {
   const resolutionHeight =
     currentResolutionRatio.value * window.devicePixelRatio;
   const resolutionWidth =
-    currentResolutionRatio.value * window.devicePixelRatio * videoRatio.value;
+    currentResolutionRatio.value *
+    window.devicePixelRatio *
+    appStore.videoRatio;
   let ratio = 1;
   if (width > resolutionWidth) {
     const r1 = resolutionWidth / width;
@@ -628,7 +633,7 @@ function changeCanvasAttr({
       currentResolutionRatio.value / window.devicePixelRatio;
     const resolutionWidth =
       (currentResolutionRatio.value / window.devicePixelRatio) *
-      videoRatio.value;
+      appStore.videoRatio;
     fabricCanvas.value.setWidth(resolutionWidth);
     fabricCanvas.value.setHeight(resolutionHeight);
     appStore.allTrack.forEach((iten) => {
@@ -691,7 +696,8 @@ function initCanvas() {
   const resolutionHeight =
     currentResolutionRatio.value / window.devicePixelRatio;
   const resolutionWidth =
-    (currentResolutionRatio.value / window.devicePixelRatio) * videoRatio.value;
+    (currentResolutionRatio.value / window.devicePixelRatio) *
+    appStore.videoRatio;
   const wrapWidth = containerRef.value!.getBoundingClientRect().width;
   // const wrapWidth = 1920;
   const ratio = wrapWidth / resolutionWidth;

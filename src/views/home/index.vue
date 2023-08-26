@@ -204,6 +204,7 @@ const { handleHlsPlay, videoLoading, remoteVideo, handleStopDrawing } = usePull(
 watch(
   () => remoteVideo.value,
   (newVal) => {
+    console.log('kkksd', newVal);
     newVal.forEach((item) => {
       remoteVideoRef.value?.appendChild(item);
     });
@@ -215,7 +216,6 @@ watch(
 );
 
 function changeLiveRoom(item: ILive) {
-  console.log(item, 'llkk');
   handleStopDrawing();
   if (item.id === currentLiveRoom.value?.id) return;
   currentLiveRoom.value = item;
@@ -303,6 +303,7 @@ function joinRoom(data: { roomId: number; isFlv: boolean }) {
 .home-wrap {
   .play-container {
     position: relative;
+    padding-bottom: 20px;
     z-index: 1;
     .bg {
       position: absolute;

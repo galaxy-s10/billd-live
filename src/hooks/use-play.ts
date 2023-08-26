@@ -14,7 +14,7 @@ export function useFlvPlay() {
   const flvPlayer = ref<mpegts.Player>();
   const flvVideoEl = ref<HTMLVideoElement>();
   const appStore = useAppStore();
-  const retryMax = ref(30);
+  const retryMax = ref(120);
   const retry = ref(0);
   const retrying = ref(false);
 
@@ -50,7 +50,7 @@ export function useFlvPlay() {
 
   function startFlvPlay(data: { flvurl: string }) {
     console.log('startFlvPlay', data.flvurl);
-    return new Promise<{ width: number; height: number }>((resolve) => {
+    return new Promise((resolve) => {
       function main() {
         destroyFlv();
         if (mpegts.getFeatureList().mseLivePlayback && mpegts.isSupported()) {
@@ -59,13 +59,25 @@ export function useFlvPlay() {
             isLive: true,
             url: data.flvurl,
           });
+          const videoEl = createVideo({});
+          videoEl.addEventListener('play', () => {
+            console.log('flv-play');
+          });
+          videoEl.addEventListener('playing', () => {
+            console.log('flv-playing');
+          });
+          videoEl.addEventListener('loadedmetadata', () => {
+            console.log('flv-loadedmetadata');
+          });
+          flvPlayer.value.attachMediaElement(videoEl);
+          flvPlayer.value.load();
           flvPlayer.value.on(mpegts.Events.ERROR, () => {
-            console.log('ERRORERROR');
+            console.error('mpegts消息：mpegts.Events.ERROR');
             if (retry.value < retryMax.value && !retrying.value) {
               retrying.value = true;
               destroyFlv();
               setTimeout(() => {
-                console.log(
+                console.error(
                   '播放flv错误，重新加载，剩余次数：',
                   retryMax.value - retry.value
                 );
@@ -75,23 +87,13 @@ export function useFlvPlay() {
               }, 1000);
             }
           });
-          const videoEl = createVideo({});
-          flvVideoEl.value = videoEl;
-          flvVideoEl.value.addEventListener('play', () => {
-            console.log('flv-play');
-          });
-          flvVideoEl.value.addEventListener('playing', () => {
-            console.log('flv-playing');
+          flvPlayer.value.on(mpegts.Events.MEDIA_INFO, () => {
+            console.log('mpegts消息：mpegts.Events.MEDIA_INFO');
             retry.value = 0;
             setMuted(appStore.muted);
-            document.body.appendChild(videoEl);
-            resolve({
-              width: flvVideoEl.value?.videoWidth || 0,
-              height: flvVideoEl.value?.videoHeight || 0,
-            });
+            flvVideoEl.value = videoEl;
+            resolve('');
           });
-          flvPlayer.value.attachMediaElement(flvVideoEl.value);
-          flvPlayer.value.load();
           try {
             console.log(`开始播放flv，muted:${appStore.muted}`);
             flvPlayer.value.play();
@@ -114,6 +116,9 @@ export function useHlsPlay() {
   const hlsPlayer = ref<Player>();
   const hlsVideoEl = ref<HTMLVideoElement>();
   const appStore = useAppStore();
+  const retryMax = ref(120);
+  const retry = ref(0);
+  const retrying = ref(false);
 
   onMounted(() => {});
 
@@ -147,12 +152,11 @@ export function useHlsPlay() {
   );
 
   function startHlsPlay(data: { hlsurl: string }) {
-    return new Promise<{ width: number; height: number }>((resolve) => {
+    return new Promise((resolve) => {
       function main() {
         console.log('startHlsPlay', data.hlsurl);
         destroyHls();
         const videoEl = createVideo({ muted: appStore.muted, autoplay: true });
-        hlsVideoEl.value = videoEl;
         hlsPlayer.value = videoJs(
           videoEl,
           {
@@ -173,9 +177,41 @@ export function useHlsPlay() {
             }
           }
         );
+        hlsPlayer.value?.on('error', () => {
+          console.log('hls-error');
+          if (retry.value < retryMax.value && !retrying.value) {
+            retrying.value = true;
+            setTimeout(() => {
+              console.error(
+                '播放hls错误，重新加载，剩余次数：',
+                retryMax.value - retry.value
+              );
+              retry.value += 1;
+              retrying.value = false;
+              main();
+            }, 1000);
+          }
+        });
         hlsPlayer.value?.on('play', () => {
           console.log('hls-play');
           // console.log(hlsPlayer.value?.videoHeight()); // 获取到的是0！
+        });
+        hlsPlayer.value?.on('playing', () => {
+          console.log('hls-playing');
+          setMuted(appStore.muted);
+          retry.value = 0;
+          // console.log(hlsPlayer.value?.videoHeight()); // 获取到的是正确的！
+          const childNodes = hlsPlayer.value?.el().childNodes;
+          if (childNodes) {
+            childNodes.forEach((item) => {
+              if (item.nodeName.toLowerCase() === 'video') {
+                // @ts-ignore
+                hlsVideoEl.value = item;
+              }
+            });
+          }
+          hlsVideoEl.value = videoEl;
+          resolve('');
         });
         hlsPlayer.value?.on('loadedmetadata', () => {
           console.log('hls-loadedmetadata');

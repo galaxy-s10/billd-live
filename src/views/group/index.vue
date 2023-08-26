@@ -2,8 +2,8 @@
   <div class="group-wrap">
     <h1 class="title">📢 加群注意</h1>
     <h3 class="title">
-      因为<b class="red"> 混子 </b
-      >太多，为保证群质量，因此设置了一个小小的加群门槛
+      因为<b class="red">进群看戏的人</b>
+      太多，为保证群质量，因此设置了一个小小的加群门槛
     </h3>
     <div class="content">
       <p class="red">进群硬性门槛</p>
@@ -101,6 +101,7 @@
       </p>
       <p>2. 闲聊勿扰。</p>
     </div>
+    <h1 class="title">🚀 我的微信</h1>
 
     <img
       src="@/assets/img/my-wechat.webp"

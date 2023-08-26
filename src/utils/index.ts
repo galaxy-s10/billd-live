@@ -7,8 +7,12 @@ import { getRangeRandom } from 'billd-utils';
  * @param endTime
  * @param startTime
  */
-export function formatDownTime(endTime: number, startTime: number) {
-  const times = (endTime - startTime) / 1000;
+export function formatDownTime(data: {
+  endTime: number;
+  startTime: number;
+  showMs?: boolean;
+}) {
+  const times = (data.endTime - data.startTime) / 1000;
   // js获取剩余天数
   const d = parseInt(String(times / 60 / 60 / 24));
   // js获取剩余小时
@@ -17,7 +21,7 @@ export function formatDownTime(endTime: number, startTime: number) {
   let m = parseInt(String((times / 60) % 60));
   // js获取剩余秒
   let s = parseInt(String(times % 60));
-  let ms = new Date(endTime).getMilliseconds();
+  let ms = new Date(data.endTime).getMilliseconds();
 
   if (h < 10) {
     // @ts-ignore
@@ -40,12 +44,13 @@ export function formatDownTime(endTime: number, startTime: number) {
       ms = `0${ms}`;
     }
   }
+  const msRes = data.showMs ? `${ms}毫秒` : '';
   if (d > 0) {
-    return `${d}天${h}时${m}分${s}秒${ms}毫秒`;
+    return `${d}天${h}时${m}分${s}秒${msRes}`;
   } else if (h > 0) {
-    return `${h}时${m}分${s}秒${ms}毫秒`;
+    return `${h}时${m}分${s}秒${msRes}`;
   } else {
-    return `${m}分${s}秒${ms}毫秒`;
+    return `${m}分${s}秒${msRes}`;
   }
 }
 
@@ -211,54 +216,31 @@ export const createVideo = ({
   return videoEl;
 };
 
-export function videoToCanvas(data: {
-  videoEl: HTMLVideoElement;
-  size?: { width: number; height: number };
-}) {
+export function videoToCanvas(data: { videoEl: HTMLVideoElement }) {
   const { videoEl } = data;
   if (!videoEl) {
     throw new Error('videoEl不能为空！');
   }
   const canvas = document.createElement('canvas');
-
   const ctx = canvas.getContext('2d')!;
-  let timer = -1;
-  function drawCanvas() {
-    if (data.size) {
-      const { width, height } = data.size;
-      canvas.width = width;
-      canvas.height = height;
-      ctx.drawImage(videoEl, 0, 0, width, height);
-      // console.log('有size', width, height, performance.now());
-    } else {
-      // WARN safari没有captureStream方法
-      const videoTrack = videoEl
-        // @ts-ignore
-        .captureStream()
-        .getVideoTracks()[0];
-      if (videoTrack) {
-        const { width, height } = videoTrack.getSettings();
-        canvas.width = width!;
-        canvas.height = height!;
-        ctx.drawImage(videoEl, 0, 0, width!, height!);
-        // console.log('没有size', width, height, performance.now());
-      }
-    }
 
+  let timer;
+  let w = videoEl.videoWidth;
+  let h = videoEl.videoHeight;
+  videoEl.addEventListener('resize', () => {
+    w = videoEl.videoWidth;
+    h = videoEl.videoHeight;
+  });
+  function drawCanvas() {
+    canvas.width = w;
+    canvas.height = h;
+    ctx.drawImage(videoEl, 0, 0, w, h);
     timer = requestAnimationFrame(drawCanvas);
   }
 
   function stopDrawing() {
-    // if (timer !== -1) {
-    //   workerTimers.clearInterval(timer);
-    // }
     cancelAnimationFrame(timer);
   }
-
-  // const delay = 1000 / 60; // 16.666666666666668
-  // timer = workerTimers.setInterval(() => {
-  //   drawCanvas();
-  // }, delay);
 
   drawCanvas();
 

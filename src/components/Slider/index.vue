@@ -21,6 +21,7 @@
           :key="'slide-' + indey"
           class="slide"
           :data-txt="slide.txt"
+          @click="openToTarget(slide.link)"
         >
           <div class="avatar">
             <div
@@ -40,6 +41,7 @@
 </template>
 
 <script lang="ts" setup>
+import { openToTarget } from 'billd-utils';
 import { nextTick, onMounted, ref } from 'vue';
 
 const props = defineProps({
@@ -154,6 +156,7 @@ onMounted(() => {
         box-sizing: border-box;
         padding-right: 30px;
         height: 40px;
+        cursor: pointer;
         .avatar {
           display: flex;
           overflow: hidden;

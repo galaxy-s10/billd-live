@@ -90,7 +90,6 @@ function move(event: TouchEvent & MouseEvent) {
   dndRef.value.style.top = `${topRes}px`;
   dndRef.value.style.left = `${leftRes}px`;
   emits('move', { top: topRes, left: leftRes, el: dndRef.value.children[0] });
-  // console.log(leftRes, topRes, offset, 999);
 }
 
 function handleStart(event: TouchEvent & MouseEvent) {

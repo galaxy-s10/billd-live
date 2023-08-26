@@ -1,4 +1,3 @@
-import mpegts from 'mpegts.js';
 import { onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -42,8 +41,8 @@ export function usePull({ liveType }: { liveType: LiveTypeEnum }) {
     damuList,
   } = useSrsWs();
   isPull.value = true;
-  const { flvPlayer, flvVideoEl, startFlvPlay, destroyFlv } = useFlvPlay();
-  const { hlsPlayer, hlsVideoEl, startHlsPlay, destroyHls } = useHlsPlay();
+  const { flvVideoEl, startFlvPlay, destroyFlv } = useFlvPlay();
+  const { hlsVideoEl, startHlsPlay, destroyHls } = useHlsPlay();
   const stopDrawingArr = ref<any[]>([]);
 
   onUnmounted(() => {
@@ -55,54 +54,48 @@ export function usePull({ liveType }: { liveType: LiveTypeEnum }) {
     destroyHls();
     stopDrawingArr.value.forEach((cb) => cb());
     stopDrawingArr.value = [];
+    remoteVideo.value.forEach((el) => el.remove());
+    remoteVideo.value = [];
   }
 
   watch(hlsVideoEl, () => {
-    handleHlsPlay();
+    stopDrawingArr.value = [];
+    stopDrawingArr.value.forEach((cb) => cb());
+    const { canvas, stopDrawing } = videoToCanvas({
+      videoEl: hlsVideoEl.value!,
+    });
+    stopDrawingArr.value.push(stopDrawing);
+    remoteVideo.value.push(canvas);
+    videoLoading.value = false;
   });
 
-  async function handleHlsPlay(url?: string) {
-    console.log('handleHlsPlay');
-
+  function handleHlsPlay(url?: string) {
+    console.log('handleHlsPlay', url);
     handleStopDrawing();
     videoLoading.value = true;
-    try {
-      const { width, height } = await startHlsPlay({
-        hlsurl: url || hlsurl.value,
-      });
-      const { canvas, stopDrawing } = videoToCanvas({
-        videoEl: hlsVideoEl.value!,
-        size: { width, height },
-      });
-      stopDrawingArr.value.push(stopDrawing);
-      remoteVideo.value.push(canvas);
-      videoLoading.value = false;
-    } catch (error) {
-      console.log('2532616', error);
-    }
+    startHlsPlay({
+      hlsurl: url || hlsurl.value,
+    });
   }
 
-  async function handleFlvPlay() {
+  watch(flvVideoEl, () => {
+    stopDrawingArr.value = [];
+    stopDrawingArr.value.forEach((cb) => cb());
+    const { canvas, stopDrawing } = videoToCanvas({
+      videoEl: flvVideoEl.value!,
+    });
+    stopDrawingArr.value.push(stopDrawing);
+    remoteVideo.value.push(canvas);
+    videoLoading.value = false;
+  });
+
+  function handleFlvPlay() {
     console.log('handleFlvPlay');
     handleStopDrawing();
-    const { width, height } = await startFlvPlay({
+    videoLoading.value = true;
+    startFlvPlay({
       flvurl: flvurl.value,
     });
-    const size = { width, height };
-    const initCanvas = videoToCanvas({
-      videoEl: flvVideoEl.value!,
-      size,
-    });
-    stopDrawingArr.value.push(initCanvas.stopDrawing);
-    remoteVideo.value.push(initCanvas.canvas);
-
-    flvPlayer.value!.on(mpegts.Events.MEDIA_INFO, () => {
-      console.log('数据变了', flvVideoEl.value?.videoHeight);
-      document.body.appendChild(flvVideoEl.value);
-      size.width = flvVideoEl.value!.videoWidth!;
-      size.height = flvVideoEl.value!.videoHeight!;
-    });
-    videoLoading.value = false;
   }
 
   async function handlePlay() {
@@ -137,6 +130,7 @@ export function usePull({ liveType }: { liveType: LiveTypeEnum }) {
         }
       } else {
         closeRtc();
+        handleStopDrawing();
       }
     }
   );
@@ -154,7 +148,7 @@ export function usePull({ liveType }: { liveType: LiveTypeEnum }) {
   watch(
     () => networkStore.rtcMap,
     (newVal) => {
-      if (liveType === LiveTypeEnum.webrtcPull) {
+      if (roomLiveType.value === LiveTypeEnum.webrtcPull) {
         newVal.forEach((item) => {
           videoLoading.value = false;
           const { canvas } = videoToCanvas({

@@ -5,6 +5,7 @@ import { mobileRouterName } from '@/router';
 
 export type AppRootState = {
   muted: boolean;
+  videoRatio: number;
   navList: { routeName: string; name: string }[];
   allTrack: {
     /** 1开启；2关闭 */
@@ -34,6 +35,7 @@ export const useAppStore = defineStore('app', {
   state: (): AppRootState => {
     return {
       muted: true,
+      videoRatio: 16 / 9,
       navList: [
         { routeName: mobileRouterName.h5, name: '频道' },
         { routeName: mobileRouterName.h5Rank, name: '排行' },

@@ -83,18 +83,18 @@ export const useSrsWs = () => {
     }, 1000 * 5);
   }
 
-  async function handleSendOffer({
-    receiver,
-    type,
-  }: {
-    receiver: string;
-    type: LiveRoomTypeEnum;
-  }) {
+  async function handleSendOffer({ receiver }: { receiver: string }) {
     console.log('开始handleSendOffer');
     const ws = networkStore.wsMap.get(roomId.value);
     if (!ws) return;
     const rtc = networkStore.getRtcMap(`${roomId.value}___${receiver}`);
     if (!rtc) return;
+    canvasVideoStream.value?.getTracks().forEach((track) => {
+      if (rtc && canvasVideoStream.value) {
+        console.log('插入track', track);
+        rtc.peerConnection?.addTrack(track, canvasVideoStream.value);
+      }
+    });
     const sdp = await rtc.createOffer();
     await rtc.setLocalDescription(sdp!);
     const myLiveRoom = userStore.userInfo!.live_rooms![0];
@@ -147,15 +147,13 @@ export const useSrsWs = () => {
         type,
       },
     });
-    if (type === LiveRoomTypeEnum.user_wertc) {
-      console.log(liveUserList.value.length, 'kkk1123');
-      return;
+    if (type !== LiveRoomTypeEnum.user_wertc) {
+      startNewWebRtc({
+        videoEl: createVideo({}),
+        receiver,
+        type,
+      });
     }
-    startNewWebRtc({
-      videoEl: createVideo({}),
-      receiver,
-      type,
-    });
   }
 
   function sendJoin() {
@@ -183,7 +181,7 @@ export const useSrsWs = () => {
     videoEl: HTMLVideoElement;
     type: LiveRoomTypeEnum;
   }) {
-    console.warn('33开始new WebRTCClass', `${roomId.value}___${receiver!}`);
+    console.warn('开始new WebRTCClass', `${roomId.value}___${receiver!}`);
     new WebRTCClass({
       maxBitrate: currentMaxBitrate.value,
       maxFramerate: currentMaxFramerate.value,
@@ -196,7 +194,6 @@ export const useSrsWs = () => {
 
     handleSendOffer({
       receiver,
-      type,
     });
   }
 
@@ -224,10 +221,7 @@ export const useSrsWs = () => {
       console.log('收到offer', data);
       if (data.receiver === mySocketId.value) {
         console.warn('是发给我的offer');
-        console.warn(
-          '11开始new WebRTCClass',
-          `${roomId.value}___${data.sender}`
-        );
+        console.warn('开始new WebRTCClass', `${roomId.value}___${data.sender}`);
         const videoEl = createVideo({ appendChild: true });
         const rtc = new WebRTCClass({
           maxBitrate: currentMaxBitrate.value,
@@ -263,7 +257,6 @@ export const useSrsWs = () => {
       if (data.receiver === mySocketId.value) {
         console.warn('是发给我的answer', `${roomId.value}___${data.receiver}`);
         const rtc = networkStore.getRtcMap(`${roomId.value}___${data.sender}`)!;
-        console.log(rtc, 'll');
         rtc.setRemoteDescription(data.sdp);
       } else {
         console.error('不是发给我的answer');
@@ -357,20 +350,14 @@ export const useSrsWs = () => {
       });
       if (!isPull.value) {
         if (!roomLiving.value) return;
-        console.log('>>>>>');
         liveUserList.value.forEach(async (item) => {
-          console.log(item);
           const receiver = item.id;
           if (
             receiver === mySocketId.value ||
             networkStore.getRtcMap(`${roomId.value}___${receiver!}`)
           )
             return;
-          console.log(receiver, 'ppdpsd');
-          console.warn(
-            '22开始new WebRTCClass',
-            `${roomId.value}___${receiver!}`
-          );
+          console.warn('开始new WebRTCClass', `${roomId.value}___${receiver!}`);
           const rtc = new WebRTCClass({
             maxBitrate: currentMaxBitrate.value,
             maxFramerate: currentMaxFramerate.value,

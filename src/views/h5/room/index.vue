@@ -33,6 +33,12 @@
         }"
       ></div>
       <div
+        v-if="!roomLiving"
+        class="no-live"
+      >
+        主播还没开播~
+      </div>
+      <div
         class="media-list"
         ref="remoteVideoRef"
         :class="{ item: appStore.allTrack.length > 1 }"
@@ -101,7 +107,7 @@
 </template>
 
 <script lang="ts" setup>
-import { nextTick, onMounted, ref, watch } from 'vue';
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchFindLiveRoom } from '@/api/liveRoom';
@@ -115,10 +121,8 @@ const appStore = useAppStore();
 
 const bottomRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
-const localVideoRef = ref<HTMLVideoElement[]>([]);
 const showPlayBtn = ref(false);
 const containerHeight = ref(0);
-const videoRatio = ref(16 / 9);
 const videoWrapHeight = ref(0);
 const remoteVideoRef = ref<HTMLDivElement>();
 
@@ -132,9 +136,12 @@ const {
   videoLoading,
   damuList,
   danmuStr,
+  roomLiving,
   liveRoomInfo,
   anchorInfo,
   remoteVideo,
+  closeRtc,
+  closeWs,
 } = usePull({
   liveType: LiveTypeEnum.srsHlsPull,
 });
@@ -188,13 +195,17 @@ function startPull() {
   showPlayBtn.value = false;
   handleHlsPlay(liveRoomInfo.value?.hls_url);
 }
+onUnmounted(() => {
+  closeWs();
+  closeRtc();
+});
 
 onMounted(() => {
   setTimeout(() => {
     scrollTo(0, 0);
   }, 100);
   videoWrapHeight.value =
-    document.documentElement.clientWidth / videoRatio.value;
+    document.documentElement.clientWidth / appStore.videoRatio;
   nextTick(() => {
     if (containerRef.value && bottomRef.value) {
       const res =
@@ -251,6 +262,15 @@ onMounted(() => {
 
       inset: 0;
     }
+    .no-live {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      z-index: 20;
+      color: white;
+      font-size: 28px;
+      transform: translate(-50%, -50%);
+    }
     .media-list {
       position: relative;
       overflow-y: scroll;
@@ -264,16 +284,16 @@ onMounted(() => {
         width: 100%;
         height: 100%;
       }
-      &.item {
-        :deep(video) {
-          width: 50%;
-          height: initial !important;
-        }
-        :deep(canvas) {
-          width: 50%;
-          height: initial !important;
-        }
-      }
+      // &.item {
+      //   :deep(video) {
+      //     width: 50%;
+      //     height: initial !important;
+      //   }
+      //   :deep(canvas) {
+      //     width: 50%;
+      //     height: initial !important;
+      //   }
+      // }
     }
     // :deep(video) {
     //   position: absolute;

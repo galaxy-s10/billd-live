@@ -24,7 +24,9 @@
       <div class="bottom">
         <div class="sao">打开支付宝扫一扫</div>
         <div class="expr">
-          有效期5分钟（{{ formatDownTime(downTimeEnd, downTimeStart) }}）
+          有效期5分钟（{{
+            formatDownTime({ endTime: downTimeEnd, startTime: downTimeStart })
+          }}）
         </div>
       </div>
     </div>

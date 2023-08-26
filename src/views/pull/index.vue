@@ -32,7 +32,7 @@
           class="no-live"
           v-if="!roomLiving"
         >
-          当前房间没在直播~
+          主播还没开播~
         </div>
         <div
           v-else
@@ -194,7 +194,6 @@ import {
   LiveTypeEnum,
 } from '@/interface';
 import { useAppStore } from '@/store/app';
-import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 import { NODE_ENV } from 'script/constant';
 
@@ -203,7 +202,6 @@ import RechargeCpt from './recharge/index.vue';
 const route = useRoute();
 const userStore = useUserStore();
 const appStore = useAppStore();
-const networkStore = useNetworkStore();
 const giftGoodsList = ref<IGoods[]>([]);
 const height = ref(0);
 const giftLoading = ref(false);
