@@ -99,7 +99,6 @@ export function usePush() {
   watch(
     () => currentMaxFramerate.value,
     (newVal) => {
-      console.log(currentMaxFramerate.value, 'currentMaxFramerate.value');
       if (canvasVideoStream.value) {
         canvasVideoStream.value.getVideoTracks().forEach((track) => {
           track.applyConstraints({

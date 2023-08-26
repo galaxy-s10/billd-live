@@ -204,7 +204,6 @@ const { handleHlsPlay, videoLoading, remoteVideo, handleStopDrawing } = usePull(
 watch(
   () => remoteVideo.value,
   (newVal) => {
-    console.log('kkksd', newVal);
     newVal.forEach((item) => {
       remoteVideoRef.value?.appendChild(item);
     });
