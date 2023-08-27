@@ -210,7 +210,6 @@ export function useHlsPlay() {
               }
             });
           }
-          hlsVideoEl.value = videoEl;
           resolve('');
         });
         hlsPlayer.value?.on('loadedmetadata', () => {

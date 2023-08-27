@@ -70,12 +70,6 @@ import { fetchAreaLiveRoomList } from '@/api/area';
 import { IArea, IAreaLiveRoom } from '@/interface';
 import router, { mobileRouterName, routerName } from '@/router';
 
-const navList = ref([
-  { id: 1, name: '频道' },
-  { id: 2, name: '排行' },
-  { id: 3, name: '我的' },
-]);
-
 const liveRoomList = ref<IArea[]>([]);
 
 const swiperList = ref([
@@ -84,7 +78,7 @@ const swiperList = ref([
   { id: 3, txt: '广告位3', bg: '#4158D0', url: '' },
 ]);
 const timer = ref();
-const currentSwiper = ref({ id: 1, txt: '广告位1', bg: '#FFCC70', url: '' });
+const currentSwiper = ref(swiperList.value[0]);
 
 async function getLiveRoomList() {
   try {

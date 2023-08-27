@@ -104,6 +104,12 @@
               @click="changeLiveRoom(item)"
             >
               <div
+                class="cdn-ico"
+                v-if="item?.live_room?.cdn === 1"
+              >
+                <div class="txt">CDN</div>
+              </div>
+              <div
                 class="border"
                 :style="{
                   opacity:
@@ -302,8 +308,8 @@ function joinRoom(data: { roomId: number; isFlv: boolean }) {
 .home-wrap {
   .play-container {
     position: relative;
-    padding-bottom: 20px;
     z-index: 1;
+    padding-bottom: 20px;
     .bg {
       position: absolute;
       top: 0;
@@ -445,6 +451,7 @@ function joinRoom(data: { roomId: number; isFlv: boolean }) {
         .list {
           .item {
             position: relative;
+            overflow: hidden;
             box-sizing: border-box;
             margin-bottom: 10px;
             width: 200px;
@@ -458,13 +465,32 @@ function joinRoom(data: { roomId: number; isFlv: boolean }) {
             &:last-child {
               margin-bottom: 0;
             }
+            .cdn-ico {
+              position: absolute;
+              top: -9px;
+              right: -9px;
+              z-index: 2;
+              width: 60px;
+              height: 28px;
+              background-color: #f87c48;
+              color: white;
+              transform: rotate(45deg);
+              transform-origin: bottom;
+
+              .txt {
+                margin-left: 10px;
+                background-image: initial !important;
+                font-size: 12px;
+                line-height: 0.8;
+              }
+            }
             .border {
               position: absolute;
               top: 0;
               right: 0;
               bottom: 0;
               left: 0;
-              z-index: 1;
+              z-index: 3;
               border: 2px solid $theme-color-gold;
               border-radius: 4px;
             }

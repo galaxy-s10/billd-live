@@ -44,7 +44,7 @@
         :class="{ item: appStore.allTrack.length > 1 }"
       ></div>
       <div
-        v-if="showPlayBtn"
+        v-if="showPlayBtn && roomLiving"
         class="tip-btn"
         @click="startPull"
       >
@@ -192,6 +192,7 @@ async function getLiveRoomInfo() {
 }
 
 function startPull() {
+  appStore.setMuted(false);
   showPlayBtn.value = false;
   handleHlsPlay(liveRoomInfo.value?.hls_url);
 }
