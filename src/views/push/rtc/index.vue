@@ -451,30 +451,31 @@ function initNullAudio() {
   // 将源连接到gain node，再连接到输出
   source.connect(gainNode);
   gainNode.connect(audioContext.destination);
-  const destination = audioContext.createMediaStreamDestination();
-
-  const webAudioTrack: AppRootState['allTrack'][0] = {
-    id: getRandomEnglishString(8),
-    audio: 1,
-    video: 2,
-    mediaName: 'webAudio占位',
-    type: MediaTypeEnum.webAudio,
-    track: destination.stream.getAudioTracks()[0],
-    trackid: destination.stream.getAudioTracks()[0].id,
-    stream: destination.stream,
-    streamid: destination.stream.id,
-    hidden: true,
-    muted: false,
-  };
-  const res = [...appStore.allTrack, webAudioTrack];
+  const res = [...appStore.allTrack];
   appStore.setAllTrack(res);
-  const videoEl = createVideo({ appendChild: true });
-  videoEl.srcObject = destination.stream;
-  bodyAppendChildElArr.value.push(videoEl);
+  // const destination = audioContext.createMediaStreamDestination();
+
+  // const webAudioTrack: AppRootState['allTrack'][0] = {
+  //   id: getRandomEnglishString(8),
+  //   audio: 1,
+  //   video: 2,
+  //   mediaName: 'webAudio占位',
+  //   type: MediaTypeEnum.webAudio,
+  //   track: destination.stream.getAudioTracks()[0],
+  //   trackid: destination.stream.getAudioTracks()[0].id,
+  //   stream: destination.stream,
+  //   streamid: destination.stream.id,
+  //   hidden: true,
+  //   muted: false,
+  // };
+
+  // const videoEl = createVideo({ appendChild: true });
+  // videoEl.srcObject = destination.stream;
+  // bodyAppendChildElArr.value.push(videoEl);
 }
 
 let streamTmp: MediaStream;
-let vel;
+const webaudioVideo = ref<HTMLVideoElement>();
 
 function handleMixedAudio() {
   console.log('handleMixedAudiohandleMixedAudio');
@@ -502,9 +503,13 @@ function handleMixedAudio() {
     // @ts-ignore
     canvasVideoStream.value?.addTrack(destination.stream.getAudioTracks()[0]);
     gainNode.connect(destination);
-    vel = createVideo({ appendChild: true });
-    vel.srcObject = destination.stream;
-    bodyAppendChildElArr.value.push(vel);
+    webaudioVideo.value = createVideo({ appendChild: true });
+    webaudioVideo.value.className = 'web-audio-video';
+    webaudioVideo.value.srcObject = destination.stream;
+    console.log('kkkk1', webaudioVideo.value);
+    bodyAppendChildElArr.value.push(webaudioVideo.value);
+  } else {
+    console.error('没有audioCtx');
   }
 }
 
@@ -553,7 +558,7 @@ function autoCreateVideo({
   rect?: { left: number; top: number };
   muted?: boolean;
 }) {
-  console.warn('autoCreateVideoautoCreateVideo', id);
+  console.warn('autoCreateVideo', id);
   const videoEl = createVideo({ appendChild: true });
   if (muted !== undefined) {
     videoEl.muted = muted;
@@ -1305,6 +1310,7 @@ async function addMediaOk(val: {
       const { canvasDom, scale } = await autoCreateVideo({
         stream,
         id: mediaVideoTrack.id,
+        video: videoEl,
       });
       mediaVideoTrack.scaleInfo = { scaleX: scale, scaleY: scale };
       mediaVideoTrack.videoEl = videoEl;

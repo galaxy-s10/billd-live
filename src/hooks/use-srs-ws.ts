@@ -151,7 +151,6 @@ export const useSrsWs = () => {
       startNewWebRtc({
         videoEl: createVideo({}),
         receiver,
-        type,
       });
     }
   }
@@ -175,13 +174,11 @@ export const useSrsWs = () => {
   function startNewWebRtc({
     receiver,
     videoEl,
-    type,
   }: {
     receiver: string;
     videoEl: HTMLVideoElement;
-    type: LiveRoomTypeEnum;
   }) {
-    console.warn('开始new WebRTCClass', `${roomId.value}___${receiver!}`);
+    console.warn('22开始new WebRTCClass', `${roomId.value}___${receiver!}`);
     new WebRTCClass({
       maxBitrate: currentMaxBitrate.value,
       maxFramerate: currentMaxFramerate.value,
@@ -221,7 +218,10 @@ export const useSrsWs = () => {
       console.log('收到offer', data);
       if (data.receiver === mySocketId.value) {
         console.warn('是发给我的offer');
-        console.warn('开始new WebRTCClass', `${roomId.value}___${data.sender}`);
+        console.warn(
+          '33开始new WebRTCClass',
+          `${roomId.value}___${data.sender}`
+        );
         const videoEl = createVideo({ appendChild: true });
         const rtc = new WebRTCClass({
           maxBitrate: currentMaxBitrate.value,
@@ -357,7 +357,10 @@ export const useSrsWs = () => {
             networkStore.getRtcMap(`${roomId.value}___${receiver!}`)
           )
             return;
-          console.warn('开始new WebRTCClass', `${roomId.value}___${receiver!}`);
+          console.warn(
+            '11开始new WebRTCClass',
+            `${roomId.value}___${receiver!}`
+          );
           const rtc = new WebRTCClass({
             maxBitrate: currentMaxBitrate.value,
             maxFramerate: currentMaxFramerate.value,
