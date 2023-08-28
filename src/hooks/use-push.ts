@@ -202,7 +202,8 @@ export function usePush() {
       if (!sender) {
         console.log(
           'pc添加track-开播后中途添加，替换它',
-          addTrackInfo.track?.id
+          addTrackInfo.track?.id,
+          canvasVideoStream.value!.getAudioTracks()[0]
         );
         rtc.peerConnection
           ?.getSenders()
@@ -218,6 +219,14 @@ export function usePush() {
     });
     console.log('addTrack后结果的音频轨', mixedStream.getAudioTracks());
     console.log('addTrack后结果的视频轨', mixedStream.getVideoTracks());
+    console.log(
+      'addTrack后canvasVideoStream音频轨',
+      canvasVideoStream.value?.getAudioTracks()
+    );
+    console.log(
+      'addTrack后canvasVideoStream视频轨',
+      canvasVideoStream.value?.getVideoTracks()
+    );
     localStream.value = mixedStream;
   }
 

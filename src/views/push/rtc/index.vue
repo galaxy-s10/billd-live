@@ -478,8 +478,9 @@ let streamTmp: MediaStream;
 const webaudioVideo = ref<HTMLVideoElement>();
 
 function handleMixedAudio() {
-  console.log('handleMixedAudiohandleMixedAudio');
+  console.log('handleMixedAudio');
   const allAudioTrack = appStore.allTrack.filter((item) => item.audio === 1);
+  audioCtx.value = new AudioContext();
   if (audioCtx.value) {
     const gainNode = audioCtx.value.createGain();
     allAudioTrack.forEach((item) => {
@@ -488,20 +489,35 @@ function handleMixedAudio() {
       audioInput.connect(gainNode);
       console.log('混流', item.stream?.id, item.stream);
     });
-    if (streamTmp) {
-      const destination = audioCtx.value.createMediaStreamDestination();
-      streamTmp.addTrack(destination.stream.getAudioTracks()[0]);
-      gainNode.connect(destination);
-      const mixedStream = new MediaStream();
-      mixedStream.addTrack(destination.stream.getAudioTracks()[0]);
-      mixedStream.addTrack(canvasVideoStream.value!.getVideoTracks()[0]);
-      canvasVideoStream.value = mixedStream;
-      return;
-    }
+    // if (streamTmp) {
+    //   const destination = audioCtx.value.createMediaStreamDestination();
+    //   streamTmp.addTrack(destination.stream.getAudioTracks()[0]);
+    //   gainNode.connect(destination);
+    //   const mixedStream = new MediaStream();
+    //   console.log(
+    //     'destination.stream.getAudioTracks()',
+    //     destination.stream.getAudioTracks()
+    //   );
+    //   mixedStream.addTrack(destination.stream.getAudioTracks()[0]);
+    //   mixedStream.addTrack(canvasVideoStream.value!.getVideoTracks()[0]);
+    //   canvasVideoStream.value = mixedStream;
+    //   return;
+    // }
+
     const destination = audioCtx.value.createMediaStreamDestination();
-    streamTmp = destination.stream;
-    // @ts-ignore
-    canvasVideoStream.value?.addTrack(destination.stream.getAudioTracks()[0]);
+    // streamTmp = destination.stream;
+    if (canvasVideoStream.value?.getAudioTracks()[0]) {
+      canvasVideoStream.value.removeTrack(
+        canvasVideoStream.value?.getAudioTracks()[0]
+      );
+      canvasVideoStream.value?.addTrack(destination.stream.getAudioTracks()[0]);
+    } else {
+      canvasVideoStream.value?.addTrack(destination.stream.getAudioTracks()[0]);
+    }
+    console.log(
+      canvasVideoStream.value?.getAudioTracks(),
+      'canvasVideoStreamcanvasVideoStream'
+    );
     gainNode.connect(destination);
     webaudioVideo.value = createVideo({ appendChild: true });
     webaudioVideo.value.className = 'web-audio-video';
@@ -1310,7 +1326,6 @@ async function addMediaOk(val: {
       const { canvasDom, scale } = await autoCreateVideo({
         stream,
         id: mediaVideoTrack.id,
-        video: videoEl,
       });
       mediaVideoTrack.scaleInfo = { scaleX: scale, scaleY: scale };
       mediaVideoTrack.videoEl = videoEl;
@@ -1354,7 +1369,7 @@ async function addMediaOk(val: {
     console.log('获取视频成功', fabricCanvas.value);
   }
 
-  canvasVideoStream.value = pushCanvasRef.value!.captureStream();
+  // canvasVideoStream.value = pushCanvasRef.value!.captureStream();
 }
 
 function handleChangeMuted(item: AppRootState['allTrack'][0]) {

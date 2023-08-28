@@ -66,6 +66,10 @@ export const useSrsWs = () => {
     clearInterval(loopHeartbeatTimer.value);
   });
 
+  setInterval(() => {
+    console.log(canvasVideoStream.value?.getAudioTracks());
+  }, 1000);
+
   const mySocketId = computed(() => {
     return networkStore.wsMap.get(roomId.value)?.socketIo?.id || '-1';
   });
@@ -91,7 +95,7 @@ export const useSrsWs = () => {
     if (!rtc) return;
     canvasVideoStream.value?.getTracks().forEach((track) => {
       if (rtc && canvasVideoStream.value) {
-        console.log('插入track', track);
+        console.log('11canvasVideoStream插入track', track.kind, track);
         rtc.peerConnection?.addTrack(track, canvasVideoStream.value);
       }
     });
@@ -373,7 +377,7 @@ export const useSrsWs = () => {
           networkStore.updateRtcMap(`${roomId.value}___${receiver!}`, rtc);
           canvasVideoStream.value?.getTracks().forEach((track) => {
             if (rtc && canvasVideoStream.value) {
-              console.log('插入track', track);
+              console.log('22canvasVideoStream插入track', track.kind, track);
               rtc.peerConnection?.addTrack(track, canvasVideoStream.value);
             }
           });
