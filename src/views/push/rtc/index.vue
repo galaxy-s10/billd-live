@@ -331,6 +331,7 @@ const bottomRef = ref<HTMLDivElement>();
 const danmuListRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
 const pushCanvasRef = ref<HTMLCanvasElement>();
+const webaudioVideo = ref<HTMLVideoElement>();
 const fabricCanvas = ref<fabric.Canvas>();
 const audioCtx = ref<AudioContext>();
 const startTime = ref(+new Date());
@@ -428,115 +429,48 @@ function renderFrame() {
   console.log('workerTimerId.value', workerTimerId.value);
 }
 
-// 处理空音频轨
-function initNullAudio() {
-  console.warn('处理空音频轨');
-  // 创建一个AudioContext实例
-  const audioContext = new AudioContext();
-
-  // 创建一个GainNode实例来控制音频的音量
-  const gainNode = audioContext.createGain();
-
-  // 创建一个空的音频缓存
-  const buffer = audioContext.createBuffer(
-    2,
-    audioContext.sampleRate * 3,
-    audioContext.sampleRate
-  );
-
-  // 创建一个用于播放音频的AudioBufferSourceNode
-  const source = audioContext.createBufferSource();
-  source.buffer = buffer;
-
-  // 将源连接到gain node，再连接到输出
-  source.connect(gainNode);
-  gainNode.connect(audioContext.destination);
-  const res = [...appStore.allTrack];
-  appStore.setAllTrack(res);
-  // const destination = audioContext.createMediaStreamDestination();
-
-  // const webAudioTrack: AppRootState['allTrack'][0] = {
-  //   id: getRandomEnglishString(8),
-  //   audio: 1,
-  //   video: 2,
-  //   mediaName: 'webAudio占位',
-  //   type: MediaTypeEnum.webAudio,
-  //   track: destination.stream.getAudioTracks()[0],
-  //   trackid: destination.stream.getAudioTracks()[0].id,
-  //   stream: destination.stream,
-  //   streamid: destination.stream.id,
-  //   hidden: true,
-  //   muted: false,
-  // };
-
-  // const videoEl = createVideo({ appendChild: true });
-  // videoEl.srcObject = destination.stream;
-  // bodyAppendChildElArr.value.push(videoEl);
-}
-
-let streamTmp: MediaStream;
-const webaudioVideo = ref<HTMLVideoElement>();
-
 function handleMixedAudio() {
   console.log('handleMixedAudio');
   const allAudioTrack = appStore.allTrack.filter((item) => item.audio === 1);
   audioCtx.value = new AudioContext();
-  if (audioCtx.value) {
-    const gainNode = audioCtx.value.createGain();
-    allAudioTrack.forEach((item) => {
-      if (!audioCtx.value || !item.stream) return;
-      const audioInput = audioCtx.value.createMediaStreamSource(item.stream);
-      audioInput.connect(gainNode);
-      console.log('混流', item.stream?.id, item.stream);
-    });
-    // if (streamTmp) {
-    //   const destination = audioCtx.value.createMediaStreamDestination();
-    //   streamTmp.addTrack(destination.stream.getAudioTracks()[0]);
-    //   gainNode.connect(destination);
-    //   const mixedStream = new MediaStream();
-    //   console.log(
-    //     'destination.stream.getAudioTracks()',
-    //     destination.stream.getAudioTracks()
-    //   );
-    //   mixedStream.addTrack(destination.stream.getAudioTracks()[0]);
-    //   mixedStream.addTrack(canvasVideoStream.value!.getVideoTracks()[0]);
-    //   canvasVideoStream.value = mixedStream;
-    //   return;
-    // }
+  const gainNode = audioCtx.value.createGain();
+  allAudioTrack.forEach((item) => {
+    if (!audioCtx.value || !item.stream) return;
+    const audioInput = audioCtx.value.createMediaStreamSource(item.stream);
+    audioInput.connect(gainNode);
+    console.log('混流', item.stream?.id, item.stream);
+  });
 
-    const destination = audioCtx.value.createMediaStreamDestination();
-    // streamTmp = destination.stream;
-    if (canvasVideoStream.value?.getAudioTracks()[0]) {
-      canvasVideoStream.value.removeTrack(
-        canvasVideoStream.value?.getAudioTracks()[0]
-      );
-      canvasVideoStream.value?.addTrack(destination.stream.getAudioTracks()[0]);
-    } else {
-      canvasVideoStream.value?.addTrack(destination.stream.getAudioTracks()[0]);
-    }
-    console.log(
-      canvasVideoStream.value?.getAudioTracks(),
-      'canvasVideoStreamcanvasVideoStream'
+  const destination = audioCtx.value.createMediaStreamDestination();
+  if (canvasVideoStream.value?.getAudioTracks()[0]) {
+    canvasVideoStream.value.removeTrack(
+      canvasVideoStream.value?.getAudioTracks()[0]
     );
-    gainNode.connect(destination);
-    webaudioVideo.value = createVideo({ appendChild: true });
-    webaudioVideo.value.className = 'web-audio-video';
-    webaudioVideo.value.srcObject = destination.stream;
-    console.log('kkkk1', webaudioVideo.value);
-    bodyAppendChildElArr.value.push(webaudioVideo.value);
-  } else {
-    console.error('没有audioCtx');
   }
+  canvasVideoStream.value?.addTrack(destination.stream.getAudioTracks()[0]);
+  // streamTmp = destination.stream;
+  if (canvasVideoStream.value?.getAudioTracks()[0]) {
+    canvasVideoStream.value.removeTrack(
+      canvasVideoStream.value?.getAudioTracks()[0]
+    );
+    canvasVideoStream.value?.addTrack(destination.stream.getAudioTracks()[0]);
+  } else {
+    canvasVideoStream.value?.addTrack(destination.stream.getAudioTracks()[0]);
+  }
+  console.log(
+    canvasVideoStream.value?.getAudioTracks(),
+    'canvasVideoStreamcanvasVideoStream'
+  );
+  gainNode.connect(destination);
+  if (webaudioVideo.value) {
+    webaudioVideo.value.remove();
+  }
+  webaudioVideo.value = createVideo({ appendChild: true });
+  webaudioVideo.value.className = 'web-audio-video';
+  webaudioVideo.value.srcObject = destination.stream;
 }
 
 function handleStartLive() {
-  // WARN 不能省略initNullAudio，否则开播时候没有音频的时候，srs那边的audio是 Stream #0:0: Audio: aac, 44100 Hz, stereo, 128 kb/s
-  // 会导致加载直播很慢，正常的audio应该是Stream #0:0: Audio: aac (LC), 48000 Hz, stereo, fltp
-  // 开播前执行initNullAudio，audio就会是正常的
-  initNullAudio();
-  if (!audioCtx.value) {
-    audioCtx.value = new AudioContext();
-  }
   handleMixedAudio();
   lastCoverImg.value = generateBase64(pushCanvasRef.value!);
   startLive({ type: LiveRoomTypeEnum.user_wertc, receiver: mySocketId });

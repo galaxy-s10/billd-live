@@ -66,10 +66,6 @@ export const useSrsWs = () => {
     clearInterval(loopHeartbeatTimer.value);
   });
 
-  setInterval(() => {
-    console.log(canvasVideoStream.value?.getAudioTracks());
-  }, 1000);
-
   const mySocketId = computed(() => {
     return networkStore.wsMap.get(roomId.value)?.socketIo?.id || '-1';
   });
