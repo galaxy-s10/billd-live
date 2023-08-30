@@ -18,6 +18,7 @@ export const routerName = {
   home: 'home',
   about: 'about',
   area: 'area',
+  areaDetail: 'areaDetail',
   account: 'account',
   rank: 'rank',
   sponsors: 'sponsors',
@@ -85,8 +86,15 @@ export const defaultRoutes: RouteRecordRaw[] = [
       },
       {
         name: routerName.area,
-        path: '/area/:id',
+        path: '/area',
         component: () => import('@/views/area/index.vue'),
+        children: [
+          {
+            name: routerName.areaDetail,
+            path: '/area/:id',
+            component: () => import('@/views/area/id/index.vue'),
+          },
+        ],
       },
       {
         name: routerName.rank,

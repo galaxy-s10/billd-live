@@ -103,11 +103,13 @@
               }"
               @click="changeLiveRoom(item)"
             >
-              <div
-                class="cdn-ico"
-                v-if="item?.live_room?.cdn === 1"
-              >
-                <div class="txt">CDN</div>
+              <div class="hidden">
+                <div
+                  class="cdn-ico"
+                  v-if="item?.live_room?.cdn === 1"
+                >
+                  <div class="txt">CDN</div>
+                </div>
               </div>
               <div
                 class="border"
@@ -182,7 +184,7 @@
 <script lang="ts" setup>
 import { isMobile } from 'billd-utils';
 import { onMounted, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 
 import { fetchLiveList } from '@/api/live';
 import { sliderList } from '@/constant';
@@ -190,7 +192,6 @@ import { usePull } from '@/hooks/use-pull';
 import { ILive, LiveRoomTypeEnum, LiveTypeEnum } from '@/interface';
 import { routerName } from '@/router';
 
-const route = useRoute();
 const router = useRouter();
 const canvasRef = ref<Element>();
 const showControls = ref(false);
@@ -201,11 +202,8 @@ const currentLiveRoom = ref<ILive>();
 const interactionList = ref(sliderList);
 const remoteVideoRef = ref<HTMLDivElement>();
 
-const { handleHlsPlay, videoLoading, remoteVideo, handleStopDrawing } = usePull(
-  {
-    liveType: route.query.liveType as LiveTypeEnum,
-  }
-);
+const { handleHlsPlay, videoLoading, remoteVideo, handleStopDrawing } =
+  usePull();
 
 watch(
   () => remoteVideo.value,
@@ -270,27 +268,12 @@ onMounted(() => {
 });
 
 function joinRtcRoom() {
-  if (currentLiveRoom.value?.live_room?.type === LiveRoomTypeEnum.user_srs) {
-    router.push({
-      name: routerName.pull,
-      params: {
-        roomId: currentLiveRoom.value.live_room_id,
-      },
-      query: {
-        liveType: LiveTypeEnum.srsWebrtcPull,
-      },
-    });
-  } else {
-    router.push({
-      name: routerName.pull,
-      params: {
-        roomId: currentLiveRoom.value?.live_room_id,
-      },
-      query: {
-        liveType: LiveTypeEnum.webrtcPull,
-      },
-    });
-  }
+  router.push({
+    name: routerName.pull,
+    params: {
+      roomId: currentLiveRoom.value?.live_room_id,
+    },
+  });
 }
 
 function joinRoom(data: { roomId: number; isFlv: boolean }) {
@@ -451,7 +434,6 @@ function joinRoom(data: { roomId: number; isFlv: boolean }) {
         .list {
           .item {
             position: relative;
-            overflow: hidden;
             box-sizing: border-box;
             margin-bottom: 10px;
             width: 200px;
@@ -465,25 +447,32 @@ function joinRoom(data: { roomId: number; isFlv: boolean }) {
             &:last-child {
               margin-bottom: 0;
             }
-            .cdn-ico {
-              position: absolute;
-              top: -9px;
-              right: -9px;
-              z-index: 2;
-              width: 60px;
-              height: 28px;
-              background-color: #f87c48;
-              color: white;
-              transform: rotate(45deg);
-              transform-origin: bottom;
+            .hidden {
+              position: relative;
+              overflow: hidden;
+              width: 200px;
+              height: 110px;
+              .cdn-ico {
+                position: absolute;
+                top: -9px;
+                right: -9px;
+                z-index: 2;
+                width: 60px;
+                height: 28px;
+                background-color: #f87c48;
+                color: white;
+                transform: rotate(45deg);
+                transform-origin: bottom;
 
-              .txt {
-                margin-left: 10px;
-                background-image: initial !important;
-                font-size: 12px;
-                line-height: 0.8;
+                .txt {
+                  margin-left: 10px;
+                  background-image: initial !important;
+                  font-size: 12px;
+                  line-height: 0.8;
+                }
               }
             }
+
             .border {
               position: absolute;
               top: 0;

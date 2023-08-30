@@ -178,13 +178,11 @@ export interface IUserLiveRoom {
 }
 
 export enum LiveTypeEnum {
-  webrtcPull = 'webrtcPull',
-  srsWebrtcPull = 'srsWebrtcPull',
   srsFlvPull = 'srsFlvPull',
   srsHlsPull = 'srsHlsPull',
+
   srsPush = 'srsPush',
   webrtcPush = 'webrtcPush',
-  canvasPush = 'canvasPush',
 }
 
 /** 直播间类型 */

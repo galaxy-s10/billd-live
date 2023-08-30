@@ -3,20 +3,24 @@ import { useRoute } from 'vue-router';
 
 import { useFlvPlay, useHlsPlay } from '@/hooks/use-play';
 import { useSrsWs } from '@/hooks/use-srs-ws';
-import { DanmuMsgTypeEnum, IDanmu, IMessage, LiveTypeEnum } from '@/interface';
+import {
+  DanmuMsgTypeEnum,
+  IDanmu,
+  IMessage,
+  LiveRoomTypeEnum,
+} from '@/interface';
 import { WsMsgTypeEnum } from '@/network/webSocket';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 import { createVideo, videoToCanvas } from '@/utils';
 
-export function usePull({ liveType }: { liveType: LiveTypeEnum }) {
+export function usePull() {
   const route = useRoute();
   const userStore = useUserStore();
   const networkStore = useNetworkStore();
   const appStore = useAppStore();
   const roomId = ref(route.params.roomId as string);
-  const roomLiveType = ref<LiveTypeEnum>(liveType);
   const localStream = ref<MediaStream>();
   const danmuStr = ref('');
   const autoplayVal = ref(false);
@@ -100,30 +104,18 @@ export function usePull({ liveType }: { liveType: LiveTypeEnum }) {
 
   async function handlePlay() {
     console.warn('handlePlay');
-    if (roomLiveType.value === LiveTypeEnum.srsFlvPull) {
+    if (liveRoomInfo.value?.type !== LiveRoomTypeEnum.user_wertc) {
       if (!autoplayVal.value) return;
-      await handleFlvPlay();
-    } else if (roomLiveType.value === LiveTypeEnum.srsHlsPull) {
-      if (!autoplayVal.value) return;
+      // await handleFlvPlay();
       await handleHlsPlay();
     }
   }
 
   watch(
-    () => autoplayVal.value,
-    (val) => {
-      console.log('autoplayVal变了', val);
-      if (val && roomLiveType.value === LiveTypeEnum.webrtcPull) {
-        handlePlay();
-      }
-    }
-  );
-
-  watch(
     () => roomLiving.value,
     (val) => {
       if (val) {
-        if (roomLiveType.value !== LiveTypeEnum.webrtcPull) {
+        if (liveRoomInfo.value?.type !== LiveRoomTypeEnum.user_wertc) {
           flvurl.value = liveRoomInfo.value?.flv_url!;
           hlsurl.value = liveRoomInfo.value?.hls_url!;
           handlePlay();
@@ -148,7 +140,7 @@ export function usePull({ liveType }: { liveType: LiveTypeEnum }) {
   watch(
     () => networkStore.rtcMap,
     (newVal) => {
-      if (roomLiveType.value === LiveTypeEnum.webrtcPull) {
+      if (liveRoomInfo.value?.type === LiveRoomTypeEnum.user_wertc) {
         newVal.forEach((item) => {
           videoLoading.value = false;
           const { canvas } = videoToCanvas({
@@ -172,7 +164,7 @@ export function usePull({ liveType }: { liveType: LiveTypeEnum }) {
         console.log('localStream变了');
         console.log('音频轨：', val?.getAudioTracks());
         console.log('视频轨：', val?.getVideoTracks());
-        if (roomLiveType.value === LiveTypeEnum.webrtcPull) {
+        if (liveRoomInfo.value?.type === LiveRoomTypeEnum.user_wertc) {
           videoElArr.value.forEach((dom) => {
             dom.remove();
           });
@@ -193,7 +185,7 @@ export function usePull({ liveType }: { liveType: LiveTypeEnum }) {
             videoElArr.value.push(video);
           });
           videoLoading.value = false;
-        } else if (roomLiveType.value === LiveTypeEnum.srsWebrtcPull) {
+        } else {
           videoElArr.value.forEach((dom) => {
             dom.remove();
           });
@@ -318,7 +310,6 @@ export function usePull({ liveType }: { liveType: LiveTypeEnum }) {
     handleHlsPlay,
     handleFlvPlay,
     remoteVideo,
-    roomLiveType,
     roomLiving,
     autoplayVal,
     videoLoading,

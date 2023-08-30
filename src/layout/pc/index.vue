@@ -21,7 +21,7 @@ document.body.style.minWidth = '1200px';
 <style lang="scss" scoped>
 .layout {
   box-sizing: border-box;
-  padding-top: 64px;
+  padding-top: $header-height;
   min-height: 100vh;
   .fixed-mask {
     position: fixed;

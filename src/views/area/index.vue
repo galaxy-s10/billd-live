@@ -1,168 +1,82 @@
 <template>
-  <div class="area-wrap">
-    <div
-      v-loading="loading"
-      class="live-room-list"
+  <div class="area-list">
+    <a
+      v-for="(item, index) in areaList"
+      :key="index"
+      class="item"
+      :class="{
+        active: router.currentRoute.value.name === routerName.ad,
+      }"
+      @click.prevent="changeArea(item)"
     >
-      <div
-        v-for="(iten, indey) in liveRoomList"
-        :key="indey"
-        class="live-room"
-        @click="goRoom(iten)"
-      >
-        <div
-          class="cover"
-          :style="{
-            backgroundImage: `url('${
-              iten?.cover_img || iten?.users?.[0].avatar
-            }')`,
-          }"
-        >
-          <div
-            v-if="iten?.cdn === 1"
-            class="cdn-ico"
-          >
-            <div class="txt">CDN</div>
-          </div>
-          <div class="txt">{{ iten?.users?.[0].username }}</div>
-        </div>
-        <div class="desc">{{ iten?.name }}</div>
-      </div>
-      <div
-        v-if="!liveRoomList.length"
-        class="null"
-      >
-        暂无数据
-      </div>
-    </div>
+      {{ item.name }}
+    </a>
   </div>
+  <router-view></router-view>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { onMounted, ref } from 'vue';
 
-import { fetchLiveRoomList } from '@/api/area';
-import { ILiveRoom, LiveTypeEnum } from '@/interface';
+import { fetchAreaList } from '@/api/area';
+import { IArea } from '@/interface';
 import router, { routerName } from '@/router';
 
-const liveRoomList = ref<ILiveRoom[]>([]);
+const areaList = ref<IArea[]>([]);
 
-const route = useRoute();
+function changeArea(item: IArea) {
+  router.push({ name: routerName.areaDetail, params: { id: item.id } });
+}
 
-const loading = ref(false);
-
-watch(
-  () => route.params.id,
-  (newVal) => {
-    if (!newVal) return;
-    getData();
+async function getAreaList() {
+  const res = await fetchAreaList();
+  if (res.code === 200) {
+    areaList.value = res.data.rows;
+    router.push({
+      name: routerName.areaDetail,
+      params: { id: areaList.value[0].id },
+    });
   }
-);
-
-function goRoom(item: ILiveRoom) {
-  if (!item.live) {
-    window.$message.info('该直播间没在直播~');
-    return;
-  }
-  router.push({
-    name: routerName.pull,
-    params: { roomId: item.id },
-    query: {
-      liveType: LiveTypeEnum.srsHlsPull,
-    },
-  });
 }
 
 onMounted(() => {
-  getData();
+  getAreaList();
 });
-
-async function getData() {
-  try {
-    loading.value = true;
-    const res = await fetchLiveRoomList({
-      id: Number(route.params.id),
-    });
-    if (res.code === 200) {
-      liveRoomList.value = res.data.rows;
-    }
-  } catch (error) {
-    console.log(error);
-  } finally {
-    loading.value = false;
-  }
-}
 </script>
 
 <style lang="scss" scoped>
-.area-wrap {
-  padding: 15px 20px;
-  .title {
-    margin-bottom: 10px;
-  }
-  .live-room-list {
+.area-list {
+  display: flex;
+  align-items: center;
+  padding: 10px 30px;
+  height: 30px;
+  .item {
+    position: relative;
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
-    .live-room {
-      display: inline-block;
-      margin-right: 25px;
-      margin-bottom: 12px;
-      width: 300px;
-      cursor: pointer;
-      .cover {
-        position: relative;
-        overflow: hidden;
-        width: 100%;
-        height: 150px;
-        border-radius: 8px;
-        background-position: center center;
-        background-size: cover;
-        .cdn-ico {
-          position: absolute;
-          right: -10px;
-          top: -10px;
-          background-color: #f87c48;
-          color: white;
-          z-index: 2;
-          height: 28px;
-          width: 70px;
-          transform-origin: bottom;
-          transform: rotate(45deg);
-          .txt {
-            margin-left: 18px;
-            font-size: 13px;
-            background-image: initial !important;
-          }
-        }
+    margin-right: 20px;
+    height: 100%;
+    color: black;
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
 
-        .txt {
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          box-sizing: border-box;
-          padding: 4px 8px;
-          width: 100%;
-          border-radius: 0 0 4px 4px;
-          background-image: linear-gradient(
-            -180deg,
-            rgba(0, 0, 0, 0),
-            rgba(0, 0, 0, 0.6)
-          );
-          color: white;
-          text-align: initial;
-          font-size: 13px;
-
-          @extend %singleEllipsis;
-        }
+    &.active {
+      &::after {
+        position: absolute;
+        top: calc(50% - 8px);
+        right: -5px;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background-color: $theme-color-gold;
+        content: '';
+        transition: all 0.1s ease;
+        transform: translateY(-100%);
       }
-      .desc {
-        margin-top: 4px;
-        font-size: 14px;
-
-        @extend %singleEllipsis;
-      }
+    }
+    &:hover {
+      color: $theme-color-gold;
     }
   }
 }

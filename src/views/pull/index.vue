@@ -187,12 +187,7 @@ import { useRoute } from 'vue-router';
 import { fetchGoodsList } from '@/api/goods';
 import { loginTip } from '@/hooks/use-login';
 import { usePull } from '@/hooks/use-pull';
-import {
-  DanmuMsgTypeEnum,
-  GoodsTypeEnum,
-  IGoods,
-  LiveTypeEnum,
-} from '@/interface';
+import { DanmuMsgTypeEnum, GoodsTypeEnum, IGoods } from '@/interface';
 import { useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
 import { NODE_ENV } from 'script/constant';
@@ -206,13 +201,11 @@ const giftGoodsList = ref<IGoods[]>([]);
 const height = ref(0);
 const giftLoading = ref(false);
 const showRecharge = ref(false);
-const showSidebar = ref(true);
 const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
 const danmuListRef = ref<HTMLDivElement>();
 const remoteVideoRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
-const queryLiveType = ref(route.query.liveType as LiveTypeEnum);
 const {
   initPull,
   closeWs,
@@ -228,9 +221,7 @@ const {
   danmuStr,
   liveRoomInfo,
   anchorInfo,
-} = usePull({
-  liveType: queryLiveType.value,
-});
+} = usePull();
 
 onUnmounted(() => {
   closeWs();
@@ -255,15 +246,6 @@ onMounted(() => {
     scrollTo(0, 0);
   }, 100);
   getGoodsList();
-  if (
-    [
-      LiveTypeEnum.srsHlsPull,
-      LiveTypeEnum.srsFlvPull,
-      LiveTypeEnum.srsWebrtcPull,
-    ].includes(route.query.liveType as LiveTypeEnum)
-  ) {
-    showSidebar.value = false;
-  }
   if (topRef.value && bottomRef.value && containerRef.value) {
     const res =
       bottomRef.value.getBoundingClientRect().top -

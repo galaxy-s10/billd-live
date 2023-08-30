@@ -9,8 +9,9 @@
       ></Avatar>
     </div>
     <div class="username">用户昵称：{{ userInfo?.username }}</div>
+    <br />
     <div class="pull-url">
-      <span>直播间：</span>
+      <span>直播间信息：</span>
       <span
         v-if="!userInfo?.live_rooms?.length"
         class="link"
@@ -21,19 +22,9 @@
       <div v-else>
         <div>直播间名字：{{ userInfo?.live_rooms?.[0].name }}</div>
         <div>
-          直播间地址1(webrtc开播时)：https://live.hsslive.cn/pull/<span>
-            {{ userInfo?.live_rooms?.[0].id }}?liveType=webrtcPull
-          </span>
-        </div>
-        <div>
-          直播间地址2(srs-webrtc开播时)：https://live.hsslive.cn/pull/<span>
-            {{ userInfo?.live_rooms?.[0].id }}?liveType=srsWebrtcPull
-          </span>
-        </div>
-        <div>
-          直播间地址3(srs-webrtc开播或obs推流时)：https://live.hsslive.cn/pull/<span>
-            {{ userInfo?.live_rooms?.[0].id }}?liveType=srsFlvPull
-          </span>
+          直播间地址：https://live.hsslive.cn/pull/{{
+            userInfo?.live_rooms?.[0].id
+          }}
         </div>
         <div
           v-loading="keyLoading"
@@ -75,7 +66,7 @@ import { useRouter } from 'vue-router';
 import { fetchUpdateLiveRoomKey } from '@/api/liveRoom';
 import { fetchUserInfo } from '@/api/user';
 import { loginTip } from '@/hooks/use-login';
-import { IUser, LiveRoomTypeEnum, LiveTypeEnum } from '@/interface';
+import { IUser, LiveRoomTypeEnum } from '@/interface';
 import { routerName } from '@/router';
 
 const newRtmpUrl = ref();
@@ -108,7 +99,7 @@ function openLiveRoom() {
   }
   const url = router.resolve({
     name: routerName.push,
-    query: { liveType: LiveTypeEnum.srsWebrtcPull },
+    query: { liveType: LiveRoomTypeEnum.user_srs },
   });
   openToTarget(url.href);
 }
