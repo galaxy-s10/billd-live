@@ -3,8 +3,18 @@
     <div class="content">
       <h1 class="title">私有化部署</h1>
       <div class="desc">
-        billd-live
-        允许个人用于学习/交流用途，如需用做商业，请提前联系并告知作者。
+        欢迎使用billd-live，在使用billd-live时，请遵循billd-live的
+        <span
+          class="link"
+          @click="
+            openToTarget(
+              'https://github.com/galaxy-s10/billd-live/blob/master/LICENSE'
+            )
+          "
+        >
+          开源协议
+        </span>
+        ，注明作者版权。
       </div>
       <div class="list">
         <div class="hr"></div>
@@ -42,7 +52,9 @@
   </div>
 </template>
 
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+import { openToTarget } from 'billd-utils';
+</script>
 
 <style lang="scss" scoped>
 .privatizationDeployment-wrap {
@@ -73,6 +85,7 @@
       color: $theme-color-gold;
       text-decoration: none;
       font-weight: 500;
+      cursor: pointer;
     }
     .list {
       h2 {
