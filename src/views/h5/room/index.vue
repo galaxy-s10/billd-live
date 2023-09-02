@@ -316,7 +316,7 @@ onMounted(() => {
       position: absolute;
       top: 50%;
       left: 50%;
-      z-index: 1;
+      z-index: 20;
       align-items: center;
       padding: 10px 20px;
       border: 2px solid rgba($color: papayawhip, $alpha: 0.5);

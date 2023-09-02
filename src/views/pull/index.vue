@@ -374,6 +374,10 @@ watch(
 
           inset: 0;
         }
+        .videoControls {
+          position: relative;
+          z-index: 20;
+        }
         .media-list {
           position: relative;
           :deep(video) {
