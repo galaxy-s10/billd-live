@@ -29,7 +29,7 @@
       <div
         class="cover"
         :style="{
-          backgroundImage: `url(${liveRoomInfo?.cover_img})`,
+          backgroundImage: `url(${appStore.liveRoomInfo?.cover_img})`,
         }"
       ></div>
       <div
@@ -44,7 +44,7 @@
         :class="{ item: appStore.allTrack.length > 1 }"
       ></div>
       <div
-        v-if="showPlayBtn && roomLiving"
+        v-if="showPlayBtn && roomLiving && appStore.liveRoomInfo"
         class="tip-btn"
         @click="startPull"
       >
@@ -136,7 +136,6 @@ const {
   damuList,
   danmuStr,
   roomLiving,
-  liveRoomInfo,
   anchorInfo,
   remoteVideo,
   closeRtc,
@@ -172,6 +171,7 @@ async function getLiveRoomInfo() {
     videoLoading.value = true;
     const res = await fetchFindLiveRoom(route.params.roomId as string);
     if (res.code === 200) {
+      appStore.setLiveRoomInfo(res.data);
       if (res.data.type === LiveRoomTypeEnum.user_wertc) {
         autoplayVal.value = true;
         showPlayBtn.value = false;
@@ -190,7 +190,7 @@ async function getLiveRoomInfo() {
 function startPull() {
   appStore.setMuted(false);
   showPlayBtn.value = false;
-  handlePlay();
+  handlePlay(appStore.liveRoomInfo!);
 }
 onUnmounted(() => {
   closeWs();
