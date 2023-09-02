@@ -138,6 +138,7 @@ export const useSrsWs = () => {
     receiver: string;
     videoEl?: HTMLVideoElement;
   }) {
+    console.log('handleStartLivehandleStartLive', receiver);
     networkStore.wsMap.get(roomId.value)?.send<WsStartLiveType['data']>({
       msgType: WsMsgTypeEnum.startLive,
       data: {
@@ -177,7 +178,11 @@ export const useSrsWs = () => {
     receiver: string;
     videoEl: HTMLVideoElement;
   }) {
-    console.warn('22开始new WebRTCClass', `${roomId.value}___${receiver!}`);
+    console.warn(
+      '22开始new WebRTCClass',
+      receiver,
+      `${roomId.value}___${receiver!}`
+    );
     new WebRTCClass({
       maxBitrate: currentMaxBitrate.value,
       maxFramerate: currentMaxFramerate.value,
@@ -278,7 +283,9 @@ export const useSrsWs = () => {
       (data: WsRoomLivingType['data']) => {
         prettierReceiveWsMsg(WsMsgTypeEnum.roomLiving, data);
         roomLiving.value = true;
-        anchorSocketId.value = data.anchor_socket_id;
+        if (data.anchor_socket_id) {
+          anchorSocketId.value = data.anchor_socket_id;
+        }
       }
     );
 

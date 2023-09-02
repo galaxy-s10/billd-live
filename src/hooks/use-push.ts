@@ -298,6 +298,7 @@ export function usePush() {
   }
 
   async function startLive({ type, receiver }) {
+    console.log('startLive');
     if (!loginTip()) return;
     const flag = await userHasLiveRoom();
     if (!flag) {

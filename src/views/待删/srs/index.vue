@@ -272,13 +272,12 @@ import {
   ref,
   watch,
 } from 'vue';
-import { useRoute } from 'vue-router';
 import * as workerTimers from 'worker-timers';
 
 import { mediaTypeEnumMap } from '@/constant';
 import { usePush } from '@/hooks/use-push';
 import { useRTCParams } from '@/hooks/use-rtc-params';
-import { DanmuMsgTypeEnum, MediaTypeEnum } from '@/interface';
+import { DanmuMsgTypeEnum, LiveRoomTypeEnum, MediaTypeEnum } from '@/interface';
 import { AppRootState, useAppStore } from '@/store/app';
 import { useResourceCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
@@ -292,11 +291,10 @@ import {
 } from '@/utils';
 import { NODE_ENV } from 'script/constant';
 
-import MediaModalCpt from './mediaModal/index.vue';
-import OpenMicophoneTipCpt from './openMicophoneTip/index.vue';
-import SelectMediaModalCpt from './selectMediaModal/index.vue';
+import MediaModalCpt from '../mediaModal/index.vue';
+import OpenMicophoneTipCpt from '../openMicophoneTip/index.vue';
+import SelectMediaModalCpt from '../selectMediaModal/index.vue';
 
-const route = useRoute();
 const userStore = useUserStore();
 const appStore = useAppStore();
 const resourceCacheStore = useResourceCacheStore();
@@ -347,7 +345,6 @@ const wrapSize = reactive({
 });
 const workerTimerId = ref(-1);
 const bodyAppendChildElArr = ref<HTMLElement[]>([]);
-const liveType = Number(route.query.liveType);
 
 watch(
   () => damuList.value.length,
@@ -476,7 +473,7 @@ function handleMixedAudio() {
 function handleStartLive() {
   handleMixedAudio();
   lastCoverImg.value = generateBase64(pushCanvasRef.value!);
-  startLive({ type: liveType, receiver: mySocketId.value });
+  startLive({ type: LiveRoomTypeEnum.user_srs, receiver: mySocketId });
 }
 
 function handleScale({ width, height }: { width: number; height: number }) {
