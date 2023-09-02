@@ -838,8 +838,12 @@ async function handleCache() {
         );
         handleMoving({ canvasDom, id: obj.id });
         handleScaling({ canvasDom, id: obj.id });
-        // fabric.Text类型不能除以分辨率
-        canvasDom.scale(item.scaleInfo?.scaleX || 1);
+        if (window.devicePixelRatio !== 1) {
+          // fabric.Text类型不能除以分辨率
+          canvasDom.scale(
+            (item.scaleInfo?.scaleX || 1) / window.devicePixelRatio
+          );
+        }
         fabricCanvas.value.add(canvasDom);
         obj.canvasDom = canvasDom;
       }
@@ -857,8 +861,12 @@ async function handleCache() {
         timeCanvasDom.value.push(canvasDom);
         handleMoving({ canvasDom, id: obj.id });
         handleScaling({ canvasDom, id: obj.id });
-        // fabric.Text类型不能除以分辨率
-        canvasDom.scale(item.scaleInfo?.scaleX || 1);
+        if (window.devicePixelRatio !== 1) {
+          // fabric.Text类型不能除以分辨率
+          canvasDom.scale(
+            (item.scaleInfo?.scaleX || 1) / window.devicePixelRatio
+          );
+        }
         fabricCanvas.value.add(canvasDom);
         obj.canvasDom = canvasDom;
       }
@@ -876,8 +884,11 @@ async function handleCache() {
         stopwatchCanvasDom.value.push(canvasDom);
         handleMoving({ canvasDom, id: obj.id });
         handleScaling({ canvasDom, id: obj.id });
-        // fabric.Text类型不能除以分辨率
-        canvasDom.scale(item.scaleInfo?.scaleX || 1);
+        if (window.devicePixelRatio !== 1) {
+          // fabric.Text类型不能除以分辨率
+          canvasDom.scale(item.scaleInfo?.scaleX || 1);
+          console.log(item.scaleInfo?.scaleX, '4423341');
+        }
         fabricCanvas.value.add(canvasDom);
         obj.canvasDom = canvasDom;
       }
@@ -1061,7 +1072,12 @@ async function addMediaOk(val: {
       handleMoving({ canvasDom, id: txtTrack.id });
       handleScaling({ canvasDom, id: txtTrack.id });
       txtTrack.txtInfo = val.txtInfo;
-      txtTrack.scaleInfo = { scaleX: 1, scaleY: 1 };
+      let ratio = 1;
+      if (window.devicePixelRatio !== 1) {
+        ratio = 1 / window.devicePixelRatio;
+        txtTrack.scaleInfo = { scaleX: 1, scaleY: 1 };
+      }
+      canvasDom.scale(ratio);
       // @ts-ignore
       txtTrack.canvasDom = canvasDom;
       fabricCanvas.value.add(canvasDom);
@@ -1098,12 +1114,16 @@ async function addMediaOk(val: {
           fill: val.timeInfo?.color,
         })
       );
-      timeCanvasDom.value.push(canvasDom);
       handleMoving({ canvasDom, id: timeTrack.id });
       handleScaling({ canvasDom, id: timeTrack.id });
       timeTrack.timeInfo = val.timeInfo;
-      timeTrack.scaleInfo = { scaleX: 1, scaleY: 1 };
-
+      let ratio = 1;
+      if (window.devicePixelRatio !== 1) {
+        ratio = 1 / window.devicePixelRatio;
+        timeTrack.scaleInfo = { scaleX: 1, scaleY: 1 };
+      }
+      canvasDom.scale(ratio);
+      timeCanvasDom.value.push(canvasDom);
       // @ts-ignore
       timeTrack.canvasDom = canvasDom;
       fabricCanvas.value.add(canvasDom);
@@ -1141,10 +1161,16 @@ async function addMediaOk(val: {
           // editable: true,
         })
       );
-      stopwatchCanvasDom.value.push(canvasDom);
       handleMoving({ canvasDom, id: stopwatchTrack.id });
       handleScaling({ canvasDom, id: stopwatchTrack.id });
       stopwatchTrack.stopwatchInfo = val.stopwatchInfo;
+      let ratio = 1;
+      if (window.devicePixelRatio !== 1) {
+        ratio = 1 / window.devicePixelRatio;
+        stopwatchTrack.scaleInfo = { scaleX: 1, scaleY: 1 };
+      }
+      canvasDom.scale(ratio);
+      stopwatchCanvasDom.value.push(canvasDom);
       // @ts-ignore
       stopwatchTrack.canvasDom = canvasDom;
       fabricCanvas.value.add(canvasDom);

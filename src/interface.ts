@@ -1,5 +1,11 @@
 // 这里放项目里面的类型
 
+export enum LiveLineEnum {
+  rtc = 'rtc',
+  hls = 'hls',
+  flv = 'flv',
+}
+
 export enum PayStatusEnum {
   error = 'error',
   WAIT_BUYER_PAY = 'WAIT_BUYER_PAY',
@@ -177,20 +183,12 @@ export interface IUserLiveRoom {
   deleted_at?: string;
 }
 
-export enum LiveTypeEnum {
-  srsFlvPull = 'srsFlvPull',
-  srsHlsPull = 'srsHlsPull',
-
-  srsPush = 'srsPush',
-  webrtcPush = 'webrtcPush',
-}
-
 /** 直播间类型 */
 export enum LiveRoomTypeEnum {
   system, // 系统直播
-  user_wertc, // 主播使用webrtc直播（用户只能看webrtc直播）
-  user_srs, // 主播使用srs直播（用户可以看webrtc或flv直播）
-  user_obs, // 主播使用obs/ffmpeg直播（用户只能看flv直播）
+  user_wertc, // 主播使用webrtc直播
+  user_srs, // 主播使用srs直播
+  user_obs, // 主播使用obs/ffmpeg直播
 }
 
 export interface BilldHtmlWebpackPluginLog {

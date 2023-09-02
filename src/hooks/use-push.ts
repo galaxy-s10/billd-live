@@ -50,7 +50,7 @@ export function usePush() {
   watch(
     () => appStore.allTrack,
     (newTrack, oldTrack) => {
-      console.log('appStore.allTrack变了', newTrack, oldTrack);
+      console.log('appStore.allTrack变了');
       const mixedStream = new MediaStream();
       newTrack.forEach((item) => {
         if (item.track) {

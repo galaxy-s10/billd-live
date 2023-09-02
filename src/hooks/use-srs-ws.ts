@@ -6,7 +6,6 @@ import { WEBSOCKET_URL } from '@/constant';
 import {
   DanmuMsgTypeEnum,
   IDanmu,
-  ILiveRoom,
   ILiveUser,
   IUser,
   LiveRoomTypeEnum,
@@ -52,8 +51,8 @@ export const useSrsWs = () => {
   const isPull = ref(false);
   const roomLiving = ref(false);
   const isAnchor = ref(false);
-  const liveRoomInfo = ref<ILiveRoom>();
   const anchorInfo = ref<IUser>();
+  const anchorSocketId = ref('');
   const canvasVideoStream = ref<MediaStream>();
   const lastCoverImg = ref('');
   const currentMaxBitrate = ref(maxBitrate.value[2].value);
@@ -274,10 +273,14 @@ export const useSrsWs = () => {
     });
 
     // 主播正在直播
-    ws.socketIo.on(WsMsgTypeEnum.roomLiving, (data: WsRoomLivingType) => {
-      prettierReceiveWsMsg(WsMsgTypeEnum.roomLiving, data);
-      roomLiving.value = true;
-    });
+    ws.socketIo.on(
+      WsMsgTypeEnum.roomLiving,
+      (data: WsRoomLivingType['data']) => {
+        prettierReceiveWsMsg(WsMsgTypeEnum.roomLiving, data);
+        roomLiving.value = true;
+        anchorSocketId.value = data.anchor_socket_id;
+      }
+    );
 
     // 主播不在直播
     ws.socketIo.on(WsMsgTypeEnum.roomNoLive, (data) => {
@@ -318,7 +321,7 @@ export const useSrsWs = () => {
         id: data.socket_id,
         userInfo: data.user_info,
       });
-      liveRoomInfo.value = data.live_room;
+      appStore.setLiveRoomInfo(data.live_room);
       anchorInfo.value = data.anchor_info;
       ws.send<WsGetLiveUserType['data']>({
         msgType: WsMsgTypeEnum.getLiveUser,
@@ -401,6 +404,9 @@ export const useSrsWs = () => {
     // 用户离开房间完成
     ws.socketIo.on(WsMsgTypeEnum.leaved, (data: WsLeavedType['data']) => {
       prettierReceiveWsMsg(WsMsgTypeEnum.leaved, data);
+      if (anchorSocketId.value === data.socket_id) {
+        roomLiving.value = false;
+      }
       networkStore.rtcMap
         .get(`${roomId.value}___${data.socket_id as string}`)
         ?.close();
@@ -452,7 +458,6 @@ export const useSrsWs = () => {
     canvasVideoStream,
     lastCoverImg,
     roomLiving,
-    liveRoomInfo,
     anchorInfo,
     liveUserList,
     damuList,

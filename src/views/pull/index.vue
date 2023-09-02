@@ -15,7 +15,7 @@
           <div class="detail">
             <div class="top">{{ anchorInfo?.username }}</div>
             <div class="bottom">
-              <span>{{ liveRoomInfo?.name }}</span>
+              <span>{{ appStore.liveRoomInfo?.name }}</span>
               <span v-if="NODE_ENV === 'development'">
                 socketId:{{ mySocketId }}
               </span>
@@ -43,7 +43,7 @@
             class="cover"
             :style="{
               backgroundImage: `url(${
-                liveRoomInfo?.cover_img || anchorInfo?.avatar
+                appStore.liveRoomInfo?.cover_img || anchorInfo?.avatar
               })`,
             }"
           ></div>
@@ -182,7 +182,6 @@
 
 <script lang="ts" setup>
 import { onMounted, onUnmounted, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
 
 import { fetchGoodsList } from '@/api/goods';
 import { loginTip } from '@/hooks/use-login';
@@ -194,7 +193,6 @@ import { NODE_ENV } from 'script/constant';
 
 import RechargeCpt from './recharge/index.vue';
 
-const route = useRoute();
 const userStore = useUserStore();
 const appStore = useAppStore();
 const giftGoodsList = ref<IGoods[]>([]);
@@ -219,7 +217,6 @@ const {
   damuList,
   liveUserList,
   danmuStr,
-  liveRoomInfo,
   anchorInfo,
 } = usePull();
 

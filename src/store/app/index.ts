@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 
-import { MediaTypeEnum } from '@/interface';
+import { ILiveRoom, LiveLineEnum, MediaTypeEnum } from '@/interface';
 import { mobileRouterName } from '@/router';
 
 export type AppRootState = {
@@ -27,8 +27,10 @@ export type AppRootState = {
     timeInfo?: { color: string };
     stopwatchInfo?: { color: string };
     rect?: { top: number; left: number };
-    scaleInfo?: { scaleX: number; scaleY: number };
+    scaleInfo: Record<number, { scaleX: number; scaleY: number }>;
   }[];
+  liveLine: LiveLineEnum;
+  liveRoomInfo?: ILiveRoom;
 };
 
 export const useAppStore = defineStore('app', {
@@ -42,9 +44,17 @@ export const useAppStore = defineStore('app', {
         { routeName: mobileRouterName.h5Profile, name: '我的' },
       ],
       allTrack: [],
+      liveLine: LiveLineEnum.hls,
+      liveRoomInfo: undefined,
     };
   },
   actions: {
+    setLiveRoomInfo(res: AppRootState['liveRoomInfo']) {
+      this.liveRoomInfo = res;
+    },
+    setLiveLine(res: AppRootState['liveLine']) {
+      this.liveLine = res;
+    },
     setMuted(res: AppRootState['muted']) {
       this.muted = res;
     },

@@ -6,7 +6,9 @@ import { useSrsWs } from '@/hooks/use-srs-ws';
 import {
   DanmuMsgTypeEnum,
   IDanmu,
+  ILiveRoom,
   IMessage,
+  LiveLineEnum,
   LiveRoomTypeEnum,
 } from '@/interface';
 import { WsMsgTypeEnum } from '@/network/webSocket';
@@ -39,7 +41,6 @@ export function usePull() {
     mySocketId,
     initSrsWs,
     roomLiving,
-    liveRoomInfo,
     anchorInfo,
     liveUserList,
     damuList,
@@ -77,6 +78,7 @@ export function usePull() {
     console.log('handleHlsPlay', url);
     handleStopDrawing();
     videoLoading.value = true;
+    appStore.setLiveLine(LiveLineEnum.hls);
     startHlsPlay({
       hlsurl: url || hlsurl.value,
     });
@@ -97,17 +99,31 @@ export function usePull() {
     console.log('handleFlvPlay');
     handleStopDrawing();
     videoLoading.value = true;
+    appStore.setLiveLine(LiveLineEnum.flv);
     startFlvPlay({
       flvurl: flvurl.value,
     });
   }
 
-  async function handlePlay() {
+  function handlePlay(data: ILiveRoom) {
     console.warn('handlePlay');
-    if (liveRoomInfo.value?.type !== LiveRoomTypeEnum.user_wertc) {
-      if (!autoplayVal.value) return;
-      // await handleFlvPlay();
-      await handleHlsPlay();
+    roomLiving.value = true;
+    appStore.setLiveRoomInfo(data);
+    flvurl.value = data.flv_url!;
+    hlsurl.value = data.hls_url!;
+    switch (data.type) {
+      case LiveRoomTypeEnum.user_srs:
+        handleHlsPlay(data.hls_url);
+        break;
+      case LiveRoomTypeEnum.user_obs:
+        handleHlsPlay(data.hls_url);
+        break;
+      case LiveRoomTypeEnum.system:
+        handleHlsPlay(data.hls_url);
+        break;
+      case LiveRoomTypeEnum.user_wertc:
+        appStore.setLiveLine(LiveLineEnum.rtc);
+        break;
     }
   }
 
@@ -115,10 +131,8 @@ export function usePull() {
     () => roomLiving.value,
     (val) => {
       if (val) {
-        if (liveRoomInfo.value?.type !== LiveRoomTypeEnum.user_wertc) {
-          flvurl.value = liveRoomInfo.value?.flv_url!;
-          hlsurl.value = liveRoomInfo.value?.hls_url!;
-          handlePlay();
+        if (appStore.liveRoomInfo?.type !== LiveRoomTypeEnum.user_wertc) {
+          handlePlay(appStore.liveRoomInfo!);
         }
       } else {
         closeRtc();
@@ -127,6 +141,25 @@ export function usePull() {
     }
   );
 
+  watch(
+    () => appStore.liveLine,
+    (newVal) => {
+      console.log('liveLine变了', newVal);
+      if (!roomLiving.value) {
+        return;
+      }
+      switch (newVal) {
+        case LiveLineEnum.flv:
+          handleFlvPlay();
+          break;
+        case LiveLineEnum.hls:
+          handleHlsPlay();
+          break;
+        case LiveLineEnum.rtc:
+          break;
+      }
+    }
+  );
   watch(
     () => appStore.muted,
     (newVal) => {
@@ -140,7 +173,7 @@ export function usePull() {
   watch(
     () => networkStore.rtcMap,
     (newVal) => {
-      if (liveRoomInfo.value?.type === LiveRoomTypeEnum.user_wertc) {
+      if (appStore.liveRoomInfo?.type === LiveRoomTypeEnum.user_wertc) {
         newVal.forEach((item) => {
           videoLoading.value = false;
           const { canvas } = videoToCanvas({
@@ -164,7 +197,7 @@ export function usePull() {
         console.log('localStream变了');
         console.log('音频轨：', val?.getAudioTracks());
         console.log('视频轨：', val?.getVideoTracks());
-        if (liveRoomInfo.value?.type === LiveRoomTypeEnum.user_wertc) {
+        if (appStore.liveRoomInfo?.type === LiveRoomTypeEnum.user_wertc) {
           videoElArr.value.forEach((dom) => {
             dom.remove();
           });
@@ -299,6 +332,7 @@ export function usePull() {
   }
 
   return {
+    handlePlay,
     handleStopDrawing,
     initPull,
     closeWs,
@@ -307,8 +341,6 @@ export function usePull() {
     keydownDanmu,
     sendDanmu,
     addVideo,
-    handleHlsPlay,
-    handleFlvPlay,
     remoteVideo,
     roomLiving,
     autoplayVal,
@@ -317,7 +349,6 @@ export function usePull() {
     liveUserList,
     sidebarList,
     danmuStr,
-    liveRoomInfo,
     anchorInfo,
   };
 }

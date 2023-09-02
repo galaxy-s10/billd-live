@@ -178,20 +178,9 @@ npm run build
 
 [https://live.hsslive.cn/sponsors](https://live.hsslive.cn/sponsors)
 
-## 交流
+## 微信群
 
-如果你对该项目感兴趣或有想法，欢迎进群或添加我的微信：
-
-<div>
-  <img
-    src="https://resource.hsslive.cn/image/c582d500f460939a97882ce503f8b6b3.png" 
-    style="height:300px"
-    />
-  <img
-    src="https://resource.hsslive.cn/image/57c5b5598736e6e4f7e406ae503120f8.webp" 
-    style="height:300px"
-    />
-</div>
+详情：[https://live.hsslive.cn/about/group](https://live.hsslive.cn/about/group)
 
 ## 环境配置
 

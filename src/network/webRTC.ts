@@ -112,6 +112,7 @@ export class WebRTCClass {
           mediaName: '',
           streamid: stream.id,
           trackid: track.id,
+          scaleInfo: {},
         });
       }
     });
@@ -127,6 +128,7 @@ export class WebRTCClass {
           mediaName: '',
           streamid: stream.id,
           trackid: track.id,
+          scaleInfo: {},
         });
       }
     });
@@ -142,6 +144,7 @@ export class WebRTCClass {
           mediaName: '',
           streamid: stream.id,
           trackid: track.id,
+          scaleInfo: {},
         });
       }
     });
@@ -157,6 +160,7 @@ export class WebRTCClass {
           mediaName: '',
           streamid: stream.id,
           trackid: track.id,
+          scaleInfo: {},
         });
       }
     });

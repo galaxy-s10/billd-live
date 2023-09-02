@@ -227,10 +227,11 @@ export function videoToCanvas(data: { videoEl: HTMLVideoElement }) {
   let timer;
   let w = videoEl.videoWidth;
   let h = videoEl.videoHeight;
-  videoEl.addEventListener('resize', () => {
+  function handleResize() {
     w = videoEl.videoWidth;
     h = videoEl.videoHeight;
-  });
+  }
+  videoEl.addEventListener('resize', handleResize);
   function drawCanvas() {
     canvas.width = w;
     canvas.height = h;
@@ -239,10 +240,11 @@ export function videoToCanvas(data: { videoEl: HTMLVideoElement }) {
   }
 
   function stopDrawing() {
+    videoEl.removeEventListener('resize', handleResize);
     cancelAnimationFrame(timer);
   }
 
   drawCanvas();
 
-  return { drawCanvas, stopDrawing, canvas, videoEl };
+  return { drawCanvas, stopDrawing, canvas };
 }

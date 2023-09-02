@@ -1,16 +1,14 @@
 <template>
-  <div class="area-list">
-    <a
+  <div class="tab-list">
+    <div
       v-for="(item, index) in areaList"
       :key="index"
-      class="item"
-      :class="{
-        active: router.currentRoute.value.name === routerName.ad,
-      }"
+      class="tab"
+      :class="{ active: router.currentRoute.value.params.id === item.id + '' }"
       @click.prevent="changeArea(item)"
     >
       {{ item.name }}
-    </a>
+    </div>
   </div>
   <router-view></router-view>
 </template>
@@ -45,38 +43,34 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.area-list {
+.tab-list {
   display: flex;
   align-items: center;
-  padding: 10px 30px;
-  height: 30px;
-  .item {
-    position: relative;
-    display: flex;
-    align-items: center;
-    margin-right: 20px;
-    height: 100%;
-    color: black;
-    text-decoration: none;
-    font-size: 14px;
-    cursor: pointer;
+  margin-bottom: 20px;
+  height: 40px;
+  font-size: 14px;
+  padding: 0 30px;
 
+  user-select: none;
+  .tab {
+    position: relative;
+    margin-right: 20px;
+    cursor: pointer;
     &.active {
+      color: $theme-color-gold;
+      font-size: 16px;
+
       &::after {
         position: absolute;
-        top: calc(50% - 8px);
-        right: -5px;
-        width: 5px;
-        height: 5px;
-        border-radius: 50%;
+        bottom: -6px;
+        left: 50%;
+        width: 20px;
+        height: 2px;
+        border-radius: 10px;
         background-color: $theme-color-gold;
         content: '';
-        transition: all 0.1s ease;
-        transform: translateY(-100%);
+        transform: translateX(-50%);
       }
-    }
-    &:hover {
-      color: $theme-color-gold;
     }
   }
 }

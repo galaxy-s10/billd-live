@@ -27,6 +27,7 @@ export type WSGetRoomAllUserType = IWsFormat<{
 
 export type WsRoomLivingType = IWsFormat<{
   live_room: ILiveRoom;
+  anchor_socket_id: string;
 }>;
 
 export type WsGetLiveUserType = IWsFormat<{

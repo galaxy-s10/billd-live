@@ -674,14 +674,56 @@ function initCanvas() {
   changeCanvasStyle();
 }
 
+/**
+ * 1: {scaleX: 1, scaleY: 1}
+ * 2: {scaleX: 0.5, scaleY: 0.5}
+ * 3: {scaleX: 0.3333333333333333, scaleY: 0.3333333333333333}
+ * 4: {scaleX: 0.25, scaleY: 0.25}
+ */
+
+/**
+ * 二倍屏即1px里面有2个像素；三倍屏1px里面有3个像素，以此类推
+ * 一个图片，宽高都是100px
+ * 一倍屏展示：100px等于100个像素，一比一展示
+ * 二倍屏展示：100px等于100个像素，二比一展示，即在二倍屏的100px看起来会比一倍屏的100px小一倍
+ * 如果需要在一杯和二倍屏幕的时候看的大小都一样：
+ * 1，在二倍屏的时候，需要将100px放大一倍，即200px；
+ * 2，在一倍屏的时候，需要将100px缩小一百，即50px；
+ */
 function handleScaling({ canvasDom, id }) {
   canvasDom.on('scaling', () => {
     appStore.allTrack.forEach((item) => {
       if (id === item.id) {
-        item.scaleInfo = {
+        item.scaleInfo[window.devicePixelRatio] = {
           scaleX: canvasDom.scaleX || 1,
           scaleY: canvasDom.scaleY || 1,
         };
+        Object.keys(item.scaleInfo).forEach((iten) => {
+          if (window.devicePixelRatio !== Number(iten)) {
+            if (window.devicePixelRatio > Number(iten)) {
+              item.scaleInfo[iten] = {
+                scaleX:
+                  item.scaleInfo[window.devicePixelRatio].scaleX *
+                  window.devicePixelRatio,
+                scaleY:
+                  item.scaleInfo[window.devicePixelRatio].scaleY *
+                  window.devicePixelRatio,
+              };
+            } else {
+              if (window.devicePixelRatio === 1) {
+                item.scaleInfo[iten] = {
+                  scaleX: item.scaleInfo[1].scaleX / Number(iten),
+                  scaleY: item.scaleInfo[1].scaleY / Number(iten),
+                };
+              } else {
+                item.scaleInfo[iten] = {
+                  scaleX: item.scaleInfo[1].scaleX * Number(iten),
+                  scaleY: item.scaleInfo[1].scaleY * Number(iten),
+                };
+              }
+            }
+          }
+        });
       }
     });
     resourceCacheStore.setList(appStore.allTrack);
@@ -762,7 +804,7 @@ async function handleCache() {
             handleMoving({ canvasDom, id: item.id });
             handleScaling({ canvasDom, id: item.id });
             canvasDom.scale(
-              (item.scaleInfo?.scaleX || 1) / window.devicePixelRatio
+              item.scaleInfo[window.devicePixelRatio].scaleX || 1
             );
             fabricCanvas.value!.add(canvasDom);
             obj.videoEl = videoEl;
@@ -813,9 +855,7 @@ async function handleCache() {
           );
           handleMoving({ canvasDom, id: obj.id });
           handleScaling({ canvasDom, id: obj.id });
-          canvasDom.scale(
-            (item.scaleInfo?.scaleX || 1) / window.devicePixelRatio
-          );
+          canvasDom.scale(item.scaleInfo[window.devicePixelRatio].scaleX || 1);
           fabricCanvas.value.add(canvasDom);
           obj.canvasDom = canvasDom;
         }
@@ -841,7 +881,7 @@ async function handleCache() {
         handleMoving({ canvasDom, id: obj.id });
         handleScaling({ canvasDom, id: obj.id });
         // fabric.Text类型不能除以分辨率
-        canvasDom.scale(item.scaleInfo?.scaleX || 1);
+        canvasDom.scale(item.scaleInfo[window.devicePixelRatio].scaleX);
         fabricCanvas.value.add(canvasDom);
         obj.canvasDom = canvasDom;
       }
@@ -860,7 +900,7 @@ async function handleCache() {
         handleMoving({ canvasDom, id: obj.id });
         handleScaling({ canvasDom, id: obj.id });
         // fabric.Text类型不能除以分辨率
-        canvasDom.scale(item.scaleInfo?.scaleX || 1);
+        canvasDom.scale(item.scaleInfo[window.devicePixelRatio].scaleX);
         fabricCanvas.value.add(canvasDom);
         obj.canvasDom = canvasDom;
       }
@@ -879,7 +919,7 @@ async function handleCache() {
         handleMoving({ canvasDom, id: obj.id });
         handleScaling({ canvasDom, id: obj.id });
         // fabric.Text类型不能除以分辨率
-        canvasDom.scale(item.scaleInfo?.scaleX || 1);
+        canvasDom.scale(item.scaleInfo[window.devicePixelRatio].scaleX);
         fabricCanvas.value.add(canvasDom);
         obj.canvasDom = canvasDom;
       }
@@ -895,6 +935,23 @@ function selectMediaOk(val: MediaTypeEnum) {
   showMediaModalCpt.value = true;
   showSelectMediaModalCpt.value = false;
   currentMediaType.value = val;
+}
+
+function setScaleInfo({ track, canvasDom }) {
+  [1, 2, 3, 4].forEach((devicePixelRatio) => {
+    track.scaleInfo[devicePixelRatio] = {
+      scaleX: 1 / devicePixelRatio,
+      scaleY: 1 / devicePixelRatio,
+    };
+  });
+  if (window.devicePixelRatio !== 1) {
+    const ratio = 1 / window.devicePixelRatio;
+    canvasDom.scale(ratio);
+    track.scaleInfo[window.devicePixelRatio] = {
+      scaleX: ratio,
+      scaleY: ratio,
+    };
+  }
 }
 
 async function addMediaOk(val: {
@@ -932,13 +989,14 @@ async function addMediaOk(val: {
       streamid: event.id,
       hidden: false,
       muted: false,
+      scaleInfo: {},
     };
 
     const { canvasDom, videoEl, scale } = await autoCreateVideo({
       stream: event,
       id: videoTrack.id,
     });
-    videoTrack.scaleInfo = { scaleX: scale, scaleY: scale };
+    setScaleInfo({ canvasDom, track: videoTrack });
     videoTrack.videoEl = videoEl;
     // @ts-ignore
     videoTrack.canvasDom = canvasDom;
@@ -958,6 +1016,7 @@ async function addMediaOk(val: {
         streamid: event.id,
         hidden: true,
         muted: false,
+        scaleInfo: {},
       };
       const res = [...appStore.allTrack, videoTrack, audioTrack];
       appStore.setAllTrack(res);
@@ -995,12 +1054,13 @@ async function addMediaOk(val: {
       streamid: event.id,
       hidden: false,
       muted: false,
+      scaleInfo: {},
     };
     const { canvasDom, videoEl, scale } = await autoCreateVideo({
       stream: event,
       id: videoTrack.id,
     });
-    videoTrack.scaleInfo = { scaleX: scale, scaleY: scale };
+    setScaleInfo({ canvasDom, track: videoTrack });
     videoTrack.videoEl = videoEl;
     // @ts-ignore
     videoTrack.canvasDom = canvasDom;
@@ -1028,6 +1088,7 @@ async function addMediaOk(val: {
       streamid: event.id,
       hidden: false,
       muted: false,
+      scaleInfo: {},
     };
     const res = [...appStore.allTrack, audioTrack];
     appStore.setAllTrack(res);
@@ -1050,6 +1111,7 @@ async function addMediaOk(val: {
       streamid: undefined,
       hidden: false,
       muted: false,
+      scaleInfo: {},
     };
     if (fabricCanvas.value) {
       console.log('val.txtInfo?.txt ', val.txtInfo?.txt);
@@ -1063,7 +1125,16 @@ async function addMediaOk(val: {
       handleMoving({ canvasDom, id: txtTrack.id });
       handleScaling({ canvasDom, id: txtTrack.id });
       txtTrack.txtInfo = val.txtInfo;
-      txtTrack.scaleInfo = { scaleX: 1, scaleY: 1 };
+      if (window.devicePixelRatio !== 1) {
+        const ratio = 1 / window.devicePixelRatio;
+        canvasDom.scale(ratio);
+        txtTrack.scaleInfo[window.devicePixelRatio] = {
+          scaleX: ratio,
+          scaleY: ratio,
+        };
+      } else {
+        txtTrack.scaleInfo[window.devicePixelRatio] = { scaleX: 1, scaleY: 1 };
+      }
       // @ts-ignore
       txtTrack.canvasDom = canvasDom;
       fabricCanvas.value.add(canvasDom);
@@ -1091,6 +1162,7 @@ async function addMediaOk(val: {
       streamid: undefined,
       hidden: false,
       muted: false,
+      scaleInfo: {},
     };
     if (fabricCanvas.value) {
       const canvasDom = markRaw(
@@ -1100,12 +1172,11 @@ async function addMediaOk(val: {
           fill: val.timeInfo?.color,
         })
       );
+      setScaleInfo({ canvasDom, track: timeTrack });
       timeCanvasDom.value.push(canvasDom);
       handleMoving({ canvasDom, id: timeTrack.id });
       handleScaling({ canvasDom, id: timeTrack.id });
       timeTrack.timeInfo = val.timeInfo;
-      timeTrack.scaleInfo = { scaleX: 1, scaleY: 1 };
-
       // @ts-ignore
       timeTrack.canvasDom = canvasDom;
       fabricCanvas.value.add(canvasDom);
@@ -1133,6 +1204,7 @@ async function addMediaOk(val: {
       streamid: undefined,
       hidden: false,
       muted: false,
+      scaleInfo: {},
     };
     if (fabricCanvas.value) {
       const canvasDom = markRaw(
@@ -1143,6 +1215,7 @@ async function addMediaOk(val: {
           // editable: true,
         })
       );
+      setScaleInfo({ canvasDom, track: stopwatchTrack });
       stopwatchCanvasDom.value.push(canvasDom);
       handleMoving({ canvasDom, id: stopwatchTrack.id });
       handleScaling({ canvasDom, id: stopwatchTrack.id });
@@ -1174,6 +1247,7 @@ async function addMediaOk(val: {
       streamid: undefined,
       hidden: false,
       muted: false,
+      scaleInfo: {},
     };
 
     if (fabricCanvas.value) {
@@ -1207,13 +1281,12 @@ async function addMediaOk(val: {
           height: imgEl.height,
         })
       );
+      const ratio = handleScale({ width: imgEl.width, height: imgEl.height });
+      setScaleInfo({ canvasDom, track: imgTrack });
       handleMoving({ canvasDom, id: imgTrack.id });
       handleScaling({ canvasDom, id: imgTrack.id });
-      const ratio = handleScale({ width: imgEl.width, height: imgEl.height });
       // @ts-ignore
       imgTrack.canvasDom = canvasDom;
-      imgTrack.scaleInfo = { scaleX: ratio, scaleY: ratio };
-      canvasDom.scale(ratio / window.devicePixelRatio);
       fabricCanvas.value.add(canvasDom);
     }
 
@@ -1239,6 +1312,7 @@ async function addMediaOk(val: {
       streamid: undefined,
       hidden: false,
       muted: false,
+      scaleInfo: {},
     };
     if (fabricCanvas.value) {
       if (!val.mediaInfo) return;
@@ -1261,7 +1335,7 @@ async function addMediaOk(val: {
         stream,
         id: mediaVideoTrack.id,
       });
-      mediaVideoTrack.scaleInfo = { scaleX: scale, scaleY: scale };
+      setScaleInfo({ canvasDom, track: mediaVideoTrack });
       mediaVideoTrack.videoEl = videoEl;
       // @ts-ignore
       mediaVideoTrack.canvasDom = canvasDom;
@@ -1280,6 +1354,7 @@ async function addMediaOk(val: {
           streamid: stream.id,
           hidden: true,
           muted: false,
+          scaleInfo: {},
         };
         // @ts-ignore
         const res = [...appStore.allTrack, audioTrack];
@@ -1302,7 +1377,6 @@ async function addMediaOk(val: {
 
     console.log('获取视频成功', fabricCanvas.value);
   }
-
   // canvasVideoStream.value = pushCanvasRef.value!.captureStream();
 }
 

@@ -135,7 +135,7 @@ function startPay(item: IGoods) {
 
 <style lang="scss" scoped>
 .shop-wrap {
-  padding: 10px 30px;
+  padding: 0 30px;
   .tab-list {
     display: flex;
     align-items: center;

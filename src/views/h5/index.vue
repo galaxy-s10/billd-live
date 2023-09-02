@@ -64,7 +64,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 
 import { fetchAreaLiveRoomList } from '@/api/area';
 import { IArea, IAreaLiveRoom } from '@/interface';
@@ -77,7 +77,7 @@ const swiperList = ref([
   { id: 2, txt: '广告位2', bg: '#C850C0', url: '' },
   { id: 3, txt: '广告位3', bg: '#4158D0', url: '' },
 ]);
-const timer = ref();
+const swiperTimer = ref();
 const currentSwiper = ref(swiperList.value[0]);
 
 async function getLiveRoomList() {
@@ -115,13 +115,17 @@ function goRoom(item: IAreaLiveRoom) {
 onMounted(() => {
   getLiveRoomList();
   let num = 0;
-  timer.value = setInterval(() => {
+  swiperTimer.value = setInterval(() => {
     num += 1;
     if (num > swiperList.value.length - 1) {
       num = 0;
     }
     currentSwiper.value = swiperList.value[num];
   }, 3000);
+});
+
+onUnmounted(() => {
+  clearInterval(swiperTimer.value);
 });
 </script>
 

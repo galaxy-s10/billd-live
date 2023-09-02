@@ -127,10 +127,10 @@ const videoWrapHeight = ref(0);
 const remoteVideoRef = ref<HTMLDivElement>();
 
 const {
+  handlePlay,
   initPull,
   keydownDanmu,
   sendDanmu,
-  handleHlsPlay,
   autoplayVal,
   videoLoading,
   damuList,
@@ -174,7 +174,6 @@ async function getLiveRoomInfo() {
     if (res.code === 200) {
       if (res.data.type === LiveRoomTypeEnum.user_wertc) {
         autoplayVal.value = true;
-        roomLiveType.value = LiveRoomTypeEnum.user_wertc;
         showPlayBtn.value = false;
       } else {
         showPlayBtn.value = true;
@@ -191,7 +190,7 @@ async function getLiveRoomInfo() {
 function startPull() {
   appStore.setMuted(false);
   showPlayBtn.value = false;
-  handleHlsPlay(liveRoomInfo.value?.hls_url);
+  handlePlay();
 }
 onUnmounted(() => {
   closeWs();

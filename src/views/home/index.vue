@@ -42,44 +42,10 @@
               }"
             >
               <div
-                v-if="
-                  currentLiveRoom.live_room?.type ===
-                  LiveRoomTypeEnum.user_wertc
-                "
                 class="btn webrtc"
-                @click="joinRtcRoom()"
+                @click="joinRoom({ roomId: currentLiveRoom.live_room?.id! })"
               >
-                进入直播（webrtc）
-              </div>
-              <div
-                v-if="
-                  currentLiveRoom.live_room?.type !==
-                  LiveRoomTypeEnum.user_wertc
-                "
-                class="btn flv"
-                @click="
-                  joinRoom({
-                    isFlv: true,
-                    roomId: currentLiveRoom.live_room_id!,
-                  })
-                "
-              >
-                进入直播（flv）
-              </div>
-              <div
-                v-if="
-                  currentLiveRoom.live_room?.type !==
-                  LiveRoomTypeEnum.user_wertc
-                "
-                class="btn hls"
-                @click="
-                  joinRoom({
-                    isFlv: false,
-                    roomId: currentLiveRoom.live_room_id!,
-                  })
-                "
-              >
-                进入直播（hls）
+                进入直播
               </div>
             </div>
           </template>
@@ -144,7 +110,6 @@
             class="live-room"
             @click="
               joinRoom({
-                isFlv: false,
                 roomId: iten.live_room?.id!,
               })
             "
@@ -189,7 +154,7 @@ import { useRouter } from 'vue-router';
 import { fetchLiveList } from '@/api/live';
 import { sliderList } from '@/constant';
 import { usePull } from '@/hooks/use-pull';
-import { ILive, LiveRoomTypeEnum, LiveTypeEnum } from '@/interface';
+import { ILive } from '@/interface';
 import { routerName } from '@/router';
 
 const router = useRouter();
@@ -202,8 +167,7 @@ const currentLiveRoom = ref<ILive>();
 const interactionList = ref(sliderList);
 const remoteVideoRef = ref<HTMLDivElement>();
 
-const { handleHlsPlay, videoLoading, remoteVideo, handleStopDrawing } =
-  usePull();
+const { handlePlay, videoLoading, remoteVideo, handleStopDrawing } = usePull();
 
 watch(
   () => remoteVideo.value,
@@ -225,15 +189,7 @@ function changeLiveRoom(item: ILive) {
   canvasRef.value?.childNodes?.forEach((item) => {
     item.remove();
   });
-  if (
-    [
-      LiveRoomTypeEnum.user_srs,
-      LiveRoomTypeEnum.user_obs,
-      LiveRoomTypeEnum.system,
-    ].includes(item.live_room?.type!)
-  ) {
-    handleHlsPlay(item.live_room?.hls_url!);
-  }
+  handlePlay(item.live_room!);
 }
 
 async function getLiveRoomList() {
@@ -247,15 +203,7 @@ async function getLiveRoomList() {
       otherLiveRoomList.value = res.data.rows.slice(topNums.value);
       if (res.data.total) {
         currentLiveRoom.value = topLiveRoomList.value[0];
-        if (
-          [
-            LiveRoomTypeEnum.user_srs,
-            LiveRoomTypeEnum.user_obs,
-            LiveRoomTypeEnum.system,
-          ].includes(currentLiveRoom.value?.live_room?.type!)
-        ) {
-          handleHlsPlay(currentLiveRoom.value.live_room?.hls_url!);
-        }
+        handlePlay(currentLiveRoom.value.live_room!);
       }
     }
   } catch (error) {
@@ -267,22 +215,10 @@ onMounted(() => {
   getLiveRoomList();
 });
 
-function joinRtcRoom() {
-  router.push({
-    name: routerName.pull,
-    params: {
-      roomId: currentLiveRoom.value?.live_room_id,
-    },
-  });
-}
-
-function joinRoom(data: { roomId: number; isFlv: boolean }) {
+function joinRoom(data: { roomId: number }) {
   router.push({
     name: routerName.pull,
     params: { roomId: data.roomId },
-    query: {
-      liveType: data.isFlv ? LiveTypeEnum.srsFlvPull : LiveTypeEnum.srsHlsPull,
-    },
   });
 }
 </script>
