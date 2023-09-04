@@ -281,37 +281,7 @@ onMounted(() => {
         width: 100%;
         height: 100%;
       }
-      // &.item {
-      //   :deep(video) {
-      //     width: 50%;
-      //     height: initial !important;
-      //   }
-      //   :deep(canvas) {
-      //     width: 50%;
-      //     height: initial !important;
-      //   }
-      // }
     }
-    // :deep(video) {
-    //   position: absolute;
-    //   top: 0;
-    //   left: 50%;
-    //   width: 100%;
-    //   height: 100%;
-    //   transform: translate(-50%);
-
-    //   user-select: nones;
-    // }
-    // :deep(canvas) {
-    //   position: absolute;
-    //   top: 0;
-    //   left: 50%;
-    //   width: 100%;
-    //   height: 100%;
-    //   transform: translate(-50%);
-
-    //   user-select: nones;
-    // }
     .tip-btn {
       position: absolute;
       top: 50%;
