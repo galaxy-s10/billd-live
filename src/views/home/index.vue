@@ -11,7 +11,10 @@
         ></Slider>
       </div>
       <div class="container">
-        <div class="left">
+        <div
+          class="left"
+          @click="showJoinBtn = !showJoinBtn"
+        >
           <div
             v-if="currentLiveRoom?.live_room?.cdn === 1"
             class="cdn-ico"
@@ -37,12 +40,12 @@
             <VideoControls></VideoControls>
             <div
               class="join-btn"
-              :style="{
-                display: !isMobile() ? 'none' : showControls ? 'block' : 'none',
+              :class="{
+                show: showJoinBtn,
               }"
             >
               <div
-                class="btn webrtc"
+                class="btn"
                 @click="joinRoom({ roomId: currentLiveRoom.live_room?.id! })"
               >
                 进入直播
@@ -147,7 +150,6 @@
 </template>
 
 <script lang="ts" setup>
-import { isMobile } from 'billd-utils';
 import { onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -156,10 +158,12 @@ import { sliderList } from '@/constant';
 import { usePull } from '@/hooks/use-pull';
 import { ILive } from '@/interface';
 import { routerName } from '@/router';
+import { useAppStore } from '@/store/app';
 
 const router = useRouter();
+const appStore = useAppStore();
 const canvasRef = ref<Element>();
-const showControls = ref(false);
+const showJoinBtn = ref(false);
 const topNums = ref(6);
 const topLiveRoomList = ref<ILive[]>([]);
 const otherLiveRoomList = ref<ILive[]>([]);
@@ -167,7 +171,7 @@ const currentLiveRoom = ref<ILive>();
 const interactionList = ref(sliderList);
 const remoteVideoRef = ref<HTMLDivElement>();
 
-const { handlePlay, videoLoading, remoteVideo, handleStopDrawing } = usePull();
+const { videoLoading, remoteVideo, handleStopDrawing, roomLiving } = usePull();
 
 watch(
   () => remoteVideo.value,
@@ -178,7 +182,6 @@ watch(
   },
   {
     deep: true,
-    immediate: true,
   }
 );
 
@@ -189,7 +192,8 @@ function changeLiveRoom(item: ILive) {
   canvasRef.value?.childNodes?.forEach((item) => {
     item.remove();
   });
-  handlePlay(item.live_room!);
+  appStore.setLiveRoomInfo(item.live_room!);
+  roomLiving.value = true;
 }
 
 async function getLiveRoomList() {
@@ -203,7 +207,8 @@ async function getLiveRoomList() {
       otherLiveRoomList.value = res.data.rows.slice(topNums.value);
       if (res.data.total) {
         currentLiveRoom.value = topLiveRoomList.value[0];
-        handlePlay(currentLiveRoom.value.live_room!);
+        appStore.setLiveRoomInfo(currentLiveRoom.value.live_room!);
+        roomLiving.value = true;
       }
     }
   } catch (error) {
@@ -312,9 +317,6 @@ function joinRoom(data: { roomId: number }) {
 
           user-select: none;
         }
-        .controls {
-          display: none;
-        }
 
         &:hover {
           .join-btn {
@@ -333,6 +335,9 @@ function joinRoom(data: { roomId: number }) {
           box-sizing: border-box;
           width: 80%;
           transform: translate(-50%, -50%);
+          &.show {
+            display: inline-flex !important;
+          }
 
           .btn {
             padding: 14px 26px;
@@ -345,12 +350,6 @@ function joinRoom(data: { roomId: number }) {
             &:hover {
               background-color: $theme-color-gold;
               color: white;
-            }
-            &.webrtc {
-              margin-right: 10px;
-            }
-            &.flv {
-              margin-right: 10px;
             }
           }
         }

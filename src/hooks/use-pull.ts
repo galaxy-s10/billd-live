@@ -106,9 +106,8 @@ export function usePull() {
   }
 
   function handlePlay(data: ILiveRoom) {
-    console.warn('handlePlay');
+    console.warn('handlePlay', data.type);
     roomLiving.value = true;
-    appStore.setLiveRoomInfo(data);
     flvurl.value = data.flv_url!;
     hlsurl.value = data.hls_url!;
     switch (data.type) {

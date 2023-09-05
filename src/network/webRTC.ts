@@ -250,7 +250,6 @@ export class WebRTCClass {
           const parameters = { ...sender.getParameters() };
           if (parameters.encodings[0]) {
             const val = 1000 * maxBitrate;
-            console.log(parameters.encodings[0].maxBitrate, val, 23223);
             if (parameters.encodings[0].maxBitrate === val) {
               console.log('最大码率不变，不设置');
               resolve(1);

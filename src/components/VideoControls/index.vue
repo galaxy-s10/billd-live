@@ -17,8 +17,16 @@
 
     <div class="right">
       <div class="line">
-        <span class="txt">线路</span>
-        <div class="list">
+        <span
+          class="txt"
+          @click="showLine = !showLine"
+        >
+          线路
+        </span>
+        <div
+          class="list"
+          :class="{ show: showLine }"
+        >
           <div
             class="iten"
             :class="{ active: appStore.liveLine === item }"
@@ -31,9 +39,14 @@
         </div>
       </div>
       <div class="speed">
-        <span class="txt">倍速</span>
+        <span
+          class="txt"
+          @click="showSpeed = !showSpeed"
+          >倍速</span
+        >
         <div
           class="list"
+          :class="{ show: showSpeed }"
           @click="handleTip"
         >
           <div class="iten">2.0x</div>
@@ -48,11 +61,14 @@
 
 <script lang="ts" setup>
 import { VolumeHighOutline, VolumeMuteOutline } from '@vicons/ionicons5';
+import { ref } from 'vue';
 
 import { LiveLineEnum, LiveRoomTypeEnum } from '@/interface';
 import { useAppStore } from '@/store/app';
 
 const appStore = useAppStore();
+const showLine = ref(false);
+const showSpeed = ref(false);
 
 function handleTip() {
   window.$message.info('敬请期待~');
@@ -81,7 +97,7 @@ function changeLiveLine(item) {
   position: absolute;
   bottom: 0;
   left: 0;
-  z-index: 20;
+  z-index: 50;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -126,6 +142,9 @@ function changeLiveLine(item) {
         background-color: rgba($color: #000000, $alpha: 0.5);
         text-align: center;
         transform: translate(-50%, -100%);
+        &.show {
+          display: block;
+        }
         .iten {
           padding: 6px 10px;
           &.active {
