@@ -16,6 +16,14 @@
   基于Vue3 + WebRtc + Node + SRS + FFmpeg搭建的直播间
 </p>
 
+## ⚡️ 生态系统
+
+| 名称       | 仓库                                                                 | star & fork                                                                                                                                                                                                                                                                                                |
+| ---------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 直播间前台 | [billd-live](https://github.com/galaxy-s10/billd-live)               | [![github](https://img.shields.io/github/stars/galaxy-s10/billd-live?label=star&logo=GitHub)](https://github.com/galaxy-s10/billd-live)[![github](https://img.shields.io/github/forks/galaxy-s10/billd-live?label=fork&logo=GitHub)](https://github.com/galaxy-s10/billd-live)                             |
+| 直播间后台 | [billd-live-admin](https://github.com/galaxy-s10/billd-live-admin)   | [![github](https://img.shields.io/github/stars/galaxy-s10/billd-live-admin?label=star&logo=GitHub)](https://github.com/galaxy-s10/billd-live-admin)[![github](https://img.shields.io/github/forks/galaxy-s10/billd-live-admin?label=fork&logo=GitHub)](https://github.com/galaxy-s10/billd-live-admin)     |
+| 直播间后端 | [billd-live-server](https://github.com/galaxy-s10/billd-live-server) | [![github](https://img.shields.io/github/stars/galaxy-s10/billd-live-server?label=star&logo=GitHub)](https://github.com/galaxy-s10/billd-live-server)[![github](https://img.shields.io/github/forks/galaxy-s10/billd-live-server?label=fork&logo=GitHub)](https://github.com/galaxy-s10/billd-live-server) |
+
 ## 📢 注意
 
 该项目一开始只是为了记录本人学习直播相关技术的过程，初心也是将它作为开源项目，让想要学习直播技术相关的人能有些借鉴（因为市面上能找到的直播相关资源少之又少），但随着项目不断的完善，我发现虽然项目涉及的技术栈不是很难，但都不是常规的技术栈，而我也因此花费了大量的时间和精力（为什么市面上能找到的直播相关资源很少？突然明白了。）
@@ -33,10 +41,6 @@
 ## 简介
 
 billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://live.bilibili.com)功能，即你（房主）可以发布直播，别人进入你的直播间后能看到你的直播内容；而你也可以作为观众，进入别人的直播间看别人的直播内容。
-
-> 后端：[https://github.com/galaxy-s10/billd-live-server](https://github.com/galaxy-s10/billd-live-server)
->
-> 后台：[https://github.com/galaxy-s10/billd-live-admin](https://github.com/galaxy-s10/billd-live-admin)
 
 ## 功能
 
@@ -180,7 +184,7 @@ npm run build
 
 ## 微信群
 
-详情：[https://live.hsslive.cn/about/group](https://live.hsslive.cn/about/group)
+[https://live.hsslive.cn/about/group](https://live.hsslive.cn/about/group)
 
 ## 环境配置
 
