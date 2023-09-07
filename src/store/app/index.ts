@@ -22,6 +22,7 @@ export type AppRootState = {
     canvasDom?: fabric.Image | fabric.Text;
     hidden?: boolean;
     muted?: boolean;
+    volume?: number;
     videoEl?: HTMLVideoElement;
     txtInfo?: { txt: string; color: string };
     timeInfo?: { color: string };

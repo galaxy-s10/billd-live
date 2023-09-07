@@ -146,10 +146,25 @@
                 class="control-item"
                 @click="handleChangeMuted(item)"
               >
-                <n-icon size="16">
-                  <VolumeMuteOutline v-if="item.muted"></VolumeMuteOutline>
-                  <VolumeHighOutline v-else></VolumeHighOutline>
-                </n-icon>
+                <n-popover
+                  placement="top"
+                  trigger="hover"
+                  :flip="false"
+                >
+                  <template #trigger>
+                    <n-icon size="16">
+                      <VolumeMuteOutline v-if="item.muted"></VolumeMuteOutline>
+                      <VolumeHighOutline v-else></VolumeHighOutline>
+                    </n-icon>
+                  </template>
+                  <div class="slider">
+                    <n-slider
+                      :value="item.volume"
+                      :step="1"
+                      @update-value="(v) => updateVolume(item, v)"
+                    />
+                  </div>
+                </n-popover>
               </div>
               <div
                 class="control-item"
@@ -337,6 +352,7 @@ const webaudioVideo = ref<HTMLVideoElement>();
 const fabricCanvas = ref<fabric.Canvas>();
 const audioCtx = ref<AudioContext>();
 const startTime = ref(+new Date());
+const normalVolume = ref(60);
 // const startTime = ref(1692807352565); // 1693027352565
 
 const timeCanvasDom = ref<Raw<fabric.Text>[]>([]);
@@ -772,6 +788,7 @@ async function handleCache() {
     obj.hidden = item.hidden;
     obj.mediaName = item.mediaName;
     obj.muted = item.muted;
+    obj.volume = item.volume;
     obj.rect = item.rect;
     obj.scaleInfo = item.scaleInfo;
     obj.stopwatchInfo = item.stopwatchInfo;
@@ -1007,6 +1024,7 @@ async function addMediaOk(val: {
     const audio = event.getAudioTracks();
     if (audio.length) {
       videoTrack.audio = 1;
+      videoTrack.volume = normalVolume.value;
       const audioTrack: AppRootState['allTrack'][0] = {
         id: videoTrack.id,
         audio: 1,
@@ -1019,6 +1037,7 @@ async function addMediaOk(val: {
         streamid: event.id,
         hidden: true,
         muted: false,
+        volume: videoTrack.volume,
         scaleInfo: {},
       };
       const res = [...appStore.allTrack, videoTrack, audioTrack];
@@ -1091,6 +1110,7 @@ async function addMediaOk(val: {
       streamid: event.id,
       hidden: false,
       muted: false,
+      volume: 60,
       scaleInfo: {},
     };
     const res = [...appStore.allTrack, audioTrack];
@@ -1345,6 +1365,7 @@ async function addMediaOk(val: {
       if (stream.getAudioTracks()[0]) {
         console.log('视频有音频', stream.getAudioTracks()[0]);
         mediaVideoTrack.audio = 1;
+        mediaVideoTrack.volume = normalVolume.value;
         const audioTrack: AppRootState['allTrack'][0] = {
           id: mediaVideoTrack.id,
           audio: 1,
@@ -1357,6 +1378,7 @@ async function addMediaOk(val: {
           streamid: stream.id,
           hidden: true,
           muted: false,
+          volume: mediaVideoTrack.volume,
           scaleInfo: {},
         };
         // @ts-ignore
@@ -1381,6 +1403,14 @@ async function addMediaOk(val: {
     console.log('获取视频成功', fabricCanvas.value);
   }
   // canvasVideoStream.value = pushCanvasRef.value!.captureStream();
+}
+
+function updateVolume(item: AppRootState['allTrack'][0], v) {
+  console.log(item.volume, v);
+  if (item.volume !== undefined) {
+    item.volume = v;
+    item.videoEl!.volume = v / 100;
+  }
 }
 
 function handleChangeMuted(item: AppRootState['allTrack'][0]) {
@@ -1416,6 +1446,9 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
 </script>
 
 <style lang="scss" scoped>
+.slider {
+  width: 80px;
+}
 .push-wrap {
   display: flex;
   justify-content: space-between;
