@@ -784,6 +784,7 @@ async function handleCache() {
     obj.audio = item.audio;
     obj.video = item.video;
     obj.id = item.id;
+    obj.deviceId = item.deviceId;
     obj.type = item.type;
     obj.hidden = item.hidden;
     obj.mediaName = item.mediaName;
@@ -883,8 +884,59 @@ async function handleCache() {
         console.error('读取文件失败');
       }
     }
+
+    async function handleMicrophone() {
+      const event = await navigator.mediaDevices.getUserMedia({
+        video: false,
+        audio: { deviceId: obj.deviceId },
+      });
+      const videoEl = createVideo({ appendChild: true, muted: false });
+      videoEl.srcObject = event;
+      obj.videoEl = videoEl;
+    }
+
+    async function handleCamera() {
+      const event = await navigator.mediaDevices.getUserMedia({
+        video: { deviceId: obj.deviceId },
+        audio: false,
+      });
+      const videoEl = createVideo({ appendChild: true });
+      videoEl.srcObject = event;
+      await new Promise((resolve) => {
+        videoEl.onloadedmetadata = () => {
+          const stream = videoEl
+            // @ts-ignore
+            .captureStream();
+          const width = stream.getVideoTracks()[0].getSettings().width!;
+          const height = stream.getVideoTracks()[0].getSettings().height!;
+          videoEl.width = width;
+          videoEl.height = height;
+
+          const canvasDom = markRaw(
+            new fabric.Image(videoEl, {
+              top: (item.rect?.top || 0) / window.devicePixelRatio,
+              left: (item.rect?.left || 0) / window.devicePixelRatio,
+              width,
+              height,
+            })
+          );
+          handleMoving({ canvasDom, id: item.id });
+          handleScaling({ canvasDom, id: item.id });
+          canvasDom.scale(item.scaleInfo[window.devicePixelRatio].scaleX || 1);
+          fabricCanvas.value!.add(canvasDom);
+          obj.videoEl = videoEl;
+          obj.canvasDom = canvasDom;
+          resolve({ videoEl, canvasDom });
+        };
+      });
+    }
+
     if (item.type === MediaTypeEnum.media && item.video === 1) {
       queue.push(handleMediaVideo());
+    } else if (item.type === MediaTypeEnum.camera) {
+      queue.push(handleCamera());
+    } else if (item.type === MediaTypeEnum.microphone) {
+      queue.push(handleMicrophone());
     } else if (item.type === MediaTypeEnum.img) {
       queue.push(handleImg());
     } else if (item.type === MediaTypeEnum.txt) {
@@ -1066,6 +1118,7 @@ async function addMediaOk(val: {
     });
     const videoTrack: AppRootState['allTrack'][0] = {
       id: getRandomEnglishString(8),
+      deviceId: val.deviceId,
       audio: 2,
       video: 1,
       mediaName: val.mediaName,
@@ -1098,8 +1151,9 @@ async function addMediaOk(val: {
       video: false,
       audio: { deviceId: val.deviceId },
     });
-    const audioTrack: AppRootState['allTrack'][0] = {
+    const microphoneVideoTrack: AppRootState['allTrack'][0] = {
       id: getRandomEnglishString(8),
+      deviceId: val.deviceId,
       audio: 1,
       video: 2,
       mediaName: val.mediaName,
@@ -1113,12 +1167,15 @@ async function addMediaOk(val: {
       volume: 60,
       scaleInfo: {},
     };
-    const res = [...appStore.allTrack, audioTrack];
+    const videoEl = createVideo({ appendChild: true, muted: false });
+    videoEl.srcObject = event;
+    microphoneVideoTrack.videoEl = videoEl;
+    const res = [...appStore.allTrack, microphoneVideoTrack];
     appStore.setAllTrack(res);
     resourceCacheStore.setList(res);
     handleMixedAudio();
     // @ts-ignore
-    addTrack(audioTrack);
+    addTrack(microphoneVideoTrack);
 
     console.log('获取麦克风成功');
   } else if (val.type === MediaTypeEnum.txt) {
@@ -1406,7 +1463,7 @@ async function addMediaOk(val: {
 }
 
 function updateVolume(item: AppRootState['allTrack'][0], v) {
-  console.log(item.volume, v);
+  console.log(item, item.volume, v);
   if (item.volume !== undefined) {
     item.volume = v;
     item.videoEl!.volume = v / 100;

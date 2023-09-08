@@ -49,7 +49,7 @@ export function usePush() {
 
   watch(
     () => appStore.allTrack,
-    (newTrack, oldTrack) => {
+    (newTrack) => {
       console.log('appStore.allTrack变了');
       const mixedStream = new MediaStream();
       newTrack.forEach((item) => {

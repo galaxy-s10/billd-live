@@ -43,5 +43,5 @@
     "vue"
   ],
   "typescript.tsdk": "node_modules/typescript/lib",
-  "vue.codeActions.savingTimeLimit": 1000
+  "vue.codeActions.savingTimeLimit": 2000
 }

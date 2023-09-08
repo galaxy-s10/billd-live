@@ -13,6 +13,7 @@ export type AppRootState = {
     /** 1开启；2关闭 */
     video: number;
     id: string;
+    deviceId?: string;
     mediaName: string;
     type: MediaTypeEnum;
     track?: MediaStreamTrack;
