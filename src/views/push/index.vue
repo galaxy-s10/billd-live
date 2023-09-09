@@ -1523,6 +1523,12 @@ function editMediaOk(val: AppRootState['allTrack'][0]) {
           );
         }
       }
+      if (val.type === MediaTypeEnum.txt) {
+        if (item.canvasDom) {
+          // @ts-ignore
+          item.canvasDom.set('text', val.txtInfo?.txt);
+        }
+      }
     }
     return item;
   });
