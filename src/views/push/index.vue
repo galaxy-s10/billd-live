@@ -490,6 +490,7 @@ function handleMixedAudio() {
     webaudioVideo.value.remove();
   }
   webaudioVideo.value = createVideo({ appendChild: true });
+  bodyAppendChildElArr.value.push(webaudioVideo.value);
   webaudioVideo.value.className = 'web-audio-video';
   webaudioVideo.value.srcObject = destination.stream;
 }
@@ -530,11 +531,11 @@ function autoCreateVideo({
 }) {
   console.warn('autoCreateVideo', id);
   const videoEl = createVideo({ appendChild: true });
+  bodyAppendChildElArr.value.push(videoEl);
   if (muted !== undefined) {
     videoEl.muted = muted;
   }
   videoEl.srcObject = stream;
-  bodyAppendChildElArr.value.push(videoEl);
   return new Promise<{
     canvasDom: fabric.Image;
     videoEl: HTMLVideoElement;
@@ -803,11 +804,11 @@ async function handleCache() {
           muted: item.muted ? item.muted : false,
           appendChild: true,
         });
+        bodyAppendChildElArr.value.push(videoEl);
         if (obj.volume !== undefined) {
           videoEl.volume = obj.volume / 100;
         }
         videoEl.src = url;
-        bodyAppendChildElArr.value.push(videoEl);
         await new Promise((resolve) => {
           videoEl.onloadedmetadata = () => {
             const stream = videoEl
@@ -895,6 +896,7 @@ async function handleCache() {
         audio: { deviceId: obj.deviceId },
       });
       const videoEl = createVideo({ appendChild: true, muted: false });
+      bodyAppendChildElArr.value.push(videoEl);
       videoEl.srcObject = event;
       if (obj.volume !== undefined) {
         videoEl.volume = obj.volume / 100;
@@ -907,6 +909,7 @@ async function handleCache() {
         audio: { deviceId: obj.deviceId },
       });
       const videoEl = createVideo({ appendChild: true, muted: false });
+      bodyAppendChildElArr.value.push(videoEl);
       videoEl.srcObject = event;
       if (obj.volume !== undefined) {
         videoEl.volume = obj.volume / 100;
@@ -920,6 +923,7 @@ async function handleCache() {
         audio: false,
       });
       const videoEl = createVideo({ appendChild: true });
+      bodyAppendChildElArr.value.push(videoEl);
       videoEl.srcObject = event;
       await new Promise((resolve) => {
         videoEl.onloadedmetadata = () => {
@@ -1191,6 +1195,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
       scaleInfo: {},
     };
     const videoEl = createVideo({ appendChild: true, muted: false });
+    bodyAppendChildElArr.value.push(videoEl);
     videoEl.srcObject = event;
     microphoneVideoTrack.videoEl = videoEl;
     const res = [...appStore.allTrack, microphoneVideoTrack];
@@ -1424,9 +1429,9 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
       if (code !== 1) return;
       const url = URL.createObjectURL(file);
       const videoEl = createVideo({ muted: false, appendChild: true });
+      bodyAppendChildElArr.value.push(videoEl);
       videoEl.src = url;
       videoEl.muted = false;
-      bodyAppendChildElArr.value.push(videoEl);
       const videoRes = await new Promise<HTMLVideoElement>((resolve) => {
         videoEl.onloadedmetadata = () => {
           resolve(videoEl);
