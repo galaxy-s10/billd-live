@@ -253,15 +253,19 @@
       v-if="showSelectMediaModalCpt"
       :all-media-type-list="allMediaTypeList"
       @close="showSelectMediaModalCpt = false"
-      @ok="selectMediaOk"
+      @ok="handleShowMediaModalCpt"
     ></SelectMediaModalCpt>
 
     <MediaModalCpt
       v-if="showMediaModalCpt"
+      :is-edit="isEdit"
       :media-type="currentMediaType"
+      :init-data="currentMediaData"
       @close="showMediaModalCpt = false"
-      @ok="addMediaOk"
+      @add-ok="addMediaOk"
+      @edit-ok="editMediaOk"
     ></MediaModalCpt>
+
     <OpenMicophoneTipCpt
       v-if="showOpenMicophoneTipCpt"
       @close="showOpenMicophoneTipCpt = false"
@@ -277,7 +281,6 @@ import {
   VolumeMuteOutline,
 } from '@vicons/ionicons5';
 import { fabric } from 'fabric';
-import { UploadFileInfo } from 'naive-ui';
 import {
   Raw,
   markRaw,
@@ -340,9 +343,11 @@ const {
 } = usePush();
 
 const currentMediaType = ref(MediaTypeEnum.camera);
+const currentMediaData = ref<AppRootState['allTrack'][0]>();
 const showOpenMicophoneTipCpt = ref(false);
 const showSelectMediaModalCpt = ref(false);
 const showMediaModalCpt = ref(false);
+const isEdit = ref(false);
 const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
 const danmuListRef = ref<HTMLDivElement>();
@@ -496,12 +501,8 @@ function handleStartLive() {
 }
 
 function handleScale({ width, height }: { width: number; height: number }) {
-  const resolutionHeight =
-    currentResolutionRatio.value * window.devicePixelRatio;
-  const resolutionWidth =
-    currentResolutionRatio.value *
-    window.devicePixelRatio *
-    appStore.videoRatio;
+  const resolutionHeight = currentResolutionRatio.value;
+  const resolutionWidth = currentResolutionRatio.value * appStore.videoRatio;
   let ratio = 1;
   if (width > resolutionWidth) {
     const r1 = resolutionWidth / width;
@@ -802,6 +803,9 @@ async function handleCache() {
           muted: item.muted ? item.muted : false,
           appendChild: true,
         });
+        if (obj.volume !== undefined) {
+          videoEl.volume = obj.volume / 100;
+        }
         videoEl.src = url;
         bodyAppendChildElArr.value.push(videoEl);
         await new Promise((resolve) => {
@@ -885,6 +889,18 @@ async function handleCache() {
       }
     }
 
+    async function handleScreen() {
+      const event = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: { deviceId: obj.deviceId },
+      });
+      const videoEl = createVideo({ appendChild: true, muted: false });
+      videoEl.srcObject = event;
+      if (obj.volume !== undefined) {
+        videoEl.volume = obj.volume / 100;
+      }
+      obj.videoEl = videoEl;
+    }
     async function handleMicrophone() {
       const event = await navigator.mediaDevices.getUserMedia({
         video: false,
@@ -892,6 +908,9 @@ async function handleCache() {
       });
       const videoEl = createVideo({ appendChild: true, muted: false });
       videoEl.srcObject = event;
+      if (obj.volume !== undefined) {
+        videoEl.volume = obj.volume / 100;
+      }
       obj.videoEl = videoEl;
     }
 
@@ -933,6 +952,8 @@ async function handleCache() {
 
     if (item.type === MediaTypeEnum.media && item.video === 1) {
       queue.push(handleMediaVideo());
+    } else if (item.type === MediaTypeEnum.screen) {
+      queue.push(handleScreen());
     } else if (item.type === MediaTypeEnum.camera) {
       queue.push(handleCamera());
     } else if (item.type === MediaTypeEnum.microphone) {
@@ -1003,21 +1024,31 @@ async function handleCache() {
   appStore.setAllTrack(res);
 }
 
-function selectMediaOk(val: MediaTypeEnum) {
+function handleShowMediaModalCpt(val: MediaTypeEnum) {
+  isEdit.value = false;
+  currentMediaData.value = undefined;
   showMediaModalCpt.value = true;
   showSelectMediaModalCpt.value = false;
   currentMediaType.value = val;
 }
 
-function setScaleInfo({ track, canvasDom }) {
+function handleEdit(item: AppRootState['allTrack'][0]) {
+  console.log('handleEdit', item);
+  currentMediaType.value = item.type;
+  currentMediaData.value = item;
+  isEdit.value = true;
+  showMediaModalCpt.value = true;
+}
+
+function setScaleInfo({ track, canvasDom, scale = 1 }) {
   [1, 2, 3, 4].forEach((devicePixelRatio) => {
     track.scaleInfo[devicePixelRatio] = {
-      scaleX: 1 / devicePixelRatio,
-      scaleY: 1 / devicePixelRatio,
+      scaleX: (1 / devicePixelRatio) * scale,
+      scaleY: (1 / devicePixelRatio) * scale,
     };
   });
   if (window.devicePixelRatio !== 1) {
-    const ratio = 1 / window.devicePixelRatio;
+    const ratio = (1 / window.devicePixelRatio) * scale;
     canvasDom.scale(ratio);
     track.scaleInfo[window.devicePixelRatio] = {
       scaleX: ratio,
@@ -1026,16 +1057,7 @@ function setScaleInfo({ track, canvasDom }) {
   }
 }
 
-async function addMediaOk(val: {
-  type: MediaTypeEnum;
-  deviceId: string;
-  mediaName: string;
-  txtInfo?: { txt: string; color: string };
-  timeInfo?: { color: string };
-  stopwatchInfo?: { color: string };
-  imgInfo?: UploadFileInfo[];
-  mediaInfo?: UploadFileInfo[];
-}) {
+async function addMediaOk(val: AppRootState['allTrack'][0]) {
   if (!audioCtx.value) {
     audioCtx.value = new AudioContext();
   }
@@ -1068,7 +1090,8 @@ async function addMediaOk(val: {
       stream: event,
       id: videoTrack.id,
     });
-    setScaleInfo({ canvasDom, track: videoTrack });
+    console.log(scale, 'scalescale');
+    setScaleInfo({ canvasDom, track: videoTrack, scale });
     videoTrack.videoEl = videoEl;
     // @ts-ignore
     videoTrack.canvasDom = canvasDom;
@@ -1135,7 +1158,7 @@ async function addMediaOk(val: {
       stream: event,
       id: videoTrack.id,
     });
-    setScaleInfo({ canvasDom, track: videoTrack });
+    setScaleInfo({ canvasDom, track: videoTrack, scale });
     videoTrack.videoEl = videoEl;
     // @ts-ignore
     videoTrack.canvasDom = canvasDom;
@@ -1361,8 +1384,8 @@ async function addMediaOk(val: {
           height: imgEl.height,
         })
       );
-      const ratio = handleScale({ width: imgEl.width, height: imgEl.height });
-      setScaleInfo({ canvasDom, track: imgTrack });
+      const scale = handleScale({ width: imgEl.width, height: imgEl.height });
+      setScaleInfo({ canvasDom, track: imgTrack, scale });
       handleMoving({ canvasDom, id: imgTrack.id });
       handleScaling({ canvasDom, id: imgTrack.id });
       // @ts-ignore
@@ -1415,7 +1438,7 @@ async function addMediaOk(val: {
         stream,
         id: mediaVideoTrack.id,
       });
-      setScaleInfo({ canvasDom, track: mediaVideoTrack });
+      setScaleInfo({ canvasDom, track: mediaVideoTrack, scale });
       mediaVideoTrack.videoEl = videoEl;
       // @ts-ignore
       mediaVideoTrack.canvasDom = canvasDom;
@@ -1459,15 +1482,55 @@ async function addMediaOk(val: {
 
     console.log('获取视频成功', fabricCanvas.value);
   }
-  // canvasVideoStream.value = pushCanvasRef.value!.captureStream();
+}
+
+function editMediaOk(val: AppRootState['allTrack'][0]) {
+  showMediaModalCpt.value = false;
+  const res = appStore.allTrack.map((item) => {
+    if (item.id === val.id) {
+      item.mediaName = val.mediaName;
+      item.timeInfo = val.timeInfo;
+      item.stopwatchInfo = val.stopwatchInfo;
+      item.txtInfo = val.txtInfo;
+      if (
+        [
+          MediaTypeEnum.txt,
+          MediaTypeEnum.time,
+          MediaTypeEnum.stopwatch,
+        ].includes(val.type)
+      ) {
+        if (item.canvasDom) {
+          // @ts-ignore
+          item.canvasDom.set(
+            'fill',
+            val.txtInfo?.color ||
+              val.timeInfo?.color ||
+              val.stopwatchInfo?.color
+          );
+        }
+      }
+    }
+    return item;
+  });
+  appStore.setAllTrack(res);
+  resourceCacheStore.setList(res);
 }
 
 function updateVolume(item: AppRootState['allTrack'][0], v) {
   console.log(item, item.volume, v);
-  if (item.volume !== undefined) {
-    item.volume = v;
-    item.videoEl!.volume = v / 100;
-  }
+  const res = appStore.allTrack.map((iten) => {
+    if (iten.id === item.id) {
+      if (item.volume !== undefined) {
+        iten.volume = v;
+        if (iten.videoEl) {
+          iten.videoEl.volume = v / 100;
+        }
+      }
+    }
+    return iten;
+  });
+  appStore.setAllTrack(res);
+  resourceCacheStore.setList(res);
 }
 
 function handleChangeMuted(item: AppRootState['allTrack'][0]) {
@@ -1477,10 +1540,6 @@ function handleChangeMuted(item: AppRootState['allTrack'][0]) {
     item.muted = res;
     resourceCacheStore.setList(appStore.allTrack);
   }
-}
-
-function handleEdit(item: AppRootState['allTrack'][0]) {
-  console.log('handleEdit', item);
 }
 
 function handleDel(item: AppRootState['allTrack'][0]) {

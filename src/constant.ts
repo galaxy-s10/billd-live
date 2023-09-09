@@ -22,7 +22,7 @@ export const COOKIE_KEY = {
 
 // 全局的localStorage的key
 export const LOCALSTORAGE_KEY = {
-  verion: '0.0.1',
+  lastBuildDate: 'lastBuildDate',
 };
 
 export const bilibiliCollectiondetail =

@@ -171,7 +171,8 @@ const currentLiveRoom = ref<ILive>();
 const interactionList = ref(sliderList);
 const remoteVideoRef = ref<HTMLDivElement>();
 
-const { videoLoading, remoteVideo, handleStopDrawing, roomLiving } = usePull();
+const { videoLoading, remoteVideo, handleStopDrawing, roomLiving, handlePlay } =
+  usePull();
 
 watch(
   () => remoteVideo.value,
@@ -194,6 +195,7 @@ function changeLiveRoom(item: ILive) {
   });
   appStore.setLiveRoomInfo(item.live_room!);
   roomLiving.value = true;
+  handlePlay(item.live_room!);
 }
 
 async function getLiveRoomList() {

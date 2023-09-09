@@ -1,7 +1,7 @@
 <template>
   <div class="media-wrap">
     <Modal
-      title="添加直播素材"
+      :title="`${isEdit ? '编辑' : '添加'}直播素材`"
       :mask-closable="false"
       @close="emits('close')"
     >
@@ -15,6 +15,7 @@
             <n-select
               v-model:value="currentInput.deviceId"
               :options="inputOptions"
+              :disabled="isEdit"
             />
           </div>
         </div>
@@ -69,7 +70,7 @@
                 accept="image/png, image/jpeg, image/webp"
                 :on-update:file-list="changImg"
               >
-                <n-button>选择文件</n-button>
+                <n-button :disabled="isEdit">选择文件</n-button>
               </n-upload>
             </div>
           </div>
@@ -83,7 +84,7 @@
                 accept="video/mp4, video/quicktime"
                 :on-update:file-list="changMedia"
               >
-                <n-button>选择文件</n-button>
+                <n-button :disabled="isEdit">选择文件</n-button>
               </n-upload>
             </div>
           </div>
@@ -109,7 +110,7 @@ import { InputInst, UploadFileInfo } from 'naive-ui';
 import { onMounted, ref } from 'vue';
 
 import { MediaTypeEnum } from '@/interface';
-import { useAppStore } from '@/store/app';
+import { AppRootState, useAppStore } from '@/store/app';
 
 const inputInstRef = ref<InputInst | null>(null);
 const mediaName = ref('');
@@ -118,12 +119,15 @@ const appStore = useAppStore();
 const props = withDefaults(
   defineProps<{
     mediaType?: MediaTypeEnum;
+    isEdit: boolean;
+    initData?: AppRootState['allTrack'][0];
   }>(),
   {
     mediaType: MediaTypeEnum.camera,
+    isEdit: false,
   }
 );
-const emits = defineEmits(['close', 'ok']);
+const emits = defineEmits(['close', 'addOk', 'editOk']);
 
 const inputOptions = ref<{ label: string; value: string }[]>([]);
 const txtInfo = ref<{ txt: string; color: string }>();
@@ -161,28 +165,42 @@ function handleOk() {
       return;
     }
   }
-  if (props.mediaType === MediaTypeEnum.img) {
-    if (imgInfo.value?.length! !== 1) {
-      window.$message.info('请选择图片！');
-      return;
+  if (!props.isEdit) {
+    if (props.mediaType === MediaTypeEnum.img) {
+      if (imgInfo.value?.length! !== 1) {
+        window.$message.info('请选择图片！');
+        return;
+      }
+    }
+    if (props.mediaType === MediaTypeEnum.media) {
+      if (mediaInfo.value?.length! !== 1) {
+        window.$message.info('请选择视频！');
+        return;
+      }
     }
   }
-  if (props.mediaType === MediaTypeEnum.media) {
-    if (mediaInfo.value?.length! !== 1) {
-      window.$message.info('请选择视频！');
-      return;
-    }
+  if (props.isEdit) {
+    emits('editOk', {
+      ...props.initData,
+      ...currentInput.value,
+      mediaName: mediaName.value,
+      txtInfo: txtInfo.value,
+      imgInfo: imgInfo.value,
+      mediaInfo: mediaInfo.value,
+      timeInfo: timeInfo.value,
+      stopwatchInfo: stopwatchInfo.value,
+    });
+  } else {
+    emits('addOk', {
+      ...currentInput.value,
+      mediaName: mediaName.value,
+      txtInfo: txtInfo.value,
+      imgInfo: imgInfo.value,
+      mediaInfo: mediaInfo.value,
+      timeInfo: timeInfo.value,
+      stopwatchInfo: stopwatchInfo.value,
+    });
   }
-
-  emits('ok', {
-    ...currentInput.value,
-    mediaName: mediaName.value,
-    txtInfo: txtInfo.value,
-    imgInfo: imgInfo.value,
-    mediaInfo: mediaInfo.value,
-    timeInfo: timeInfo.value,
-    stopwatchInfo: stopwatchInfo.value,
-  });
 }
 
 async function init() {
@@ -293,6 +311,27 @@ async function init() {
         .filter((item) => item.type === MediaTypeEnum.media)
         .filter((item) => !item.hidden).length + 1
     }`;
+  }
+  if (props.initData) {
+    if (
+      [MediaTypeEnum.camera, MediaTypeEnum.microphone].includes(
+        props.initData.type
+      )
+    ) {
+      currentInput.value = {
+        deviceId: props.initData.deviceId!,
+        type: props.initData.type,
+      };
+    }
+    mediaName.value = props.initData.mediaName;
+    timeInfo.value = props.initData.timeInfo;
+    txtInfo.value = props.initData.txtInfo;
+    stopwatchInfo.value = props.initData.stopwatchInfo;
+    console.log(
+      props.initData.deviceId,
+      props.initData.type,
+      props.initData.mediaName
+    );
   }
 }
 </script>

@@ -6,13 +6,28 @@
 import { isMobile } from 'billd-utils';
 import { onMounted } from 'vue';
 
+import { useCheckUpdate } from '@/hooks/use-checkUpdate';
 import { loginMessage } from '@/hooks/use-login';
 import { useUserStore } from '@/store/user';
 import cache from '@/utils/cache';
+import {
+  getLastBuildDateByLs,
+  setLastBuildDateByLs,
+} from '@/utils/localStorage/app';
 
+const { appInfo } = useCheckUpdate();
 const userStore = useUserStore();
 
+function handleUpdate() {
+  const old = getLastBuildDateByLs();
+  if (appInfo.value.lastBuildDate !== old) {
+    localStorage.clear();
+  }
+  setLastBuildDateByLs(appInfo.value.lastBuildDate);
+}
+
 onMounted(() => {
+  handleUpdate();
   loginMessage();
   const token = cache.getStorageExp('token');
   if (token) {

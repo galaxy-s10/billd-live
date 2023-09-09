@@ -103,13 +103,13 @@ export const useRTCParams = () => {
         type: MediaTypeEnum.camera,
         txt: '摄像头',
       },
-      [MediaTypeEnum.screen]: {
-        type: MediaTypeEnum.screen,
-        txt: '窗口',
-      },
       [MediaTypeEnum.microphone]: {
         type: MediaTypeEnum.microphone,
         txt: '麦克风',
+      },
+      [MediaTypeEnum.screen]: {
+        type: MediaTypeEnum.screen,
+        txt: '窗口',
       },
       [MediaTypeEnum.txt]: {
         type: MediaTypeEnum.txt,
