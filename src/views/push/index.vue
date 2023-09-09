@@ -357,7 +357,7 @@ const webaudioVideo = ref<HTMLVideoElement>();
 const fabricCanvas = ref<fabric.Canvas>();
 const audioCtx = ref<AudioContext>();
 const startTime = ref(+new Date());
-const normalVolume = ref(60);
+const normalVolume = ref(70);
 // const startTime = ref(1692807352565); // 1693027352565
 
 const timeCanvasDom = ref<Raw<fabric.Text>[]>([]);
@@ -912,7 +912,7 @@ async function handleCache() {
       bodyAppendChildElArr.value.push(videoEl);
       videoEl.srcObject = event;
       if (obj.volume !== undefined) {
-        videoEl.volume = obj.volume / 100;
+        videoEl.volume = obj.muted ? 0 : obj.volume / 100;
       }
       obj.videoEl = videoEl;
     }
@@ -1527,6 +1527,7 @@ function updateVolume(item: AppRootState['allTrack'][0], v) {
     if (iten.id === item.id) {
       if (item.volume !== undefined) {
         iten.volume = v;
+        iten.muted = v === 0;
         if (iten.videoEl) {
           iten.videoEl.volume = v / 100;
         }
@@ -1542,6 +1543,7 @@ function handleChangeMuted(item: AppRootState['allTrack'][0]) {
   if (item.videoEl) {
     const res = !item.videoEl.muted;
     item.videoEl.muted = res;
+    item.volume = res ? 0 : normalVolume.value;
     item.muted = res;
     resourceCacheStore.setList(appStore.allTrack);
   }
