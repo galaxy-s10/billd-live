@@ -138,7 +138,9 @@
             class="item"
           >
             <span class="name">
-              ({{ mediaTypeEnumMap[item.type] }}){{ item.mediaName }}
+              {{ NODE_ENV === 'development' ? item.id : '' }}({{
+                mediaTypeEnumMap[item.type]
+              }}){{ item.mediaName }}
             </span>
             <div class="control">
               <div
@@ -161,7 +163,7 @@
                     <n-slider
                       :value="item.volume"
                       :step="1"
-                      @update-value="(v) => updateVolume(item, v)"
+                      @update-value="(v) => handleChangeVolume(item, v)"
                     />
                   </div>
                 </n-popover>
@@ -532,6 +534,7 @@ function autoCreateVideo({
   console.warn('autoCreateVideo', id);
   const videoEl = createVideo({ appendChild: true });
   bodyAppendChildElArr.value.push(videoEl);
+  videoEl.setAttribute('videoid', id);
   if (muted !== undefined) {
     videoEl.muted = muted;
   }
@@ -805,6 +808,7 @@ async function handleCache() {
           appendChild: true,
         });
         bodyAppendChildElArr.value.push(videoEl);
+        videoEl.setAttribute('videoid', item.id);
         if (obj.volume !== undefined) {
           videoEl.volume = obj.volume / 100;
         }
@@ -897,6 +901,7 @@ async function handleCache() {
       });
       const videoEl = createVideo({ appendChild: true, muted: false });
       bodyAppendChildElArr.value.push(videoEl);
+      videoEl.setAttribute('videoid', obj.id);
       videoEl.srcObject = event;
       if (obj.volume !== undefined) {
         videoEl.volume = obj.volume / 100;
@@ -910,6 +915,7 @@ async function handleCache() {
       });
       const videoEl = createVideo({ appendChild: true, muted: false });
       bodyAppendChildElArr.value.push(videoEl);
+      videoEl.setAttribute('videoid', obj.id);
       videoEl.srcObject = event;
       if (obj.volume !== undefined) {
         videoEl.volume = obj.muted ? 0 : obj.volume / 100;
@@ -924,6 +930,7 @@ async function handleCache() {
       });
       const videoEl = createVideo({ appendChild: true });
       bodyAppendChildElArr.value.push(videoEl);
+      videoEl.setAttribute('videoid', obj.id);
       videoEl.srcObject = event;
       await new Promise((resolve) => {
         videoEl.onloadedmetadata = () => {
@@ -1196,6 +1203,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     };
     const videoEl = createVideo({ appendChild: true, muted: false });
     bodyAppendChildElArr.value.push(videoEl);
+    videoEl.setAttribute('videoid', val.id);
     videoEl.srcObject = event;
     microphoneVideoTrack.videoEl = videoEl;
     const res = [...appStore.allTrack, microphoneVideoTrack];
@@ -1430,6 +1438,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
       const url = URL.createObjectURL(file);
       const videoEl = createVideo({ muted: false, appendChild: true });
       bodyAppendChildElArr.value.push(videoEl);
+      videoEl.setAttribute('videoid', val.id);
       videoEl.src = url;
       videoEl.muted = false;
       const videoRes = await new Promise<HTMLVideoElement>((resolve) => {
@@ -1521,7 +1530,18 @@ function editMediaOk(val: AppRootState['allTrack'][0]) {
   resourceCacheStore.setList(res);
 }
 
-function updateVolume(item: AppRootState['allTrack'][0], v) {
+function handleChangeMuted(item: AppRootState['allTrack'][0]) {
+  if (item.videoEl) {
+    const res = !item.videoEl.muted;
+    item.videoEl.muted = res;
+    item.videoEl.volume = res ? 0 : normalVolume.value / 100;
+    item.volume = res ? 0 : normalVolume.value;
+    item.muted = res;
+    resourceCacheStore.setList(appStore.allTrack);
+  }
+}
+
+function handleChangeVolume(item: AppRootState['allTrack'][0], v) {
   console.log(item, item.volume, v);
   const res = appStore.allTrack.map((iten) => {
     if (iten.id === item.id) {
@@ -1529,7 +1549,9 @@ function updateVolume(item: AppRootState['allTrack'][0], v) {
         iten.volume = v;
         iten.muted = v === 0;
         if (iten.videoEl) {
+          console.log('kkkewk', iten.muted, v / 100);
           iten.videoEl.volume = v / 100;
+          iten.videoEl.muted = v === 0;
         }
       }
     }
@@ -1537,16 +1559,6 @@ function updateVolume(item: AppRootState['allTrack'][0], v) {
   });
   appStore.setAllTrack(res);
   resourceCacheStore.setList(res);
-}
-
-function handleChangeMuted(item: AppRootState['allTrack'][0]) {
-  if (item.videoEl) {
-    const res = !item.videoEl.muted;
-    item.videoEl.muted = res;
-    item.volume = res ? 0 : normalVolume.value;
-    item.muted = res;
-    resourceCacheStore.setList(appStore.allTrack);
-  }
 }
 
 function handleDel(item: AppRootState['allTrack'][0]) {
