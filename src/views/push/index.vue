@@ -926,6 +926,10 @@ async function handleCache() {
         videoEl.volume = obj.muted ? 0 : obj.volume / 100;
       }
       obj.videoEl = videoEl;
+      obj.stream = event;
+      obj.streamid = event.id;
+      obj.track = event.getAudioTracks()[0];
+      obj.trackid = event.getAudioTracks()[0].id;
     }
 
     async function handleCamera() {
