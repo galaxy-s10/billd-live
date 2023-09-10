@@ -35,8 +35,8 @@
 import { openToTarget } from 'billd-utils';
 import { ref } from 'vue';
 
-const showModal = ref(process.env.NODE_ENV === 'production');
-// const showModal = ref(false);
+// const showModal = ref(process.env.NODE_ENV === 'production');
+const showModal = ref(false);
 // const showModal = ref(true);
 // const showModal = ref(router.currentRoute.value.name === routerName.home);
 </script>
