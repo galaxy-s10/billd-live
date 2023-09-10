@@ -482,7 +482,7 @@ function handleMixedAudio() {
   if (webaudioVideo.value) {
     webaudioVideo.value.remove();
   }
-  webaudioVideo.value = createVideo({ appendChild: true, show: true });
+  webaudioVideo.value = createVideo({ appendChild: true, show: false });
   bodyAppendChildElArr.value.push(webaudioVideo.value);
   webaudioVideo.value.className = 'web-audio-video';
   webaudioVideo.value!.srcObject = destination.stream;
