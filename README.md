@@ -104,15 +104,7 @@ billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://
 
 > b站视频：[从零搭建迷你版b站web直播间合集](https://space.bilibili.com/381307133/channel/collectiondetail?sid=1458070)
 
-- 获取项目代码
-
-```bash
-git clone https://github.com/galaxy-s10/billd-live.git
-```
-
-- 安装依赖
-
-> 建议使用 node 版本：16.16.0
+- 安装依赖（建议使用 node 版本：16.16.0）
 
 ```bash
 pnpm i
