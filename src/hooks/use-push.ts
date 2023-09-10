@@ -8,7 +8,7 @@ import {
 } from '@/api/userLiveRoom';
 import { DanmuMsgTypeEnum, ILiveRoom, IMessage } from '@/interface';
 import { WsMsgTypeEnum } from '@/network/webSocket';
-import { AppRootState, useAppStore } from '@/store/app';
+import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 import { createVideo, generateBase64 } from '@/utils';
@@ -194,62 +194,6 @@ export function usePush() {
     closeWs();
     closeRtc();
   });
-  function addTrack(addTrackInfo: { track; stream }) {
-    networkStore.rtcMap.forEach((rtc) => {
-      const sender = rtc.peerConnection
-        ?.getSenders()
-        .find((sender) => sender.track?.id === addTrackInfo.track?.id);
-      if (!sender) {
-        console.log(
-          'pc添加track-开播后中途添加，替换它',
-          addTrackInfo.track?.id,
-          canvasVideoStream.value!.getAudioTracks()[0]
-        );
-        rtc.peerConnection
-          ?.getSenders()
-          ?.find((sender) => sender.track?.kind === 'audio')
-          ?.replaceTrack(canvasVideoStream.value!.getAudioTracks()[0]);
-      }
-    });
-    const mixedStream = new MediaStream();
-    appStore.allTrack.forEach((item) => {
-      if (item.track) {
-        mixedStream.addTrack(item.track);
-      }
-    });
-    console.log('addTrack后结果的音频轨', mixedStream.getAudioTracks());
-    console.log('addTrack后结果的视频轨', mixedStream.getVideoTracks());
-    console.log(
-      'addTrack后canvasVideoStream音频轨',
-      canvasVideoStream.value?.getAudioTracks()
-    );
-    console.log(
-      'addTrack后canvasVideoStream视频轨',
-      canvasVideoStream.value?.getVideoTracks()
-    );
-    localStream.value = mixedStream;
-  }
-
-  function delTrack(delTrackInfo: AppRootState['allTrack'][0]) {
-    networkStore.rtcMap.forEach((rtc) => {
-      const sender = rtc.peerConnection
-        ?.getSenders()
-        .find((sender) => sender.track?.id === delTrackInfo.track?.id);
-      if (sender) {
-        console.log('删除track', delTrackInfo, sender);
-        rtc.peerConnection?.removeTrack(sender);
-      }
-    });
-    const mixedStream = new MediaStream();
-    appStore.allTrack.forEach((item) => {
-      if (item.track) {
-        mixedStream.addTrack(item.track);
-      }
-    });
-    console.log('delTrack后结果的音频轨', mixedStream.getAudioTracks());
-    console.log('delTrack后结果的视频轨', mixedStream.getVideoTracks());
-    localStream.value = mixedStream;
-  }
 
   function closeWs() {
     const instance = networkStore.wsMap.get(roomId.value);
@@ -405,8 +349,6 @@ export function usePush() {
     endLive,
     sendDanmu,
     keydownDanmu,
-    addTrack,
-    delTrack,
     mySocketId,
     lastCoverImg,
     localStream,

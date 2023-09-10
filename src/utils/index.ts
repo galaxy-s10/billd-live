@@ -189,6 +189,7 @@ export const createVideo = ({
   muted = true,
   autoplay = true,
   appendChild = false,
+  show = false,
 }) => {
   const videoEl = document.createElement('video');
   videoEl.autoplay = autoplay;
@@ -204,13 +205,16 @@ export const createVideo = ({
     e.preventDefault();
   };
   if (appendChild) {
-    videoEl.style.width = `1px`;
-    videoEl.style.height = `1px`;
+    if (!show) {
+      videoEl.style.width = `1px`;
+      videoEl.style.height = `1px`;
+      videoEl.style.opacity = '0';
+      videoEl.style.pointerEvents = 'none';
+    }
     videoEl.style.position = 'fixed';
     videoEl.style.bottom = '0';
     videoEl.style.right = '0';
-    videoEl.style.opacity = '0';
-    videoEl.style.pointerEvents = 'none';
+
     document.body.appendChild(videoEl);
   }
   return videoEl;

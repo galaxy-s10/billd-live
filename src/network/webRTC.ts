@@ -343,12 +343,11 @@ export class WebRTCClass {
     if (!this.peerConnection) return;
     // 废弃：https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/addStream
     console.warn(`${this.roomId}，开始监听pc的addstream`);
-    this.peerConnection.addEventListener('addstream', (event: any) => {
+    this.peerConnection.addEventListener('addstream', () => {
       // console.warn(`${this.roomId}，pc收到addstream事件`, event);
       // console.log('addstream事件的stream', event.stream);
       // console.log('addstream事件的视频轨', event.stream.getVideoTracks());
       // console.log('addstream事件的音频轨', event.stream.getAudioTracks());
-      // this.addTrack(event.stream, true);
     });
 
     console.warn(`${this.roomId}，开始监听pc的track`);
