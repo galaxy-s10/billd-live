@@ -1,3 +1,4 @@
+import { UploadFileInfo } from 'naive-ui';
 import { defineStore } from 'pinia';
 
 import { ILiveRoom, LiveLineEnum, MediaTypeEnum } from '@/interface';
@@ -25,6 +26,8 @@ export type AppRootState = {
     muted?: boolean;
     volume?: number;
     videoEl?: HTMLVideoElement;
+    imgInfo?: UploadFileInfo[];
+    mediaInfo?: UploadFileInfo[];
     txtInfo?: { txt: string; color: string };
     timeInfo?: { color: string };
     stopwatchInfo?: { color: string };

@@ -61,7 +61,7 @@ export function usePush() {
       console.log('新的allTrack视频轨', mixedStream.getVideoTracks());
       console.log('旧的allTrack音频轨', localStream.value?.getAudioTracks());
       console.log('旧的allTrack视频轨', localStream.value?.getVideoTracks());
-      localStream.value = mixedStream;
+      // localStream.value = mixedStream;
     },
     { deep: true }
   );

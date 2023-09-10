@@ -458,7 +458,7 @@ function renderFrame() {
 function handleMixedAudio() {
   console.log('handleMixedAudio');
   const allAudioTrack = appStore.allTrack.filter((item) => item.audio === 1);
-  audioCtx.value = new AudioContext();
+  const audioCtx = new AudioContext();
   if (canvasVideoStream.value?.getAudioTracks()[0]) {
     canvasVideoStream.value.removeTrack(
       canvasVideoStream.value.getAudioTracks()[0]
@@ -466,15 +466,15 @@ function handleMixedAudio() {
   }
   const res: { source: MediaStreamAudioSourceNode; gainNode: GainNode }[] = [];
   allAudioTrack.forEach((item) => {
-    if (!audioCtx.value || !item.stream) return;
-    const source = audioCtx.value.createMediaStreamSource(item.stream);
-    const gainNode = audioCtx.value.createGain();
+    if (!audioCtx || !item.stream) return;
+    const source = audioCtx.createMediaStreamSource(item.stream);
+    const gainNode = audioCtx.createGain();
     gainNode.gain.value = (item.volume || 100) / 100;
     source.connect(gainNode);
     res.push({ source, gainNode });
     console.log('混流', item.stream?.id, item.stream);
   });
-  const destination = audioCtx.value.createMediaStreamDestination();
+  const destination = audioCtx.createMediaStreamDestination();
   res.forEach((item) => {
     item.source.connect(item.gainNode);
     item.gainNode.connect(destination);
@@ -1078,9 +1078,6 @@ function setScaleInfo({ track, canvasDom, scale = 1 }) {
 }
 
 async function addMediaOk(val: AppRootState['allTrack'][0]) {
-  if (!audioCtx.value) {
-    audioCtx.value = new AudioContext();
-  }
   showMediaModalCpt.value = false;
   if (val.type === MediaTypeEnum.screen) {
     const event = await navigator.mediaDevices.getDisplayMedia({
@@ -1206,7 +1203,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     };
     const videoEl = createVideo({ appendChild: true, muted: false });
     bodyAppendChildElArr.value.push(videoEl);
-    videoEl.setAttribute('videoid', val.id);
+    videoEl.setAttribute('videoid', microphoneVideoTrack.id);
     videoEl.srcObject = event;
     microphoneVideoTrack.videoEl = videoEl;
     const res = [...appStore.allTrack, microphoneVideoTrack];
@@ -1231,7 +1228,6 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
       scaleInfo: {},
     };
     if (fabricCanvas.value) {
-      console.log('val.txtInfo?.txt ', val.txtInfo?.txt);
       const canvasDom = markRaw(
         new fabric.Text(val.txtInfo?.txt || '', {
           top: 0,
@@ -1427,7 +1423,6 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
       const url = URL.createObjectURL(file);
       const videoEl = createVideo({ muted: false, appendChild: true });
       bodyAppendChildElArr.value.push(videoEl);
-      videoEl.setAttribute('videoid', val.id);
       videoEl.src = url;
       videoEl.muted = false;
       const videoRes = await new Promise<HTMLVideoElement>((resolve) => {
@@ -1556,6 +1551,13 @@ function handleDel(item: AppRootState['allTrack'][0]) {
     fabricCanvas.value?.remove(item.canvasDom);
     item.videoEl?.remove();
   }
+  bodyAppendChildElArr.value.forEach((el) => {
+    const videoid = el.getAttribute('videoid');
+    if (item.id === videoid) {
+      console.log('移除');
+      el.remove();
+    }
+  });
   const res = appStore.allTrack.filter((iten) => iten.id !== item.id);
   appStore.setAllTrack(res);
   resourceCacheStore.setList(res);
