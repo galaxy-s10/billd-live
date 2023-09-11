@@ -81,6 +81,11 @@ export const sliderList = [
     link: 'https://webpack.js.org',
   },
   {
+    img: 'https://resource.hsslive.cn/billd-live/image/5304af2ea6864369df3ba895d20e3d14.png',
+    txt: 'swc',
+    link: 'https://swc.rs',
+  },
+  {
     img: 'https://resource.hsslive.cn/image/dd8ffe33c22723381a3664684eaca237.png',
     txt: 'esbuild',
     link: 'https://esbuild.github.io',
