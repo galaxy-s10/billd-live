@@ -10,6 +10,7 @@ import { VueLoaderPlugin } from 'vue-loader';
 import { Configuration, DefinePlugin } from 'webpack';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import { merge } from 'webpack-merge';
+import WebpackBar from 'webpackbar';
 import WindiCSSWebpackPlugin from 'windicss-webpack-plugin';
 
 import {
@@ -18,6 +19,7 @@ import {
   htmlWebpackPluginTitle,
   outputDir,
   outputStaticUrl,
+  webpackBarEnable,
   windicssEnable,
 } from '../constant';
 import { chalkINFO, chalkWARN } from '../utils/chalkTip';
@@ -148,6 +150,7 @@ const commonConfig = (isProduction) => {
     },
     cache: {
       type: 'memory',
+      // type: 'filesystem',
       // allowCollectingMemory: true, // 它在生产模式中默认为false，并且在开发模式下默认为true。https://webpack.js.org/configuration/cache/#cacheallowcollectingmemory
       // buildDependencies: {
       //   // 建议cache.buildDependencies.config: [__filename]在您的 webpack 配置中设置以获取最新配置和所有依赖项。
@@ -267,6 +270,8 @@ const commonConfig = (isProduction) => {
       ],
     },
     plugins: [
+      // 构建进度条
+      webpackBarEnable && new WebpackBar(),
       // 友好的显示错误信息在终端
       new FriendlyErrorsWebpackPlugin(),
       // 解析vue
@@ -321,6 +326,34 @@ const commonConfig = (isProduction) => {
           },
         ],
       }),
+      // new EsbuildPlugin({
+      //   target: 'esnext',
+      //   // define: {
+      //   //   DSF_FS: JSON.stringify({ d: 23 }),
+      //   //   'process.env.NODE_ENV': JSON.stringify({ d: 32 }),
+      //   //   'process.env.PUBLIC_PATdH': JSON.stringify({ f: 2 }),
+      //   //   // 'process.env.VUE_APP_RELEASE_PROJECT_NAME': JSON.stringify(
+      //   //   //   process.env.VUE_APP_RELEASE_PROJECT_NAME
+      //   //   // ),
+      //   //   // 'process.env.VUE_APP_RELEASE_PROJECT_ENV': JSON.stringify(
+      //   //   //   process.env.VUE_APP_RELEASE_PROJECT_ENV
+      //   //   // ),
+      //   //   // 'process.env.BilldHtmlWebpackPlugin': JSON.stringify(logData()),
+      //   //   // 'process.env': {
+      //   //   //   BilldHtmlWebpackPlugin: JSON.stringify(logData()),
+      //   //   //   NODE_ENV: JSON.stringify(
+      //   //   //     isProduction ? 'production' : 'development'
+      //   //   //   ),
+      //   //   //   PUBLIC_PATH: JSON.stringify(outputStaticUrl(isProduction)),
+      //   //   //   VUE_APP_RELEASE_PROJECT_NAME: JSON.stringify(
+      //   //   //     process.env.VUE_APP_RELEASE_PROJECT_NAME
+      //   //   //   ),
+      //   //   //   VUE_APP_RELEASE_PROJECT_ENV: JSON.stringify(
+      //   //   //     process.env.VUE_APP_RELEASE_PROJECT_ENV
+      //   //   //   ),
+      //   //   // },
+      //   // },
+      // }),
       // 定义全局变量
       new DefinePlugin({
         BASE_URL: `${JSON.stringify(outputStaticUrl(isProduction))}`, // public下的index.html里面的favicon.ico的路径
@@ -338,6 +371,38 @@ const commonConfig = (isProduction) => {
         __VUE_OPTIONS_API__: false,
         __VUE_PROD_DEVTOOLS__: false,
       }),
+      // ts类型检查
+      // feat: drop support for Vue.js：https://github.com/TypeStrong/fork-ts-checker-webpack-plugin/pull/801
+      // https://github.com/TypeStrong/fork-ts-checker-webpack-plugin/tree/v6.5.2#vuejs
+      // fork-ts-checker-webpack-plugin得配合ts-loader使用。
+      // new ForkTsCheckerWebpackPlugin({
+      //   // https://github.com/TypeStrong/fork-ts-checker-webpack-plugin
+      //   typescript: {
+      //     extensions: {
+      //       vue: {
+      //         enabled: true,
+      //         compiler: resolveApp('./node_modules/vue/compiler-sfc/index.js'),
+      //       },
+      //     },
+      //     diagnosticOptions: {
+      //       semantic: true,
+      //       syntactic: false,
+      //     },
+      //   },
+      //   /**
+      //    * devServer如果设置为false，则不会向 Webpack Dev Server 报告错误。
+      //    * 但是控制台还是会打印错误。
+      //    */
+      //   // devServer: false, // 7.x版本：https://github.com/TypeStrong/fork-ts-checker-webpack-plugin/issues/723
+      //   logger: {
+      //     devServer: false, // fork-ts-checker-webpack-plugin6.x版本
+      //   },
+      //   /**
+      //    * async 为 false，同步的将错误信息反馈给 webpack，如果报错了，webpack 就会编译失败
+      //    * async 默认为 true，异步的将错误信息反馈给 webpack，如果报错了，不影响 webpack 的编译
+      //    */
+      //   async: true,
+      // }),
       // bundle分析
       analyzerEnable &&
         new BundleAnalyzerPlugin({

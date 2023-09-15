@@ -10,7 +10,6 @@ import TerserPlugin from 'terser-webpack-plugin';
 // import { version as vueRouterVersion } from 'vue-router/package.json';
 // import { version as vueVersion } from 'vue/package.json';
 import { Configuration } from 'webpack';
-import WebpackBar from 'webpackbar';
 
 import { gzipEnable } from '../constant';
 import { chalkINFO } from '../utils/chalkTip';
@@ -176,8 +175,6 @@ const prodConfig: Configuration = {
     ],
   },
   plugins: [
-    // 构建进度条
-    new WebpackBar(),
     // http压缩
     gzipEnable &&
       new CompressionPlugin({

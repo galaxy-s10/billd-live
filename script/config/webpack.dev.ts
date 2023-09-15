@@ -1,9 +1,7 @@
-import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import portfinder from 'portfinder';
 import { Configuration } from 'webpack';
-import WebpackBar from 'webpackbar';
 
-import { outputStaticUrl, webpackBarEnable } from '../constant';
+import { outputStaticUrl } from '../constant';
 import TerminalPrintPlugin from '../TerminalPrintPlugin';
 import { chalkINFO } from '../utils/chalkTip';
 import { resolveApp } from '../utils/path';
@@ -25,8 +23,8 @@ export default new Promise((resolve) => {
         mode: 'development',
         stats: 'none',
         // https://webpack.docschina.org/configuration/devtool/
-        devtool: 'eval-cheap-module-source-map',
-        // devtool: 'eval', // eval，具有最高性能的开发构建的推荐选择。
+        // devtool: 'eval-cheap-module-source-map',
+        devtool: 'eval', // eval，具有最高性能的开发构建的推荐选择。
         // 这个infrastructureLogging设置参考了vuecli5，如果不设置，webpack-dev-server会打印一些信息
         infrastructureLogging: {
           level: 'none',
@@ -92,57 +90,58 @@ export default new Promise((resolve) => {
         module: {
           rules: [
             {
-              test: /\.(js|mjs|jsx|ts|tsx)$/,
+              test: /.(ts|tsx)$/,
               exclude: /node_modules/,
               use: [
                 {
-                  loader: 'esbuild-loader',
+                  loader: 'swc-loader',
                   options: {
-                    loader: 'tsx', // Remove this if you're not using JSX
-                    target: 'esnext', // Syntax to compile to (see options below for possible values)
+                    jsc: {
+                      parser: {
+                        syntax: 'typescript',
+                        tsx: true,
+                      },
+                    },
                   },
                 },
               ],
             },
+            {
+              test: /.(js|jsx|mjs|cjs)$/,
+              exclude: /node_modules/,
+              use: [
+                {
+                  loader: 'swc-loader',
+                  options: {
+                    jsc: {
+                      parser: {
+                        syntax: 'ecmascript',
+                        jsx: true,
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+            // {
+            //   test: /\.(js|mjs|jsx|ts|tsx)$/,
+            //   exclude: /node_modules/,
+            //   use: [
+            //     {
+            //       loader: 'esbuild-loader',
+            //       options: {
+            //         loader: 'tsx', // Remove this if you're not using JSX
+            //         target: 'esnext', // Syntax to compile to (see options below for possible values)
+            //       },
+            //     },
+            //   ],
+            // },
           ],
         },
         // @ts-ignore
         plugins: [
-          // new VueLoaderPlugin(),
-          // 构建进度条
-          webpackBarEnable && new WebpackBar(),
           // 终端打印调试地址
           new TerminalPrintPlugin(),
-          new ForkTsCheckerWebpackPlugin({
-            // https://github.com/TypeStrong/fork-ts-checker-webpack-plugin
-            typescript: {
-              extensions: {
-                vue: {
-                  enabled: true,
-                  compiler: resolveApp(
-                    './node_modules/vue/compiler-sfc/index.js'
-                  ),
-                },
-              },
-              diagnosticOptions: {
-                semantic: true,
-                syntactic: false,
-              },
-            },
-            /**
-             * devServer如果设置为false，则不会向 Webpack Dev Server 报告错误。
-             * 但是控制台还是会打印错误。
-             */
-            devServer: false, // 7.x版本：https://github.com/TypeStrong/fork-ts-checker-webpack-plugin/issues/723
-            // logger: {
-            //   devServer: false, // fork-ts-checker-webpack-plugin6.x版本
-            // },
-            /**
-             * async 为 false，同步的将错误信息反馈给 webpack，如果报错了，webpack 就会编译失败
-             * async 默认为 true，异步的将错误信息反馈给 webpack，如果报错了，不影响 webpack 的编译
-             */
-            async: true,
-          }),
         ].filter(Boolean),
         optimization: {
           /**
