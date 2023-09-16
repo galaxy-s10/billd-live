@@ -300,7 +300,7 @@ import { usePush } from '@/hooks/use-push';
 import { useRTCParams } from '@/hooks/use-rtc-params';
 import { DanmuMsgTypeEnum, MediaTypeEnum } from '@/interface';
 import { AppRootState, useAppStore } from '@/store/app';
-import { useResourceCacheStore } from '@/store/cache';
+import { usePiniaCacheStore } from '@/store/cache';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 import {
@@ -321,7 +321,7 @@ const route = useRoute();
 const userStore = useUserStore();
 const appStore = useAppStore();
 const networkStore = useNetworkStore();
-const resourceCacheStore = useResourceCacheStore();
+const cacheStore = usePiniaCacheStore();
 const { maxBitrate, maxFramerate, resolutionRatio, allMediaTypeList } =
   useRTCParams();
 
@@ -357,9 +357,7 @@ const containerRef = ref<HTMLDivElement>();
 const pushCanvasRef = ref<HTMLCanvasElement>();
 const webaudioVideo = ref<HTMLVideoElement>();
 const fabricCanvas = ref<fabric.Canvas>();
-const audioCtx = ref<AudioContext>();
 const startTime = ref(+new Date());
-const normalVolume = ref(70);
 // const startTime = ref(1692807352565); // 1693027352565
 
 const timeCanvasDom = ref<Raw<fabric.Text>[]>([]);
@@ -755,7 +753,7 @@ function handleScaling({ canvasDom, id }) {
         });
       }
     });
-    resourceCacheStore.setList(appStore.allTrack);
+    cacheStore.setResourceList(appStore.allTrack);
   });
 }
 function handleMoving({
@@ -781,14 +779,14 @@ function handleMoving({
         };
       }
     });
-    resourceCacheStore.setList(appStore.allTrack);
+    cacheStore.setResourceList(appStore.allTrack);
   });
 }
 
 async function handleCache() {
   const res: AppRootState['allTrack'] = [];
   const queue: any[] = [];
-  resourceCacheStore.list.forEach((item) => {
+  cacheStore['resource-list'].forEach((item) => {
     // @ts-ignore
     const obj: AppRootState['allTrack'][0] = {};
     obj.audio = item.audio;
@@ -1116,7 +1114,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     const audio = event.getAudioTracks();
     if (audio.length) {
       videoTrack.audio = 1;
-      videoTrack.volume = normalVolume.value;
+      videoTrack.volume = appStore.normalVolume;
       const audioTrack: AppRootState['allTrack'][0] = {
         id: videoTrack.id,
         audio: 1,
@@ -1134,12 +1132,12 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
       };
       const res = [...appStore.allTrack, videoTrack, audioTrack];
       appStore.setAllTrack(res);
-      resourceCacheStore.setList(res);
+      cacheStore.setResourceList(res);
       handleMixedAudio();
     } else {
       const res = [...appStore.allTrack, videoTrack];
       appStore.setAllTrack(res);
-      resourceCacheStore.setList(res);
+      cacheStore.setResourceList(res);
       // @ts-ignore
     }
 
@@ -1177,7 +1175,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
 
     const res = [...appStore.allTrack, videoTrack];
     appStore.setAllTrack(res);
-    resourceCacheStore.setList(res);
+    cacheStore.setResourceList(res);
     // @ts-ignore
     console.log('获取摄像头成功');
   } else if (val.type === MediaTypeEnum.microphone) {
@@ -1208,7 +1206,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     microphoneVideoTrack.videoEl = videoEl;
     const res = [...appStore.allTrack, microphoneVideoTrack];
     appStore.setAllTrack(res);
-    resourceCacheStore.setList(res);
+    cacheStore.setResourceList(res);
     handleMixedAudio();
 
     console.log('获取麦克风成功');
@@ -1256,7 +1254,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     // @ts-ignore
     appStore.setAllTrack(res);
     // @ts-ignore
-    resourceCacheStore.setList(res);
+    cacheStore.setResourceList(res);
 
     console.log('获取文字成功', fabricCanvas.value);
   } else if (val.type === MediaTypeEnum.time) {
@@ -1295,7 +1293,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     // @ts-ignore
     appStore.setAllTrack(res);
     // @ts-ignore
-    resourceCacheStore.setList(res);
+    cacheStore.setResourceList(res);
 
     console.log('获取时间成功', fabricCanvas.value);
   } else if (val.type === MediaTypeEnum.stopwatch) {
@@ -1335,7 +1333,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     // @ts-ignore
     appStore.setAllTrack(res);
     // @ts-ignore
-    resourceCacheStore.setList(res);
+    cacheStore.setResourceList(res);
 
     console.log('获取秒表成功', fabricCanvas.value);
   } else if (val.type === MediaTypeEnum.img) {
@@ -1397,7 +1395,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     // @ts-ignore
     appStore.setAllTrack(res);
     // @ts-ignore
-    resourceCacheStore.setList(res);
+    cacheStore.setResourceList(res);
 
     console.log('获取图片成功', fabricCanvas.value);
   } else if (val.type === MediaTypeEnum.media) {
@@ -1442,7 +1440,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
       if (stream.getAudioTracks()[0]) {
         console.log('视频有音频', stream.getAudioTracks()[0]);
         mediaVideoTrack.audio = 1;
-        mediaVideoTrack.volume = normalVolume.value;
+        mediaVideoTrack.volume = appStore.normalVolume;
         const audioTrack: AppRootState['allTrack'][0] = {
           id: mediaVideoTrack.id,
           audio: 1,
@@ -1460,7 +1458,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
         };
         const res = [...appStore.allTrack, audioTrack];
         appStore.setAllTrack(res);
-        resourceCacheStore.setList(res);
+        cacheStore.setResourceList(res);
         handleMixedAudio();
       }
     }
@@ -1468,7 +1466,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     // @ts-ignore
     appStore.setAllTrack(res);
     // @ts-ignore
-    resourceCacheStore.setList(res);
+    cacheStore.setResourceList(res);
 
     console.log('获取视频成功', fabricCanvas.value);
   }
@@ -1509,30 +1507,28 @@ function editMediaOk(val: AppRootState['allTrack'][0]) {
     return item;
   });
   appStore.setAllTrack(res);
-  resourceCacheStore.setList(res);
+  cacheStore.setResourceList(res);
 }
 
 function handleChangeMuted(item: AppRootState['allTrack'][0]) {
   if (item.videoEl) {
     const res = !item.videoEl.muted;
     item.videoEl.muted = res;
-    item.videoEl.volume = res ? 0 : normalVolume.value / 100;
-    item.volume = res ? 0 : normalVolume.value;
+    item.videoEl.volume = res ? 0 : appStore.normalVolume / 100;
+    item.volume = res ? 0 : appStore.normalVolume;
     item.muted = res;
-    resourceCacheStore.setList(appStore.allTrack);
+    cacheStore.setResourceList(appStore.allTrack);
     handleMixedAudio();
   }
 }
 
 function handleChangeVolume(item: AppRootState['allTrack'][0], v) {
-  console.log(item, item.volume, v);
   const res = appStore.allTrack.map((iten) => {
     if (iten.id === item.id) {
       if (item.volume !== undefined) {
         iten.volume = v;
         iten.muted = v === 0;
         if (iten.videoEl) {
-          console.log('kkkewk', iten.muted, v / 100);
           iten.videoEl.volume = v / 100;
           iten.videoEl.muted = v === 0;
         }
@@ -1541,7 +1537,7 @@ function handleChangeVolume(item: AppRootState['allTrack'][0], v) {
     return iten;
   });
   appStore.setAllTrack(res);
-  resourceCacheStore.setList(res);
+  cacheStore.setResourceList(res);
   handleMixedAudio();
 }
 
@@ -1550,17 +1546,20 @@ function handleDel(item: AppRootState['allTrack'][0]) {
   if (item.canvasDom !== undefined) {
     fabricCanvas.value?.remove(item.canvasDom);
     item.videoEl?.remove();
+    item.stream?.getTracks().forEach((track) => {
+      track.stop();
+      item.stream?.removeTrack(track);
+    });
   }
   bodyAppendChildElArr.value.forEach((el) => {
     const videoid = el.getAttribute('videoid');
     if (item.id === videoid) {
-      console.log('移除');
       el.remove();
     }
   });
   const res = appStore.allTrack.filter((iten) => iten.id !== item.id);
   appStore.setAllTrack(res);
-  resourceCacheStore.setList(res);
+  cacheStore.setResourceList(res);
   handleMixedAudio();
 }
 

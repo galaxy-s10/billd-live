@@ -21,8 +21,9 @@ export const COOKIE_KEY = {
 };
 
 // 全局的localStorage的key
-export const LOCALSTORAGE_KEY = {
+export const lsKey = {
   lastBuildDate: 'lastBuildDate',
+  token: 'token',
 };
 
 export const bilibiliCollectiondetail =

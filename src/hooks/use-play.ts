@@ -5,6 +5,7 @@ import Player from 'video.js/dist/types/player';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 
 import { useAppStore } from '@/store/app';
+import { usePiniaCacheStore } from '@/store/cache';
 import { createVideo } from '@/utils';
 
 export * as flvJs from 'flv.js';
@@ -13,6 +14,7 @@ export function useFlvPlay() {
   // const flvPlayer = ref<flvJs.Player>();
   const flvPlayer = ref<mpegts.Player>();
   const flvVideoEl = ref<HTMLVideoElement>();
+  const cacheStore = usePiniaCacheStore();
   const appStore = useAppStore();
   const retryMax = ref(120);
   const retry = ref(0);
@@ -32,21 +34,50 @@ export function useFlvPlay() {
     flvVideoEl.value?.remove();
   }
 
+  function setMuted(val) {
+    if (flvVideoEl.value) {
+      flvVideoEl.value.muted = val;
+    }
+    if (flvPlayer.value) {
+      flvPlayer.value.muted = val;
+    }
+  }
+  function setVolume(val: number) {
+    if (flvVideoEl.value) {
+      flvVideoEl.value.volume = val / 100;
+    }
+    if (flvPlayer.value) {
+      flvPlayer.value.volume = val / 100;
+    }
+  }
+  function setPlay(val: boolean) {
+    if (val) {
+      flvVideoEl.value?.play();
+      flvPlayer.value?.play();
+    } else {
+      flvVideoEl.value?.pause();
+      flvPlayer.value?.pause();
+    }
+  }
+
   watch(
-    () => appStore.muted,
+    () => cacheStore.muted,
     (newVal) => {
       setMuted(newVal);
     }
   );
-
-  function setMuted(val) {
-    if (flvPlayer.value) {
-      flvPlayer.value.muted = val;
+  watch(
+    () => cacheStore.volume,
+    (newVal) => {
+      setVolume(newVal);
     }
-    if (flvVideoEl.value) {
-      flvVideoEl.value.muted = val;
+  );
+  watch(
+    () => appStore.play,
+    (newVal) => {
+      setPlay(newVal);
     }
-  }
+  );
 
   function startFlvPlay(data: { flvurl: string }) {
     console.log('startFlvPlay', data.flvurl);
@@ -66,7 +97,7 @@ export function useFlvPlay() {
           videoEl.addEventListener('playing', () => {
             console.log('flv-playing');
             retry.value = 0;
-            setMuted(appStore.muted);
+            setMuted(cacheStore.muted);
             flvVideoEl.value = videoEl;
             resolve('');
           });
@@ -95,7 +126,7 @@ export function useFlvPlay() {
             console.log('mpegts消息：mpegts.Events.MEDIA_INFO');
           });
           try {
-            console.log(`开始播放flv，muted:${appStore.muted}`);
+            console.log(`开始播放flv，muted:${cacheStore.muted}`);
             flvPlayer.value.play();
           } catch (err) {
             console.error('flv播放失败');
@@ -115,6 +146,7 @@ export function useFlvPlay() {
 export function useHlsPlay() {
   const hlsPlayer = ref<Player>();
   const hlsVideoEl = ref<HTMLVideoElement>();
+  const cacheStore = usePiniaCacheStore();
   const appStore = useAppStore();
   const retryMax = ref(120);
   const retry = ref(0);
@@ -134,8 +166,7 @@ export function useHlsPlay() {
     hlsVideoEl.value?.remove();
   }
 
-  function setMuted(val) {
-    console.log('setMuted', val);
+  function setMuted(val: boolean) {
     if (hlsVideoEl.value) {
       hlsVideoEl.value.muted = val;
     }
@@ -143,11 +174,40 @@ export function useHlsPlay() {
       hlsPlayer.value.muted(val);
     }
   }
+  function setVolume(val: number) {
+    if (hlsVideoEl.value) {
+      hlsVideoEl.value.volume = val / 100;
+    }
+    if (hlsPlayer.value) {
+      hlsPlayer.value.volume(val / 100);
+    }
+  }
+  function setPlay(val: boolean) {
+    if (val) {
+      hlsVideoEl.value?.play();
+      hlsPlayer.value?.play();
+    } else {
+      hlsVideoEl.value?.pause();
+      hlsPlayer.value?.pause();
+    }
+  }
 
   watch(
-    () => appStore.muted,
+    () => cacheStore.muted,
     (newVal) => {
       setMuted(newVal);
+    }
+  );
+  watch(
+    () => cacheStore.volume,
+    (newVal) => {
+      setVolume(newVal);
+    }
+  );
+  watch(
+    () => appStore.play,
+    (newVal) => {
+      setPlay(newVal);
     }
   );
 
@@ -156,7 +216,10 @@ export function useHlsPlay() {
       function main() {
         console.log('startHlsPlay', data.hlsurl);
         destroyHls();
-        const videoEl = createVideo({ muted: appStore.muted, autoplay: true });
+        const videoEl = createVideo({
+          muted: cacheStore.muted,
+          autoplay: true,
+        });
         hlsPlayer.value = videoJs(
           videoEl,
           {
@@ -169,7 +232,7 @@ export function useHlsPlay() {
           },
           function () {
             try {
-              console.log(`开始播放hls，muted:${appStore.muted}`);
+              console.log(`开始播放hls，muted:${cacheStore.muted}`);
               hlsPlayer.value?.play();
             } catch (err) {
               console.error('hls播放失败');
@@ -198,7 +261,7 @@ export function useHlsPlay() {
         });
         hlsPlayer.value?.on('playing', () => {
           console.log('hls-playing');
-          setMuted(appStore.muted);
+          setMuted(cacheStore.muted);
           retry.value = 0;
           // console.log(hlsPlayer.value?.videoHeight()); // 获取到的是正确的！
           const childNodes = hlsPlayer.value?.el().childNodes;

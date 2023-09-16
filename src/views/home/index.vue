@@ -37,7 +37,11 @@
             ></div>
           </div>
           <template v-if="currentLiveRoom">
-            <VideoControls></VideoControls>
+            <VideoControls
+              @click.stop
+              :resolution="videoHeight"
+              @refresh="handleRefresh"
+            ></VideoControls>
             <div
               class="join-btn"
               :class="{
@@ -171,8 +175,14 @@ const currentLiveRoom = ref<ILive>();
 const interactionList = ref(sliderList);
 const remoteVideoRef = ref<HTMLDivElement>();
 
-const { videoLoading, remoteVideo, handleStopDrawing, roomLiving, handlePlay } =
-  usePull();
+const {
+  videoLoading,
+  remoteVideo,
+  roomLiving,
+  videoHeight,
+  handleStopDrawing,
+  handlePlay,
+} = usePull();
 
 watch(
   () => remoteVideo.value,
@@ -186,9 +196,12 @@ watch(
   }
 );
 
-function changeLiveRoom(item: ILive) {
+function handleRefresh() {
+  playLive(currentLiveRoom.value!);
+}
+
+function playLive(item: ILive) {
   handleStopDrawing();
-  if (item.id === currentLiveRoom.value?.id) return;
   currentLiveRoom.value = item;
   canvasRef.value?.childNodes?.forEach((item) => {
     item.remove();
@@ -196,6 +209,11 @@ function changeLiveRoom(item: ILive) {
   appStore.setLiveRoomInfo(item.live_room!);
   roomLiving.value = true;
   handlePlay(item.live_room!);
+}
+
+function changeLiveRoom(item: ILive) {
+  if (item.id === currentLiveRoom.value?.id) return;
+  playLive(item);
 }
 
 async function getLiveRoomList() {

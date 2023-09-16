@@ -52,7 +52,7 @@
             class="media-list"
             :class="{ item: appStore.allTrack.length > 1 }"
           ></div>
-          <VideoControls></VideoControls>
+          <VideoControls :resolution="videoHeight"></VideoControls>
         </div>
       </div>
 
@@ -211,6 +211,7 @@ const {
   mySocketId,
   keydownDanmu,
   sendDanmu,
+  videoHeight,
   videoLoading,
   remoteVideo,
   roomLiving,

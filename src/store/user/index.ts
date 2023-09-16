@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 
 import { fetchUserInfo } from '@/api/user';
 import { IRole, IUser } from '@/interface';
-import cache from '@/utils/cache';
+import { clearToken, setToken } from '@/utils/localStorage/user';
 
 type RootState = {
   userInfo?: IUser;
@@ -23,14 +23,14 @@ export const useUserStore = defineStore('user', {
       this.userInfo = res;
     },
     setToken(res) {
-      cache.setStorageExp('token', res, 24);
+      setToken(res);
       this.token = res;
     },
     setRoles(res) {
       this.roles = res;
     },
     logout() {
-      cache.clearStorage('token');
+      clearToken();
       this.token = undefined;
       this.userInfo = undefined;
       this.roles = [];

@@ -2,22 +2,32 @@ import { defineStore } from 'pinia';
 
 import { AppRootState } from '@/store/app';
 
-export type ResourceCacheRootState = {
-  list: AppRootState['allTrack'];
+export type PiniaCacheRootState = {
+  muted: boolean;
+  volume: number;
+  'resource-list': AppRootState['allTrack'];
 };
 
-export const useResourceCacheStore = defineStore('resource-cache', {
+export const usePiniaCacheStore = defineStore('pinia-cache', {
   persist: {
-    key: 'resource-cache',
+    key: 'pinia-cache',
   },
-  state: (): ResourceCacheRootState => {
+  state: (): PiniaCacheRootState => {
     return {
-      list: [],
+      muted: true,
+      volume: 70,
+      'resource-list': [],
     };
   },
   actions: {
-    setList(res: ResourceCacheRootState['list']) {
-      this.list = res;
+    setResourceList(res: PiniaCacheRootState['resource-list']) {
+      this['resource-list'] = res;
+    },
+    setMuted(res: PiniaCacheRootState['muted']) {
+      this.muted = res;
+    },
+    setVolume(res: PiniaCacheRootState['volume']) {
+      this.volume = res;
     },
   },
 });

@@ -9,27 +9,24 @@ import { onMounted } from 'vue';
 import { useCheckUpdate } from '@/hooks/use-checkUpdate';
 import { loginMessage } from '@/hooks/use-login';
 import { useUserStore } from '@/store/user';
-import cache from '@/utils/cache';
-import {
-  getLastBuildDateByLs,
-  setLastBuildDateByLs,
-} from '@/utils/localStorage/app';
+import { getLastBuildDate, setLastBuildDate } from '@/utils/localStorage/app';
+import { getToken } from '@/utils/localStorage/user';
 
 const { appInfo } = useCheckUpdate();
 const userStore = useUserStore();
 
 function handleUpdate() {
-  const old = getLastBuildDateByLs();
+  const old = getLastBuildDate();
   if (appInfo.value.lastBuildDate !== old) {
     localStorage.clear();
   }
-  setLastBuildDateByLs(appInfo.value.lastBuildDate);
+  setLastBuildDate(appInfo.value.lastBuildDate);
 }
 
 onMounted(() => {
   handleUpdate();
   loginMessage();
-  const token = cache.getStorageExp('token');
+  const token = getToken();
   if (token) {
     userStore.setToken(token);
     userStore.getUserInfo();

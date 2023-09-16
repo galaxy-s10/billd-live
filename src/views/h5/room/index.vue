@@ -115,8 +115,10 @@ import { usePull } from '@/hooks/use-pull';
 import { DanmuMsgTypeEnum, LiveRoomTypeEnum } from '@/interface';
 import router, { mobileRouterName } from '@/router';
 import { useAppStore } from '@/store/app';
+import { usePiniaCacheStore } from '@/store/cache';
 
 const route = useRoute();
+const cacheStore = usePiniaCacheStore();
 const appStore = useAppStore();
 
 const bottomRef = ref<HTMLDivElement>();
@@ -188,7 +190,7 @@ async function getLiveRoomInfo() {
 }
 
 function startPull() {
-  appStore.setMuted(false);
+  cacheStore.setMuted(false);
   showPlayBtn.value = false;
   handlePlay(appStore.liveRoomInfo!);
 }

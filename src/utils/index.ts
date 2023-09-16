@@ -220,7 +220,10 @@ export const createVideo = ({
   return videoEl;
 };
 
-export function videoToCanvas(data: { videoEl: HTMLVideoElement }) {
+export function videoToCanvas(data: {
+  videoEl: HTMLVideoElement;
+  resize?: (data: { w: number; h: number }) => void;
+}) {
   const { videoEl } = data;
   if (!videoEl) {
     throw new Error('videoEl不能为空！');
@@ -234,7 +237,9 @@ export function videoToCanvas(data: { videoEl: HTMLVideoElement }) {
   function handleResize() {
     w = videoEl.videoWidth;
     h = videoEl.videoHeight;
+    data.resize?.({ w, h });
   }
+  data.resize?.({ w, h });
   videoEl.addEventListener('resize', handleResize);
   function drawCanvas() {
     canvas.width = w;

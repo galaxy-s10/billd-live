@@ -12,14 +12,14 @@ dependencies:
     specifier: ^1.2.1
     version: 1.3.4
   billd-html-webpack-plugin:
-    specifier: ^1.0.4
-    version: 1.0.4(@swc/core@1.3.84)(@types/node@18.15.3)(esbuild@0.15.18)(sass@1.59.3)(terser@5.16.6)(webpack-cli@4.10.0)
+    specifier: ^1.0.5
+    version: 1.0.5(@swc/core@1.3.84)(@types/node@18.15.3)(esbuild@0.15.18)(sass@1.59.3)(terser@5.16.6)(webpack-cli@4.10.0)
   billd-scss:
     specifier: ^0.0.7
     version: 0.0.7
   billd-utils:
-    specifier: ^0.0.12
-    version: 0.0.12(typescript@5.1.6)
+    specifier: ^0.0.15
+    version: 0.0.15(typescript@5.1.6)
   browser-tool:
     specifier: ^1.0.5
     version: 1.0.5
@@ -39,8 +39,8 @@ dependencies:
     specifier: ^1.7.3
     version: 1.7.3
   naive-ui:
-    specifier: ^2.34.3
-    version: 2.34.3(vue@3.3.4)
+    specifier: ^2.34.4
+    version: 2.34.4(vue@3.3.4)
   pinia:
     specifier: ^2.0.33
     version: 2.0.33(typescript@5.1.6)(vue@3.3.4)
@@ -1320,7 +1320,6 @@ packages:
     engines: {node: '>=6.9.0'}
     dependencies:
       regenerator-runtime: 0.13.11
-    dev: false
 
   /@babel/template@7.20.7:
     resolution: {integrity: sha512-8SegXApWe6VoNw0r9JHpSteLKTpTiLZ4rMlGIm9JQ18KiCtyQiAMEazujAHrUS5flrcqYZa75ukev3P6QmUwUw==}
@@ -2914,7 +2913,7 @@ packages:
     peerDependencies:
       video.js: ^7 || ^8
     dependencies:
-      '@babel/runtime': 7.21.0
+      '@babel/runtime': 7.22.6
       '@videojs/vhs-utils': 4.0.0
       aes-decrypter: 4.0.1
       global: 4.4.0
@@ -2928,7 +2927,7 @@ packages:
     resolution: {integrity: sha512-PKVgdo8/GReqdx512F+ombhS+Bzogiofy1LgAj4tN8PfdBx3HSS7V5WfJotKTqtOWGwVfSWsrYN/t09/DSryrw==}
     engines: {node: '>=8', npm: '>=5'}
     dependencies:
-      '@babel/runtime': 7.21.0
+      '@babel/runtime': 7.22.6
       global: 4.4.0
       url-toolkit: 2.2.5
     dev: false
@@ -2937,7 +2936,7 @@ packages:
     resolution: {integrity: sha512-xJp7Yd4jMLwje2vHCUmi8MOUU76nxiwII3z4Eg3Ucb+6rrkFVGosrXlMgGnaLjq724j3wzNElRZ71D/CKrTtxg==}
     engines: {node: '>=8', npm: '>=5'}
     dependencies:
-      '@babel/runtime': 7.21.0
+      '@babel/runtime': 7.22.6
       global: 4.4.0
       url-toolkit: 2.2.5
     dev: false
@@ -2945,7 +2944,7 @@ packages:
   /@videojs/xhr@2.6.0:
     resolution: {integrity: sha512-7J361GiN1tXpm+gd0xz2QWr3xNWBE+rytvo8J3KuggFaLg+U37gZQ2BuPLcnkfGffy2e+ozY70RHC8jt7zjA6Q==}
     dependencies:
-      '@babel/runtime': 7.21.0
+      '@babel/runtime': 7.22.6
       global: 4.4.0
       is-function: 1.0.2
     dev: false
@@ -3305,7 +3304,7 @@ packages:
   /aes-decrypter@4.0.1:
     resolution: {integrity: sha512-H1nh/P9VZXUf17AA5NQfJML88CFjVBDuGkp5zDHa7oEhYN9TTpNLJknRY1ie0iSKWlDf6JRnJKaZVDSQdPy6Cg==}
     dependencies:
-      '@babel/runtime': 7.21.0
+      '@babel/runtime': 7.22.6
       '@videojs/vhs-utils': 3.0.5
       global: 4.4.0
       pkcs7: 1.0.4
@@ -3643,8 +3642,8 @@ packages:
     resolution: {integrity: sha512-vyL2OymJxmarO8gxMr0mhChsO9QGwhynfuu4+MHTAW6czfq9humCB7rKpUjDd9YUiDPU4mzpyupFSvOClAwbmQ==}
     dev: true
 
-  /billd-html-webpack-plugin@1.0.4(@swc/core@1.3.84)(@types/node@18.15.3)(esbuild@0.15.18)(sass@1.59.3)(terser@5.16.6)(webpack-cli@4.10.0):
-    resolution: {integrity: sha512-AMfNC14Ynu7Cs4+xsRFAROkHqDlhKD23KBdMSxueCAmW8/GxBOqUPrjO9r7nBhbL0MUP2lB0nOT5tPDHuUlSeQ==}
+  /billd-html-webpack-plugin@1.0.5(@swc/core@1.3.84)(@types/node@18.15.3)(esbuild@0.15.18)(sass@1.59.3)(terser@5.16.6)(webpack-cli@4.10.0):
+    resolution: {integrity: sha512-SYT/tR7+LcnCc3kADU7Lt56HDPKCBOo0R1QNj4ky78aGqH4BqOUMqbe66uIjqa4MqFHsWYjkOarO7JY4M/KpYw==}
     requiresBuild: true
     dependencies:
       vite: 4.2.0(@types/node@18.15.3)(sass@1.59.3)(terser@5.16.6)
@@ -3667,8 +3666,8 @@ packages:
     requiresBuild: true
     dev: false
 
-  /billd-utils@0.0.12(typescript@5.1.6):
-    resolution: {integrity: sha512-bHB/gZk6I9fGKHQiu+QXpqBiCXF72kYi4/xDI8RZwdVsjFd6QqsItlx1MpX4j25GJnhsG2vbrg0tLQ48zXHQoQ==}
+  /billd-utils@0.0.15(typescript@5.1.6):
+    resolution: {integrity: sha512-IkazhLt62GRKANDf9ZRzdMWhKxC6qoL6O+SYdpoF/ul6NW46yaLTnOjEGUsrycXyJvcaL+U+7YinKhnuL8skAQ==}
     requiresBuild: true
     dependencies:
       '@babel/core': 7.21.3
@@ -4739,7 +4738,7 @@ packages:
     resolution: {integrity: sha512-fnULvOpxnC5/Vg3NCiWelDsLiUc9bRwAPs/+LfTLNvetFCtCTN+yQz15C/fs4AwX1R9K5GLtLfn8QW+dWisaAw==}
     engines: {node: '>=0.11'}
     dependencies:
-      '@babel/runtime': 7.21.0
+      '@babel/runtime': 7.22.6
     dev: false
 
   /dateformat@3.0.3:
@@ -7470,7 +7469,7 @@ packages:
   /m3u8-parser@6.2.0:
     resolution: {integrity: sha512-qlC00JTxYOxawcqg+RB8jbyNwL3foY/nCY61kyWP+RCuJE9APLeqB/nSlTjb4Mg0yRmyERgjswpdQxMvkeoDrg==}
     dependencies:
-      '@babel/runtime': 7.21.0
+      '@babel/runtime': 7.22.6
       '@videojs/vhs-utils': 3.0.5
       global: 4.4.0
     dev: false
@@ -7712,7 +7711,7 @@ packages:
     resolution: {integrity: sha512-uZ/db5wQdlQn1L+OD49YXBhPI9UGeK1SeQE4D5EoaJIhf0WM9X3HDj8d+9PjoG06CgCvGZw3YW/wsHku+CH3yA==}
     hasBin: true
     dependencies:
-      '@babel/runtime': 7.21.0
+      '@babel/runtime': 7.22.6
       '@videojs/vhs-utils': 3.0.5
       '@xmldom/xmldom': 0.8.8
       global: 4.4.0
@@ -7762,12 +7761,12 @@ packages:
     engines: {node: '>=8', npm: '>=5'}
     hasBin: true
     dependencies:
-      '@babel/runtime': 7.21.0
+      '@babel/runtime': 7.22.6
       global: 4.4.0
     dev: false
 
-  /naive-ui@2.34.3(vue@3.3.4):
-    resolution: {integrity: sha512-fUMr0dzb/iGsOTWgoblPVobY5X5dihQ1eam5dA+H74oyLYAvgX4pL96xQFPBLIYqvyRFBAsN85kHN5pLqdtpxA==}
+  /naive-ui@2.34.4(vue@3.3.4):
+    resolution: {integrity: sha512-aPG8PDfhSzIzn/jSC9y3Jb3Pe2wHJ7F0cFV1EWlbImSrZECeUmoc+fIcOSWbizoztkKfaUAeKwYdMl09MKkj1g==}
     peerDependencies:
       vue: ^3.0.0
     dependencies:
@@ -9219,7 +9218,7 @@ packages:
   /regenerator-transform@0.15.1:
     resolution: {integrity: sha512-knzmNAcuyxV+gQCufkYcvOqX/qIIfHLv0u5x79kRxuGojfYVky1f15TzZEu2Avte8QGepvUNTnLskf8E6X6Vyg==}
     dependencies:
-      '@babel/runtime': 7.21.0
+      '@babel/runtime': 7.22.6
 
   /regexp.prototype.flags@1.4.3:
     resolution: {integrity: sha512-fjggEOO3slI6Wvgjwflkc4NFRCTZAu5CnNfBd5qOMYhWdn67nJBBu34/TkD++eeFmd8C9r9jfXJ27+nSiRkSUA==}

@@ -51,6 +51,7 @@ export const useSrsWs = () => {
   const isPull = ref(false);
   const roomLiving = ref(false);
   const isAnchor = ref(false);
+  const isSRS = ref(false);
   const anchorInfo = ref<IUser>();
   const anchorSocketId = ref('');
   const canvasVideoStream = ref<MediaStream>();
@@ -192,7 +193,7 @@ export const useSrsWs = () => {
       isSRS: true,
       receiver,
     });
-
+    isSRS.value = true;
     handleSendOffer({
       receiver,
     });
@@ -236,6 +237,7 @@ export const useSrsWs = () => {
           isSRS: true,
           receiver: data.receiver,
         });
+        isSRS.value = true;
         await rtc.setRemoteDescription(data.sdp);
         const answer = await rtc.createAnswer();
         if (answer) {
@@ -358,7 +360,7 @@ export const useSrsWs = () => {
           live_room_id: data.live_room.id!,
         },
       });
-      if (!isPull.value) {
+      if (!isPull.value && !isSRS.value) {
         if (!roomLiving.value) return;
         liveUserList.value.forEach(async (item) => {
           const receiver = item.id;

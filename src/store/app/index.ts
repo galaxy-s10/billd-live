@@ -5,8 +5,9 @@ import { ILiveRoom, LiveLineEnum, MediaTypeEnum } from '@/interface';
 import { mobileRouterName } from '@/router';
 
 export type AppRootState = {
-  muted: boolean;
+  play: boolean;
   videoRatio: number;
+  normalVolume: number;
   navList: { routeName: string; name: string }[];
   allTrack: {
     /** 1开启；2关闭 */
@@ -41,8 +42,9 @@ export type AppRootState = {
 export const useAppStore = defineStore('app', {
   state: (): AppRootState => {
     return {
-      muted: true,
+      play: true,
       videoRatio: 16 / 9,
+      normalVolume: 70,
       navList: [
         { routeName: mobileRouterName.h5, name: '频道' },
         { routeName: mobileRouterName.h5Rank, name: '排行' },
@@ -60,8 +62,8 @@ export const useAppStore = defineStore('app', {
     setLiveLine(res: AppRootState['liveLine']) {
       this.liveLine = res;
     },
-    setMuted(res: AppRootState['muted']) {
-      this.muted = res;
+    setPlay(res: AppRootState['play']) {
+      this.play = res;
     },
     setAllTrack(res: AppRootState['allTrack']) {
       this.allTrack = res;

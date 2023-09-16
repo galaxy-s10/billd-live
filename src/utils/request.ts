@@ -1,7 +1,7 @@
 import axios, { Axios, AxiosRequestConfig } from 'axios';
 
 import { useUserStore } from '@/store/user';
-import cache from '@/utils/cache';
+import { getToken } from '@/utils/localStorage/user';
 
 export interface MyAxiosPromise<T = any>
   extends Promise<{
@@ -28,7 +28,7 @@ class MyAxios {
     // 请求拦截器
     this.instance.interceptors.request.use(
       (cfg) => {
-        const token = cache.getStorageExp('token');
+        const token = getToken();
         if (token) {
           // eslint-disable-next-line
           cfg.headers.Authorization = `Bearer ${token}`;

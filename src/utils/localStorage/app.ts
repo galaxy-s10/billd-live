@@ -1,9 +1,9 @@
-import { LOCALSTORAGE_KEY } from '@/constant';
+import { lsKey } from '@/constant';
 import cache from '@/utils/cache';
 
-export const getLastBuildDateByLs = () => {
-  return cache.getStorage(LOCALSTORAGE_KEY.lastBuildDate);
+export const getLastBuildDate = () => {
+  return cache.getStorage<string>(lsKey.lastBuildDate);
 };
-export const setLastBuildDateByLs = (val: string) => {
-  return cache.setStorage(LOCALSTORAGE_KEY.lastBuildDate, val);
+export const setLastBuildDate = (val: string) => {
+  return cache.setStorage(lsKey.lastBuildDate, val);
 };

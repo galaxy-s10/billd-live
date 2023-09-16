@@ -31,15 +31,14 @@
 import { useSlots } from 'vue';
 
 const slots = useSlots();
-const props = defineProps({
-  modelValue: Boolean,
-  hiddenClose: Boolean,
-  maskClosable: Boolean,
-  title: {
-    type: String,
-    default: '',
-  },
-});
+const props = withDefaults(
+  defineProps<{
+    hiddenClose?: Boolean;
+    maskClosable?: Boolean;
+    title?: string;
+  }>(),
+  {}
+);
 
 function maskClose() {
   if (props.maskClosable) {

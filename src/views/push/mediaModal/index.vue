@@ -67,7 +67,7 @@
             <div class="value">
               <n-upload
                 :max="1"
-                accept="image/png, image/jpeg, image/webp"
+                :accept="'image/png, image/jpeg, image/webp'"
                 :on-update:file-list="changImg"
               >
                 <n-button :disabled="isEdit">选择文件</n-button>
@@ -81,7 +81,7 @@
             <div class="value">
               <n-upload
                 :max="1"
-                accept="video/mp4, video/quicktime"
+                :accept="'video/mp4, video/quicktime'"
                 :on-update:file-list="changMedia"
               >
                 <n-button :disabled="isEdit">选择文件</n-button>
@@ -125,6 +125,7 @@ const props = withDefaults(
   {
     mediaType: MediaTypeEnum.camera,
     isEdit: false,
+    initData: undefined,
   }
 );
 const emits = defineEmits(['close', 'addOk', 'editOk']);

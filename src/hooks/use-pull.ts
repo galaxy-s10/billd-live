@@ -13,6 +13,7 @@ import {
 } from '@/interface';
 import { WsMsgTypeEnum } from '@/network/webSocket';
 import { useAppStore } from '@/store/app';
+import { usePiniaCacheStore } from '@/store/cache';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 import { createVideo, videoToCanvas } from '@/utils';
@@ -21,6 +22,7 @@ export function usePull() {
   const route = useRoute();
   const userStore = useUserStore();
   const networkStore = useNetworkStore();
+  const cacheStore = usePiniaCacheStore();
   const appStore = useAppStore();
   const roomId = ref(route.params.roomId as string);
   const localStream = ref<MediaStream>();
@@ -29,6 +31,7 @@ export function usePull() {
   const videoLoading = ref(false);
   const flvurl = ref('');
   const hlsurl = ref('');
+  const videoHeight = ref();
   const sidebarList = ref<
     {
       socketId: string;
@@ -68,6 +71,9 @@ export function usePull() {
     stopDrawingArr.value.forEach((cb) => cb());
     const { canvas, stopDrawing } = videoToCanvas({
       videoEl: hlsVideoEl.value!,
+      resize: ({ w, h }) => {
+        videoHeight.value = `${w}x${h}`;
+      },
     });
     stopDrawingArr.value.push(stopDrawing);
     remoteVideo.value.push(canvas);
@@ -89,6 +95,9 @@ export function usePull() {
     stopDrawingArr.value.forEach((cb) => cb());
     const { canvas, stopDrawing } = videoToCanvas({
       videoEl: flvVideoEl.value!,
+      resize: ({ w, h }) => {
+        videoHeight.value = `${w}x${h}`;
+      },
     });
     stopDrawingArr.value.push(stopDrawing);
     remoteVideo.value.push(canvas);
@@ -106,7 +115,6 @@ export function usePull() {
   }
 
   function handlePlay(data: ILiveRoom) {
-    console.warn('handlePlay', data.type);
     roomLiving.value = true;
     flvurl.value = data.flv_url!;
     hlsurl.value = data.hls_url!;
@@ -160,11 +168,40 @@ export function usePull() {
     }
   );
   watch(
-    () => appStore.muted,
+    () => cacheStore.muted,
     (newVal) => {
-      console.log('muted变了', newVal);
       videoElArr.value.forEach((el) => {
         el.muted = newVal;
+      });
+      if (!newVal) {
+        cacheStore.setVolume(cacheStore.volume || appStore.normalVolume);
+      } else {
+        cacheStore.setVolume(0);
+      }
+    }
+  );
+  watch(
+    () => cacheStore.volume,
+    (newVal) => {
+      videoElArr.value.forEach((el) => {
+        el.volume = newVal / 100;
+      });
+      if (!newVal) {
+        cacheStore.setMuted(true);
+      } else {
+        cacheStore.setMuted(false);
+      }
+    }
+  );
+  watch(
+    () => appStore.play,
+    (newVal) => {
+      videoElArr.value.forEach((el) => {
+        if (newVal) {
+          el.play();
+        } else {
+          el.pause();
+        }
       });
     }
   );
@@ -177,6 +214,9 @@ export function usePull() {
           videoLoading.value = false;
           const { canvas } = videoToCanvas({
             videoEl: item.videoEl,
+            resize: ({ w, h }) => {
+              videoHeight.value = `${w}x${h}`;
+            },
           });
           videoElArr.value.push(item.videoEl);
           remoteVideo.value.push(canvas);
@@ -336,10 +376,11 @@ export function usePull() {
     initPull,
     closeWs,
     closeRtc,
-    mySocketId,
     keydownDanmu,
     sendDanmu,
     addVideo,
+    mySocketId,
+    videoHeight,
     remoteVideo,
     roomLiving,
     autoplayVal,
