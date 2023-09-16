@@ -52,7 +52,10 @@
             class="media-list"
             :class="{ item: appStore.allTrack.length > 1 }"
           ></div>
-          <VideoControls :resolution="videoHeight"></VideoControls>
+          <VideoControls
+            :resolution="videoHeight"
+            @refresh="handleRefresh"
+          ></VideoControls>
         </div>
       </div>
 
@@ -208,9 +211,10 @@ const {
   initPull,
   closeWs,
   closeRtc,
-  mySocketId,
   keydownDanmu,
   sendDanmu,
+  handlePlay,
+  mySocketId,
   videoHeight,
   videoLoading,
   remoteVideo,
@@ -256,6 +260,12 @@ onMounted(() => {
 
 function handlePay() {
   window.$message.info('敬请期待~');
+}
+
+function handleRefresh() {
+  if (appStore.liveRoomInfo) {
+    handlePlay(appStore.liveRoomInfo);
+  }
 }
 
 async function getGoodsList() {

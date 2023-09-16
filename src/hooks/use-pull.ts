@@ -326,14 +326,6 @@ export function usePull() {
 
   function addVideo() {
     sidebarList.value.push({ socketId: mySocketId.value });
-    // nextTick(() => {
-    //   liveUserList.value.forEach((item) => {
-    //     const socketId = item.id;
-    //     if (socketId === mySocketId.value) {
-    //       remoteVideoRef.value[mySocketId.value].srcObject = localStream.value;
-    //     }
-    //   });
-    // });
   }
 
   function keydownDanmu(event: KeyboardEvent) {

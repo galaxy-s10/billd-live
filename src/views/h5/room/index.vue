@@ -50,7 +50,11 @@
       >
         点击播放
       </div>
-      <VideoControls v-else></VideoControls>
+      <VideoControls
+        v-else
+        :resolution="videoHeight"
+        @refresh="handleRefresh"
+      ></VideoControls>
     </div>
     <div class="danmu-list">
       <div class="title">弹幕专区</div>
@@ -133,6 +137,8 @@ const {
   initPull,
   keydownDanmu,
   sendDanmu,
+  closeRtc,
+  closeWs,
   autoplayVal,
   videoLoading,
   damuList,
@@ -140,8 +146,7 @@ const {
   roomLiving,
   anchorInfo,
   remoteVideo,
-  closeRtc,
-  closeWs,
+  videoHeight,
 } = usePull();
 
 watch(
@@ -167,6 +172,12 @@ watch(
     }, 0);
   }
 );
+
+function handleRefresh() {
+  if (appStore.liveRoomInfo) {
+    handlePlay(appStore.liveRoomInfo);
+  }
+}
 
 async function getLiveRoomInfo() {
   try {

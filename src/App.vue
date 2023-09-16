@@ -12,7 +12,10 @@ import { useUserStore } from '@/store/user';
 import { getLastBuildDate, setLastBuildDate } from '@/utils/localStorage/app';
 import { getToken } from '@/utils/localStorage/user';
 
+import { usePiniaCacheStore } from './store/cache';
+
 const { appInfo } = useCheckUpdate();
+const cacheStore = usePiniaCacheStore();
 const userStore = useUserStore();
 
 function handleUpdate() {
@@ -26,6 +29,8 @@ function handleUpdate() {
 onMounted(() => {
   handleUpdate();
   loginMessage();
+  cacheStore.setMuted(true);
+  cacheStore.setVolume(0);
   const token = getToken();
   if (token) {
     userStore.setToken(token);

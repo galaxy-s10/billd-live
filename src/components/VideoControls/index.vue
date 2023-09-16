@@ -12,7 +12,7 @@
       </div>
       <div
         class="refresh"
-        @click="emits('refresh')"
+        @click="debounceRefresh"
       >
         <n-icon size="25">
           <RefreshSharp></RefreshSharp>
@@ -108,6 +108,7 @@ import {
   VolumeHighOutline,
   VolumeMuteOutline,
 } from '@vicons/ionicons5';
+import { debounce } from 'billd-utils';
 import { ref } from 'vue';
 
 import { LiveLineEnum, LiveRoomTypeEnum } from '@/interface';
@@ -123,6 +124,9 @@ withDefaults(
 
 const emits = defineEmits(['refresh']);
 
+const debounceRefresh = debounce(() => {
+  emits('refresh');
+}, 500);
 const cacheStore = usePiniaCacheStore();
 const appStore = useAppStore();
 const showLine = ref(false);
