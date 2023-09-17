@@ -160,7 +160,7 @@ import { useRouter } from 'vue-router';
 import { fetchLiveList } from '@/api/live';
 import { sliderList } from '@/constant';
 import { usePull } from '@/hooks/use-pull';
-import { ILive } from '@/interface';
+import { ILive, LiveLineEnum, LiveRoomTypeEnum } from '@/interface';
 import { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
 
@@ -213,6 +213,10 @@ function playLive(item: ILive) {
 
 function changeLiveRoom(item: ILive) {
   if (item.id === currentLiveRoom.value?.id) return;
+  if (item.live_room?.type !== LiveRoomTypeEnum.user_wertc) {
+    appStore.setLiveLine(LiveLineEnum.hls);
+  }
+  appStore.setPlay(true);
   playLive(item);
 }
 

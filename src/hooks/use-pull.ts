@@ -120,13 +120,25 @@ export function usePull() {
     hlsurl.value = data.hls_url!;
     switch (data.type) {
       case LiveRoomTypeEnum.user_srs:
-        handleHlsPlay(data.hls_url);
+        if (appStore.liveLine === LiveLineEnum.flv) {
+          handleFlvPlay();
+        } else if (appStore.liveLine === LiveLineEnum.hls) {
+          handleHlsPlay(data.hls_url);
+        }
         break;
       case LiveRoomTypeEnum.user_obs:
-        handleHlsPlay(data.hls_url);
+        if (appStore.liveLine === LiveLineEnum.flv) {
+          handleFlvPlay();
+        } else if (appStore.liveLine === LiveLineEnum.hls) {
+          handleHlsPlay(data.hls_url);
+        }
         break;
       case LiveRoomTypeEnum.system:
-        handleHlsPlay(data.hls_url);
+        if (appStore.liveLine === LiveLineEnum.flv) {
+          handleFlvPlay();
+        } else if (appStore.liveLine === LiveLineEnum.hls) {
+          handleHlsPlay(data.hls_url);
+        }
         break;
       case LiveRoomTypeEnum.user_wertc:
         appStore.setLiveLine(LiveLineEnum.rtc);

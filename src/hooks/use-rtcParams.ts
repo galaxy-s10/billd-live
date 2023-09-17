@@ -23,17 +23,14 @@ export const useRTCParams = () => {
     {
       label: '3000',
       value: 3000,
-      disabled: true,
     },
     {
       label: '4000',
       value: 4000,
-      disabled: true,
     },
     {
       label: '5000',
       value: 5000,
-      disabled: true,
     },
     {
       label: '6000',
@@ -61,8 +58,8 @@ export const useRTCParams = () => {
       value: 10,
     },
     {
-      label: '24帧',
-      value: 24,
+      label: '20帧',
+      value: 20,
     },
     {
       label: '30帧',
@@ -71,6 +68,10 @@ export const useRTCParams = () => {
     {
       label: '60帧',
       value: 60,
+    },
+    {
+      label: '120帧',
+      value: 120,
       disabled: true,
     },
   ]);

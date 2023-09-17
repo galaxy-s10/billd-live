@@ -297,7 +297,7 @@ import * as workerTimers from 'worker-timers';
 
 import { mediaTypeEnumMap } from '@/constant';
 import { usePush } from '@/hooks/use-push';
-import { useRTCParams } from '@/hooks/use-rtc-params';
+import { useRTCParams } from '@/hooks/use-rtcParams';
 import { DanmuMsgTypeEnum, MediaTypeEnum } from '@/interface';
 import { AppRootState, useAppStore } from '@/store/app';
 import { usePiniaCacheStore } from '@/store/cache';
@@ -450,7 +450,6 @@ function renderFrame() {
   workerTimerId.value = workerTimers.setInterval(() => {
     renderAll();
   }, delay);
-  console.log('workerTimerId.value', workerTimerId.value);
 }
 
 function handleMixedAudio() {
@@ -619,7 +618,6 @@ function changeCanvasAttr({
     fabricCanvas.value.setWidth(resolutionWidth);
     fabricCanvas.value.setHeight(resolutionHeight);
     appStore.allTrack.forEach((iten) => {
-      console.log('当前类型', iten.type);
       const item = iten.canvasDom;
 
       if (item) {
@@ -637,7 +635,6 @@ function changeCanvasAttr({
       }
     });
     appStore.allTrack.forEach((iten) => {
-      console.log('当前类型', iten.type);
       const item = iten.canvasDom;
 
       if (item) {
@@ -785,6 +782,7 @@ function handleMoving({
 
 async function handleCache() {
   const res: AppRootState['allTrack'] = [];
+  const err: string[] = [];
   const queue: any[] = [];
   cacheStore['resource-list'].forEach((item) => {
     // @ts-ignore
@@ -898,19 +896,51 @@ async function handleCache() {
     }
 
     async function handleScreen() {
-      const event = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: { deviceId: obj.deviceId },
-      });
-      const videoEl = createVideo({ appendChild: true, muted: false });
-      bodyAppendChildElArr.value.push(videoEl);
-      videoEl.setAttribute('videoid', obj.id);
-      videoEl.srcObject = event;
-      if (obj.volume !== undefined) {
-        videoEl.volume = obj.volume / 100;
+      try {
+        const event = await navigator.mediaDevices.getDisplayMedia({
+          video: true,
+          audio: true,
+        });
+        const videoEl = createVideo({ appendChild: true });
+        bodyAppendChildElArr.value.push(videoEl);
+        videoEl.setAttribute('videoid', obj.id);
+        videoEl.srcObject = event;
+        await new Promise((resolve) => {
+          videoEl.onloadedmetadata = () => {
+            const stream = videoEl
+              // @ts-ignore
+              .captureStream();
+            const width = stream.getVideoTracks()[0].getSettings().width!;
+            const height = stream.getVideoTracks()[0].getSettings().height!;
+            videoEl.width = width;
+            videoEl.height = height;
+
+            const canvasDom = markRaw(
+              new fabric.Image(videoEl, {
+                top: (item.rect?.top || 0) / window.devicePixelRatio,
+                left: (item.rect?.left || 0) / window.devicePixelRatio,
+                width,
+                height,
+              })
+            );
+            handleMoving({ canvasDom, id: item.id });
+            handleScaling({ canvasDom, id: item.id });
+            canvasDom.scale(
+              item.scaleInfo[window.devicePixelRatio].scaleX || 1
+            );
+            fabricCanvas.value!.add(canvasDom);
+            obj.videoEl = videoEl;
+            obj.canvasDom = canvasDom;
+            resolve({ videoEl, canvasDom });
+          };
+        });
+      } catch (error) {
+        console.error(error);
+        handleDel(obj);
+        err.push(obj.id);
       }
-      obj.videoEl = videoEl;
     }
+
     async function handleMicrophone() {
       const event = await navigator.mediaDevices.getUserMedia({
         video: false,
@@ -1039,7 +1069,7 @@ async function handleCache() {
   });
   await Promise.all(queue);
   canvasVideoStream.value = pushCanvasRef.value!.captureStream();
-  appStore.setAllTrack(res);
+  appStore.setAllTrack(res.filter((v) => !err.includes(v.id)));
 }
 
 function handleShowMediaModalCpt(val: MediaTypeEnum) {
@@ -1051,7 +1081,6 @@ function handleShowMediaModalCpt(val: MediaTypeEnum) {
 }
 
 function handleEdit(item: AppRootState['allTrack'][0]) {
-  console.log('handleEdit', item);
   currentMediaType.value = item.type;
   currentMediaData.value = item;
   isEdit.value = true;
@@ -1105,7 +1134,6 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
       stream: event,
       id: videoTrack.id,
     });
-    console.log(scale, 'scalescale');
     setScaleInfo({ canvasDom, track: videoTrack, scale });
     videoTrack.videoEl = videoEl;
     // @ts-ignore
@@ -1542,7 +1570,6 @@ function handleChangeVolume(item: AppRootState['allTrack'][0], v) {
 }
 
 function handleDel(item: AppRootState['allTrack'][0]) {
-  console.log('handleDel', item);
   if (item.canvasDom !== undefined) {
     fabricCanvas.value?.remove(item.canvasDom);
     item.videoEl?.remove();

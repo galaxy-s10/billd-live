@@ -1,5 +1,4 @@
 import { getRandomString } from 'billd-utils';
-import browserTool from 'browser-tool';
 
 import { MediaTypeEnum } from '@/interface';
 import { WsCandidateType } from '@/interface-ws';
@@ -27,19 +26,6 @@ export class WebRTCClass {
 
   isSRS: boolean;
 
-  browser: {
-    device: string;
-    language: string;
-    engine: string;
-    browser: string;
-    system: string;
-    systemVersion: string;
-    platform: string;
-    isWebview: boolean;
-    isBot: boolean;
-    version: string;
-  };
-
   constructor(data: {
     roomId: string;
     videoEl: HTMLVideoElement;
@@ -63,15 +49,12 @@ export class WebRTCClass {
     }
     this.isSRS = data.isSRS;
     console.warn('new webrtc参数:', data);
-    this.browser = browserTool();
     this.createPeerConnection();
   }
 
   prettierLog = (msg: string, type?: 'log' | 'warn' | 'error', ...args) => {
     console[type || 'log'](
-      `${new Date().toLocaleString()}，${this.roomId}，${
-        this.browser.browser
-      }浏览器，${msg}`,
+      `${new Date().toLocaleString()}，${this.roomId}，${msg}`,
       ...args
     );
   };
@@ -168,29 +151,17 @@ export class WebRTCClass {
       appStore.setAllTrack([...appStore.allTrack, ...addTrack]);
     }
     this.localStream = stream;
-
-    // if (this.maxBitrate !== -1) {
-    //   this.setMaxBitrate(this.maxBitrate);
-    // }
-    // if (this.maxFramerate !== -1) {
-    //   this.setMaxFramerate(this.maxFramerate);
-    // }
-    // if (this.resolutionRatio !== -1) {
-    //   this.setResolutionRatio(this.resolutionRatio);
-    // }
   };
 
   /** 设置分辨率 */
   setResolutionRatio = (height: number) => {
     console.log('开始设置分辨率', height);
-    console.log('旧的分辨率', this.resolutionRatio);
     return new Promise((resolve) => {
       this.localStream?.getTracks().forEach((track) => {
         if (track.kind === 'video') {
-          console.log('设置分辨率ing', track.id);
           track
             .applyConstraints({
-              height,
+              height: { ideal: height },
             })
             .then(() => {
               console.log('设置分辨率成功');
@@ -209,11 +180,9 @@ export class WebRTCClass {
   /** 设置最大帧率 */
   setMaxFramerate = (maxFramerate: number) => {
     console.log('开始设置最大帧率', maxFramerate);
-    console.log('旧的最大帧率', this.maxFramerate);
     return new Promise<number>((resolve) => {
       this.peerConnection?.getSenders().forEach((sender) => {
         if (sender.track?.kind === 'video') {
-          console.log('设置最大帧率ing', sender.track.id);
           const parameters = { ...sender.getParameters() };
           if (parameters.encodings[0]) {
             if (parameters.encodings[0].maxFramerate === maxFramerate) {
@@ -242,11 +211,9 @@ export class WebRTCClass {
   /** 设置最大码率 */
   setMaxBitrate = (maxBitrate: number) => {
     console.log('开始设置最大码率', maxBitrate);
-    console.log('旧的最大码率', this.maxBitrate);
     return new Promise<number>((resolve) => {
       this.peerConnection?.getSenders().forEach((sender) => {
         if (sender.track?.kind === 'video') {
-          console.log('设置最大码率ing', sender.track.id);
           const parameters = { ...sender.getParameters() };
           if (parameters.encodings[0]) {
             const val = 1000 * maxBitrate;
@@ -440,15 +407,21 @@ export class WebRTCClass {
         if (connectionState === 'connected') {
           // 表示每一个 ICE 连接要么正在使用（connected 或 completed 状态），要么已被关闭（closed 状态）；并且，至少有一个连接处于 connected 或 completed 状态。
           console.warn(this.roomId, 'connectionState:connected');
-          // if (this.maxBitrate !== -1) {
-          //   this.setMaxBitrate(this.maxBitrate);
-          // }
-          // if (this.maxFramerate !== -1) {
-          //   this.setMaxFramerate(this.maxFramerate);
-          // }
-          // if (this.resolutionRatio !== -1) {
-          //   this.setResolutionRatio(this.resolutionRatio);
-          // }
+          if (this.maxBitrate !== -1) {
+            this.setMaxBitrate(this.maxBitrate);
+          }
+          if (this.maxFramerate !== -1) {
+            this.setMaxFramerate(this.maxFramerate);
+          }
+          if (this.resolutionRatio !== -1) {
+            this.setResolutionRatio(this.resolutionRatio);
+          }
+          console.log(
+            this.maxBitrate,
+            this.maxFramerate,
+            this.resolutionRatio,
+            '配置'
+          );
         }
         if (connectionState === 'disconnected') {
           // 表示至少有一个 ICE 连接处于 disconnected 状态，并且没有连接处于 failed、connecting 或 checking 状态。
@@ -497,7 +470,7 @@ export class WebRTCClass {
 
   // 手动关闭webrtc连接
   close = () => {
-    console.warn(`${new Date().toLocaleString()}，手动关闭webrtc连接`);
+    this.prettierLog('手动关闭webrtc连接', 'warn');
     this.peerConnection?.getSenders().forEach((sender) => {
       this.peerConnection?.removeTrack(sender);
     });

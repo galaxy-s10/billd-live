@@ -98,6 +98,7 @@ export function useFlvPlay() {
             console.log('flv-playing');
             retry.value = 0;
             setMuted(cacheStore.muted);
+            setVolume(cacheStore.volume);
             flvVideoEl.value = videoEl;
             resolve('');
           });
@@ -175,6 +176,7 @@ export function useHlsPlay() {
     }
   }
   function setVolume(val: number) {
+    console.log('setVolumesetVolume', val);
     if (hlsVideoEl.value) {
       hlsVideoEl.value.volume = val / 100;
     }
@@ -262,6 +264,7 @@ export function useHlsPlay() {
         hlsPlayer.value?.on('playing', () => {
           console.log('hls-playing');
           setMuted(cacheStore.muted);
+          setVolume(cacheStore.volume);
           retry.value = 0;
           // console.log(hlsPlayer.value?.videoHeight()); // 获取到的是正确的！
           const childNodes = hlsPlayer.value?.el().childNodes;

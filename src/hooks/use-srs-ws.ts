@@ -37,7 +37,7 @@ import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 import { createVideo } from '@/utils';
 
-import { useRTCParams } from './use-rtc-params';
+import { useRTCParams } from './use-rtcParams';
 
 export const useSrsWs = () => {
   const appStore = useAppStore();
@@ -56,9 +56,9 @@ export const useSrsWs = () => {
   const anchorSocketId = ref('');
   const canvasVideoStream = ref<MediaStream>();
   const lastCoverImg = ref('');
-  const currentMaxBitrate = ref(maxBitrate.value[2].value);
-  const currentResolutionRatio = ref(resolutionRatio.value[3].value);
+  const currentMaxBitrate = ref(maxBitrate.value[3].value);
   const currentMaxFramerate = ref(maxFramerate.value[2].value);
+  const currentResolutionRatio = ref(resolutionRatio.value[3].value);
 
   const damuList = ref<IDanmu[]>([]);
 

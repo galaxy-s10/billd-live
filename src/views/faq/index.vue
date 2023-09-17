@@ -78,7 +78,7 @@
         <div class="item">
           <h2>obs/ffmpeg推流到billd-live失败</h2>
           <p>
-            服务器性能有限，限制了推流码率为：<b>2500kbps</b>，超过则会导致推流失败！
+            服务器性能有限，限制了推流码率为：<b>3000kbps</b>，超过则会导致推流失败！
           </p>
         </div>
         <div class="hr"></div>

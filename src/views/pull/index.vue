@@ -247,6 +247,7 @@ onMounted(() => {
   setTimeout(() => {
     scrollTo(0, 0);
   }, 100);
+  appStore.setPlay(true);
   getGoodsList();
   if (topRef.value && bottomRef.value && containerRef.value) {
     const res =
