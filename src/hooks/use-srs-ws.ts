@@ -148,6 +148,9 @@ export const useSrsWs = () => {
         type,
       },
     });
+    if (type === LiveRoomTypeEnum.user_msr) {
+      return;
+    }
     if (type !== LiveRoomTypeEnum.user_wertc) {
       startNewWebRtc({
         videoEl: createVideo({}),

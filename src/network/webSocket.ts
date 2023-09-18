@@ -50,6 +50,8 @@ export enum WsMsgTypeEnum {
   offer = 'offer',
   answer = 'answer',
   candidate = 'candidate',
+
+  msrBlob = 'msrBlob',
 }
 
 export function prettierReceiveWsMsg(...arg) {

@@ -283,6 +283,7 @@ import {
   VolumeMuteOutline,
 } from '@vicons/ionicons5';
 import { fabric } from 'fabric';
+import MediaStreamRecorder from 'msr';
 import {
   Raw,
   markRaw,
@@ -298,7 +299,7 @@ import * as workerTimers from 'worker-timers';
 import { mediaTypeEnumMap } from '@/constant';
 import { usePush } from '@/hooks/use-push';
 import { useRTCParams } from '@/hooks/use-rtcParams';
-import { DanmuMsgTypeEnum, MediaTypeEnum } from '@/interface';
+import { DanmuMsgTypeEnum, LiveRoomTypeEnum, MediaTypeEnum } from '@/interface';
 import { AppRootState, useAppStore } from '@/store/app';
 import { usePiniaCacheStore } from '@/store/cache';
 import { useNetworkStore } from '@/store/network';
@@ -331,6 +332,7 @@ const {
   endLive,
   sendDanmu,
   keydownDanmu,
+  sendBlob,
   mySocketId,
   lastCoverImg,
   canvasVideoStream,
@@ -369,6 +371,22 @@ const wrapSize = reactive({
 const workerTimerId = ref(-1);
 const bodyAppendChildElArr = ref<HTMLElement[]>([]);
 const liveType = Number(route.query.liveType);
+const mediaRecorder = ref();
+
+function handleMsr(stream: MediaStream) {
+  mediaRecorder.value = new MediaStreamRecorder(stream);
+  setInterval(() => {
+    console.log(stream.getAudioTracks());
+  }, 1000);
+  mediaRecorder.value.mimeType = 'video/webm';
+  const chunk = 1000 * 2;
+  let id = 0;
+  mediaRecorder.value.ondataavailable = function (blob) {
+    id += 1;
+    sendBlob({ blob, blobId: `${id}`, chunk });
+  };
+  mediaRecorder.value.start(chunk);
+}
 
 watch(
   () => damuList.value.length,
@@ -391,6 +409,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  mediaRecorder.value.stop();
   bodyAppendChildElArr.value.forEach((el) => {
     el.remove();
   });
@@ -503,6 +522,14 @@ function handleStartLive() {
   handleMixedAudio();
   lastCoverImg.value = generateBase64(pushCanvasRef.value!);
   startLive({ type: liveType, receiver: mySocketId.value });
+  if (liveType === LiveRoomTypeEnum.user_msr) {
+    const stream = pushCanvasRef.value!.captureStream();
+    // @ts-ignore
+    const audioTrack = webaudioVideo.value!.captureStream().getAudioTracks()[0];
+    // @ts-ignore
+    stream.addTrack(audioTrack);
+    handleMsr(stream);
+  }
 }
 
 function handleScale({ width, height }: { width: number; height: number }) {

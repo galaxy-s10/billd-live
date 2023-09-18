@@ -7,6 +7,7 @@ import {
   fetchUserHasLiveRoom,
 } from '@/api/userLiveRoom';
 import { DanmuMsgTypeEnum, ILiveRoom, IMessage } from '@/interface';
+import { WsMsrBlobType } from '@/interface-ws';
 import { WsMsgTypeEnum } from '@/network/webSocket';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
@@ -292,6 +293,24 @@ export function usePush() {
     closeRtc();
   }
 
+  function sendBlob(data: { blob; blobId: string; chunk }) {
+    roomLiving.value = false;
+    localStream.value = undefined;
+    const instance = networkStore.wsMap.get(roomId.value);
+    if (instance) {
+      instance.send<WsMsrBlobType['data']>({
+        msgType: WsMsgTypeEnum.msrBlob,
+        data: {
+          live_room_id: Number(roomId.value),
+          blob: data.blob,
+          blob_id: data.blobId,
+          chunk: data.chunk,
+        },
+      });
+    }
+    closeRtc();
+  }
+
   function roomNameIsOk() {
     if (!roomName.value.length) {
       window.$message.warning('请输入房间名！');
@@ -349,6 +368,7 @@ export function usePush() {
     endLive,
     sendDanmu,
     keydownDanmu,
+    sendBlob,
     mySocketId,
     lastCoverImg,
     localStream,

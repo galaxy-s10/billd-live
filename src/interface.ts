@@ -189,6 +189,7 @@ export enum LiveRoomTypeEnum {
   user_wertc, // 主播使用webrtc直播
   user_srs, // 主播使用srs直播
   user_obs, // 主播使用obs/ffmpeg直播
+  user_msr, // 主播使用msr直播
 }
 
 export interface BilldHtmlWebpackPluginLog {

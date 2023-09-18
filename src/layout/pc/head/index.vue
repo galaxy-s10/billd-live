@@ -219,6 +219,12 @@
               >
                 <div class="txt">webrtc开播</div>
               </a>
+              <a
+                class="item"
+                @click.prevent="handleStartLive(LiveRoomTypeEnum.user_msr)"
+              >
+                <div class="txt">msr开播</div>
+              </a>
             </div>
           </template>
         </Dropdown>
