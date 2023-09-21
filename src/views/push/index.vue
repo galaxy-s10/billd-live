@@ -117,7 +117,7 @@
               v-else
               type="error"
               size="small"
-              @click="endLive"
+              @click="handleEndLive"
             >
               结束直播
             </n-button>
@@ -283,7 +283,6 @@ import {
   VolumeMuteOutline,
 } from '@vicons/ionicons5';
 import { fabric } from 'fabric';
-import MediaStreamRecorder from 'msr';
 import {
   Raw,
   markRaw,
@@ -371,21 +370,41 @@ const wrapSize = reactive({
 const workerTimerId = ref(-1);
 const bodyAppendChildElArr = ref<HTMLElement[]>([]);
 const liveType = Number(route.query.liveType);
-const mediaRecorder = ref();
+const recorder = ref<MediaRecorder>();
+const sendBlobTimer = ref();
+const bolbId = ref(0);
+const chunkDelay = ref(1000 * 2);
+
+function handleSendBlob(event: BlobEvent) {
+  bolbId.value += 1;
+  sendBlob({
+    blob: event.data,
+    blobId: `${bolbId.value}`,
+    delay: chunkDelay.value,
+  });
+}
 
 function handleMsr(stream: MediaStream) {
-  mediaRecorder.value = new MediaStreamRecorder(stream);
-  setInterval(() => {
-    console.log(stream.getAudioTracks());
-  }, 1000);
-  mediaRecorder.value.mimeType = 'video/webm';
-  const chunk = 1000 * 2;
-  let id = 0;
-  mediaRecorder.value.ondataavailable = function (blob) {
-    id += 1;
-    sendBlob({ blob, blobId: `${id}`, chunk });
-  };
-  mediaRecorder.value.start(chunk);
+  // https://developer.mozilla.org/en-US/docs/Web/Media/Formats/codecs_parameter
+  const mimeType = 'video/webm;codecs=avc1.4d002a,opus';
+  // const mimeType = 'video/webm;codecs=avc1.64001f,opus'; // b站的参数
+
+  if (!MediaRecorder.isTypeSupported(mimeType)) {
+    console.error('不支持', mimeType);
+    return;
+  } else {
+    console.log('支持', mimeType);
+  }
+  recorder.value = new MediaRecorder(stream, {
+    mimeType,
+    // videoBitsPerSecond: 1000 * 2000,
+    // audioBitsPerSecond: 1000 * 2000,
+  });
+  recorder.value.ondataavailable = handleSendBlob;
+  sendBlobTimer.value = setInterval(function () {
+    recorder.value?.stop();
+    recorder.value?.start();
+  }, chunkDelay.value);
 }
 
 watch(
@@ -409,7 +428,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  mediaRecorder.value.stop();
+  recorder.value?.stop();
   bodyAppendChildElArr.value.forEach((el) => {
     el.remove();
   });
@@ -498,12 +517,13 @@ function handleMixedAudio() {
   if (webaudioVideo.value) {
     webaudioVideo.value.remove();
   }
-  webaudioVideo.value = createVideo({ appendChild: true, show: false });
+  webaudioVideo.value = createVideo({ appendChild: true, show: true });
   bodyAppendChildElArr.value.push(webaudioVideo.value);
   webaudioVideo.value.className = 'web-audio-video';
   webaudioVideo.value!.srcObject = destination.stream;
   const resAudio = destination.stream.getAudioTracks()[0];
   canvasVideoStream.value?.addTrack(resAudio);
+  console.log(resAudio, 'resAudio');
   networkStore.rtcMap.forEach((rtc) => {
     const sender = rtc.peerConnection
       ?.getSenders()
@@ -515,13 +535,26 @@ function handleMixedAudio() {
         ?.replaceTrack(resAudio);
     }
   });
-  console.log(canvasVideoStream.value?.getAudioTracks());
+}
+
+function handleEndLive() {
+  clearInterval(sendBlobTimer.value);
+  recorder.value?.removeEventListener('dataavailable', handleSendBlob);
+  endLive();
 }
 
 function handleStartLive() {
+  if (!appStore.allTrack.length) {
+    window.$message.warning('至少选择一个素材');
+    return;
+  }
   handleMixedAudio();
   lastCoverImg.value = generateBase64(pushCanvasRef.value!);
-  startLive({ type: liveType, receiver: mySocketId.value });
+  startLive({
+    type: liveType,
+    receiver: mySocketId.value,
+    chunkDelay: chunkDelay.value,
+  });
   if (liveType === LiveRoomTypeEnum.user_msr) {
     const stream = pushCanvasRef.value!.captureStream();
     // @ts-ignore
@@ -714,7 +747,6 @@ function initCanvas() {
   const ins = markRaw(new fabric.Canvas(pushCanvasRef.value!));
   ins.setWidth(resolutionWidth);
   ins.setHeight(resolutionHeight);
-  console.log('initCanvas', { resolutionWidth, resolutionHeight });
   ins.setBackgroundColor('black', () => {
     console.log('setBackgroundColor回调');
   });

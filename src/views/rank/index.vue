@@ -62,7 +62,16 @@
           <div class="rank">
             <i>{{ item.rank >= 10 ? item.rank : '0' + item.rank }}</i>
           </div>
-          <div class="left">
+          <div
+            class="left"
+            @click="
+              currRankType !== RankTypeEnum.blog &&
+                router.push({
+                  name: routerName.profile,
+                  params: { userId: item.user.id },
+                })
+            "
+          >
             <img
               :src="item.user.avatar"
               class="avatar"
@@ -492,7 +501,7 @@ onMounted(() => {
           display: flex;
           align-items: center;
           font-size: 12px;
-
+          cursor: pointer;
           .avatar {
             margin-right: 10px;
             width: 28px;

@@ -11,7 +11,7 @@ import {
   LiveLineEnum,
   LiveRoomTypeEnum,
 } from '@/interface';
-import { WsMsgTypeEnum } from '@/network/webSocket';
+import { WsMsgTypeEnum } from '@/interface-ws';
 import { useAppStore } from '@/store/app';
 import { usePiniaCacheStore } from '@/store/cache';
 import { useNetworkStore } from '@/store/network';

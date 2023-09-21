@@ -1,11 +1,9 @@
 import { getRandomString } from 'billd-utils';
 
 import { MediaTypeEnum } from '@/interface';
-import { WsCandidateType } from '@/interface-ws';
+import { WsCandidateType, WsMsgTypeEnum } from '@/interface-ws';
 import { AppRootState, useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
-
-import { WsMsgTypeEnum } from './webSocket';
 
 export class WebRTCClass {
   roomId = '-1';

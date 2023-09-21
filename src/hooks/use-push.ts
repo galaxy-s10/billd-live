@@ -7,8 +7,7 @@ import {
   fetchUserHasLiveRoom,
 } from '@/api/userLiveRoom';
 import { DanmuMsgTypeEnum, ILiveRoom, IMessage } from '@/interface';
-import { WsMsrBlobType } from '@/interface-ws';
-import { WsMsgTypeEnum } from '@/network/webSocket';
+import { WsMsgTypeEnum, WsMsrBlobType } from '@/interface-ws';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
@@ -242,8 +241,7 @@ export function usePush() {
     });
   }
 
-  async function startLive({ type, receiver }) {
-    console.log('startLive');
+  async function startLive({ type, receiver, chunkDelay }) {
     if (!loginTip()) return;
     const flag = await userHasLiveRoom();
     if (!flag) {
@@ -277,6 +275,7 @@ export function usePush() {
       name: roomName.value,
       type,
       receiver,
+      chunkDelay,
     });
   }
 
@@ -293,9 +292,7 @@ export function usePush() {
     closeRtc();
   }
 
-  function sendBlob(data: { blob; blobId: string; chunk }) {
-    roomLiving.value = false;
-    localStream.value = undefined;
+  function sendBlob(data: { blob; blobId: string; delay }) {
     const instance = networkStore.wsMap.get(roomId.value);
     if (instance) {
       instance.send<WsMsrBlobType['data']>({
@@ -304,11 +301,10 @@ export function usePush() {
           live_room_id: Number(roomId.value),
           blob: data.blob,
           blob_id: data.blobId,
-          chunk: data.chunk,
+          delay: data.delay,
         },
       });
     }
-    closeRtc();
   }
 
   function roomNameIsOk() {

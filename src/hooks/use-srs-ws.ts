@@ -14,11 +14,13 @@ import {
   WSGetRoomAllUserType,
   WsAnswerType,
   WsCandidateType,
+  WsConnectStatusEnum,
   WsGetLiveUserType,
   WsHeartbeatType,
   WsJoinType,
   WsLeavedType,
   WsMessageType,
+  WsMsgTypeEnum,
   WsOfferType,
   WsOtherJoinType,
   WsRoomLivingType,
@@ -26,12 +28,7 @@ import {
   WsUpdateJoinInfoType,
 } from '@/interface-ws';
 import { WebRTCClass } from '@/network/webRTC';
-import {
-  WebSocketClass,
-  WsConnectStatusEnum,
-  WsMsgTypeEnum,
-  prettierReceiveWsMsg,
-} from '@/network/webSocket';
+import { WebSocketClass, prettierReceiveWsMsg } from '@/network/webSocket';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
@@ -132,12 +129,14 @@ export const useSrsWs = () => {
     name,
     type,
     receiver,
+    chunkDelay,
   }: {
     coverImg?: string;
     name?: string;
     type: LiveRoomTypeEnum;
     receiver: string;
     videoEl?: HTMLVideoElement;
+    chunkDelay?: number;
   }) {
     console.log('handleStartLivehandleStartLive', receiver);
     networkStore.wsMap.get(roomId.value)?.send<WsStartLiveType['data']>({
@@ -146,6 +145,7 @@ export const useSrsWs = () => {
         cover_img: coverImg!,
         name: name!,
         type,
+        chunkDelay,
       },
     });
     if (type === LiveRoomTypeEnum.user_msr) {
@@ -216,8 +216,9 @@ export const useSrsWs = () => {
     });
 
     // websocket连接断开
-    ws.socketIo.on(WsConnectStatusEnum.disconnect, () => {
+    ws.socketIo.on(WsConnectStatusEnum.disconnect, (err) => {
       prettierReceiveWsMsg(WsConnectStatusEnum.disconnect, ws);
+      console.log('websocket连接断开', err);
       if (!ws) return;
       ws.status = WsConnectStatusEnum.disconnect;
       ws.update();
