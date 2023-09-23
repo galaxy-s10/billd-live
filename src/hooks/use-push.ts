@@ -8,6 +8,7 @@ import {
 } from '@/api/userLiveRoom';
 import { DanmuMsgTypeEnum, ILiveRoom, IMessage } from '@/interface';
 import { WsMsgTypeEnum, WsMsrBlobType } from '@/interface-ws';
+import { handleMaxFramerate } from '@/network/webRTC';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
@@ -69,22 +70,6 @@ export function usePush() {
   watch(
     () => currentResolutionRatio.value,
     (newVal) => {
-      if (canvasVideoStream.value) {
-        canvasVideoStream.value.getVideoTracks().forEach((track) => {
-          track.applyConstraints({
-            frameRate: { max: currentMaxFramerate.value },
-            height: newVal,
-          });
-        });
-      } else {
-        appStore.allTrack.forEach((info) => {
-          info.track?.applyConstraints({
-            frameRate: { max: currentMaxFramerate.value },
-            height: newVal,
-          });
-        });
-      }
-
       networkStore.rtcMap.forEach(async (rtc) => {
         const res = await rtc.setResolutionRatio(newVal);
         if (res === 1) {
@@ -96,35 +81,25 @@ export function usePush() {
     }
   );
 
-  watch(
-    () => currentMaxFramerate.value,
-    (newVal) => {
-      if (canvasVideoStream.value) {
-        canvasVideoStream.value.getVideoTracks().forEach((track) => {
-          track.applyConstraints({
-            frameRate: { max: newVal },
-            height: currentResolutionRatio.value,
-          });
-        });
-      } else {
-        appStore.allTrack.forEach((info) => {
-          info.track?.applyConstraints({
-            frameRate: { max: newVal },
-            height: currentResolutionRatio.value,
-          });
-        });
-      }
-
-      networkStore.rtcMap.forEach(async (rtc) => {
-        const res = await rtc.setMaxFramerate(newVal);
-        if (res === 1) {
-          window.$message.success('切换帧率成功！');
-        } else {
-          window.$message.success('切换帧率失败！');
-        }
-      });
-    }
-  );
+  // watch(
+  //   () => currentMaxFramerate.value,
+  //   () => {
+  //     handleMaxFramerate({
+  //       stream: canvasVideoStream.value!,
+  //       height: currentResolutionRatio.value,
+  //       frameRate: currentMaxFramerate.value,
+  //     });
+  //     console.log(currentMaxFramerate.value, 'kkkkkk');
+  //     // networkStore.rtcMap.forEach(async (rtc) => {
+  //     //   const res = await rtc.setMaxFramerate(newVal);
+  //     //   if (res === 1) {
+  //     //     window.$message.success('切换帧率成功！');
+  //     //   } else {
+  //     //     window.$message.success('切换帧率失败！');
+  //     //   }
+  //     // });
+  //   }
+  // );
 
   watch(
     () => currentMaxBitrate.value,
@@ -270,6 +245,12 @@ export function usePush() {
         }
       }
     }
+
+    handleMaxFramerate({
+      stream: canvasVideoStream.value!,
+      height: currentResolutionRatio.value,
+      frameRate: currentMaxFramerate.value,
+    });
     handleStartLive({
       coverImg: lastCoverImg.value,
       name: roomName.value,

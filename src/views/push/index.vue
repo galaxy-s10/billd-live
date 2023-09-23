@@ -375,6 +375,39 @@ const sendBlobTimer = ref();
 const bolbId = ref(0);
 const chunkDelay = ref(1000 * 2);
 
+watch(
+  () => currentMaxBitrate.value,
+  () => {
+    if (liveType === LiveRoomTypeEnum.user_msr) {
+      const stream = pushCanvasRef.value!.captureStream();
+      const audioTrack = webaudioVideo
+        // @ts-ignore
+        .value!.captureStream()
+        .getAudioTracks()[0];
+      stream.addTrack(audioTrack);
+      handleMsr(stream);
+    }
+  }
+);
+watch(
+  () => currentMaxFramerate.value,
+  () => {
+    workerTimers.clearInterval(workerTimerId.value);
+    renderFrame();
+  }
+);
+
+watch(
+  () => damuList.value.length,
+  () => {
+    setTimeout(() => {
+      if (danmuListRef.value) {
+        danmuListRef.value.scrollTop = danmuListRef.value.scrollHeight;
+      }
+    }, 0);
+  }
+);
+
 function handleSendBlob(event: BlobEvent) {
   bolbId.value += 1;
   sendBlob({
@@ -383,6 +416,25 @@ function handleSendBlob(event: BlobEvent) {
     delay: chunkDelay.value,
   });
 }
+// function handleAllType() {
+//   const types = [
+//     'video/webm',
+//     'audio/webm',
+//     'video/webm;codecs=vp8',
+//     'video/webm;codecs=daala',
+//     'video/webm;codecs=h264',
+//     'audio/webm;codecs=opus',
+//     'audio/webm;codecs=aac',
+//     'audio/webm;codecs=h264,opus',
+//     'video/webm;codecs=avc1.64001f,opus',
+//     'video/webm;codecs=avc1.4d002a,opus',
+//     'video/mpeg',
+//   ];
+//   Object.keys(types).forEach((item) => {
+//     console.log(types[item], MediaRecorder.isTypeSupported(types[item]));
+//   });
+// }
+// handleAllType();
 
 function handleMsr(stream: MediaStream) {
   // https://developer.mozilla.org/en-US/docs/Web/Media/Formats/codecs_parameter
@@ -395,28 +447,32 @@ function handleMsr(stream: MediaStream) {
   } else {
     console.log('支持', mimeType);
   }
+  /**
+   * 小写的 "kb/s" 表示千比特每秒，而大写的 "KB/s" 表示千字节每秒
+   * 例如，当我们说 100 kb/s 时，意思是每秒传输100千比特（比特）的数据。而当我们说 100 KB/s 时，意思是每秒传输100千字节（字节）的数据，相当于800千比特（比特）
+   * 千字节（KB）、兆字节（MB）、千兆字节（GB）
+   * 8 比特（bits）等于 1 字节（byte）
+   * 1 Kbps（千比特每秒）等于 0.125 KB/s（千字节每秒）
+   * 1 Mbps（兆比特每秒）等于 0.125 MB/s（兆字节每秒）
+   * bit，比特
+   * byte，字节
+   * videoBitsPerSecond的单位是比特，假设videoBitsPerSecond值是1000*2000，即2000000
+   * 2000000比特等于2000000 / 8 / 1000 = 250 KB/s
+   */
+
   recorder.value = new MediaRecorder(stream, {
     mimeType,
-    // videoBitsPerSecond: 1000 * 2000,
+    // bitsPerSecond: 1000 * currentMaxBitrate.value,
+    videoBitsPerSecond: 1000 * currentMaxBitrate.value, // 单位是比特
     // audioBitsPerSecond: 1000 * 2000,
   });
+  console.log(currentMaxBitrate.value, ' currentMaxBitrate.value');
   recorder.value.ondataavailable = handleSendBlob;
   sendBlobTimer.value = setInterval(function () {
     recorder.value?.stop();
     recorder.value?.start();
   }, chunkDelay.value);
 }
-
-watch(
-  () => damuList.value.length,
-  () => {
-    setTimeout(() => {
-      if (danmuListRef.value) {
-        danmuListRef.value.scrollTop = danmuListRef.value.scrollHeight;
-      }
-    }, 0);
-  }
-);
 
 onMounted(() => {
   setTimeout(() => {
@@ -484,7 +540,8 @@ function clearFrame() {
 }
 
 function renderFrame() {
-  const delay = 1000 / 60; // 16.666666666666668
+  // currentMaxFramerate等于20，实际fps是17.68
+  const delay = 1000 / (currentMaxFramerate.value / (17.68 / 20)); // 60帧的话即16.666666666666668
   workerTimerId.value = workerTimers.setInterval(() => {
     renderAll();
   }, delay);
@@ -517,7 +574,7 @@ function handleMixedAudio() {
   if (webaudioVideo.value) {
     webaudioVideo.value.remove();
   }
-  webaudioVideo.value = createVideo({ appendChild: true, show: true });
+  webaudioVideo.value = createVideo({ appendChild: true, show: false });
   bodyAppendChildElArr.value.push(webaudioVideo.value);
   webaudioVideo.value.className = 'web-audio-video';
   webaudioVideo.value!.srcObject = destination.stream;
@@ -559,7 +616,6 @@ function handleStartLive() {
     const stream = pushCanvasRef.value!.captureStream();
     // @ts-ignore
     const audioTrack = webaudioVideo.value!.captureStream().getAudioTracks()[0];
-    // @ts-ignore
     stream.addTrack(audioTrack);
     handleMsr(stream);
   }

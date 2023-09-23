@@ -5,6 +5,64 @@ import { WsCandidateType, WsMsgTypeEnum } from '@/interface-ws';
 import { AppRootState, useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 
+/** 设置分辨率 */
+export async function handleResolutionRatio(data: {
+  frameRate: number;
+  height: number;
+  stream: MediaStream;
+}): Promise<number> {
+  const { frameRate, height, stream } = data;
+  const queue: Promise<any>[] = [];
+  console.log('开始设置分辨率', height);
+  stream.getTracks().forEach((track) => {
+    if (track.kind === 'video') {
+      queue.push(
+        track.applyConstraints({
+          height: { ideal: height },
+          frameRate: { ideal: frameRate },
+        })
+      );
+    }
+  });
+  try {
+    await Promise.all(queue);
+    console.log('设置分辨率成功');
+    return 1;
+  } catch (error) {
+    console.error('设置分辨率失败', height, error);
+    return 0;
+  }
+}
+/** 设置帧率 */
+export async function handleMaxFramerate(data: {
+  frameRate: number;
+  height: number;
+  stream: MediaStream;
+}): Promise<number> {
+  const { frameRate, height, stream } = data;
+  const queue: Promise<any>[] = [];
+  console.log('开始设置帧率', frameRate);
+  stream.getTracks().forEach((track) => {
+    if (track.kind === 'video') {
+      console.log('开始设置帧率---', frameRate, track.id);
+      queue.push(
+        track.applyConstraints({
+          height: { ideal: height },
+          frameRate: { ideal: frameRate },
+        })
+      );
+    }
+  });
+  try {
+    await Promise.all(queue);
+    console.log('设置帧率成功');
+    return 1;
+  } catch (error) {
+    console.error('设置帧率失败', frameRate, error);
+    return 0;
+  }
+}
+
 export class WebRTCClass {
   roomId = '-1';
   receiver = '';
@@ -32,10 +90,12 @@ export class WebRTCClass {
     resolutionRatio?: number;
     isSRS: boolean;
     receiver: string;
+    localStream?: MediaStream;
   }) {
     this.roomId = data.roomId;
     this.videoEl = data.videoEl;
     this.receiver = data.receiver;
+    this.localStream = data.localStream;
     if (data.maxBitrate) {
       this.maxBitrate = data.maxBitrate;
     }
@@ -152,58 +212,56 @@ export class WebRTCClass {
   };
 
   /** 设置分辨率 */
-  setResolutionRatio = (height: number) => {
-    console.log('开始设置分辨率', height);
-    return new Promise((resolve) => {
-      this.localStream?.getTracks().forEach((track) => {
-        if (track.kind === 'video') {
-          track
-            .applyConstraints({
-              height: { ideal: height },
-            })
-            .then(() => {
-              console.log('设置分辨率成功');
-              this.resolutionRatio = height;
-              resolve(1);
-            })
-            .catch((error) => {
-              console.error('设置分辨率失败', height, error);
-              resolve(0);
-            });
-        }
+  setResolutionRatio = async (height: number) => {
+    if (this.localStream) {
+      const res = await handleResolutionRatio({
+        frameRate: this.maxFramerate,
+        stream: this.localStream,
+        height,
       });
-    });
+      console.log(res, '设置分辨率');
+      return res;
+    }
   };
 
   /** 设置最大帧率 */
-  setMaxFramerate = (maxFramerate: number) => {
-    console.log('开始设置最大帧率', maxFramerate);
-    return new Promise<number>((resolve) => {
-      this.peerConnection?.getSenders().forEach((sender) => {
-        if (sender.track?.kind === 'video') {
-          const parameters = { ...sender.getParameters() };
-          if (parameters.encodings[0]) {
-            if (parameters.encodings[0].maxFramerate === maxFramerate) {
-              console.log('最大帧率不变，不设置');
-              resolve(1);
-              return;
-            }
-            parameters.encodings[0].maxFramerate = maxFramerate;
-            sender
-              .setParameters(parameters)
-              .then(() => {
-                console.log('设置最大帧率成功', maxFramerate);
-                this.maxFramerate = maxFramerate;
-                resolve(1);
-              })
-              .catch((error) => {
-                console.error('设置最大帧率失败', maxFramerate, error);
-                resolve(0);
-              });
-          }
-        }
+  setMaxFramerate = async (maxFramerate: number) => {
+    console.log(this.localStream, maxFramerate, '设置最大帧率111');
+    if (this.localStream) {
+      const res = await handleMaxFramerate({
+        frameRate: maxFramerate,
+        stream: this.localStream,
+        height: this.resolutionRatio,
       });
-    });
+      console.log(res, '设置最大帧率');
+      return res;
+    }
+    // return new Promise<number>((resolve) => {
+    // this.peerConnection?.getSenders().forEach((sender) => {
+    //   if (sender.track?.kind === 'video') {
+    //     const parameters = { ...sender.getParameters() };
+    //     if (parameters.encodings[0]) {
+    //       if (parameters.encodings[0].maxFramerate === maxFramerate) {
+    //         console.log('最大帧率不变，不设置');
+    //         resolve(1);
+    //         return;
+    //       }
+    //       parameters.encodings[0].maxFramerate = maxFramerate;
+    //       sender
+    //         .setParameters(parameters)
+    //         .then(() => {
+    //           console.log('设置最大帧率成功', maxFramerate);
+    //           this.maxFramerate = maxFramerate;
+    //           resolve(1);
+    //         })
+    //         .catch((error) => {
+    //           console.error('设置最大帧率失败', maxFramerate, error);
+    //           resolve(0);
+    //         });
+    //     }
+    //   }
+    // });
+    // });
   };
 
   /** 设置最大码率 */

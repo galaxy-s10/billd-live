@@ -68,6 +68,7 @@ export const useRTCParams = () => {
     {
       label: '60帧',
       value: 60,
+      disabled: true,
     },
     {
       label: '120帧',

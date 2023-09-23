@@ -136,7 +136,7 @@ export const useSrsWs = () => {
     type: LiveRoomTypeEnum;
     receiver: string;
     videoEl?: HTMLVideoElement;
-    chunkDelay?: number;
+    chunkDelay: number;
   }) {
     console.log('handleStartLivehandleStartLive', receiver);
     networkStore.wsMap.get(roomId.value)?.send<WsStartLiveType['data']>({
@@ -185,7 +185,9 @@ export const useSrsWs = () => {
     console.warn(
       '22开始new WebRTCClass',
       receiver,
-      `${roomId.value}___${receiver!}`
+      `${roomId.value}___${receiver!}`,
+      isSRS.value,
+      canvasVideoStream.value
     );
     new WebRTCClass({
       maxBitrate: currentMaxBitrate.value,
@@ -195,6 +197,7 @@ export const useSrsWs = () => {
       videoEl,
       isSRS: true,
       receiver,
+      localStream: canvasVideoStream.value,
     });
     isSRS.value = true;
     handleSendOffer({
@@ -223,6 +226,8 @@ export const useSrsWs = () => {
       ws.status = WsConnectStatusEnum.disconnect;
       ws.update();
     });
+
+    // 收到offer
     ws.socketIo.on(WsMsgTypeEnum.offer, async (data: WsOfferType['data']) => {
       console.log('收到offer', data);
       if (data.receiver === mySocketId.value) {
@@ -262,6 +267,8 @@ export const useSrsWs = () => {
         console.error('不是发给我的offer');
       }
     });
+
+    // 收到answer
     ws.socketIo.on(WsMsgTypeEnum.answer, (data: WsAnswerType['data']) => {
       console.log('收到answer', data);
       if (data.receiver === mySocketId.value) {
@@ -272,6 +279,8 @@ export const useSrsWs = () => {
         console.error('不是发给我的answer');
       }
     });
+
+    // 收到candidate
     ws.socketIo.on(WsMsgTypeEnum.candidate, (data: WsCandidateType['data']) => {
       console.log('收到candidate', data);
       if (data.receiver === mySocketId.value) {
