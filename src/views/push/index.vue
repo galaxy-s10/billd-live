@@ -272,6 +272,11 @@
       v-if="showOpenMicophoneTipCpt"
       @close="showOpenMicophoneTipCpt = false"
     ></OpenMicophoneTipCpt>
+
+    <NoLiveTipModalCpt
+      v-if="showNoLiveTipModalCpt"
+      @close="showNoLiveTipModalCpt = false"
+    ></NoLiveTipModalCpt>
   </div>
 </template>
 
@@ -314,6 +319,7 @@ import {
 import { NODE_ENV } from 'script/constant';
 
 import MediaModalCpt from './mediaModal/index.vue';
+import NoLiveTipModalCpt from './noLiveTipModal/index.vue';
 import OpenMicophoneTipCpt from './openMicophoneTip/index.vue';
 import SelectMediaModalCpt from './selectMediaModal/index.vue';
 
@@ -350,6 +356,7 @@ const currentMediaData = ref<AppRootState['allTrack'][0]>();
 const showOpenMicophoneTipCpt = ref(false);
 const showSelectMediaModalCpt = ref(false);
 const showMediaModalCpt = ref(false);
+const showNoLiveTipModalCpt = ref(false);
 const isEdit = ref(false);
 const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
@@ -374,6 +381,16 @@ const recorder = ref<MediaRecorder>();
 const sendBlobTimer = ref();
 const bolbId = ref(0);
 const chunkDelay = ref(1000 * 2);
+
+watch(
+  () => roomLiving.value,
+  () => {
+    if (!roomLiving.value) {
+      handleEndLive();
+      showNoLiveTipModalCpt.value = true;
+    }
+  }
+);
 
 watch(
   () => currentMaxBitrate.value,
@@ -416,25 +433,26 @@ function handleSendBlob(event: BlobEvent) {
     delay: chunkDelay.value,
   });
 }
-// function handleAllType() {
-//   const types = [
-//     'video/webm',
-//     'audio/webm',
-//     'video/webm;codecs=vp8',
-//     'video/webm;codecs=daala',
-//     'video/webm;codecs=h264',
-//     'audio/webm;codecs=opus',
-//     'audio/webm;codecs=aac',
-//     'audio/webm;codecs=h264,opus',
-//     'video/webm;codecs=avc1.64001f,opus',
-//     'video/webm;codecs=avc1.4d002a,opus',
-//     'video/mpeg',
-//   ];
-//   Object.keys(types).forEach((item) => {
-//     console.log(types[item], MediaRecorder.isTypeSupported(types[item]));
-//   });
-// }
-// handleAllType();
+
+function handleAllType() {
+  const types = [
+    'video/webm',
+    'audio/webm',
+    'video/mpeg',
+    'video/webm;codecs=vp8',
+    'video/webm;codecs=vp9',
+    'video/webm;codecs=daala',
+    'video/webm;codecs=h264',
+    'audio/webm;codecs=opus',
+    'audio/webm;codecs=aac',
+    'audio/webm;codecs=h264,opus',
+    'video/webm;codecs=avc1.64001f,opus',
+    'video/webm;codecs=avc1.4d002a,opus',
+  ];
+  Object.keys(types).forEach((item) => {
+    console.log(types[item], MediaRecorder.isTypeSupported(types[item]));
+  });
+}
 
 function handleMsr(stream: MediaStream) {
   // https://developer.mozilla.org/en-US/docs/Web/Media/Formats/codecs_parameter
@@ -466,7 +484,6 @@ function handleMsr(stream: MediaStream) {
     videoBitsPerSecond: 1000 * currentMaxBitrate.value, // 单位是比特
     // audioBitsPerSecond: 1000 * 2000,
   });
-  console.log(currentMaxBitrate.value, ' currentMaxBitrate.value');
   recorder.value.ondataavailable = handleSendBlob;
   sendBlobTimer.value = setInterval(function () {
     recorder.value?.stop();

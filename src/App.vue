@@ -36,6 +36,7 @@ onMounted(() => {
     userStore.setToken(token);
     userStore.getUserInfo();
   }
+
   // 启用vconsole
   // import('vconsole')
   //   .then((VConsole) => {
