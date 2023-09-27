@@ -32,9 +32,10 @@ billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://
 
 - [x] 原生 webrtc 推拉流
 - [x] srs webrtc 推流，`http-flv` 或 `hls`拉流
+- [x] msr 推流，ffmpeg转码，`http-flv` 或 `hls`拉流
 - [x] 前端混流
-- [x] [OBS](https://github.com/obsproject/obs-studio)、[FFmpeg](https://ffmpeg.org)推流
 - [x] 推流鉴权
+- [x] [OBS](https://github.com/obsproject/obs-studio)、[FFmpeg](https://ffmpeg.org)推流
 - [x] 用户模块（qq 登录）
 - [x] 支付模块（支付宝当面付）
 - [x] 订单模块
