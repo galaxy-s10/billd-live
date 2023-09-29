@@ -133,6 +133,13 @@ export function usePull() {
           handleHlsPlay(data.hls_url);
         }
         break;
+      case LiveRoomTypeEnum.user_msr:
+        if (appStore.liveLine === LiveLineEnum.flv) {
+          handleFlvPlay();
+        } else if (appStore.liveLine === LiveLineEnum.hls) {
+          handleHlsPlay(data.hls_url);
+        }
+        break;
       case LiveRoomTypeEnum.system:
         if (appStore.liveLine === LiveLineEnum.flv) {
           handleFlvPlay();

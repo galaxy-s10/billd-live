@@ -375,46 +375,46 @@ export const useSrsWs = () => {
       });
       if (!isPull.value && !isSRS.value) {
         if (!roomLiving.value) return;
-        liveUserList.value.forEach(async (item) => {
-          const receiver = item.id;
-          if (
-            receiver === mySocketId.value ||
-            networkStore.getRtcMap(`${roomId.value}___${receiver!}`)
-          )
-            return;
-          console.warn(
-            '11开始new WebRTCClass',
-            `${roomId.value}___${receiver!}`
-          );
-          const rtc = new WebRTCClass({
-            maxBitrate: currentMaxBitrate.value,
-            maxFramerate: currentMaxFramerate.value,
-            resolutionRatio: currentResolutionRatio.value,
-            roomId: `${roomId.value}___${receiver!}`,
-            videoEl: createVideo({}),
-            isSRS: false,
-            receiver,
-          });
-          networkStore.updateRtcMap(`${roomId.value}___${receiver!}`, rtc);
-          canvasVideoStream.value?.getTracks().forEach((track) => {
-            if (rtc && canvasVideoStream.value) {
-              console.log('22canvasVideoStream插入track', track.kind, track);
-              rtc.peerConnection?.addTrack(track, canvasVideoStream.value);
-            }
-          });
-          const ws = networkStore.wsMap.get(roomId.value)!;
-          const offer = await rtc.createOffer();
-          await rtc.setLocalDescription(offer!);
-          ws.send<WsOfferType['data']>({
-            msgType: WsMsgTypeEnum.offer,
-            data: {
-              sdp: offer,
-              live_room_id: Number(roomId.value),
-              sender: mySocketId.value,
-              receiver,
-            },
-          });
-        });
+        // liveUserList.value.forEach(async (item) => {
+        //   const receiver = item.id;
+        //   if (
+        //     receiver === mySocketId.value ||
+        //     networkStore.getRtcMap(`${roomId.value}___${receiver!}`)
+        //   )
+        //     return;
+        //   console.warn(
+        //     '11开始new WebRTCClass',
+        //     `${roomId.value}___${receiver!}`
+        //   );
+        //   const rtc = new WebRTCClass({
+        //     maxBitrate: currentMaxBitrate.value,
+        //     maxFramerate: currentMaxFramerate.value,
+        //     resolutionRatio: currentResolutionRatio.value,
+        //     roomId: `${roomId.value}___${receiver!}`,
+        //     videoEl: createVideo({}),
+        //     isSRS: false,
+        //     receiver,
+        //   });
+        //   networkStore.updateRtcMap(`${roomId.value}___${receiver!}`, rtc);
+        //   canvasVideoStream.value?.getTracks().forEach((track) => {
+        //     if (rtc && canvasVideoStream.value) {
+        //       console.log('22canvasVideoStream插入track', track.kind, track);
+        //       rtc.peerConnection?.addTrack(track, canvasVideoStream.value);
+        //     }
+        //   });
+        //   const ws = networkStore.wsMap.get(roomId.value)!;
+        //   const offer = await rtc.createOffer();
+        //   await rtc.setLocalDescription(offer!);
+        //   ws.send<WsOfferType['data']>({
+        //     msgType: WsMsgTypeEnum.offer,
+        //     data: {
+        //       sdp: offer,
+        //       live_room_id: Number(roomId.value),
+        //       sender: mySocketId.value,
+        //       receiver,
+        //     },
+        //   });
+        // });
       }
     });
 

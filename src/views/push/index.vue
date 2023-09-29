@@ -597,7 +597,6 @@ function handleMixedAudio() {
   webaudioVideo.value!.srcObject = destination.stream;
   const resAudio = destination.stream.getAudioTracks()[0];
   canvasVideoStream.value?.addTrack(resAudio);
-  console.log(resAudio, 'resAudio');
   networkStore.rtcMap.forEach((rtc) => {
     const sender = rtc.peerConnection
       ?.getSenders()
