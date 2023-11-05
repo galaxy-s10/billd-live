@@ -392,20 +392,30 @@ watch(
         }
         .media-list {
           position: relative;
-
+          height: 562px;
           :deep(video) {
+            position: absolute;
+            top: 50%;
+            left: 50%;
             display: block;
-            width: 100%;
-            height: 100%;
+            // width: 100%;
+            // height: 100%;
+            margin: 0 auto;
             max-width: $w-1000;
             max-height: 562px;
+            transform: translate(-50%, -50%);
           }
           :deep(canvas) {
+            position: absolute;
+            top: 50%;
+            left: 50%;
             display: block;
-            width: 100%;
-            height: 100%;
+            // width: 100%;
+            // height: 100%;
+            margin: 0 auto;
             max-width: $w-1000;
             max-height: 562px;
+            transform: translate(-50%, -50%);
           }
           // &.item {
           //   :deep(video) {

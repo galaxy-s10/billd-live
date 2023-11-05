@@ -323,25 +323,21 @@ function joinRoom(data: { roomId: number }) {
         }
         :deep(canvas) {
           position: absolute;
-          top: 0;
+          top: 50%;
           left: 50%;
           max-width: $w-1100;
           max-height: calc($w-1100 / $video-ratio);
-          width: 100%;
-          height: 100%;
-          transform: translate(-50%);
+          transform: translate(-50%, -50%);
 
           user-select: none;
         }
         :deep(video) {
           position: absolute;
-          top: 0;
+          top: 50%;
           left: 50%;
           max-width: $w-1100;
           max-height: calc($w-1100 / $video-ratio);
-          width: 100%;
-          height: 100%;
-          transform: translate(-50%);
+          transform: translate(-50%, -50%);
 
           user-select: none;
         }
