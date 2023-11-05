@@ -392,18 +392,20 @@ watch(
         }
         .media-list {
           position: relative;
-          max-width: $w-1000;
-          max-height: 562px;
 
           :deep(video) {
             display: block;
             width: 100%;
             height: 100%;
+            max-width: $w-1000;
+            max-height: 562px;
           }
           :deep(canvas) {
             display: block;
             width: 100%;
             height: 100%;
+            max-width: $w-1000;
+            max-height: 562px;
           }
           // &.item {
           //   :deep(video) {
