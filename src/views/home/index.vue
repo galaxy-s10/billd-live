@@ -325,6 +325,8 @@ function joinRoom(data: { roomId: number }) {
           position: absolute;
           top: 0;
           left: 50%;
+          max-width: $w-1100;
+          max-height: calc($w-1100 / $video-ratio);
           width: 100%;
           height: 100%;
           transform: translate(-50%);
@@ -335,6 +337,8 @@ function joinRoom(data: { roomId: number }) {
           position: absolute;
           top: 0;
           left: 50%;
+          max-width: $w-1100;
+          max-height: calc($w-1100 / $video-ratio);
           width: 100%;
           height: 100%;
           transform: translate(-50%);
@@ -588,6 +592,14 @@ function joinRoom(data: { roomId: number }) {
 
         .left {
           width: $w-900;
+          :deep(canvas) {
+            max-width: $w-900;
+            max-height: calc($w-900 / $video-ratio);
+          }
+          :deep(video) {
+            max-width: $w-900;
+            max-height: calc($w-900 / $video-ratio);
+          }
         }
         .right {
         }
