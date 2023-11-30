@@ -6,6 +6,7 @@ import { fullLoading } from '@/components/FullLoading';
 import { QQ_CLIENT_ID, QQ_OAUTH_URL, QQ_REDIRECT_URI } from '@/constant';
 import LoginModalCpt from '@/hooks/loginModal/index.vue';
 import { PlatformEnum } from '@/interface';
+import { useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
 import { clearLoginInfo, setLoginInfo } from '@/utils/cookie';
 import { getToken } from '@/utils/localStorage/user';
@@ -51,9 +52,11 @@ export async function handleLogin(e) {
 export function loginTip(show = false) {
   const token = getToken();
   instance.show = show;
+  const appStore = useAppStore();
   if (!token) {
     window.$message.warning('请先登录！');
-    instance.show = true;
+    // instance.show = true;
+    appStore.showLoginModal = true;
     return false;
   }
   return true;

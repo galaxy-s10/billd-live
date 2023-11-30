@@ -1,21 +1,22 @@
 import { defineStore } from 'pinia';
 
-import { fetchUserInfo } from '@/api/user';
+import { fetchEmailCodeLogin, fetchRegister } from '@/api/emailUser';
+import { fetchLogin, fetchUserInfo } from '@/api/user';
 import { IRole, IUser } from '@/interface';
-import { clearToken, setToken } from '@/utils/localStorage/user';
+import cache from '@/utils/cache';
 
-type RootState = {
-  userInfo?: IUser;
-  token?: string;
-  roles?: IRole[];
+type UserRootState = {
+  userInfo: IUser | null;
+  token: string | null;
+  roles: IRole[] | null;
 };
 
 export const useUserStore = defineStore('user', {
-  state: (): RootState => {
+  state: (): UserRootState => {
     return {
-      userInfo: undefined,
-      token: undefined,
-      roles: [],
+      token: null,
+      roles: null,
+      userInfo: null,
     };
   },
   actions: {
@@ -23,17 +24,57 @@ export const useUserStore = defineStore('user', {
       this.userInfo = res;
     },
     setToken(res) {
-      setToken(res);
+      cache.setStorageExp('token', res, 24);
       this.token = res;
     },
     setRoles(res) {
       this.roles = res;
     },
     logout() {
-      clearToken();
-      this.token = undefined;
-      this.userInfo = undefined;
-      this.roles = [];
+      cache.clearStorage('token');
+      this.token = null;
+      this.userInfo = null;
+      this.roles = null;
+    },
+    async pwdLogin({ id, password }) {
+      try {
+        const { data: token } = await fetchLogin({
+          id,
+          password,
+        });
+        this.setToken(token);
+        return token;
+      } catch (error: any) {
+        // 错误返回401，全局的响应拦截会打印报错信息
+        return null;
+      }
+    },
+    async codeLogin({ email, code }) {
+      try {
+        const { data: token } = await fetchEmailCodeLogin({
+          email,
+          code,
+        });
+        this.setToken(token);
+        return token;
+      } catch (error: any) {
+        // 错误返回401，全局的响应拦截会打印报错信息
+        return null;
+      }
+    },
+    async register({ email, code }) {
+      try {
+        // @ts-ignore
+        const { data: token } = await fetchRegister({
+          email,
+          code,
+        });
+        this.setToken(token);
+        return { token };
+      } catch (error: any) {
+        window.$message.error(error.message);
+        return error;
+      }
     },
     async getUserInfo() {
       try {

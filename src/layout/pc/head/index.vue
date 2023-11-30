@@ -232,7 +232,7 @@
         <div
           v-if="!userStore.userInfo"
           class="qqlogin"
-          @click="useQQLogin()"
+          @click="appStore.showLoginModal = true"
         >
           <div class="btn">登录</div>
         </div>
@@ -278,13 +278,15 @@ import Dropdown from '@/components/Dropdown/index.vue';
 import VPIconChevronDown from '@/components/icons/VPIconChevronDown.vue';
 import VPIconExternalLink from '@/components/icons/VPIconExternalLink.vue';
 import { APIFOX_URL, bilibiliCollectiondetail } from '@/constant';
-import { loginTip, useQQLogin } from '@/hooks/use-login';
+import { loginTip } from '@/hooks/use-login';
 import { IArea, LiveRoomTypeEnum } from '@/interface';
 import { routerName } from '@/router';
+import { useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
 
 const router = useRouter();
 const userStore = useUserStore();
+const appStore = useAppStore();
 const githubStar = ref('');
 const dropdownDoc = ref(false);
 const dropdownSys = ref(false);

@@ -1,6 +1,14 @@
 import { IPaging, IUser } from '@/interface';
 import request from '@/utils/request';
 
+export function fetchLogin({ id, password }) {
+  return request.instance({
+    url: '/user/login',
+    method: 'post',
+    data: { id, password },
+  });
+}
+
 export function fetchUserInfo() {
   return request.instance({
     url: '/user/get_user_info',

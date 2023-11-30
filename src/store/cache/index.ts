@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 
+import { lsKeyPrefix } from '@/constant';
 import { AppRootState } from '@/store/app';
 
 export type PiniaCacheRootState = {
@@ -8,9 +9,9 @@ export type PiniaCacheRootState = {
   'resource-list': AppRootState['allTrack'];
 };
 
-export const usePiniaCacheStore = defineStore('pinia-cache', {
+export const usePiniaCacheStore = defineStore(`${lsKeyPrefix}pinia-cache`, {
   persist: {
-    key: 'pinia-cache',
+    key: `${lsKeyPrefix}pinia-cache`,
   },
   state: (): PiniaCacheRootState => {
     return {

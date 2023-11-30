@@ -20,6 +20,8 @@ export const COOKIE_KEY = {
   loginInfo: 'loginInfo',
 };
 
+export const lsKeyPrefix = 'billd_live___';
+
 // 全局的localStorage的key
 export const lsKey = {
   lastBuildDate: 'lastBuildDate',

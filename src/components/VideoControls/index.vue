@@ -133,7 +133,7 @@ const showLine = ref(false);
 const showSpeed = ref(false);
 
 function handleTip() {
-  window.$message.info('敬请期待~');
+  window.$message.info('敬请期待！');
 }
 
 function changeMuted() {

@@ -7,15 +7,19 @@
     </router-view>
     <ModalCpt></ModalCpt>
     <SidebarCpt></SidebarCpt>
+    <LoginModal v-if="appStore.showLoginModal"></LoginModal>
   </div>
 </template>
 
 <script lang="ts" setup>
+import { useAppStore } from '@/store/app';
+
 import HeadCpt from './head/index.vue';
 import ModalCpt from './modal/index.vue';
 import SidebarCpt from './sidebar/index.vue';
 
 document.body.style.minWidth = '1200px';
+const appStore = useAppStore();
 </script>
 
 <style lang="scss" scoped>

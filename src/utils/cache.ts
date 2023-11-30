@@ -1,3 +1,5 @@
 import { CacheModel } from 'billd-utils';
 
-export default new CacheModel();
+import { lsKeyPrefix } from '@/constant';
+
+export default new CacheModel(lsKeyPrefix);

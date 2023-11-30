@@ -37,6 +37,7 @@ export type AppRootState = {
   }[];
   liveLine: LiveLineEnum;
   liveRoomInfo?: ILiveRoom;
+  showLoginModal: boolean;
 };
 
 export const useAppStore = defineStore('app', {
@@ -53,6 +54,7 @@ export const useAppStore = defineStore('app', {
       allTrack: [],
       liveLine: LiveLineEnum.hls,
       liveRoomInfo: undefined,
+      showLoginModal: false,
     };
   },
   actions: {
