@@ -12,8 +12,16 @@ export const WEBSOCKET_URL =
     ? 'ws://localhost:4300'
     : 'wss://srs-pull.hsslive.cn';
 
-export const APIFOX_URL =
-  'https://apifox.com/apidoc/shared-c7556b54-17b2-494e-a039-572d83f103ed/';
+export const COMMON_URL = {
+  apifox:
+    'https://apifox.com/apidoc/shared-c7556b54-17b2-494e-a039-572d83f103ed/',
+  admin: 'https://live-admin.hsslive.cn',
+  mobileApk:
+    'https://resource.hsslive.cn/billd-live/image/e859ec0e1fac824ce92b6522104f53ed.apk',
+  bilibiliCollectiondetail:
+    'https://space.bilibili.com/381307133/channel/collectiondetail?sid=1458070&ctype=0',
+  payCoursesArticle: 'https://www.hsslive.cn/article/151',
+};
 
 // 全局的cookie的key
 export const COOKIE_KEY = {
@@ -27,9 +35,6 @@ export const lsKey = {
   lastBuildDate: 'lastBuildDate',
   token: 'token',
 };
-
-export const bilibiliCollectiondetail =
-  'https://space.bilibili.com/381307133/channel/collectiondetail?sid=1458070&ctype=0';
 
 export const mediaTypeEnumMap = {
   [MediaTypeEnum.camera]: '摄像头',

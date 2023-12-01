@@ -176,7 +176,6 @@ export function useHlsPlay() {
     }
   }
   function setVolume(val: number) {
-    console.log('setVolumesetVolume', val);
     if (hlsVideoEl.value) {
       hlsVideoEl.value.volume = val / 100;
     }
@@ -234,7 +233,7 @@ export function useHlsPlay() {
           },
           function () {
             try {
-              console.log(`开始播放hls，muted:${cacheStore.muted}`);
+              // console.log(`开始播放hls，muted:${cacheStore.muted}`);
               hlsPlayer.value?.play();
             } catch (err) {
               console.error('hls播放失败');

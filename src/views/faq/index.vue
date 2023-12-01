@@ -59,10 +59,19 @@
         <div class="hr"></div>
         <div class="item">
           <h2>billd-live使用了什么技术栈？</h2>
-          <p>billd-live是一个前端全栈项目，几乎所有技术栈都是前端相关。</p>
-          <p>前端相关：Vue3、WebRTC、Typescript</p>
+          <p>billd-live是一个偏前端的全栈项目，几乎所有技术栈都是前端相关。</p>
           <p>
-            后端相关：Node、Koa2、MySQL、Redis、Socket.io、
+            前端相关：Typescript、Vue3、<a
+              target="_blank"
+              class="link"
+              href="https://developer.mozilla.org/zh-CN/docs/Web/API/WebRTC_API"
+            >
+              WebRTC </a
+            >、Web Audio、Web Worker、Canvas
+          </p>
+          <p>后端相关：Node、Koa2、MySQL、Redis、Socket.io、 Typescript</p>
+          <p>
+            音视频相关：
             <a
               target="_blank"
               class="link"
@@ -70,7 +79,14 @@
             >
               SRS
             </a>
-            、Typescript
+            <span>、</span>
+            <a
+              target="_blank"
+              class="link"
+              href="https://ffmpeg.org"
+            >
+              FFmpeg
+            </a>
           </p>
           <p>部署相关：Docker、Jenkins</p>
         </div>

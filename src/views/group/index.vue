@@ -42,7 +42,7 @@
         4. 没有免费的资料，所有免费的都在
         <span
           class="link"
-          @click="openToTarget(bilibiliCollectiondetail)"
+          @click="openToTarget(COMMON_URL.bilibiliCollectiondetail)"
         >
           b站视频合集
         </span>
@@ -68,7 +68,7 @@
       <p>
         1. 免费：看我的b站视频合集：<span
           class="link"
-          @click="openToTarget(bilibiliCollectiondetail)"
+          @click="openToTarget(COMMON_URL.bilibiliCollectiondetail)"
         >
           从零搭建迷你版b站web直播间
         </span>
@@ -77,9 +77,9 @@
         2. 付费：考虑billd-live付费课：
         <span
           class="link"
-          @click="openToTarget('https://www.hsslive.cn/article/151')"
+          @click="openToTarget(COMMON_URL.payCoursesArticle)"
         >
-          https://www.hsslive.cn/article/151
+          {{ COMMON_URL.payCoursesArticle }}
         </span>
       </p>
       <div>3. 闲聊勿扰。</div>
@@ -114,7 +114,7 @@
 <script lang="ts" setup>
 import { openToTarget } from 'billd-utils';
 
-import { bilibiliCollectiondetail } from '@/constant';
+import { COMMON_URL } from '@/constant';
 </script>
 
 <style lang="scss" scoped>

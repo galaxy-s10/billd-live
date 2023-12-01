@@ -18,7 +18,7 @@
       <span class="hot">billd-live付费课火热报名中！</span>
       <b
         class="link"
-        @click="openToTarget('https://www.hsslive.cn/article/151')"
+        @click="openToTarget(COMMON_URL.payCoursesArticle)"
       >
         查看详情
       </b>
@@ -32,6 +32,7 @@
 </template>
 
 <script lang="ts" setup>
+import { COMMON_URL } from '@/constant';
 import { openToTarget } from 'billd-utils';
 import { ref } from 'vue';
 

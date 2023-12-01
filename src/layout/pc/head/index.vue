@@ -40,10 +40,20 @@
           </a>
           <a
             class="item"
-            href="https://live-admin.hsslive.cn"
-            @click.prevent="openToTarget('https://live-admin.hsslive.cn')"
+            :href="COMMON_URL.admin"
+            @click.prevent="openToTarget(COMMON_URL.admin)"
           >
-            后台
+            直播后台
+          </a>
+          <a
+            class="item"
+            :href="COMMON_URL.mobileApk"
+            @click.prevent="openToTarget(COMMON_URL.mobileApk)"
+          >
+            App下载
+            <div class="badge">
+              <div class="txt">new</div>
+            </div>
           </a>
           <!-- <a
           class="item"
@@ -77,9 +87,28 @@
               </a>
               <a
                 class="item"
-                @click="openToTarget(APIFOX_URL)"
+                :href="COMMON_URL.apifox"
+                @click.prevent="openToTarget(COMMON_URL.apifox)"
               >
                 <div class="txt">接口文档</div>
+                <VPIconExternalLink class="icon"></VPIconExternalLink>
+              </a>
+              <a
+                class="item"
+                :href="COMMON_URL.bilibiliCollectiondetail"
+                @click.prevent="
+                  openToTarget(COMMON_URL.bilibiliCollectiondetail)
+                "
+              >
+                <div class="txt">b站教程</div>
+                <VPIconExternalLink class="icon"></VPIconExternalLink>
+              </a>
+              <a
+                class="item"
+                :href="COMMON_URL.payCoursesArticle"
+                @click.prevent="openToTarget(COMMON_URL.payCoursesArticle)"
+              >
+                <div class="txt">billd-live付费课</div>
                 <VPIconExternalLink class="icon"></VPIconExternalLink>
               </a>
             </div>
@@ -277,7 +306,7 @@ import { fetchAreaList } from '@/api/area';
 import Dropdown from '@/components/Dropdown/index.vue';
 import VPIconChevronDown from '@/components/icons/VPIconChevronDown.vue';
 import VPIconExternalLink from '@/components/icons/VPIconExternalLink.vue';
-import { APIFOX_URL, bilibiliCollectiondetail } from '@/constant';
+import { COMMON_URL } from '@/constant';
 import { loginTip } from '@/hooks/use-login';
 import { IArea, LiveRoomTypeEnum } from '@/interface';
 import { routerName } from '@/router';
@@ -310,19 +339,31 @@ const about = ref([
     label: '版本发布',
     routerName: routerName.release,
   },
-  {
-    label: 'b站视频',
-    url: bilibiliCollectiondetail,
-  },
 ]);
 const resource = ref([
+  {
+    label: 'billd-live',
+    url: 'https://github.com/galaxy-s10/billd-live',
+  },
   {
     label: 'billd-live-server',
     url: 'https://github.com/galaxy-s10/billd-live-server',
   },
   {
     label: 'billd-live-admin',
-    url: 'https://live-admin.hsslive.cn',
+    url: 'https://github.com/galaxy-s10/billd-live-admin',
+  },
+  {
+    label: 'billd-live-kotlin',
+    url: 'https://github.com/galaxy-s10/billd-live-kotlin',
+  },
+  {
+    label: 'billd-live-flutter',
+    url: 'https://github.com/galaxy-s10/billd-live-flutter',
+  },
+  {
+    label: 'billd-live-react-native',
+    url: 'https://github.com/galaxy-s10/billd-live-react-native',
   },
 ]);
 const plugins = ref([
@@ -415,6 +456,22 @@ function handleStartLive(key: LiveRoomTypeEnum) {
     height: 60px;
     box-shadow: inset 0 -1px #f1f2f3 !important;
     font-size: 15px;
+    .badge {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      padding: 0 2px;
+      border-radius: 4px;
+      background-color: red;
+      color: white;
+      line-height: 1;
+      .txt {
+        margin-right: 0;
+        transform-origin: top !important;
+
+        @include minFont(10);
+      }
+    }
     .hr {
       width: 100%;
       height: 1px;
@@ -447,7 +504,6 @@ function handleStartLive(key: LiveRoomTypeEnum) {
           display: flex;
           align-items: center;
           margin-right: 20px;
-          height: 100%;
           color: black;
           text-decoration: none;
           cursor: pointer;
@@ -500,7 +556,7 @@ function handleStartLive(key: LiveRoomTypeEnum) {
         }
 
         .list {
-          width: 120px;
+          width: 150px;
           .item {
             display: flex;
             align-items: center;
@@ -554,22 +610,6 @@ function handleStartLive(key: LiveRoomTypeEnum) {
       }
       .privatizationDeployment {
         position: relative;
-        .badge {
-          position: absolute;
-          top: -10px;
-          right: -10px;
-          padding: 0 2px;
-          border-radius: 4px;
-          background-color: red;
-          color: white;
-          line-height: 1;
-          .txt {
-            margin-right: 0;
-            transform-origin: top !important;
-
-            @include minFont(10);
-          }
-        }
       }
 
       .start-live {
@@ -621,6 +661,7 @@ function handleStartLive(key: LiveRoomTypeEnum) {
         .list {
           width: 90px;
           .item {
+            position: relative;
             display: flex;
             padding: 0 15px;
             cursor: pointer;
