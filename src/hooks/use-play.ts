@@ -19,8 +19,10 @@ export function useFlvPlay() {
   const flvVideoEl = ref<HTMLVideoElement>();
   const cacheStore = usePiniaCacheStore();
   const appStore = useAppStore();
-  const retryMax = ref(120);
+  const initRetryMax = 120;
+  const retryMax = ref(initRetryMax);
   const retry = ref(0);
+  const retryTimer = ref();
   const retrying = ref(false);
 
   onMounted(() => {});
@@ -35,6 +37,8 @@ export function useFlvPlay() {
       flvPlayer.value = undefined;
     }
     flvVideoEl.value?.remove();
+    clearInterval(retryTimer.value);
+    retryMax.value = initRetryMax;
   }
 
   function setMuted(val) {
@@ -115,7 +119,7 @@ export function useFlvPlay() {
             if (retry.value < retryMax.value && !retrying.value) {
               retrying.value = true;
               destroyFlv();
-              setTimeout(() => {
+              retryTimer.value = setTimeout(() => {
                 console.error(
                   '播放flv错误，重新加载，剩余次数：',
                   retryMax.value - retry.value
@@ -153,8 +157,10 @@ export function useHlsPlay() {
   const cacheStore = usePiniaCacheStore();
   const appStore = useAppStore();
   const userStore = useUserStore();
-  const retryMax = ref(120);
+  const initRetryMax = 120;
+  const retryMax = ref(initRetryMax);
   const retry = ref(0);
+  const retryTimer = ref();
   const retrying = ref(false);
 
   onMounted(() => {});
@@ -169,6 +175,8 @@ export function useHlsPlay() {
       hlsPlayer.value = undefined;
     }
     hlsVideoEl.value?.remove();
+    clearInterval(retryTimer.value);
+    retryMax.value = initRetryMax;
   }
 
   function setMuted(val: boolean) {
@@ -258,7 +266,7 @@ export function useHlsPlay() {
           console.log('hls-error');
           if (retry.value < retryMax.value && !retrying.value) {
             retrying.value = true;
-            setTimeout(() => {
+            retryTimer.value = setTimeout(() => {
               console.error(
                 '播放hls错误，重新加载，剩余次数：',
                 retryMax.value - retry.value
