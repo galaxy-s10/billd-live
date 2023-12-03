@@ -80,13 +80,13 @@ export function usePull() {
     videoLoading.value = false;
   });
 
-  function handleHlsPlay(url?: string) {
+  function handleHlsPlay(url: string) {
     console.log('handleHlsPlay', url);
     handleStopDrawing();
     videoLoading.value = true;
     appStore.setLiveLine(LiveLineEnum.hls);
     startHlsPlay({
-      hlsurl: url || hlsurl.value,
+      hlsurl: url,
     });
   }
 
@@ -123,28 +123,28 @@ export function usePull() {
         if (appStore.liveLine === LiveLineEnum.flv) {
           handleFlvPlay();
         } else if (appStore.liveLine === LiveLineEnum.hls) {
-          handleHlsPlay(data.hls_url);
+          handleHlsPlay(data.hls_url!);
         }
         break;
       case LiveRoomTypeEnum.user_obs:
         if (appStore.liveLine === LiveLineEnum.flv) {
           handleFlvPlay();
         } else if (appStore.liveLine === LiveLineEnum.hls) {
-          handleHlsPlay(data.hls_url);
+          handleHlsPlay(data.hls_url!);
         }
         break;
       case LiveRoomTypeEnum.user_msr:
         if (appStore.liveLine === LiveLineEnum.flv) {
           handleFlvPlay();
         } else if (appStore.liveLine === LiveLineEnum.hls) {
-          handleHlsPlay(data.hls_url);
+          handleHlsPlay(data.hls_url!);
         }
         break;
       case LiveRoomTypeEnum.system:
         if (appStore.liveLine === LiveLineEnum.flv) {
           handleFlvPlay();
         } else if (appStore.liveLine === LiveLineEnum.hls) {
-          handleHlsPlay(data.hls_url);
+          handleHlsPlay(data.hls_url!);
         }
         break;
       case LiveRoomTypeEnum.user_wertc:
@@ -179,7 +179,7 @@ export function usePull() {
           handleFlvPlay();
           break;
         case LiveLineEnum.hls:
-          handleHlsPlay();
+          handleHlsPlay(hlsurl.value);
           break;
         case LiveLineEnum.rtc:
           break;

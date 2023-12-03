@@ -302,13 +302,12 @@ import { openToTarget, windowReload } from 'billd-utils';
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { fetchAreaList } from '@/api/area';
 import Dropdown from '@/components/Dropdown/index.vue';
 import VPIconChevronDown from '@/components/icons/VPIconChevronDown.vue';
 import VPIconExternalLink from '@/components/icons/VPIconExternalLink.vue';
 import { COMMON_URL } from '@/constant';
 import { loginTip } from '@/hooks/use-login';
-import { IArea, LiveRoomTypeEnum } from '@/interface';
+import { LiveRoomTypeEnum } from '@/interface';
 import { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
@@ -320,7 +319,6 @@ const githubStar = ref('');
 const dropdownDoc = ref(false);
 const dropdownSys = ref(false);
 const dropdownAbout = ref(false);
-const areaList = ref<IArea[]>([]);
 
 const about = ref([
   {
@@ -396,17 +394,6 @@ function handleLogout() {
   }, 500);
 }
 
-async function getAreaList() {
-  const res = await fetchAreaList();
-  if (res.code === 200) {
-    areaList.value = res.data.rows;
-  }
-}
-
-function changeArea(item: IArea) {
-  router.push({ name: routerName.area, params: { id: item.id } });
-}
-
 function handleJump(item) {
   if (item.url) {
     openToTarget(item.url);
@@ -418,7 +405,6 @@ function handleJump(item) {
 onMounted(() => {
   githubStar.value =
     'https://img.shields.io/github/stars/galaxy-s10/billd-live?label=Star&logo=GitHub&labelColor=white&logoColor=black&style=social&cacheSeconds=3600';
-  getAreaList();
 });
 
 function quickStart() {

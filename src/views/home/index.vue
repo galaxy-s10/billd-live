@@ -12,6 +12,7 @@
       </div>
       <div class="container">
         <div
+          v-loading="videoLoading"
           class="left"
           @click="showJoinBtn = !showJoinBtn"
         >
@@ -30,12 +31,10 @@
               })`,
             }"
           ></div>
-          <div v-loading="videoLoading">
-            <div
-              v-if="currentLiveRoom?.live_room?.flv_url"
-              ref="remoteVideoRef"
-            ></div>
-          </div>
+          <div
+            v-if="currentLiveRoom?.live_room?.flv_url"
+            ref="remoteVideoRef"
+          ></div>
           <template v-if="currentLiveRoom">
             <VideoControls
               @click.stop
@@ -76,6 +75,12 @@
               }"
               @click="changeLiveRoom(item)"
             >
+              <PullAuthTip
+                v-if="
+                  item.live_room?.pull_is_should_auth ===
+                  LiveRoomPullIsShouldAuthEnum.yes
+                "
+              ></PullAuthTip>
               <div class="hidden">
                 <div
                   class="cdn-ico"
@@ -160,7 +165,12 @@ import { useRouter } from 'vue-router';
 import { fetchLiveList } from '@/api/live';
 import { sliderList } from '@/constant';
 import { usePull } from '@/hooks/use-pull';
-import { ILive, LiveLineEnum, LiveRoomTypeEnum } from '@/interface';
+import {
+  ILive,
+  LiveLineEnum,
+  LiveRoomPullIsShouldAuthEnum,
+  LiveRoomTypeEnum,
+} from '@/interface';
 import { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
 
@@ -325,6 +335,8 @@ function joinRoom(data: { roomId: number }) {
           position: absolute;
           top: 50%;
           left: 50%;
+          min-width: 100%;
+          min-height: 100%;
           max-width: $w-1100;
           max-height: calc($w-1100 / $video-ratio);
           transform: translate(-50%, -50%);
@@ -335,6 +347,8 @@ function joinRoom(data: { roomId: number }) {
           position: absolute;
           top: 50%;
           left: 50%;
+          min-width: 100%;
+          min-height: 100%;
           max-width: $w-1100;
           max-height: calc($w-1100 / $video-ratio);
           transform: translate(-50%, -50%);

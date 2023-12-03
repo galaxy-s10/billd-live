@@ -398,9 +398,9 @@ watch(
             top: 50%;
             left: 50%;
             display: block;
-            // width: 100%;
-            // height: 100%;
             margin: 0 auto;
+            min-width: 100%;
+            min-height: 100%;
             max-width: $w-1000;
             max-height: 562px;
             transform: translate(-50%, -50%);
@@ -410,9 +410,9 @@ watch(
             top: 50%;
             left: 50%;
             display: block;
-            // width: 100%;
-            // height: 100%;
             margin: 0 auto;
+            min-width: 100%;
+            min-height: 100%;
             max-width: $w-1000;
             max-height: 562px;
             transform: translate(-50%, -50%);

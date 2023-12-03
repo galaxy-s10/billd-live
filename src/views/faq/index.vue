@@ -7,27 +7,23 @@
         <div class="item">
           <h2>如何本地运行billd-live？</h2>
           <p>
-            1. 仔细阅读
+            一： 仔细看完
             <span
               class="link"
               @click="
                 openToTarget('https://github.com/galaxy-s10/billd-live#readme')
               "
             >
-              billd-live的readme
+              billd-live的Readme
             </span>
           </p>
           <p>
-            2. 仔细阅读
+            二：仔细看完
             <span
               class="link"
-              @click="
-                openToTarget(
-                  'https://github.com/galaxy-s10/billd-live-server#readme'
-                )
-              "
+              @click="openToTarget(COMMON_URL.bilibiliCollectiondetail)"
             >
-              billd-live-server的readme
+              b站教程（封面是"从零搭建迷你b站直播间"）
             </span>
           </p>
         </div>
@@ -119,7 +115,7 @@
 <script lang="ts" setup>
 import { openToTarget } from 'billd-utils';
 
-import { AUTHOR_GITHUB } from '@/constant';
+import { AUTHOR_GITHUB, COMMON_URL } from '@/constant';
 </script>
 
 <style lang="scss" scoped>

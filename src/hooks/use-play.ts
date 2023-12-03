@@ -1,4 +1,6 @@
 import '@/assets/css/videojs.scss';
+import { getRandomString } from 'billd-utils';
+import md5 from 'crypto-js/md5';
 import mpegts from 'mpegts.js';
 import videoJs from 'video.js';
 import Player from 'video.js/dist/types/player';
@@ -6,6 +8,7 @@ import { onMounted, onUnmounted, ref, watch } from 'vue';
 
 import { useAppStore } from '@/store/app';
 import { usePiniaCacheStore } from '@/store/cache';
+import { useUserStore } from '@/store/user';
 import { createVideo } from '@/utils';
 
 export * as flvJs from 'flv.js';
@@ -149,6 +152,7 @@ export function useHlsPlay() {
   const hlsVideoEl = ref<HTMLVideoElement>();
   const cacheStore = usePiniaCacheStore();
   const appStore = useAppStore();
+  const userStore = useUserStore();
   const retryMax = ref(120);
   const retry = ref(0);
   const retrying = ref(false);
@@ -221,12 +225,21 @@ export function useHlsPlay() {
           muted: cacheStore.muted,
           autoplay: true,
         });
+        const userInfo = userStore.userInfo;
+        const userToken = md5(userStore.token) as string;
+        console.log('userdddd', userInfo);
         hlsPlayer.value = videoJs(
           videoEl,
           {
             sources: [
               {
-                src: data.hlsurl,
+                src: !userInfo
+                  ? data.hlsurl
+                  : `${
+                      data.hlsurl
+                    }?usertoken=${userToken}&userid=${userInfo.id!}&randomid=${getRandomString(
+                      8
+                    )}`,
                 type: 'application/x-mpegURL',
               },
             ],

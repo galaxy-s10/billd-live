@@ -26,6 +26,7 @@ export async function handleLogin(e) {
   if (!POSTMESSAGE_TYPE.includes(type)) return;
   console.log('收到消息', type, data);
   const userStore = useUserStore();
+  const appStore = useAppStore();
 
   try {
     switch (type) {
@@ -39,6 +40,7 @@ export async function handleLogin(e) {
         }
         userStore.setToken(res.data);
         userStore.getUserInfo();
+        appStore.showLoginModal = false;
         break;
       }
     }
