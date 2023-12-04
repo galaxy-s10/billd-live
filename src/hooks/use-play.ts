@@ -235,7 +235,6 @@ export function useHlsPlay() {
         });
         const userInfo = userStore.userInfo;
         const userToken = md5(userStore.token) as string;
-        console.log('userdddd', userInfo);
         hlsPlayer.value = videoJs(
           videoEl,
           {

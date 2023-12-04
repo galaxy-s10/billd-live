@@ -27,17 +27,17 @@
               currRankType !== RankTypeEnum.blog &&
                 router.push({
                   name: routerName.profile,
-                  params: { userId: item.user.id },
+                  params: { userId: item.users[0]?.id },
                 })
             "
           >
             <Avatar
               :size="100"
-              :avatar="item.user.avatar"
+              :avatar="item.users[0]?.avatar"
               :living="!!item.live?.live"
             ></Avatar>
           </div>
-          <div class="username">{{ item.user.username }}</div>
+          <div class="username">{{ item.users[0]?.username }}</div>
           <div class="rank">
             <i>0{{ item.rank }}</i>
             <div
@@ -68,16 +68,16 @@
               currRankType !== RankTypeEnum.blog &&
                 router.push({
                   name: routerName.profile,
-                  params: { userId: item.user.id },
+                  params: { userId: item.users[0]?.id },
                 })
             "
           >
             <img
-              :src="item.user.avatar"
+              :src="item.users[0]?.avatar"
               class="avatar"
               alt=""
             />
-            <div class="username">{{ item.user.username }}</div>
+            <div class="username">{{ item.users[0]?.username }}</div>
             <div class="wallet">
               <div v-if="currRankType === RankTypeEnum.wallet">
                 （钱包：{{ item.balance }}）
@@ -137,7 +137,7 @@ const mockDataNums = 4;
 const currRankType = ref(RankTypeEnum.liveRoom);
 
 const mockRank: {
-  user: IUser;
+  users: IUser[];
   rank: number;
   level: number;
   score: number;
@@ -145,11 +145,13 @@ const mockRank: {
   live?: ILiveRoom;
 }[] = [
   {
-    user: {
-      id: -1,
-      username: '待上榜',
-      avatar: '',
-    },
+    users: [
+      {
+        id: -1,
+        username: '待上榜',
+        avatar: '',
+      },
+    ],
     rank: 1,
     level: -1,
     score: -1,
@@ -157,11 +159,13 @@ const mockRank: {
     live: undefined,
   },
   {
-    user: {
-      id: -1,
-      username: '待上榜',
-      avatar: '',
-    },
+    users: [
+      {
+        id: -1,
+        username: '待上榜',
+        avatar: '',
+      },
+    ],
     rank: 2,
     level: -1,
     score: -1,
@@ -169,11 +173,13 @@ const mockRank: {
     live: undefined,
   },
   {
-    user: {
-      id: -1,
-      username: '待上榜',
-      avatar: '',
-    },
+    users: [
+      {
+        id: -1,
+        username: '待上榜',
+        avatar: '',
+      },
+    ],
     rank: 3,
     level: -1,
     score: -1,
@@ -181,11 +187,13 @@ const mockRank: {
     live: undefined,
   },
   {
-    user: {
-      id: -1,
-      username: '待上榜',
-      avatar: '',
-    },
+    users: [
+      {
+        id: -1,
+        username: '待上榜',
+        avatar: '',
+      },
+    ],
     rank: 4,
     level: -1,
     score: -1,
@@ -210,7 +218,7 @@ async function getWalletList() {
       const length = res.data.rows.length;
       rankList.value = res.data.rows.map((item, index) => {
         return {
-          user: item.user,
+          users: [item.user],
           rank: index + 1,
           level: 1,
           score: 1,
@@ -239,11 +247,7 @@ async function getLiveRoomList() {
       const length = res.data.rows.length;
       rankList.value = res.data.rows.map((item, index) => {
         return {
-          user: {
-            id: item.user_id!,
-            username: item.user_username!,
-            avatar: item.user_avatar!,
-          },
+          users: item.users,
           live: item,
           rank: index + 1,
           level: 1,
@@ -272,11 +276,13 @@ async function getUserList() {
       const length = res.data.rows.length;
       rankList.value = res.data.rows.map((item, index) => {
         return {
-          user: {
-            id: item.id!,
-            username: item.username!,
-            avatar: item.avatar!,
-          },
+          users: [
+            {
+              id: item.id!,
+              username: item.username!,
+              avatar: item.avatar!,
+            },
+          ],
           rank: index + 1,
           level: 1,
           score: 1,
@@ -304,11 +310,13 @@ async function getBlogUserList() {
       const length = res.data.rows.length;
       rankList.value = res.data.rows.map((item, index) => {
         return {
-          user: {
-            id: item.id!,
-            username: item.username!,
-            avatar: item.avatar!,
-          },
+          users: [
+            {
+              id: item.id!,
+              username: item.username!,
+              avatar: item.avatar!,
+            },
+          ],
           rank: index + 1,
           level: 1,
           score: 1,

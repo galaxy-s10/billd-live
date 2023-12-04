@@ -134,6 +134,12 @@
                 }')`,
               }"
             >
+              <PullAuthTip
+                v-if="
+                  iten.live_room?.pull_is_should_auth ===
+                  LiveRoomPullIsShouldAuthEnum.yes
+                "
+              ></PullAuthTip>
               <div
                 v-if="iten?.live_room?.cdn === 1"
                 class="cdn-ico"
