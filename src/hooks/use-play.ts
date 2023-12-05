@@ -13,6 +13,17 @@ import { createVideo } from '@/utils';
 
 export * as flvJs from 'flv.js';
 
+function handlePlayUrl(url: string) {
+  const userStore = useUserStore();
+  const userInfo = userStore.userInfo;
+  const userToken = md5(userStore.token) as string;
+  return !userInfo
+    ? `${url}?randomid=${getRandomString(8)}`
+    : `${url}?usertoken=${userToken}&userid=${userInfo.id!}&randomid=${getRandomString(
+        8
+      )}`;
+}
+
 export function useFlvPlay() {
   // const flvPlayer = ref<flvJs.Player>();
   const flvPlayer = ref<mpegts.Player>();
@@ -95,7 +106,7 @@ export function useFlvPlay() {
           flvPlayer.value = mpegts.createPlayer({
             type: 'flv', // could also be mpegts, m2ts, flv
             isLive: true,
-            url: data.flvurl,
+            url: handlePlayUrl(data.flvurl),
           });
           const videoEl = createVideo({});
           videoEl.addEventListener('play', () => {
@@ -156,7 +167,6 @@ export function useHlsPlay() {
   const hlsVideoEl = ref<HTMLVideoElement>();
   const cacheStore = usePiniaCacheStore();
   const appStore = useAppStore();
-  const userStore = useUserStore();
   const initRetryMax = 120;
   const retryMax = ref(initRetryMax);
   const retry = ref(0);
@@ -233,20 +243,12 @@ export function useHlsPlay() {
           muted: cacheStore.muted,
           autoplay: true,
         });
-        const userInfo = userStore.userInfo;
-        const userToken = md5(userStore.token) as string;
         hlsPlayer.value = videoJs(
           videoEl,
           {
             sources: [
               {
-                src: !userInfo
-                  ? data.hlsurl
-                  : `${
-                      data.hlsurl
-                    }?usertoken=${userToken}&userid=${userInfo.id!}&randomid=${getRandomString(
-                      8
-                    )}`,
+                src: handlePlayUrl(data.hlsurl),
                 type: 'application/x-mpegURL',
               },
             ],
