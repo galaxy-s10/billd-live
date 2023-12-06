@@ -65,6 +65,7 @@ import { useRouter } from 'vue-router';
 
 import { fetchUpdateLiveRoomKey } from '@/api/liveRoom';
 import { fetchUserInfo } from '@/api/user';
+import { SRS_CB_URL_PARAMS } from '@/constant';
 import { loginTip } from '@/hooks/use-login';
 import { IUser, LiveRoomTypeEnum } from '@/interface';
 import { routerName } from '@/router';
@@ -105,7 +106,7 @@ function openLiveRoom() {
 }
 
 function handleUrl(data: { url: string; token: string }) {
-  return `${data.url}?token=${data.token}&type=${LiveRoomTypeEnum.user_obs}`;
+  return `${data.url}?${SRS_CB_URL_PARAMS.publishKey}=${data.token}&${SRS_CB_URL_PARAMS.publishType}=${LiveRoomTypeEnum.user_obs}`;
 }
 
 async function handleUpdateKey() {

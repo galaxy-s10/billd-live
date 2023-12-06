@@ -23,6 +23,14 @@ export const COMMON_URL = {
   payCoursesArticle: 'https://www.hsslive.cn/article/151',
 };
 
+export const SRS_CB_URL_PARAMS = {
+  publishKey: 'pushkey',
+  publishType: 'pushtype',
+  userToken: 'usertoken',
+  userId: 'userid',
+  randomId: 'randomid',
+};
+
 // 全局的cookie的key
 export const COOKIE_KEY = {
   loginInfo: 'loginInfo',

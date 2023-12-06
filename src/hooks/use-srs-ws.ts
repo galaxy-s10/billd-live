@@ -2,7 +2,7 @@ import { getRandomString } from 'billd-utils';
 import { computed, onUnmounted, ref } from 'vue';
 
 import { fetchRtcV1Publish } from '@/api/srs';
-import { WEBSOCKET_URL } from '@/constant';
+import { SRS_CB_URL_PARAMS, WEBSOCKET_URL } from '@/constant';
 import {
   DanmuMsgTypeEnum,
   IDanmu,
@@ -99,7 +99,9 @@ export const useSrsWs = () => {
       api: `/rtc/v1/publish/`,
       clientip: null,
       sdp: sdp!.sdp!,
-      streamurl: `${myLiveRoom.rtmp_url!}?token=${myLiveRoom.key!}&type=${
+      streamurl: `${myLiveRoom.rtmp_url!}?${
+        SRS_CB_URL_PARAMS.publishKey
+      }=${myLiveRoom.key!}&${SRS_CB_URL_PARAMS.publishType}=${
         LiveRoomTypeEnum.user_srs
       }`,
       tid: getRandomString(10),

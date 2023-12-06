@@ -6,6 +6,7 @@ import videoJs from 'video.js';
 import Player from 'video.js/dist/types/player';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 
+import { SRS_CB_URL_PARAMS } from '@/constant';
 import { useAppStore } from '@/store/app';
 import { usePiniaCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
@@ -18,10 +19,10 @@ function handlePlayUrl(url: string) {
   const userInfo = userStore.userInfo;
   const userToken = md5(userStore.token) as string;
   return !userInfo
-    ? `${url}?randomid=${getRandomString(8)}`
-    : `${url}?usertoken=${userToken}&userid=${userInfo.id!}&randomid=${getRandomString(
-        8
-      )}`;
+    ? `${url}?${SRS_CB_URL_PARAMS.randomId}=${getRandomString(8)}`
+    : `${url}?${SRS_CB_URL_PARAMS.userToken}=${userToken}&${
+        SRS_CB_URL_PARAMS.userId
+      }=${userInfo.id!}&${SRS_CB_URL_PARAMS.randomId}=${getRandomString(8)}`;
 }
 
 export function useFlvPlay() {
