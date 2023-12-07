@@ -8,7 +8,7 @@
         :src="aliPayBase64"
         alt=""
       />
-      <template v-if="currentPayStatus !== PayStatusEnum.error">
+      <template v-if="currentPayStatus !== PayStatusEnum.wait">
         <div class="mask">
           <div class="txt">
             {{
@@ -63,7 +63,7 @@ const downTimer = ref();
 const downTimeStart = ref();
 const downTimeEnd = ref();
 
-const currentPayStatus = ref(PayStatusEnum.error);
+const currentPayStatus = ref(PayStatusEnum.wait);
 const props = defineProps({
   money: { type: String, default: '0.00' },
   goodsId: { type: Number, default: -1 },
@@ -109,7 +109,7 @@ async function startPay(data: {
   liveRoomId: number;
   money?: string;
 }) {
-  currentPayStatus.value = PayStatusEnum.error;
+  currentPayStatus.value = PayStatusEnum.wait;
   payOk.value = false;
   clearInterval(payStatusTimer.value);
   clearInterval(downTimer.value);
