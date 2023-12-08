@@ -328,11 +328,6 @@ async function init() {
     timeInfo.value = props.initData.timeInfo;
     txtInfo.value = props.initData.txtInfo;
     stopwatchInfo.value = props.initData.stopwatchInfo;
-    console.log(
-      props.initData.deviceId,
-      props.initData.type,
-      props.initData.mediaName
-    );
   }
 }
 </script>

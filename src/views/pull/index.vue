@@ -144,9 +144,29 @@
         >
           <template v-if="item.msgType === DanmuMsgTypeEnum.danmu">
             <span class="name">
-              {{ item.userInfo?.username || item.socket_id }}：
+              <span v-if="item.userInfo">
+                {{ item.userInfo.username }}[{{
+                  item.userInfo.roles?.map((v) => v.role_name).join()
+                }}]
+              </span>
+              <span v-else>{{ item.socket_id }}</span>
+              <span>：</span>
             </span>
-            <span class="msg">{{ item.msg }}</span>
+            <span
+              class="msg"
+              v-if="!item.msgIsFile"
+            >
+              {{ item.msg }}
+            </span>
+            <div
+              class="msg img"
+              v-else
+            >
+              <img
+                :src="item.msg"
+                alt=""
+              />
+            </div>
           </template>
           <template v-else-if="item.msgType === DanmuMsgTypeEnum.otherJoin">
             <span class="name system">系统通知：</span>
@@ -162,7 +182,29 @@
           </template>
         </div>
       </div>
-      <div class="send-msg">
+      <div
+        class="send-msg"
+        v-loading="msgLoading"
+      >
+        <div class="control">
+          <div
+            class="ico face"
+            title="表情"
+            @click="handleWait"
+          ></div>
+          <div
+            class="ico img"
+            title="图片"
+            @click="mockClick"
+          >
+            <input
+              ref="uploadRef"
+              type="file"
+              class="input-upload"
+              @change="uploadChange"
+            />
+          </div>
+        </div>
         <textarea
           v-model="danmuStr"
           class="ipt"
@@ -187,8 +229,10 @@
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 
 import { fetchGoodsList } from '@/api/goods';
+import { QINIU_BLOG } from '@/constant';
 import { loginTip } from '@/hooks/use-login';
 import { usePull } from '@/hooks/use-pull';
+import { useUpload } from '@/hooks/use-upload';
 import { DanmuMsgTypeEnum, GoodsTypeEnum, IGoods } from '@/interface';
 import { useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
@@ -202,11 +246,13 @@ const giftGoodsList = ref<IGoods[]>([]);
 const height = ref(0);
 const giftLoading = ref(false);
 const showRecharge = ref(false);
+const msgLoading = ref(false);
 const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
 const danmuListRef = ref<HTMLDivElement>();
 const remoteVideoRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
+const uploadRef = ref<HTMLInputElement>();
 const {
   initPull,
   closeWs,
@@ -214,6 +260,7 @@ const {
   keydownDanmu,
   sendDanmu,
   handlePlay,
+  msgIsFile,
   mySocketId,
   videoHeight,
   videoLoading,
@@ -224,6 +271,22 @@ const {
   danmuStr,
   anchorInfo,
 } = usePull();
+
+onMounted(() => {
+  setTimeout(() => {
+    scrollTo(0, 0);
+  }, 100);
+  appStore.setPlay(true);
+  getGoodsList();
+  if (topRef.value && bottomRef.value && containerRef.value) {
+    const res =
+      bottomRef.value.getBoundingClientRect().top -
+      (topRef.value.getBoundingClientRect().top +
+        topRef.value.getBoundingClientRect().height);
+    height.value = res;
+  }
+  initPull();
+});
 
 onUnmounted(() => {
   closeWs();
@@ -243,21 +306,36 @@ watch(
   }
 );
 
-onMounted(() => {
-  setTimeout(() => {
-    scrollTo(0, 0);
-  }, 100);
-  appStore.setPlay(true);
-  getGoodsList();
-  if (topRef.value && bottomRef.value && containerRef.value) {
-    const res =
-      bottomRef.value.getBoundingClientRect().top -
-      (topRef.value.getBoundingClientRect().top +
-        topRef.value.getBoundingClientRect().height);
-    height.value = res;
+function handleWait() {
+  window.$message.warning('敬请期待！');
+}
+
+function mockClick() {
+  uploadRef.value?.click();
+}
+
+async function uploadChange() {
+  const fileList = uploadRef.value?.files;
+  if (fileList?.length) {
+    try {
+      msgLoading.value = true;
+      msgIsFile.value = true;
+      const res = await useUpload({
+        prefix: QINIU_BLOG.prefix['image/'],
+        file: fileList[0],
+      });
+      if (res?.resultUrl) {
+        danmuStr.value = res.resultUrl || '错误图片';
+        sendDanmu();
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      msgIsFile.value = false;
+      msgLoading.value = false;
+    }
   }
-  initPull();
-});
+}
 
 function handlePay() {
   window.$message.info('敬请期待！');
@@ -590,7 +668,9 @@ watch(
       @extend %hideScrollbar;
       .item {
         margin-bottom: 10px;
-        font-size: 12px;
+        font-size: 13px;
+        word-wrap: break-word;
+        white-space: normal;
         .name {
           color: #9499a0;
           &.system {
@@ -599,6 +679,11 @@ watch(
         }
         .msg {
           color: #61666d;
+          &.img {
+            img {
+              width: 80%;
+            }
+          }
         }
       }
     }
@@ -608,6 +693,27 @@ watch(
       box-sizing: border-box;
       padding: 0 10px;
       width: 100%;
+      .control {
+        display: flex;
+        margin-bottom: 4px;
+        .ico {
+          margin-right: 4px;
+          width: 20px;
+          height: 20px;
+          cursor: pointer;
+          .input-upload {
+            width: 0;
+            height: 0;
+            opacity: 0;
+          }
+          &.face {
+            @include setBackground('@/assets/img/msg-face.png');
+          }
+          &.img {
+            @include setBackground('@/assets/img/msg-img.png');
+          }
+        }
+      }
       .ipt {
         display: block;
         box-sizing: border-box;
@@ -625,8 +731,8 @@ watch(
         box-sizing: border-box;
         margin-top: 10px;
         margin-left: auto;
-        padding: 5px;
-        width: 80px;
+        padding: 4px;
+        width: 70px;
         border-radius: 4px;
         background-color: $theme-color-gold;
         color: white;

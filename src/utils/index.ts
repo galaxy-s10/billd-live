@@ -1,6 +1,64 @@
 // TIP: ctrl+cmd+t,生成函数注释
-
 import { getRangeRandom } from 'billd-utils';
+import sparkMD5 from 'spark-md5';
+
+export const getHostnameUrl = () => {
+  // window.location.host，包含了域名的一个DOMString，可能在该串最后带有一个":"并跟上 URL 的端口号。
+  const { protocol, hostname } = window.location;
+  return `${protocol}//${hostname}`;
+};
+
+/**
+ * 根据文件内容获取hash，同一个文件不管重命名还是改文件名后缀，hash都一样
+ * @param file
+ * @returns
+ */
+export const getHash = (file: File) => {
+  return new Promise<{
+    hash: string;
+    ext: string;
+    buffer: ArrayBuffer;
+  }>((resolve) => {
+    const reader = new FileReader();
+    reader.readAsArrayBuffer(file);
+    reader.onload = (e) => {
+      const spark = new sparkMD5.ArrayBuffer();
+      const buffer = e.target!.result as ArrayBuffer;
+      spark.append(buffer);
+      const hash = spark.end();
+      const arr = file.name.split('.');
+      const ext = arr[arr.length - 1];
+      resolve({ hash, ext, buffer });
+    };
+  });
+};
+
+// 文件切片
+export const splitFile = (file: File) => {
+  const chunkList: { chunk: Blob; chunkName: string }[] = [];
+  // 先以固定的切片大小1024*100
+  let max = 50 * 100;
+  let count = Math.ceil(file.size / max);
+  let index = 0;
+  // 限定最多100个切片
+  if (count > 100) {
+    max = Math.ceil(file.size / 100);
+    count = 100;
+  }
+  /**
+   * 0：0,max
+   * 1：max,2max
+   * 2：2max,3max
+   */
+  while (index < count) {
+    chunkList.push({
+      chunkName: `${index}`,
+      chunk: new File([file.slice(index * max, (index + 1) * max)], file.name),
+    });
+    index += 1;
+  }
+  return chunkList;
+};
 
 /**
  * 格式化倒计时

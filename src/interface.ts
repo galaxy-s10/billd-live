@@ -1,5 +1,20 @@
 /** 这里放项目里面的类型 */
 
+export interface IQiniuData {
+  id?: number;
+  user_id?: number;
+  prefix?: string;
+  bucket?: string;
+  qiniu_key?: string;
+  qiniu_hash?: string;
+  qiniu_fsize?: number;
+  qiniu_mimeType?: string;
+  qiniu_putTime?: number;
+  qiniu_type?: number;
+  qiniu_status?: number;
+  qiniu_md5?: string;
+}
+
 export enum LiveLineEnum {
   rtc = 'rtc',
   hls = 'hls',
@@ -82,6 +97,31 @@ export interface IPaging<T> {
   hasMore: boolean;
   total: number;
   rows: T[];
+}
+
+export enum FormTypeEnum {
+  'input' = 'input',
+  'password' = 'password',
+  'number' = 'number',
+  'select' = 'select',
+  'radio' = 'radio',
+  'checkbox' = 'checkbox',
+  'markdown' = 'markdown',
+  'switch' = 'switch',
+  'upload' = 'upload',
+  'treeSelect' = 'treeSelect',
+  'datePicker' = 'datePicker',
+}
+
+export interface ILiveConfig {
+  id?: number;
+  key?: string;
+  value?: string;
+  desc?: string;
+  type?: FormTypeEnum;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string;
 }
 
 export interface IOrder {
@@ -264,6 +304,7 @@ export interface IRole {
   role_auths?: number[];
   c_roles?: number[];
 }
+
 export interface IUser {
   id?: number;
   username?: string;
@@ -273,13 +314,20 @@ export interface IUser {
   avatar?: string;
   desc?: string;
   token?: string;
+
+  wallet?: IWallet;
+  live_room?: ILiveRoom;
+  live_rooms?: ILiveRoom[];
+
+  roles?: IRole[];
+  auths?: IAuth[];
   user_roles?: number[];
+
+  qq_users?: IQqUser[];
+
   created_at?: string;
   updated_at?: string;
   deleted_at?: string;
-  qq_users?: IQqUser[];
-  live_rooms?: ILiveRoom[];
-  wallet?: IWallet;
 }
 
 export interface IQqUser {
@@ -386,15 +434,5 @@ export interface IDanmu {
   msg: string;
   socket_id: string;
   userInfo?: IUser;
-}
-
-export interface IMessage {
-  socket_id: string;
-  is_anchor: boolean;
-  user_info?: IUser;
-  data: {
-    msgType: DanmuMsgTypeEnum;
-    msg: string;
-    live_room_id: number;
-  };
+  msgIsFile: boolean;
 }

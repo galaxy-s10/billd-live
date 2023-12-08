@@ -92,11 +92,9 @@
         1. 你想要私有化部署的，参考：
         <span
           class="link"
-          @click="
-            openToTarget('https://live.hsslive.cn/privatizationDeployment')
-          "
+          @click="openToTarget(`${getHostnameUrl()}/privatizationDeployment`)"
         >
-          https://live.hsslive.cn/privatizationDeployment
+          {{ `${getHostnameUrl()}/privatizationDeployment` }}
         </span>
       </p>
       <p>2. 闲聊勿扰。</p>
@@ -115,6 +113,7 @@
 import { openToTarget } from 'billd-utils';
 
 import { COMMON_URL } from '@/constant';
+import { getHostnameUrl } from '@/utils';
 </script>
 
 <style lang="scss" scoped>

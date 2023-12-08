@@ -1,7 +1,22 @@
 <template>
   <div class="home-wrap">
     <div class="play-container">
-      <div class="bg"></div>
+      <div
+        v-if="configBg !== ''"
+        class="bg-img"
+        :style="{ backgroundImage: `url(${configBg})` }"
+      ></div>
+      <video
+        v-if="configVideo !== ''"
+        class="bg-video"
+        :src="configVideo"
+        muted
+        autoplay
+      ></video>
+      <div
+        v-else
+        class="bg-img"
+      ></div>
       <div class="slider-wrap">
         <Slider
           v-if="interactionList.length"
@@ -169,6 +184,7 @@ import { onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { fetchLiveList } from '@/api/live';
+import { fetchFindLiveConfigByKey } from '@/api/liveConfig';
 import { sliderList } from '@/constant';
 import { usePull } from '@/hooks/use-pull';
 import {
@@ -185,6 +201,11 @@ const appStore = useAppStore();
 const canvasRef = ref<Element>();
 const showJoinBtn = ref(false);
 const topNums = ref(6);
+const configBg = ref('');
+const configVideo = ref();
+// const configVideo = ref(
+//   'https://www.xdyun.com/resldmnqcom/ldq_website/all_ldy/cloudphone_xdyun_ldy_mobile/mobile/assets/xd-video-6c9bcd.mp4'
+// );
 const topLiveRoomList = ref<ILive[]>([]);
 const otherLiveRoomList = ref<ILive[]>([]);
 const currentLiveRoom = ref<ILive>();
@@ -200,6 +221,11 @@ const {
   handlePlay,
 } = usePull();
 
+onMounted(() => {
+  getLiveRoomList();
+  getBg();
+});
+
 watch(
   () => remoteVideo.value,
   (newVal) => {
@@ -211,6 +237,23 @@ watch(
     deep: true,
   }
 );
+
+async function getBg() {
+  try {
+    const res = await fetchFindLiveConfigByKey('frontend_live_home_bg');
+    if (res.code === 200) {
+      const reg = /.+\.mp4$/g;
+      const url = res.data.value as string;
+      if (reg.exec(url)) {
+        configVideo.value = res.data.value;
+      } else {
+        configBg.value = res.data.value;
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 function handleRefresh() {
   playLive(currentLiveRoom.value!);
@@ -256,10 +299,6 @@ async function getLiveRoomList() {
   }
 }
 
-onMounted(() => {
-  getLiveRoomList();
-});
-
 function joinRoom(data: { roomId: number }) {
   router.push({
     name: routerName.pull,
@@ -274,7 +313,7 @@ function joinRoom(data: { roomId: number }) {
     position: relative;
     z-index: 1;
     padding-bottom: 20px;
-    .bg {
+    .bg-img {
       position: absolute;
       top: 0;
       right: 0;
@@ -282,9 +321,20 @@ function joinRoom(data: { roomId: number }) {
       z-index: -1;
       width: 100%;
       height: 100%;
-      background-color: papayawhip;
       background-position: center;
+      background-size: cover;
       background-repeat: no-repeat;
+    }
+    .bg-video {
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      z-index: -1;
+      width: 100%;
+      height: 100%;
+
+      object-fit: fill;
     }
     .slider-wrap {
       padding: 2px 0 4px 0;

@@ -7,11 +7,10 @@ import {
   DanmuMsgTypeEnum,
   IDanmu,
   ILiveRoom,
-  IMessage,
   LiveLineEnum,
   LiveRoomTypeEnum,
 } from '@/interface';
-import { WsMsgTypeEnum } from '@/interface-ws';
+import { WsMessageType, WsMsgTypeEnum } from '@/interface-ws';
 import { useAppStore } from '@/store/app';
 import { usePiniaCacheStore } from '@/store/cache';
 import { useNetworkStore } from '@/store/network';
@@ -27,6 +26,7 @@ export function usePull() {
   const roomId = ref(route.params.roomId as string);
   const localStream = ref<MediaStream>();
   const danmuStr = ref('');
+  const msgIsFile = ref(false);
   const autoplayVal = ref(false);
   const videoLoading = ref(false);
   const flvurl = ref('');
@@ -364,14 +364,16 @@ export function usePull() {
     if (!instance) return;
     const danmu: IDanmu = {
       socket_id: mySocketId.value,
-      userInfo: userStore.userInfo,
+      userInfo: userStore.userInfo!,
       msgType: DanmuMsgTypeEnum.danmu,
       msg: danmuStr.value,
+      msgIsFile: msgIsFile.value,
     };
-    const messageData: IMessage['data'] = {
+    const messageData: WsMessageType['data'] = {
       msg: danmuStr.value,
       msgType: DanmuMsgTypeEnum.danmu,
       live_room_id: Number(roomId.value),
+      msgIsFile: msgIsFile.value,
     };
     instance.send({
       msgType: WsMsgTypeEnum.message,
@@ -390,6 +392,7 @@ export function usePull() {
     keydownDanmu,
     sendDanmu,
     addVideo,
+    msgIsFile,
     mySocketId,
     videoHeight,
     remoteVideo,

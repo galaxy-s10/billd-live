@@ -5,12 +5,25 @@ export const QQ_OAUTH_URL = 'https://graph.qq.com/oauth2.0';
 export const QQ_REDIRECT_URI = 'https://live.hsslive.cn/oauth/qq_login';
 
 export const AUTHOR_GITHUB = 'https://github.com/galaxy-s10';
-export const LIVE_CLIENT_URL = 'https://live.hsslive.cn';
 
+// wss://srs-pull.hsslive.cn
+// ws://www.hfgmupw.cn
 export const WEBSOCKET_URL =
   process.env.NODE_ENV === 'development'
     ? 'ws://localhost:4300'
     : 'wss://srs-pull.hsslive.cn';
+
+// https://live-api.hsslive.cn
+// http://www.hfgmupw.cn/api/
+export const AXIOS_BASEURL =
+  process.env.NODE_ENV === 'development'
+    ? '/api'
+    : 'https://live-api.hsslive.cn';
+
+// .hsslive.cn
+// .hfgmupw.cn
+export const COOKIE_DOMAIN =
+  process.env.NODE_ENV === 'development' ? undefined : '.hsslive.cn';
 
 export const COMMON_URL = {
   apifox:
@@ -29,6 +42,19 @@ export const SRS_CB_URL_PARAMS = {
   userToken: 'usertoken',
   userId: 'userid',
   randomId: 'randomid',
+};
+
+export const QINIU_BLOG = {
+  domain: 'resource.hsslive.cn',
+  url: 'https://resource.hsslive.cn/',
+  bucket: 'hssblog',
+  prefix: {
+    'image/': 'image/',
+    'backupsDatabase/': 'backupsDatabase/',
+    'media/': 'media/',
+    'nuxt-blog-client/': 'nuxt-blog-client/',
+    'billd-live/image/': 'billd-live/image/',
+  },
 };
 
 // 全局的cookie的key

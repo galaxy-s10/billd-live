@@ -1,5 +1,6 @@
 import axios, { Axios, AxiosRequestConfig } from 'axios';
 
+import { AXIOS_BASEURL } from '@/constant';
 import { useUserStore } from '@/store/user';
 import { getToken } from '@/utils/localStorage/user';
 
@@ -117,10 +118,7 @@ class MyAxios {
 }
 
 export default new MyAxios({
-  baseURL:
-    process.env.NODE_ENV === 'development'
-      ? '/api'
-      : 'https://live-api.hsslive.cn',
+  baseURL: AXIOS_BASEURL,
   // baseURL: '/prodapi',
   timeout: 1000 * 5,
 });

@@ -22,7 +22,7 @@
       <div v-else>
         <div>直播间名字：{{ userInfo?.live_rooms?.[0].name }}</div>
         <div>
-          直播间地址：https://live.hsslive.cn/pull/{{
+          直播间地址：{{ getHostnameUrl() }}/pull/{{
             userInfo?.live_rooms?.[0].id
           }}
         </div>
@@ -69,6 +69,7 @@ import { SRS_CB_URL_PARAMS } from '@/constant';
 import { loginTip } from '@/hooks/use-login';
 import { IUser, LiveRoomTypeEnum } from '@/interface';
 import { routerName } from '@/router';
+import { getHostnameUrl } from '@/utils';
 
 const newRtmpUrl = ref();
 const keyLoading = ref(false);

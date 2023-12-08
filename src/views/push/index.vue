@@ -565,7 +565,7 @@ function renderFrame() {
 }
 
 function handleMixedAudio() {
-  console.log('handleMixedAudio');
+  // console.log('handleMixedAudio');
   const allAudioTrack = appStore.allTrack.filter((item) => item.audio === 1);
   const audioCtx = new AudioContext();
   if (canvasVideoStream.value?.getAudioTracks()[0]) {
@@ -665,7 +665,6 @@ function autoCreateVideo({
   rect?: { left: number; top: number };
   muted?: boolean;
 }) {
-  console.warn('autoCreateVideo', id);
   const videoEl = createVideo({ appendChild: true });
   bodyAppendChildElArr.value.push(videoEl);
   videoEl.setAttribute('videoid', id);

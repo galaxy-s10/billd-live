@@ -6,8 +6,8 @@ import {
   fetchCreateUserLiveRoom,
   fetchUserHasLiveRoom,
 } from '@/api/userLiveRoom';
-import { DanmuMsgTypeEnum, ILiveRoom, IMessage } from '@/interface';
-import { WsMsgTypeEnum, WsMsrBlobType } from '@/interface-ws';
+import { DanmuMsgTypeEnum, ILiveRoom } from '@/interface';
+import { WsMessageType, WsMsgTypeEnum, WsMsrBlobType } from '@/interface-ws';
 import { handleMaxFramerate } from '@/network/webRTC';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
@@ -322,19 +322,21 @@ export function usePush() {
       window.$message.error('还没开播，不能发送弹幕！');
       return;
     }
-    instance.send<IMessage['data']>({
+    instance.send<WsMessageType['data']>({
       msgType: WsMsgTypeEnum.message,
       data: {
         msg: danmuStr.value,
         msgType: DanmuMsgTypeEnum.danmu,
         live_room_id: Number(roomId.value),
+        msgIsFile: false,
       },
     });
     damuList.value.push({
       socket_id: mySocketId.value,
       msgType: DanmuMsgTypeEnum.danmu,
       msg: danmuStr.value,
-      userInfo: userStore.userInfo,
+      userInfo: userStore.userInfo!,
+      msgIsFile: false,
     });
     danmuStr.value = '';
   }

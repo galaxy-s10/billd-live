@@ -87,6 +87,7 @@ export type WsGetLiveUserType = IWsFormat<{
 
 export type WsMessageType = IWsFormat<{
   msgType: DanmuMsgTypeEnum;
+  msgIsFile: boolean;
   msg: string;
   live_room_id: number;
 }>;

@@ -335,6 +335,7 @@ export const useSrsWs = () => {
         msgType: DanmuMsgTypeEnum.danmu,
         msg: data.data.msg,
         userInfo: data.user_info,
+        msgIsFile: data.data.msgIsFile,
       });
     });
 
@@ -366,6 +367,7 @@ export const useSrsWs = () => {
         msgType: DanmuMsgTypeEnum.otherJoin,
         socket_id: data.join_socket_id,
         userInfo: data.join_user_info,
+        msgIsFile: false,
         msg: '',
       };
       damuList.value.push(danmu);
