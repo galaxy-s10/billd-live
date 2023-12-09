@@ -2,10 +2,15 @@
 import { getRangeRandom } from 'billd-utils';
 import sparkMD5 from 'spark-md5';
 
+export const getLiveRoomPageUrl = (liveRoomId: number) => {
+  return `${getHostnameUrl()}/pull/${liveRoomId}`;
+};
+
 export const getHostnameUrl = () => {
   // window.location.host，包含了域名的一个DOMString，可能在该串最后带有一个":"并跟上 URL 的端口号。
-  const { protocol, hostname } = window.location;
-  return `${protocol}//${hostname}`;
+  // window.location.hostname，包含了域名的一个DOMString
+  const { protocol, host } = window.location;
+  return `${protocol}//${host}`;
 };
 
 /**
@@ -302,6 +307,11 @@ export function videoToCanvas(data: {
   function drawCanvas() {
     canvas.width = w;
     canvas.height = h;
+    if (w > h) {
+      canvas.style.minWidth = '100%';
+    } else {
+      canvas.style.minHeight = '100%';
+    }
     ctx.drawImage(videoEl, 0, 0, w, h);
     timer = requestAnimationFrame(drawCanvas);
   }

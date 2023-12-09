@@ -11,10 +11,27 @@
         :size="30"
       ></Avatar>
     </div>
-    <div class="username">用户昵称：{{ userInfo?.username }}</div>
-    <div class="live-room">
-      直播间：{{ userInfo?.live_rooms?.[0]?.name || '未开通' }}
+    <div>用户昵称：{{ userInfo?.username }}</div>
+    <br />
+    <div>直播间信息：</div>
+    <div v-if="userInfo?.live_rooms?.length">
+      <div>
+        直播间地址：
+        <a
+          :href="getLiveRoomPageUrl(userInfo?.live_rooms?.[0].id!)"
+          class="link"
+          target="_blank"
+        >
+          {{ getLiveRoomPageUrl(userInfo?.live_rooms?.[0].id!) }}
+        </a>
+      </div>
+      <div>直播间名称：{{ userInfo.live_rooms[0].name }}</div>
+      <div>直播间简介：{{ userInfo.live_rooms[0].desc }}</div>
+      <div>
+        直播间分区：{{ userInfo.live_rooms[0].areas?.[0].name || '暂无分区' }}
+      </div>
     </div>
+    <span v-else>未开通</span>
   </div>
 </template>
 
@@ -24,6 +41,7 @@ import { useRoute } from 'vue-router';
 
 import { fetchFindUser } from '@/api/user';
 import { IUser } from '@/interface';
+import { getLiveRoomPageUrl } from '@/utils';
 
 const loading = ref(false);
 const route = useRoute();
@@ -52,6 +70,11 @@ onMounted(() => {
 .profile-wrap {
   position: relative;
   padding: 10px;
+  .link {
+    color: $theme-color-gold;
+    text-decoration: none;
+    cursor: pointer;
+  }
   .avatar {
     display: flex;
     align-items: center;

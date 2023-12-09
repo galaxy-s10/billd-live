@@ -14,18 +14,23 @@
       <span>直播间信息：</span>
       <span
         v-if="!userInfo?.live_rooms?.length"
-        class="link"
         @click="openLiveRoom"
       >
         未开通
       </span>
       <div v-else>
-        <div>直播间名字：{{ userInfo?.live_rooms?.[0].name }}</div>
         <div>
-          直播间地址：{{ getHostnameUrl() }}/pull/{{
-            userInfo?.live_rooms?.[0].id
-          }}
+          直播间地址：
+          <a
+            :href="getLiveRoomPageUrl(userInfo?.live_rooms?.[0].id!)"
+            class="link"
+            target="_blank"
+          >
+            {{ getLiveRoomPageUrl(userInfo?.live_rooms?.[0].id!) }}
+          </a>
         </div>
+        <div>直播间名称：{{ userInfo?.live_rooms?.[0].name }}</div>
+        <div>直播间简介：{{ userInfo?.live_rooms?.[0].desc }}</div>
         <div
           v-loading="keyLoading"
           class="rtmp-url"
@@ -69,7 +74,7 @@ import { SRS_CB_URL_PARAMS } from '@/constant';
 import { loginTip } from '@/hooks/use-login';
 import { IUser, LiveRoomTypeEnum } from '@/interface';
 import { routerName } from '@/router';
-import { getHostnameUrl } from '@/utils';
+import { getLiveRoomPageUrl } from '@/utils';
 
 const newRtmpUrl = ref();
 const keyLoading = ref(false);

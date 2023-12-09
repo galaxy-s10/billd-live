@@ -2,29 +2,32 @@
   <div class="home-wrap">
     <div class="play-container">
       <div
-        v-if="configBg !== ''"
+        v-if="configBg && configBg !== ''"
         class="bg-img"
         :style="{ backgroundImage: `url(${configBg})` }"
       ></div>
       <video
-        v-if="configVideo !== ''"
+        v-if="configVideo && configVideo !== ''"
         class="bg-video"
         :src="configVideo"
         muted
         autoplay
+        loop
       ></video>
       <div
-        v-else
-        class="bg-img"
-      ></div>
-      <div class="slider-wrap">
+        v-for="(item, index) in interactionList"
+        :key="index"
+      >
         <Slider
-          v-if="interactionList.length"
-          :list="interactionList"
-          :row="2"
-          :speed="60"
+          v-if="item.length"
+          :list="item"
+          :width="docW"
+          :speed="120"
+          :direction="index % 2 === 0 ? 'l-r' : 'r-l'"
+          :customStyle="{ margin: '0 auto' }"
         ></Slider>
       </div>
+
       <div class="container">
         <div
           v-loading="videoLoading"
@@ -209,8 +212,9 @@ const configVideo = ref();
 const topLiveRoomList = ref<ILive[]>([]);
 const otherLiveRoomList = ref<ILive[]>([]);
 const currentLiveRoom = ref<ILive>();
-const interactionList = ref(sliderList);
+const interactionList = ref<any[]>([]);
 const remoteVideoRef = ref<HTMLDivElement>();
+const docW = document.documentElement.clientWidth;
 
 const {
   videoLoading,
@@ -222,6 +226,7 @@ const {
 } = usePull();
 
 onMounted(() => {
+  handleSlideList();
   getLiveRoomList();
   getBg();
 });
@@ -237,6 +242,17 @@ watch(
     deep: true,
   }
 );
+
+function handleSlideList() {
+  const row = 3;
+  const res: any[] = [];
+  const count = Math.ceil(sliderList.length / row);
+  for (let i = 0, len = sliderList.length; i < len; i += count) {
+    const item = sliderList.slice(i, i + count);
+    res.push([...item]);
+  }
+  interactionList.value = res;
+}
 
 async function getBg() {
   try {
@@ -312,7 +328,7 @@ function joinRoom(data: { roomId: number }) {
   .play-container {
     position: relative;
     z-index: 1;
-    padding-bottom: 20px;
+    padding-bottom: 50px;
     .bg-img {
       position: absolute;
       top: 0;
@@ -334,10 +350,10 @@ function joinRoom(data: { roomId: number }) {
       width: 100%;
       height: 100%;
 
-      object-fit: fill;
+      // object-fit: fill;
     }
     .slider-wrap {
-      padding: 2px 0 4px 0;
+      margin: 0 auto;
     }
     .container {
       display: flex;
@@ -391,8 +407,8 @@ function joinRoom(data: { roomId: number }) {
           position: absolute;
           top: 50%;
           left: 50%;
-          min-width: 100%;
-          min-height: 100%;
+          // min-width: 100%;
+          // min-height: 100%;
           max-width: $w-1100;
           max-height: calc($w-1100 / $video-ratio);
           transform: translate(-50%, -50%);
@@ -403,8 +419,8 @@ function joinRoom(data: { roomId: number }) {
           position: absolute;
           top: 50%;
           left: 50%;
-          min-width: 100%;
-          min-height: 100%;
+          // min-width: 100%;
+          // min-height: 100%;
           max-width: $w-1100;
           max-height: calc($w-1100 / $video-ratio);
           transform: translate(-50%, -50%);
@@ -427,7 +443,7 @@ function joinRoom(data: { roomId: number }) {
           align-items: center;
           justify-content: center;
           box-sizing: border-box;
-          width: 80%;
+          // width: 80%;
           transform: translate(-50%, -50%);
           &.show {
             display: inline-flex !important;

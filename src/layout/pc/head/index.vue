@@ -439,7 +439,7 @@ function handleStartLive(key: LiveRoomTypeEnum) {
     align-items: center;
     justify-content: space-between;
     padding: 0 30px;
-    height: 60px;
+    height: $layout-head-h;
     box-shadow: inset 0 -1px #f1f2f3 !important;
     font-size: 15px;
     .badge {

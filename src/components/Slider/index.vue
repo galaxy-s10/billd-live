@@ -1,15 +1,16 @@
 <template>
-  <div class="slider-wrap">
+  <div class="slider-cpt-wrap">
     <div
       v-for="(slider, index) in sliderList"
       :key="'slider-' + index"
       class="slider"
+      :class="{ [direction]: 1 }"
       :style="{
-        '--width': widthMap[index] / 2,
-        '--speed': widthMap[index] / 2 / speed + 's',
-        width: widthMap[index] / 2 + 'px',
-        // background: 'red',
-        margin: '0 auto',
+        width: width + 'px',
+        '--container-width': widthMap[0],
+        '--speed':
+          width === 'auto' ? widthMap[0] / speed + 's' : width / speed + 's',
+        ...styles,
       }"
     >
       <div
@@ -32,7 +33,7 @@
           </div>
 
           <span class="txt">
-            <span class="msg">{{ slide.txt }}</span>
+            {{ slide.txt }}
           </span>
         </div>
       </div>
@@ -42,41 +43,41 @@
 
 <script lang="ts" setup>
 import { openToTarget } from 'billd-utils';
-import { nextTick, onMounted, ref } from 'vue';
+import { CSSProperties, computed, nextTick, onMounted, ref } from 'vue';
 
-const props = defineProps({
-  list: {
-    type: Array,
-    require: true,
-    default() {
-      return [];
-    },
-  },
-  // 多少行
-  row: {
-    type: Number,
-    default: 3,
-  },
-  // 滚动速率 (px/s)
-  speed: {
-    type: Number,
-    default: 100,
-  },
-});
+const props = withDefaults(
+  defineProps<{
+    list: any[];
+    width: number | 'auto';
+    speed: number;
+    customStyle?: CSSProperties;
+    direction?: 'l-r' | 'r-l';
+  }>(),
+  {
+    list: () => [],
+    // 宽度
+    width: document.documentElement.clientWidth,
+    // 滚动速率 (px/s)
+    speed: 100,
+    // @ts-ignore
+    customStyle: () => {},
+    direction: 'l-r',
+  }
+);
 
 const containerRef = ref<HTMLDivElement[]>([]);
 const sliderList = ref<any[]>([]);
 const widthMap = ref<Record<number, number>>({});
 const min = ref(0);
 
+const styles = computed(() => {
+  return {
+    ...props.customStyle,
+  } as CSSProperties;
+});
+
 onMounted(() => {
-  const res: any[] = [];
-  const count = Math.ceil(props.list.length / props.row);
-  for (let i = 0, len = props.list.length; i < len; i += count) {
-    const item = props.list.slice(i, i + count);
-    res.push([...item, ...item]);
-  }
-  sliderList.value = res;
+  sliderList.value = [[...props.list]];
   nextTick(() => {
     const res = {};
     containerRef.value.forEach((container, index) => {
@@ -101,6 +102,20 @@ onMounted(() => {
       }
     });
     widthMap.value = res;
+    if (props.width === 'auto') {
+      sliderList.value[0].push(...props.list);
+    } else if (widthMap.value[0] < props.width) {
+      const num = (Math.ceil(widthMap.value[0] / props.width) + 1) * 2;
+      for (let i = 0; i < num; i += 1) {
+        sliderList.value[0].push(...props.list);
+      }
+      // console.log(
+      //   '如果传入的宽度比一次展示的宽度要大，则一次滚动不完，则复制一份不够'
+      // );
+    } else if (widthMap.value[0] > props.width) {
+      sliderList.value[0].push(...props.list);
+      // console.log('如果传入的宽度比一次展示的宽度要小，则一次滚动即可');
+    }
   });
 });
 </script>
@@ -108,7 +123,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 @keyframes left-right {
   0% {
-    transform: translateX(calc(var(--width) * -1px));
+    transform: translateX(calc(var(--container-width) * -1px));
   }
   100% {
     transform: translateX(0);
@@ -120,16 +135,19 @@ onMounted(() => {
     transform: translateX(0);
   }
   100% {
-    transform: translateX(calc(var(--width) * -1px));
+    transform: translateX(calc(var(--container-width) * -1px));
   }
 }
-.slider-wrap {
+.slider-cpt-wrap {
+  overflow: hidden;
+  padding: 2px 0;
   .slider {
-    overflow-x: scroll;
+    position: relative;
+    overflow: scroll;
 
     @extend %hideScrollbar;
 
-    &:nth-child(2n) {
+    &.l-r {
       .container {
         animation: left-right var(--speed) linear infinite;
         &:hover {
@@ -137,7 +155,7 @@ onMounted(() => {
         }
       }
     }
-    &:nth-child(2n-1) {
+    &.r-l {
       .container {
         animation: right-left var(--speed) linear infinite;
         &:hover {
@@ -152,7 +170,6 @@ onMounted(() => {
       .slide {
         display: flex;
         align-items: center;
-        flex-shrink: 0;
         box-sizing: border-box;
         padding-right: 30px;
         height: 40px;
@@ -176,7 +193,7 @@ onMounted(() => {
           }
         }
         .txt {
-          max-width: 130px;
+          // max-width: 130px;
           font-size: 14px;
 
           @extend %singleEllipsis;

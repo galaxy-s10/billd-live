@@ -44,16 +44,13 @@ export const SRS_CB_URL_PARAMS = {
   randomId: 'randomid',
 };
 
-export const QINIU_BLOG = {
+export const QINIU_LIVE = {
   domain: 'resource.hsslive.cn',
   url: 'https://resource.hsslive.cn/',
   bucket: 'hssblog',
   prefix: {
-    'image/': 'image/',
-    'backupsDatabase/': 'backupsDatabase/',
-    'media/': 'media/',
-    'nuxt-blog-client/': 'nuxt-blog-client/',
     'billd-live/image/': 'billd-live/image/',
+    'billd-live/msg-image/': 'billd-live/msg-image/',
   },
 };
 
@@ -80,6 +77,39 @@ export const mediaTypeEnumMap = {
   [MediaTypeEnum.time]: '时间',
   [MediaTypeEnum.stopwatch]: '秒表',
 };
+
+export const sliderList2 = [
+  {
+    img: 'https://resource.hsslive.cn/billd-live/image/a4039f86e5352bcfccaddecc4b72a1df.webp',
+    txt: 'https://resource.hsslive.cn/billd-live/image',
+    link: 'https://ossrs.net',
+  },
+  // {
+  //   img: 'https://resource.hsslive.cn/billd-live/image/a4039f86e5352bcfccaddecc4b72a1df.webp',
+  //   txt: 'SRS',
+  //   link: 'https://ossrs.net',
+  // },
+  {
+    img: 'https://resource.hsslive.cn/image/c3c342f6852706e0b70d011e8753d2d6.webp',
+    txt: 'FFmpeg',
+    link: 'https://ffmpeg.org',
+  },
+  {
+    img: 'https://resource.hsslive.cn/image/0214acde5f5f5e3caf278ce446cc4414.webp',
+    txt: 'WebRTC',
+    link: 'https://github.com/webrtc',
+  },
+  // {
+  //   img: 'https://resource.hsslive.cn/billd-live/image/1277df4371045310acbc4bf2fc0811b8.webp',
+  //   txt: 'Vue3',
+  //   link: 'https://vuejs.org',
+  // },
+  // {
+  //   img: 'https://resource.hsslive.cn/image/dd907463af7fdec395e5f6d088b0308b.webp',
+  //   txt: 'Pinia',
+  //   link: 'https://pinia.vuejs.org',
+  // },
+];
 
 export const sliderList = [
   {

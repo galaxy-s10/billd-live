@@ -1,5 +1,24 @@
 <template>
   <div class="pull-wrap">
+    <div class="bg-img-wrap">
+      <div
+        v-if="configBg !== ''"
+        class="bg-img"
+        :style="{ backgroundImage: `url(${configBg})` }"
+      ></div>
+      <video
+        v-if="configVideo !== ''"
+        class="bg-video"
+        :src="configVideo"
+        muted
+        autoplay
+        loop
+      ></video>
+      <div
+        v-else
+        class="bg-img"
+      ></div>
+    </div>
     <div class="left">
       <div
         ref="topRef"
@@ -11,14 +30,30 @@
             :style="{
               backgroundImage: `url(${anchorInfo?.avatar})`,
             }"
+            @click="
+              router.push({
+                name: routerName.profile,
+                params: { userId: anchorInfo?.id },
+              })
+            "
           ></div>
           <div class="detail">
             <div class="top">{{ anchorInfo?.username }}</div>
             <div class="bottom">
-              <span>{{ appStore.liveRoomInfo?.name }}</span>
+              <span>{{ appStore.liveRoomInfo?.desc }}</span>
               <span v-if="NODE_ENV === 'development'">
                 socketId:{{ mySocketId }}
               </span>
+              <span
+                class="area"
+                @click="
+                  router.push({
+                    name: routerName.area,
+                    query: { id: appStore.liveRoomInfo?.areas?.[0].id },
+                  })
+                "
+                >{{ appStore.liveRoomInfo?.areas?.[0].name }}</span
+              >
             </div>
           </div>
         </div>
@@ -149,9 +184,9 @@
                   item.userInfo.roles?.map((v) => v.role_name).join()
                 }}]
               </span>
-              <span v-else>{{ item.socket_id }}</span>
-              <span>：</span>
+              <span v-else>{{ item.socket_id }}[游客]</span>
             </span>
+            <span>：</span>
             <span
               class="msg"
               v-if="!item.msgIsFile"
@@ -165,6 +200,7 @@
               <img
                 :src="item.msg"
                 alt=""
+                @load="handleScrollTop"
               />
             </div>
           </template>
@@ -201,6 +237,7 @@
               ref="uploadRef"
               type="file"
               class="input-upload"
+              accept=".webp,.png,.jpg,.jpeg,.gif"
               @change="uploadChange"
             />
           </div>
@@ -229,11 +266,12 @@
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 
 import { fetchGoodsList } from '@/api/goods';
-import { QINIU_BLOG } from '@/constant';
+import { QINIU_LIVE } from '@/constant';
 import { loginTip } from '@/hooks/use-login';
 import { usePull } from '@/hooks/use-pull';
 import { useUpload } from '@/hooks/use-upload';
 import { DanmuMsgTypeEnum, GoodsTypeEnum, IGoods } from '@/interface';
+import router, { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
 import { NODE_ENV } from 'script/constant';
@@ -242,6 +280,8 @@ import RechargeCpt from './recharge/index.vue';
 
 const userStore = useUserStore();
 const appStore = useAppStore();
+const configBg = ref();
+const configVideo = ref();
 const giftGoodsList = ref<IGoods[]>([]);
 const height = ref(0);
 const giftLoading = ref(false);
@@ -285,6 +325,7 @@ onMounted(() => {
         topRef.value.getBoundingClientRect().height);
     height.value = res;
   }
+  getBg();
   initPull();
 });
 
@@ -306,6 +347,40 @@ watch(
   }
 );
 
+watch(
+  () => damuList.value.length,
+  () => {
+    setTimeout(() => {
+      handleScrollTop();
+    }, 0);
+  }
+);
+watch(
+  () => appStore.liveRoomInfo,
+  () => {
+    getBg();
+  },
+  {
+    deep: true,
+  }
+);
+
+function getBg() {
+  try {
+    const reg = /.+\.mp4$/g;
+    const url = appStore.liveRoomInfo?.bg_img;
+    if (url) {
+      if (reg.exec(url)) {
+        configVideo.value = url;
+      } else {
+        configBg.value = url;
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 function handleWait() {
   window.$message.warning('敬请期待！');
 }
@@ -321,7 +396,7 @@ async function uploadChange() {
       msgLoading.value = true;
       msgIsFile.value = true;
       const res = await useUpload({
-        prefix: QINIU_BLOG.prefix['image/'],
+        prefix: QINIU_LIVE.prefix['billd-live/msg-image/'],
         file: fileList[0],
       });
       if (res?.resultUrl) {
@@ -370,16 +445,11 @@ function handleRecharge() {
   showRecharge.value = true;
 }
 
-watch(
-  () => damuList.value.length,
-  () => {
-    setTimeout(() => {
-      if (danmuListRef.value) {
-        danmuListRef.value.scrollTop = danmuListRef.value.scrollHeight;
-      }
-    }, 0);
+function handleScrollTop() {
+  if (danmuListRef.value) {
+    danmuListRef.value.scrollTop = danmuListRef.value.scrollHeight + 10000;
   }
-);
+}
 </script>
 
 <style lang="scss" scoped>
@@ -388,6 +458,40 @@ watch(
   justify-content: space-around;
   margin: 15px auto 0;
   width: $w-1275;
+  .bg-img-wrap {
+    position: absolute;
+    top: $layout-head-h;
+    left: 50%;
+    max-width: 1920px;
+    max-height: 890px;
+    width: 100%;
+    height: 100%;
+    background-position: center center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    transform: translateX(-50%);
+    .bg-img {
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      z-index: -1;
+      width: 100%;
+      height: 100%;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+    }
+    .bg-video {
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      z-index: -1;
+      width: 100%;
+      height: 100%;
+    }
+  }
   .left {
     position: relative;
     display: inline-block;
@@ -397,7 +501,7 @@ watch(
     height: 100%;
     border-radius: 6px;
     background-color: papayawhip;
-    color: #9499a0;
+    color: #61666d;
     vertical-align: top;
     .head {
       display: flex;
@@ -414,6 +518,7 @@ watch(
           width: 50px;
           height: 50px;
           border-radius: 50%;
+          cursor: pointer;
 
           @extend %containBg;
         }
@@ -424,6 +529,11 @@ watch(
           }
           .bottom {
             font-size: 14px;
+            .area {
+              margin-left: 10px;
+              color: #9499a0;
+              cursor: pointer;
+            }
           }
         }
       }
@@ -477,8 +587,8 @@ watch(
             left: 50%;
             display: block;
             margin: 0 auto;
-            min-width: 100%;
-            min-height: 100%;
+            // min-width: 100%;
+            // min-height: 100%;
             max-width: $w-1000;
             max-height: 562px;
             transform: translate(-50%, -50%);
@@ -489,8 +599,8 @@ watch(
             left: 50%;
             display: block;
             margin: 0 auto;
-            min-width: 100%;
-            min-height: 100%;
+            // min-width: 100%;
+            // min-height: 100%;
             max-width: $w-1000;
             max-height: 562px;
             transform: translate(-50%, -50%);
@@ -527,24 +637,6 @@ watch(
             background-color: rgba($color: $theme-color-gold, $alpha: 0.5);
             color: white;
           }
-        }
-      }
-      .sidebar {
-        overflow: scroll;
-        width: 120px;
-        height: 100%;
-        background-color: rgba($color: #000000, $alpha: 0.3);
-
-        @extend %hideScrollbar;
-        .join {
-          color: white;
-          cursor: pointer;
-        }
-        video {
-          max-width: 100%;
-        }
-        .name {
-          word-wrap: break-word;
         }
       }
     }
@@ -635,7 +727,7 @@ watch(
       height: 100px;
       background-color: papayawhip;
 
-      @extend %hideScrollbar;
+      @extend %customScrollbar;
       .item {
         display: flex;
         align-items: center;
@@ -645,6 +737,7 @@ watch(
         .info {
           display: flex;
           align-items: center;
+          cursor: pointer;
           .avatar {
             margin-right: 5px;
             width: 25px;
@@ -661,23 +754,30 @@ watch(
     }
     .danmu-list {
       overflow-y: scroll;
-      padding: 0 15px;
+      box-sizing: border-box;
+      padding-top: 4px;
       height: 480px;
+      background-color: #f6f7f8;
       text-align: initial;
 
-      @extend %hideScrollbar;
+      @extend %customScrollbar;
       .item {
-        margin-bottom: 10px;
-        font-size: 13px;
-        word-wrap: break-word;
+        box-sizing: border-box;
+        margin-bottom: 4px;
+        padding: 2px 10px;
         white-space: normal;
+        word-wrap: break-word;
+        font-size: 13px;
+
         .name {
           color: #9499a0;
+          cursor: pointer;
           &.system {
             color: red;
           }
         }
         .msg {
+          margin-top: 4px;
           color: #61666d;
           &.img {
             img {
@@ -688,18 +788,16 @@ watch(
       }
     }
     .send-msg {
-      position: absolute;
-      bottom: 15px;
       box-sizing: border-box;
-      padding: 0 10px;
+      padding: 4px 10px;
       width: 100%;
       .control {
         display: flex;
-        margin-bottom: 4px;
+        margin: 4px 0;
         .ico {
-          margin-right: 4px;
-          width: 20px;
-          height: 20px;
+          margin-right: 6px;
+          width: 24px;
+          height: 24px;
           cursor: pointer;
           .input-upload {
             width: 0;
@@ -707,10 +805,10 @@ watch(
             opacity: 0;
           }
           &.face {
-            @include setBackground('@/assets/img/msg-face.png');
+            @include setBackground('@/assets/img/msg-face.webp');
           }
           &.img {
-            @include setBackground('@/assets/img/msg-img.png');
+            @include setBackground('@/assets/img/msg-img.webp');
           }
         }
       }
