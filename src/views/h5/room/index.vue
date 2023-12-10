@@ -24,7 +24,10 @@
     <div
       v-loading="videoLoading"
       class="video-wrap"
-      :style="{ height: videoWrapHeight + 'px' }"
+      :style="{
+        height: videoWrapHeight + 'px',
+        '--max-height': videoWrapHeight + 'px',
+      }"
     >
       <div
         class="cover"
@@ -262,10 +265,10 @@ onMounted(() => {
   .video-wrap {
     position: relative;
     overflow: hidden;
-    flex: 1;
     background-color: rgba($color: #000000, $alpha: 0.5);
     .cover {
       position: absolute;
+      z-index: -1;
       background-position: center center;
       background-size: cover;
       filter: blur(10px);
@@ -283,16 +286,21 @@ onMounted(() => {
     }
     .media-list {
       position: relative;
-      overflow-y: scroll;
       :deep(video) {
+        position: absolute;
+        left: 50%;
         display: block;
-        width: 100%;
-        height: 100%;
+        max-width: 100vw;
+        max-height: var(--max-height);
+        transform: translateX(-50%);
       }
       :deep(canvas) {
+        position: absolute;
+        left: 50%;
         display: block;
-        width: 100%;
-        height: 100%;
+        max-width: 100vw;
+        max-height: var(--max-height);
+        transform: translateX(-50%);
       }
     }
     .tip-btn {

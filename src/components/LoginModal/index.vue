@@ -74,6 +74,17 @@
                 登录
               </n-button>
             </n-tab-pane>
+            <n-tab-pane
+              name="qrcodelogin"
+              tab="微信登录"
+            >
+              <div
+                class="qrcode"
+                :style="{
+                  backgroundImage: `url(${base64})`,
+                }"
+              ></div>
+            </n-tab-pane>
           </n-tabs>
         </n-card>
         <div class="other-login">
@@ -83,16 +94,25 @@
             @click="handleQQLogin()"
           >
             <img
-              class="qq-logo"
+              class="logo"
               src="@/assets/img/qq_logo.webp"
             />
           </div>
+          <!-- <div
+            class="logo-wrap"
+            @click="handleWechatLogin()"
+          >
+            <img
+              class="logo"
+              src="@/assets/img/wechat_logo.webp"
+            />
+          </div> -->
           <div
             class="logo-wrap"
             @click="handleGithubLogin"
           >
             <img
-              class="qq-logo"
+              class="logo"
               src="@/assets/img/github_logo.webp"
             />
           </div>
@@ -104,8 +124,11 @@
 
 <script lang="ts" setup>
 import { LockClosedOutline, PersonOutline } from '@vicons/ionicons5';
+import QRCode from 'qrcode';
 import { ref } from 'vue';
 
+import { fetchQrcodeLogin } from '@/api/user';
+import { QRCODE_LOGIN_URI } from '@/constant';
 import { useQQLogin } from '@/hooks/use-login';
 import { useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
@@ -122,20 +145,45 @@ const loginForm = ref({
   id: '',
   password: '',
 });
-const registerForm = ref({
-  email: '',
-  code: '',
-});
+const base64 = ref('');
 const loginFormRef = ref(null);
-const currentTab = ref('pwdlogin');
+const currentTab = ref('qrcodelogin'); // qrcodelogin,pwdlogin
 
 const emits = defineEmits(['close']);
+
+async function generateQR(text) {
+  let base64 = '';
+  try {
+    base64 = await QRCode.toDataURL(text, {
+      margin: 1,
+    });
+  } catch (err) {
+    console.error('生成二维码失败！', err);
+  }
+  return base64;
+}
 
 function handleGithubLogin() {
   window.$message.warning('敬请期待！');
 }
+
 function handleQQLogin() {
   useQQLogin();
+}
+
+async function handleWechatLogin() {
+  const params = {
+    platform: 'wechat',
+    exp: 24,
+  };
+  const res = await fetchQrcodeLogin(params);
+  if (res.code === 200) {
+    base64.value = await generateQR(
+      `${QRCODE_LOGIN_URI}?platform=${params.platform}&exp=${params.exp}&login_id=${res.data.login_id}`
+    );
+  } else {
+    window.$message.error(res.message);
+  }
 }
 
 function handleClose() {
@@ -145,11 +193,8 @@ function handleClose() {
 
 const handleLogin = async () => {
   let token = null;
-  if (currentTab.value === 'codelogin') {
-    token = await userStore.codeLogin({
-      email: registerForm.value.email,
-      code: registerForm.value.code,
-    });
+  if (currentTab.value === 'qrcodelogin') {
+    handleWechatLogin();
   } else {
     token = await userStore.pwdLogin({
       id: +loginForm.value.id,
@@ -173,6 +218,9 @@ const handleLoginSubmit = (e) => {
 };
 const tabChange = (v) => {
   currentTab.value = v;
+  if (currentTab.value === 'qrcodelogin') {
+    handleWechatLogin();
+  }
 };
 const focus = ref(false);
 const onFocus = () => {
@@ -196,6 +244,15 @@ const onBlur = () => {
     border-radius: 5px;
     background-color: #fff;
     transform: translate(-50%, -50%);
+    .qrcode {
+      width: 166px;
+      height: 166px;
+      margin: 0 auto;
+      background-color: gray;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center center;
+    }
     .close {
       position: absolute;
       top: 20px;
@@ -240,7 +297,7 @@ const onBlur = () => {
         border-radius: 50%;
         background-color: #f4f8fb;
         cursor: pointer;
-        .qq-logo {
+        .logo {
           width: 26px;
           height: 26px;
         }

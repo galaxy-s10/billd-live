@@ -408,6 +408,9 @@ async function uploadChange() {
     } finally {
       msgIsFile.value = false;
       msgLoading.value = false;
+      if (uploadRef.value) {
+        uploadRef.value.value = '';
+      }
     }
   }
 }
@@ -788,6 +791,7 @@ function handleScrollTop() {
       }
     }
     .send-msg {
+      position: relative;
       box-sizing: border-box;
       padding: 4px 10px;
       width: 100%;

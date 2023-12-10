@@ -6,12 +6,17 @@ import PcLayout from '@/layout/pc/index.vue';
 
 import type { RouteRecordRaw } from 'vue-router';
 
+export const commonRouterName = {
+  qrcodeLogin: 'qrcodeLogin',
+};
+
 export const mobileRouterName = {
   h5: 'h5',
   h5Room: 'h5Room',
   h5Area: 'h5Area',
   h5Rank: 'h5Rank',
   h5Profile: 'h5Profile',
+  ...commonRouterName,
 };
 
 export const routerName = {
@@ -186,7 +191,13 @@ export const defaultRoutes: RouteRecordRaw[] = [
     path: '/h5/:roomId',
     component: () => import('@/views/h5/room/index.vue'),
   },
+  {
+    name: commonRouterName.qrcodeLogin,
+    path: '/qrcodeLogin',
+    component: () => import('@/views/qrcodeLogin/index.vue'),
+  },
 ];
+
 const router = createRouter({
   routes: [
     ...defaultRoutes,
@@ -203,7 +214,10 @@ router.beforeEach((to, from, next) => {
   if (to.name === routerName.oauth) {
     return next();
   }
-  if (isMobile() && !isIPad()) {
+  if (Object.keys(commonRouterName).includes(to.name as string)) {
+    // 跳转通用路由
+    return next();
+  } else if (isMobile() && !isIPad()) {
     if (!Object.keys(mobileRouterName).includes(to.name as string)) {
       // 当前移动端，但是跳转了非移动端路由
       console.log('当前移动端，但是跳转了非移动端路由', to, from);

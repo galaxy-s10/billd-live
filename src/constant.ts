@@ -4,6 +4,14 @@ export const QQ_CLIENT_ID = '101958191';
 export const QQ_OAUTH_URL = 'https://graph.qq.com/oauth2.0';
 export const QQ_REDIRECT_URI = 'https://live.hsslive.cn/oauth/qq_login';
 
+export const WECHAT_GZH_APPID = 'wxbd243c01ac5ad1b7'; // 公众号
+export const WECHAT_GZH_OAUTH_URL =
+  'https://open.weixin.qq.com/connect/oauth2/authorize?';
+
+export const WECHAT_REDIRECT_URI = `http://www.hfgmupw.cn/oauth/wechat_login`;
+
+export const QRCODE_LOGIN_URI = `http://www.hfgmupw.cn/qrcodeLogin`;
+
 export const AUTHOR_GITHUB = 'https://github.com/galaxy-s10';
 
 // wss://srs-pull.hsslive.cn

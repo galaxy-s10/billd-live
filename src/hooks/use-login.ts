@@ -1,9 +1,16 @@
-import { hrefToTarget, isMobile } from 'billd-utils';
+import { hrefToTarget, isMobile, isWechat } from 'billd-utils';
 import { createApp } from 'vue';
 
 import { fetchQQLogin } from '@/api/qqUser';
 import { fullLoading } from '@/components/FullLoading';
-import { QQ_CLIENT_ID, QQ_OAUTH_URL, QQ_REDIRECT_URI } from '@/constant';
+import {
+  QQ_CLIENT_ID,
+  QQ_OAUTH_URL,
+  QQ_REDIRECT_URI,
+  WECHAT_GZH_APPID,
+  WECHAT_GZH_OAUTH_URL,
+  WECHAT_REDIRECT_URI,
+} from '@/constant';
 import LoginModalCpt from '@/hooks/loginModal/index.vue';
 import { PlatformEnum } from '@/interface';
 import { useAppStore } from '@/store/app';
@@ -21,7 +28,7 @@ document.body.appendChild(container);
 
 const POSTMESSAGE_TYPE = [PlatformEnum.qqLogin];
 
-export async function handleLogin(e) {
+export async function handleQQLogin(e) {
   const { type, data } = e.data;
   if (!POSTMESSAGE_TYPE.includes(type)) return;
   console.log('收到消息', type, data);
@@ -65,7 +72,7 @@ export function loginTip(show = false) {
 }
 
 export function loginMessage() {
-  window.addEventListener('message', handleLogin);
+  window.addEventListener('message', handleQQLogin);
 }
 
 export function useQQLogin() {
@@ -96,3 +103,26 @@ export function useQQLogin() {
     );
   }
 }
+
+export const useWechatLogin = (qrData: { platform; exp; login_id }) => {
+  const redirectUri = encodeURIComponent(WECHAT_REDIRECT_URI);
+  const flag = isWechat();
+  if (flag) {
+    window.$message.error('请在微信打开！');
+    return;
+  }
+  const loginInfo = JSON.stringify({
+    isMobile: false,
+    createTime: +new Date(),
+    env: 'wechat',
+    dev: process.env.NODE_ENV === 'development',
+    qr_platform: qrData.platform,
+    qr_exp: qrData.exp,
+    qr_login_id: qrData.login_id,
+  });
+  setLoginInfo(loginInfo);
+  const stateRes = window.btoa(loginInfo);
+  // https://developers.weixin.qq.com/doc/oplatform/Website_App/WeChat_Login/Wechat_Login.html
+  const url = `${WECHAT_GZH_OAUTH_URL}appid=${WECHAT_GZH_APPID}&redirect_uri=${redirectUri}&scope=snsapi_userinfo&response_type=code&state=${stateRes}`;
+  hrefToTarget(url);
+};

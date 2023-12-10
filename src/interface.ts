@@ -280,6 +280,7 @@ export interface BilldHtmlWebpackPluginLog {
 
 export enum PlatformEnum {
   qqLogin = 'qq_login',
+  wechatLogin = 'wechat_login',
 }
 
 export interface IAuth {

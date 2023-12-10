@@ -7,7 +7,8 @@
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
-import { handleLogin } from '@/hooks/use-login';
+import { fetchQrcodeLoginStatus } from '@/api/user';
+import { handleQQLogin } from '@/hooks/use-login';
 import { PlatformEnum } from '@/interface';
 import { clearLoginInfo, getLoginInfo } from '@/utils/cookie';
 
@@ -57,16 +58,19 @@ onMounted(async () => {
     case PlatformEnum.qqLogin:
       currentOauth.value = 'QQ';
       break;
+    case PlatformEnum.wechatLogin:
+      currentOauth.value = 'Wechat';
+      break;
   }
 
   try {
     const { isMobile, env } = JSON.parse(loginInfo);
-    const info = { type: PlatformEnum.qqLogin, data: code };
 
     if (env === 'qq') {
+      const info = { type: PlatformEnum.qqLogin, data: code };
       if (isMobile) {
         try {
-          await handleLogin({
+          await handleQQLogin({
             data: info,
           });
         } catch (error) {
@@ -76,6 +80,16 @@ onMounted(async () => {
         window.opener.postMessage(info, '*');
         window.close();
       }
+    } else if (env === 'wechat') {
+      // eslint-disable-next-line
+      const { qr_platform, qr_login_id } = JSON.parse(loginInfo);
+      console.log(qr_platform, qr_login_id, '====');
+      await fetchQrcodeLoginStatus({
+        // eslint-disable-next-line
+        platform: qr_platform,
+        // eslint-disable-next-line
+        login_id: qr_login_id,
+      });
     }
   } catch (error) {
     console.log(error);
