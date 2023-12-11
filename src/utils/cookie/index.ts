@@ -1,1 +1,1 @@
-export * from './loginEnv';
+export * from './thirdLogin';

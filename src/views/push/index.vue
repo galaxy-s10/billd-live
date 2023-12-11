@@ -910,6 +910,29 @@ function handleMoving({
   });
 }
 
+async function handleUserMedia({ video, audio }) {
+  try {
+    const event = await navigator.mediaDevices.getUserMedia({
+      video,
+      audio,
+    });
+    return event;
+  } catch (error) {
+    console.log(error);
+  }
+}
+async function handleDisplayMedia({ video, audio }) {
+  try {
+    const event = await navigator.mediaDevices.getDisplayMedia({
+      video,
+      audio,
+    });
+    return event;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 async function handleCache() {
   const res: AppRootState['allTrack'] = [];
   const err: string[] = [];
@@ -1027,10 +1050,11 @@ async function handleCache() {
 
     async function handleScreen() {
       try {
-        const event = await navigator.mediaDevices.getDisplayMedia({
+        const event = await handleDisplayMedia({
           video: true,
           audio: true,
         });
+        if (!event) return;
         const videoEl = createVideo({ appendChild: true });
         bodyAppendChildElArr.value.push(videoEl);
         videoEl.setAttribute('videoid', obj.id);
@@ -1072,10 +1096,11 @@ async function handleCache() {
     }
 
     async function handleMicrophone() {
-      const event = await navigator.mediaDevices.getUserMedia({
+      const event = await handleUserMedia({
         video: false,
         audio: { deviceId: obj.deviceId },
       });
+      if (!event) return;
       const videoEl = createVideo({ appendChild: true, muted: false });
       bodyAppendChildElArr.value.push(videoEl);
       videoEl.setAttribute('videoid', obj.id);
@@ -1237,14 +1262,14 @@ function setScaleInfo({ track, canvasDom, scale = 1 }) {
 async function addMediaOk(val: AppRootState['allTrack'][0]) {
   showMediaModalCpt.value = false;
   if (val.type === MediaTypeEnum.screen) {
-    const event = await navigator.mediaDevices.getDisplayMedia({
+    const event = await handleDisplayMedia({
       video: {
         deviceId: val.deviceId,
         // displaySurface: 'monitor', // browser默认标签页;window默认窗口;monitor默认整个屏幕
       },
       audio: true,
     });
-
+    if (!event) return;
     const videoTrack: AppRootState['allTrack'][0] = {
       id: getRandomEnglishString(8),
       audio: 2,
@@ -1301,12 +1326,13 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
 
     console.log('获取窗口成功');
   } else if (val.type === MediaTypeEnum.camera) {
-    const event = await navigator.mediaDevices.getUserMedia({
+    const event = await handleUserMedia({
       video: {
         deviceId: val.deviceId,
       },
       audio: false,
     });
+    if (!event) return;
     const videoTrack: AppRootState['allTrack'][0] = {
       id: getRandomEnglishString(8),
       deviceId: val.deviceId,
@@ -1337,10 +1363,11 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     // @ts-ignore
     console.log('获取摄像头成功');
   } else if (val.type === MediaTypeEnum.microphone) {
-    const event = await navigator.mediaDevices.getUserMedia({
+    const event = await handleUserMedia({
       video: false,
       audio: { deviceId: val.deviceId },
     });
+    if (!event) return;
     const microphoneVideoTrack: AppRootState['allTrack'][0] = {
       id: getRandomEnglishString(8),
       deviceId: val.deviceId,

@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia';
 
-import { fetchEmailCodeLogin, fetchRegister } from '@/api/emailUser';
 import { fetchLogin, fetchUserInfo } from '@/api/user';
 import { IRole, IUser } from '@/interface';
 import cache from '@/utils/cache';
@@ -23,8 +22,8 @@ export const useUserStore = defineStore('user', {
     setUserInfo(res) {
       this.userInfo = res;
     },
-    setToken(res) {
-      cache.setStorageExp('token', res, 24);
+    setToken(res, exp: number) {
+      cache.setStorageExp('token', res, exp);
       this.token = res;
     },
     setRoles(res) {
@@ -42,38 +41,11 @@ export const useUserStore = defineStore('user', {
           id,
           password,
         });
-        this.setToken(token);
+        this.setToken(token, 24);
         return token;
       } catch (error: any) {
         // 错误返回401，全局的响应拦截会打印报错信息
         return null;
-      }
-    },
-    async codeLogin({ email, code }) {
-      try {
-        const { data: token } = await fetchEmailCodeLogin({
-          email,
-          code,
-        });
-        this.setToken(token);
-        return token;
-      } catch (error: any) {
-        // 错误返回401，全局的响应拦截会打印报错信息
-        return null;
-      }
-    },
-    async register({ email, code }) {
-      try {
-        // @ts-ignore
-        const { data: token } = await fetchRegister({
-          email,
-          code,
-        });
-        this.setToken(token);
-        return { token };
-      } catch (error: any) {
-        window.$message.error(error.message);
-        return error;
       }
     },
     async getUserInfo() {

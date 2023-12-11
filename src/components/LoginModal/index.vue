@@ -125,9 +125,9 @@
 <script lang="ts" setup>
 import { LockClosedOutline, PersonOutline } from '@vicons/ionicons5';
 import QRCode from 'qrcode';
-import { ref } from 'vue';
+import { onUnmounted, reactive, ref } from 'vue';
 
-import { fetchQrcodeLogin } from '@/api/user';
+import { fetchQrcodeLogin, fetchQrcodeLoginStatus } from '@/api/user';
 import { QRCODE_LOGIN_URI } from '@/constant';
 import { useQQLogin } from '@/hooks/use-login';
 import { useAppStore } from '@/store/app';
@@ -145,11 +145,20 @@ const loginForm = ref({
   id: '',
   password: '',
 });
+const qrcodeParams = reactive({
+  platform: 'wechat',
+  exp: 24,
+  loginId: '',
+});
 const base64 = ref('');
 const loginFormRef = ref(null);
-const currentTab = ref('qrcodelogin'); // qrcodelogin,pwdlogin
-
+const currentTab = ref('pwdlogin'); // qrcodelogin,pwdlogin
+const loopTimer = ref();
 const emits = defineEmits(['close']);
+
+onUnmounted(() => {
+  clearInterval(loopTimer.value);
+});
 
 async function generateQR(text) {
   let base64 = '';
@@ -168,22 +177,51 @@ function handleGithubLogin() {
 }
 
 function handleQQLogin() {
-  useQQLogin();
+  useQQLogin({ exp: 24 });
 }
 
 async function handleWechatLogin() {
-  const params = {
-    platform: 'wechat',
-    exp: 24,
-  };
-  const res = await fetchQrcodeLogin(params);
+  const res = await fetchQrcodeLogin({
+    platform: qrcodeParams.platform,
+    exp: qrcodeParams.exp,
+  });
   if (res.code === 200) {
+    qrcodeParams.loginId = res.data.login_id;
     base64.value = await generateQR(
-      `${QRCODE_LOGIN_URI}?platform=${params.platform}&exp=${params.exp}&login_id=${res.data.login_id}`
+      `${QRCODE_LOGIN_URI}?platform=${qrcodeParams.platform}&exp=${qrcodeParams.exp}&loginId=${qrcodeParams.loginId}`
     );
+    handleLoopQrcodeLoginStatus();
   } else {
     window.$message.error(res.message);
   }
+}
+
+function handleLoopQrcodeLoginStatus() {
+  clearInterval(loopTimer.value);
+  async function loopFn() {
+    try {
+      const res = await fetchQrcodeLoginStatus({
+        platform: qrcodeParams.platform,
+        login_id: qrcodeParams.loginId,
+      });
+      if (res.code === 200) {
+        if (res.data.isLogin && res.data.token) {
+          userStore.setToken(res.data.token, res.data.exp);
+          userStore.getUserInfo();
+          appStore.showLoginModal = false;
+          clearInterval(loopTimer.value);
+        }
+      } else {
+        window.$message.error(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  loopTimer.value = setInterval(() => {
+    loopFn();
+  }, 1000);
 }
 
 function handleClose() {
@@ -218,6 +256,7 @@ const handleLoginSubmit = (e) => {
 };
 const tabChange = (v) => {
   currentTab.value = v;
+  clearInterval(loopTimer.value);
   if (currentTab.value === 'qrcodelogin') {
     handleWechatLogin();
   }

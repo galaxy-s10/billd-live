@@ -22,7 +22,7 @@ export function fetchQrcodeLoginStatus({ platform, login_id }) {
     platform: any;
     isLogin: boolean;
     token: string;
-  }>('/user/qrcode_login', {
+  }>('/user/qrcode_login_status', {
     // eslint-disable-next-line
     params: { platform, login_id },
   });

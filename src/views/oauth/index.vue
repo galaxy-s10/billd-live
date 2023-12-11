@@ -7,10 +7,10 @@
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
-import { fetchQrcodeLoginStatus } from '@/api/user';
+import { fetchWechatLogin } from '@/api/wechatUser';
 import { handleQQLogin } from '@/hooks/use-login';
 import { PlatformEnum } from '@/interface';
-import { clearLoginInfo, getLoginInfo } from '@/utils/cookie';
+import { clearThirdLoginInfo, getThirdLoginInfo } from '@/utils/cookie';
 
 const route = useRoute();
 
@@ -34,9 +34,10 @@ onMounted(async () => {
 
   try {
     const res = JSON.parse(atobStateRes);
+    // 在第三方登录的时候，会往cookie里记录环境，因此这里直接读取
+    // 如果不是dev环境，则读取cookie
     if (!res.dev) {
-      // 在第三方登录的时候，都会往cookie里记录环境，因此这里直接读取
-      loginInfo = getLoginInfo();
+      loginInfo = getThirdLoginInfo();
       if (!loginInfo) {
         errMsg.value = 'cookie缺少登录信息';
         return;
@@ -50,7 +51,7 @@ onMounted(async () => {
       loginInfo = atobStateRes;
     }
   } catch (error) {
-    errMsg.value = 'state非法';
+    errMsg.value = '校验state错误';
     return;
   }
 
@@ -59,15 +60,17 @@ onMounted(async () => {
       currentOauth.value = 'QQ';
       break;
     case PlatformEnum.wechatLogin:
-      currentOauth.value = 'Wechat';
+      currentOauth.value = '微信';
       break;
   }
 
   try {
-    const { isMobile, env } = JSON.parse(loginInfo);
+    // eslint-disable-next-line
+    const { isMobile, env, qrcodePlatform, qrcodeExp, qrcodeLoginId, qqExp } =
+      JSON.parse(loginInfo);
 
     if (env === 'qq') {
-      const info = { type: PlatformEnum.qqLogin, data: code };
+      const info = { type: PlatformEnum.qqLogin, data: { code, qqExp } };
       if (isMobile) {
         try {
           await handleQQLogin({
@@ -82,18 +85,25 @@ onMounted(async () => {
       }
     } else if (env === 'wechat') {
       // eslint-disable-next-line
-      const { qr_platform, qr_login_id } = JSON.parse(loginInfo);
-      console.log(qr_platform, qr_login_id, '====');
-      await fetchQrcodeLoginStatus({
-        // eslint-disable-next-line
-        platform: qr_platform,
-        // eslint-disable-next-line
-        login_id: qr_login_id,
+      if (!qrcodePlatform || !qrcodeLoginId || !qrcodeExp) {
+        window.$message.error('参数缺失！');
+        return;
+      }
+      const res = await fetchWechatLogin({
+        code,
+        platform: qrcodePlatform,
+        login_id: qrcodeLoginId,
+        exp: qrcodeExp,
       });
+      if (res.code === 200) {
+        window.$message.success('登录成功！');
+      } else {
+        window.$message.error(res.message);
+      }
     }
   } catch (error) {
     console.log(error);
-    clearLoginInfo();
+    clearThirdLoginInfo();
   }
 });
 </script>

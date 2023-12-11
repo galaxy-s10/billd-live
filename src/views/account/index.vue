@@ -14,6 +14,7 @@
       <span>直播间信息：</span>
       <span
         v-if="!userInfo?.live_rooms?.length"
+        class="link"
         @click="openLiveRoom"
       >
         未开通

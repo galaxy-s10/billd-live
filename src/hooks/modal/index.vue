@@ -89,8 +89,8 @@ export default defineComponent({
         font-size: 14px;
       }
       &.next {
-        background-color: #fbab7e;
-        background-image: linear-gradient(62deg, #fbab7e 0%, #f7ce68 100%);
+        background-color: white;
+        background-image: $theme-color-gold;
         color: white;
         font-weight: 700;
         font-size: 16px;

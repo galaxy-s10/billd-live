@@ -35,7 +35,6 @@ onMounted(() => {
   cacheStore.setVolume(0);
   const token = getToken();
   if (token) {
-    userStore.setToken(token);
     userStore.getUserInfo();
   }
 

@@ -18,15 +18,13 @@ const route = useRoute();
 
 function handleClick() {
   // eslint-disable-next-line
-  const { platform, exp, login_id } = route.query;
-  // eslint-disable-next-line
-  if (!platform || !exp || !login_id) {
+  const { platform, loginId, exp } = route.query;
+  if (!platform || !loginId || !exp) {
     window.$message.error('参数缺失！');
     return;
   }
   if (platform === 'wechat') {
-    // eslint-disable-next-line
-    useWechatLogin({ platform, exp, login_id });
+    useWechatLogin({ platform, exp, loginId });
   } else {
     window.$message.error('platform错误！');
   }
