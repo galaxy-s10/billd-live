@@ -16,6 +16,17 @@
             }')`,
           }"
         >
+          <PullAuthTip
+            v-if="
+              iten?.pull_is_should_auth === LiveRoomPullIsShouldAuthEnum.yes
+            "
+          ></PullAuthTip>
+          <div
+            v-if="iten?.live"
+            class="living-ico"
+          >
+            <div class="live-txt">直播中</div>
+          </div>
           <div
             v-if="iten?.cdn === 1"
             class="cdn-ico"
@@ -41,7 +52,7 @@ import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchLiveRoomList } from '@/api/area';
-import { ILiveRoom } from '@/interface';
+import { ILiveRoom, LiveRoomPullIsShouldAuthEnum } from '@/interface';
 import router, { routerName } from '@/router';
 
 const liveRoomList = ref<ILiveRoom[]>([]);
@@ -95,6 +106,23 @@ async function getData() {
         border-radius: 8px;
         background-position: center center;
         background-size: cover;
+        .living-ico {
+          position: absolute;
+          top: 0px;
+          left: 0px;
+          z-index: 10;
+          padding: 0 6px;
+          border-radius: 8px 0 10px;
+          background-color: $theme-color-gold;
+          color: white;
+          text-align: center;
+          font-size: 12px;
+          .live-txt {
+            transform-origin: center !important;
+
+            @include minFont(10);
+          }
+        }
         .cdn-ico {
           position: absolute;
           top: -12px;

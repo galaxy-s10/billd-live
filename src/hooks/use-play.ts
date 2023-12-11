@@ -36,6 +36,7 @@ export function useFlvPlay() {
   const retry = ref(0);
   const retryTimer = ref();
   const retrying = ref(false);
+  const flvIsPlaying = ref(false);
 
   onMounted(() => {});
 
@@ -115,6 +116,7 @@ export function useFlvPlay() {
           });
           videoEl.addEventListener('playing', () => {
             console.log('flv-playing');
+            flvIsPlaying.value = true;
             retry.value = 0;
             setMuted(cacheStore.muted);
             setVolume(cacheStore.volume);
@@ -160,7 +162,7 @@ export function useFlvPlay() {
     });
   }
 
-  return { flvPlayer, flvVideoEl, startFlvPlay, destroyFlv };
+  return { flvPlayer, flvVideoEl, flvIsPlaying, startFlvPlay, destroyFlv };
 }
 
 export function useHlsPlay() {
@@ -173,6 +175,7 @@ export function useHlsPlay() {
   const retry = ref(0);
   const retryTimer = ref();
   const retrying = ref(false);
+  const hlsIsPlaying = ref(false);
 
   onMounted(() => {});
 
@@ -285,6 +288,7 @@ export function useHlsPlay() {
         });
         hlsPlayer.value?.on('playing', () => {
           console.log('hls-playing');
+          hlsIsPlaying.value = true;
           setMuted(cacheStore.muted);
           setVolume(cacheStore.volume);
           retry.value = 0;
@@ -308,5 +312,5 @@ export function useHlsPlay() {
     });
   }
 
-  return { hlsPlayer, hlsVideoEl, startHlsPlay, destroyHls };
+  return { hlsPlayer, hlsVideoEl, hlsIsPlaying, startHlsPlay, destroyHls };
 }

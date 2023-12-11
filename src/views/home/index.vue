@@ -26,7 +26,7 @@
             v-if="item.length"
             :list="item"
             :width="docW"
-            :speed="120"
+            :speed="60"
             :direction="index % 2 === 0 ? 'l-r' : 'r-l'"
             :customStyle="{ margin: '0 auto' }"
           ></Slider>
@@ -258,7 +258,7 @@ watch(
 );
 
 function handleSlideList() {
-  const row = 3;
+  const row = 2;
   const res: any[] = [];
   const count = Math.ceil(sliderList.length / row);
   for (let i = 0, len = sliderList.length; i < len; i += count) {

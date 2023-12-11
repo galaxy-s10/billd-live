@@ -29,6 +29,7 @@ export function usePull() {
   const msgIsFile = ref(false);
   const autoplayVal = ref(false);
   const videoLoading = ref(false);
+  const isPlaying = ref(false);
   const flvurl = ref('');
   const hlsurl = ref('');
   const videoHeight = ref();
@@ -49,8 +50,8 @@ export function usePull() {
     damuList,
   } = useSrsWs();
   isPull.value = true;
-  const { flvVideoEl, startFlvPlay, destroyFlv } = useFlvPlay();
-  const { hlsVideoEl, startHlsPlay, destroyHls } = useHlsPlay();
+  const { flvVideoEl, flvIsPlaying, startFlvPlay, destroyFlv } = useFlvPlay();
+  const { hlsVideoEl, hlsIsPlaying, startHlsPlay, destroyHls } = useHlsPlay();
   const stopDrawingArr = ref<any[]>([]);
 
   onUnmounted(() => {
@@ -226,6 +227,19 @@ export function usePull() {
   );
 
   watch(
+    () => hlsIsPlaying.value,
+    (newVal) => {
+      isPlaying.value = newVal;
+    }
+  );
+  watch(
+    () => flvIsPlaying.value,
+    (newVal) => {
+      isPlaying.value = newVal;
+    }
+  );
+
+  watch(
     () => networkStore.rtcMap,
     (newVal) => {
       if (appStore.liveRoomInfo?.type === LiveRoomTypeEnum.user_wertc) {
@@ -392,6 +406,7 @@ export function usePull() {
     keydownDanmu,
     sendDanmu,
     addVideo,
+    isPlaying,
     msgIsFile,
     mySocketId,
     videoHeight,

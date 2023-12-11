@@ -104,7 +104,7 @@ export const MODULE_CONFIG_SWITCH = {
   // qq登录
   qqLogin: true,
   // 微信扫码登录
-  wechatLogin: true,
+  wechatLogin: false,
   // github登录
   githubLogin: true,
   // 我要开播按钮

@@ -87,8 +87,8 @@
                       }}]
                     </span>
                     <span v-else>{{ item.socket_id }}[游客]</span>
+                    <span>：</span>
                   </span>
-                  <span>：</span>
                   <span
                     class="msg"
                     v-if="!item.msgIsFile"
@@ -134,7 +134,13 @@
             class="customerService-wrap"
             :style="{ height: containerHeight + 'px' }"
           >
-            敬请期待！
+            <img
+              class="qrcode"
+              v-if="frontendWechatQrcode !== ''"
+              :src="frontendWechatQrcode"
+              alt=""
+            />
+            <div class="tip">打开微信扫一扫添加客服</div>
           </div>
         </n-tab-pane>
         <n-tab-pane
@@ -183,6 +189,7 @@
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
+import { fetchFindLiveConfigByKey } from '@/api/liveConfig';
 import { fetchFindLiveRoom } from '@/api/liveRoom';
 import { usePull } from '@/hooks/use-pull';
 import { DanmuMsgTypeEnum, LiveRoomTypeEnum } from '@/interface';
@@ -199,6 +206,7 @@ const danmuListRef = ref<HTMLDivElement>();
 const showPlayBtn = ref(false);
 const containerHeight = ref(0);
 const videoWrapHeight = ref(0);
+const frontendWechatQrcode = ref('');
 const remoteVideoRef = ref<HTMLDivElement>();
 
 const {
@@ -208,6 +216,7 @@ const {
   sendDanmu,
   closeRtc,
   closeWs,
+  isPlaying,
   autoplayVal,
   videoLoading,
   damuList,
@@ -217,6 +226,29 @@ const {
   remoteVideo,
   videoHeight,
 } = usePull();
+
+onUnmounted(() => {
+  closeWs();
+  closeRtc();
+});
+
+onMounted(() => {
+  getWechatQrcode();
+  setTimeout(() => {
+    scrollTo(0, 0);
+  }, 100);
+  videoWrapHeight.value =
+    document.documentElement.clientWidth / appStore.videoRatio;
+  nextTick(() => {
+    if (danmuListRef.value && bottomRef.value) {
+      const res =
+        bottomRef.value.getBoundingClientRect().top -
+        danmuListRef.value.getBoundingClientRect().top;
+      containerHeight.value = res;
+    }
+  });
+  getLiveRoomInfo();
+});
 
 watch(
   () => remoteVideo.value,
@@ -231,12 +263,14 @@ watch(
   }
 );
 
-function handleScrollTop() {
-  if (danmuListRef.value) {
-    danmuListRef.value.scrollTop = danmuListRef.value.scrollHeight + 10000;
+watch(
+  () => isPlaying.value,
+  (newVal) => {
+    if (newVal) {
+      showPlayBtn.value = false;
+    }
   }
-}
-
+);
 watch(
   () => damuList.value.length,
   () => {
@@ -245,6 +279,12 @@ watch(
     }, 0);
   }
 );
+
+function handleScrollTop() {
+  if (danmuListRef.value) {
+    danmuListRef.value.scrollTop = danmuListRef.value.scrollHeight + 10000;
+  }
+}
 
 function handleRefresh() {
   if (appStore.liveRoomInfo) {
@@ -278,27 +318,17 @@ function startPull() {
   showPlayBtn.value = false;
   handlePlay(appStore.liveRoomInfo!);
 }
-onUnmounted(() => {
-  closeWs();
-  closeRtc();
-});
 
-onMounted(() => {
-  setTimeout(() => {
-    scrollTo(0, 0);
-  }, 100);
-  videoWrapHeight.value =
-    document.documentElement.clientWidth / appStore.videoRatio;
-  nextTick(() => {
-    if (danmuListRef.value && bottomRef.value) {
-      const res =
-        bottomRef.value.getBoundingClientRect().top -
-        danmuListRef.value.getBoundingClientRect().top;
-      containerHeight.value = res;
+async function getWechatQrcode() {
+  try {
+    const res = await fetchFindLiveConfigByKey('frontend_wechat_qrcode');
+    if (res.code === 200) {
+      frontendWechatQrcode.value = res.data.value;
     }
-  });
-  getLiveRoomInfo();
-});
+  } catch (error) {
+    console.log(error);
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -436,7 +466,8 @@ onMounted(() => {
       font-size: 13px;
 
       .name {
-        color: #9499a0;
+        color: white;
+        opacity: 0.8;
         cursor: pointer;
         &.system {
           color: red;
@@ -444,7 +475,7 @@ onMounted(() => {
       }
       .msg {
         margin-top: 4px;
-        color: #61666d;
+        color: white;
         &.img {
           img {
             width: 80%;
@@ -458,6 +489,16 @@ onMounted(() => {
     height: 100%;
     height: 300px;
     color: white;
+  }
+  .customerService-wrap {
+    position: relative;
+    text-align: center;
+    .qrcode {
+      display: block;
+      margin: 0 auto 10px;
+      width: 200px;
+      height: 200px;
+    }
   }
   .send-msg {
     position: fixed;
