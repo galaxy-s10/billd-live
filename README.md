@@ -2,7 +2,7 @@
   <a href="https://live.hsslive.cn" target="_blank">
     <img
       width="200"
-      src="https://github.com/galaxy-s10/billd-live/blob/master/src/assets/img/logo-txt.svg"
+      src="https://resource.hsslive.cn/billd-live/image/240160ddbc14367f7e0126c1f5b09b69.svg"
       alt="Billd-Live logo"
     />
   </a>

@@ -140,7 +140,6 @@ onMounted(() => {
 }
 .slider-cpt-wrap {
   overflow: hidden;
-  padding: 2px 0;
   .slider {
     position: relative;
     overflow: scroll;

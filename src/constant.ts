@@ -69,6 +69,55 @@ export const COOKIE_KEY = {
 
 export const lsKeyPrefix = 'billd_live___';
 
+export const MODULE_CONFIG_SWITCH = {
+  // 后台入口
+  admin: true,
+  // app下载入口
+  appdownload: true,
+  // 文档
+  doc: true,
+  // 生态系统
+  ecosystem: true,
+  // 关于
+  about: true,
+  // 赞助
+  sponsors: true,
+  // 私有化部署
+  privatizationDeployment: true,
+  // github
+  github: true,
+  // 轮播
+  slider: true,
+  // 底部版权提示
+  copyrightNotice: true,
+  // 侧边栏
+  sidebar: true,
+  // 侧边栏排行榜
+  sidebarRank: true,
+  // 侧边栏商店
+  sidebarShop: true,
+  // 侧边栏订单
+  sidebarOrder: true,
+  // 支付
+  pay: true,
+  // 第三方登录
+  thirdLogin: true,
+  // qq登录
+  qqLogin: true,
+  // 微信扫码登录
+  wechatLogin: true,
+  // github登录
+  githubLogin: true,
+  // 我要开播按钮
+  startLive: true,
+  // srs开播
+  startLiveSRS: true,
+  // webrtc开播
+  startLiveWebRTC: true,
+  // msr开播
+  startLiveWebMSR: true,
+};
+
 // 全局的localStorage的key
 export const lsKey = {
   lastBuildDate: 'lastBuildDate',

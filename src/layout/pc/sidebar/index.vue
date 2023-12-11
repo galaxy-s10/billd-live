@@ -1,6 +1,7 @@
 <template>
   <aside class="sidebar-wrap">
     <div
+      v-if="MODULE_CONFIG_SWITCH.sidebarRank"
       class="item"
       @click="router.push({ name: routerName.rank })"
     >
@@ -8,6 +9,7 @@
       <div class="txt">排行榜</div>
     </div>
     <div
+      v-if="MODULE_CONFIG_SWITCH.sidebarShop"
       class="item"
       @click="router.push({ name: routerName.shop })"
     >
@@ -15,6 +17,7 @@
       <div class="txt">商店</div>
     </div>
     <div
+      v-if="MODULE_CONFIG_SWITCH.sidebarOrder"
       class="item"
       @click="router.push({ name: routerName.order })"
     >
@@ -25,6 +28,7 @@
 </template>
 
 <script lang="ts" setup>
+import { MODULE_CONFIG_SWITCH } from '@/constant';
 import router, { routerName } from '@/router';
 </script>
 

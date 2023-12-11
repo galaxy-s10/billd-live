@@ -75,6 +75,7 @@
               </n-button>
             </n-tab-pane>
             <n-tab-pane
+              v-if="MODULE_CONFIG_SWITCH.wechatLogin"
               name="qrcodelogin"
               tab="微信登录"
             >
@@ -87,9 +88,13 @@
             </n-tab-pane>
           </n-tabs>
         </n-card>
-        <div class="other-login">
+        <div
+          class="other-login"
+          v-if="MODULE_CONFIG_SWITCH.thirdLogin"
+        >
           <span>第三方登录：</span>
           <div
+            v-if="MODULE_CONFIG_SWITCH.qqLogin"
             class="logo-wrap"
             @click="handleQQLogin()"
           >
@@ -108,6 +113,7 @@
             />
           </div> -->
           <div
+            v-if="MODULE_CONFIG_SWITCH.githubLogin"
             class="logo-wrap"
             @click="handleGithubLogin"
           >
@@ -128,7 +134,7 @@ import QRCode from 'qrcode';
 import { onUnmounted, reactive, ref } from 'vue';
 
 import { fetchQrcodeLogin, fetchQrcodeLoginStatus } from '@/api/user';
-import { QRCODE_LOGIN_URI } from '@/constant';
+import { MODULE_CONFIG_SWITCH, QRCODE_LOGIN_URI } from '@/constant';
 import { useQQLogin } from '@/hooks/use-login';
 import { useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';

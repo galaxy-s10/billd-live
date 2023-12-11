@@ -31,6 +31,7 @@ export function usePush() {
   const liveRoomInfo = ref<ILiveRoom>();
   const localStream = ref<MediaStream>();
   const videoElArr = ref<HTMLVideoElement[]>([]);
+  const msgIsFile = ref(false);
 
   const {
     roomLiving,
@@ -328,7 +329,7 @@ export function usePush() {
         msg: danmuStr.value,
         msgType: DanmuMsgTypeEnum.danmu,
         live_room_id: Number(roomId.value),
-        msgIsFile: false,
+        msgIsFile: msgIsFile.value,
       },
     });
     damuList.value.push({
@@ -336,7 +337,7 @@ export function usePush() {
       msgType: DanmuMsgTypeEnum.danmu,
       msg: danmuStr.value,
       userInfo: userStore.userInfo!,
-      msgIsFile: false,
+      msgIsFile: msgIsFile.value,
     });
     danmuStr.value = '';
   }
@@ -348,6 +349,7 @@ export function usePush() {
     sendDanmu,
     keydownDanmu,
     sendBlob,
+    msgIsFile,
     mySocketId,
     lastCoverImg,
     localStream,

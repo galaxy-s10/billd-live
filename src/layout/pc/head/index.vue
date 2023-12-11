@@ -42,6 +42,7 @@
             class="item"
             :href="COMMON_URL.admin"
             @click.prevent="openToTarget(COMMON_URL.admin)"
+            v-if="MODULE_CONFIG_SWITCH.admin"
           >
             直播后台
           </a>
@@ -49,6 +50,7 @@
             class="item"
             :href="COMMON_URL.mobileApk"
             @click.prevent="openToTarget(COMMON_URL.mobileApk)"
+            v-if="MODULE_CONFIG_SWITCH.appdownload"
           >
             App下载
             <div class="badge">
@@ -71,6 +73,7 @@
         <Dropdown
           v-model="dropdownDoc"
           class="doc"
+          v-if="MODULE_CONFIG_SWITCH.appdownload"
         >
           <template #btn>
             <div class="btn">
@@ -118,6 +121,7 @@
         <Dropdown
           v-model="dropdownSys"
           class="ecosystem"
+          v-if="MODULE_CONFIG_SWITCH.ecosystem"
         >
           <template #btn>
             <div class="btn">
@@ -162,6 +166,7 @@
         <Dropdown
           v-model="dropdownAbout"
           class="about"
+          v-if="MODULE_CONFIG_SWITCH.about"
         >
           <template #btn>
             <div class="btn">
@@ -192,6 +197,7 @@
         </Dropdown>
 
         <a
+          v-if="MODULE_CONFIG_SWITCH.sponsors"
           class="sponsors"
           :class="{
             active: router.currentRoute.value.name === routerName.sponsors,
@@ -202,6 +208,7 @@
           赞助
         </a>
         <a
+          v-if="MODULE_CONFIG_SWITCH.privatizationDeployment"
           class="privatizationDeployment"
           :class="{
             active:
@@ -220,6 +227,7 @@
         </a>
 
         <a
+          v-if="MODULE_CONFIG_SWITCH.github"
           class="github"
           target="_blank"
           href="https://github.com/galaxy-s10/billd-live"
@@ -230,25 +238,31 @@
           />
         </a>
 
-        <Dropdown class="start-live">
+        <Dropdown
+          class="start-live"
+          v-if="MODULE_CONFIG_SWITCH.startLive"
+        >
           <template #btn>
             <div class="btn">我要开播</div>
           </template>
           <template #list>
             <div class="list">
               <a
+                v-if="MODULE_CONFIG_SWITCH.startLiveSRS"
                 class="item"
                 @click.prevent="handleStartLive(LiveRoomTypeEnum.user_srs)"
               >
                 <div class="txt">srs开播</div>
               </a>
               <a
+                v-if="MODULE_CONFIG_SWITCH.startLiveWebRTC"
                 class="item"
                 @click.prevent="handleStartLive(LiveRoomTypeEnum.user_wertc)"
               >
                 <div class="txt">webrtc开播</div>
               </a>
               <a
+                v-if="MODULE_CONFIG_SWITCH.startLiveWebMSR"
                 class="item"
                 @click.prevent="handleStartLive(LiveRoomTypeEnum.user_msr)"
               >
@@ -305,7 +319,7 @@ import { useRouter } from 'vue-router';
 import Dropdown from '@/components/Dropdown/index.vue';
 import VPIconChevronDown from '@/components/icons/VPIconChevronDown.vue';
 import VPIconExternalLink from '@/components/icons/VPIconExternalLink.vue';
-import { COMMON_URL } from '@/constant';
+import { COMMON_URL, MODULE_CONFIG_SWITCH } from '@/constant';
 import { loginTip } from '@/hooks/use-login';
 import { LiveRoomTypeEnum } from '@/interface';
 import { routerName } from '@/router';

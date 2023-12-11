@@ -89,8 +89,7 @@ export default defineComponent({
         font-size: 14px;
       }
       &.next {
-        background-color: white;
-        background-image: $theme-color-gold;
+        background: $theme-color-gold;
         color: white;
         font-weight: 700;
         font-size: 16px;

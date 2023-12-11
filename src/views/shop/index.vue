@@ -64,6 +64,7 @@ import { useRoute } from 'vue-router';
 
 import { fetchGoodsList } from '@/api/goods';
 import QrPayCpt from '@/components/QrPay/index.vue';
+import { MODULE_CONFIG_SWITCH } from '@/constant';
 import { GoodsTypeEnum, IGoods } from '@/interface';
 import router from '@/router';
 
@@ -120,6 +121,10 @@ function changeTab(type: GoodsTypeEnum) {
 }
 
 function startPay(item: IGoods) {
+  if (!MODULE_CONFIG_SWITCH.pay) {
+    window.$message.info('敬请期待！');
+    return;
+  }
   if (Number(item.price) === 0) {
     window.$message.info('该商品是免费的，不需要购买！');
     return;

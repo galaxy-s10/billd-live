@@ -15,18 +15,27 @@
         loop
       ></video>
       <div
-        v-for="(item, index) in interactionList"
-        :key="index"
+        v-if="MODULE_CONFIG_SWITCH.slider"
+        class="slider-wrap"
       >
-        <Slider
-          v-if="item.length"
-          :list="item"
-          :width="docW"
-          :speed="120"
-          :direction="index % 2 === 0 ? 'l-r' : 'r-l'"
-          :customStyle="{ margin: '0 auto' }"
-        ></Slider>
+        <div
+          v-for="(item, index) in interactionList"
+          :key="index"
+        >
+          <Slider
+            v-if="item.length"
+            :list="item"
+            :width="docW"
+            :speed="120"
+            :direction="index % 2 === 0 ? 'l-r' : 'r-l'"
+            :customStyle="{ margin: '0 auto' }"
+          ></Slider>
+        </div>
       </div>
+      <div
+        v-else
+        class="slider-wrap"
+      ></div>
 
       <div class="container">
         <div
@@ -178,7 +187,12 @@
       </div>
     </div>
 
-    <div class="foot">*部分内容来源网络，如有侵权，请联系我删除~</div>
+    <div
+      class="foot"
+      v-if="MODULE_CONFIG_SWITCH.copyrightNotice"
+    >
+      *部分内容来源网络，如有侵权，请联系我删除~
+    </div>
   </div>
 </template>
 
@@ -188,7 +202,7 @@ import { useRouter } from 'vue-router';
 
 import { fetchLiveList } from '@/api/live';
 import { fetchFindLiveConfigByKey } from '@/api/liveConfig';
-import { sliderList } from '@/constant';
+import { MODULE_CONFIG_SWITCH, sliderList } from '@/constant';
 import { usePull } from '@/hooks/use-pull';
 import {
   ILive,
@@ -353,7 +367,7 @@ function joinRoom(data: { roomId: number }) {
       // object-fit: fill;
     }
     .slider-wrap {
-      margin: 0 auto;
+      padding: 4px 0;
     }
     .container {
       display: flex;

@@ -202,6 +202,13 @@ export enum LiveRoomPullIsShouldAuthEnum {
   /** 不需要鉴权 */
   no,
 }
+/** 是否使用cdn */
+export enum LiveRoomUseCDNEnum {
+  /** 使用cdn */
+  yes = 1,
+  /** 不使用cdn */
+  no = 2,
+}
 
 export interface ILiveRoom {
   id?: number;
@@ -218,8 +225,7 @@ export interface ILiveRoom {
   user_live_room?: IUserLiveRoom & { user: IUser };
   name?: string;
   desc?: string;
-  /** 1:使用cdn;2:不使用cdn */
-  cdn?: number;
+  cdn?: LiveRoomUseCDNEnum;
   /** 权重 */
   weight?: number;
   /** 推流秘钥 */

@@ -211,9 +211,30 @@
             >
               <template v-if="item.msgType === DanmuMsgTypeEnum.danmu">
                 <span class="name">
-                  {{ item.userInfo?.username || item.socket_id }}：
+                  <span v-if="item.userInfo">
+                    {{ item.userInfo.username }}[{{
+                      item.userInfo.roles?.map((v) => v.role_name).join()
+                    }}]
+                  </span>
+                  <span v-else>{{ item.socket_id }}[游客]</span>
                 </span>
-                <span class="msg">{{ item.msg }}</span>
+                <span>：</span>
+                <span
+                  class="msg"
+                  v-if="!item.msgIsFile"
+                >
+                  {{ item.msg }}
+                </span>
+                <div
+                  class="msg img"
+                  v-else
+                >
+                  <img
+                    :src="item.msg"
+                    alt=""
+                    @load="handleScrollTop"
+                  />
+                </div>
               </template>
               <template v-else-if="item.msgType === DanmuMsgTypeEnum.otherJoin">
                 <span class="name system">系统通知：</span>
@@ -234,7 +255,43 @@
             </div>
           </div>
         </div>
-        <div class="send-msg">
+        <div
+          class="send-msg"
+          v-loading="msgLoading"
+        >
+          <div class="control">
+            <div
+              class="ico face"
+              title="表情"
+              @click="handleWait"
+            ></div>
+            <div
+              class="ico img"
+              title="图片"
+              @click="mockClick"
+            >
+              <input
+                ref="uploadRef"
+                type="file"
+                class="input-upload"
+                accept=".webp,.png,.jpg,.jpeg,.gif"
+                @change="uploadChange"
+              />
+            </div>
+          </div>
+          <textarea
+            v-model="danmuStr"
+            class="ipt"
+            @keydown="keydownDanmu"
+          ></textarea>
+          <div
+            class="btn"
+            @click="sendDanmu"
+          >
+            发送
+          </div>
+        </div>
+        <!-- <div class="send-msg">
           <input
             v-model="danmuStr"
             class="ipt"
@@ -247,7 +304,7 @@
           >
             发送
           </n-button>
-        </div>
+        </div> -->
       </div>
     </div>
 
@@ -300,9 +357,10 @@ import {
 import { useRoute } from 'vue-router';
 import * as workerTimers from 'worker-timers';
 
-import { mediaTypeEnumMap } from '@/constant';
+import { QINIU_LIVE, mediaTypeEnumMap } from '@/constant';
 import { usePush } from '@/hooks/use-push';
 import { useRTCParams } from '@/hooks/use-rtcParams';
+import { useUpload } from '@/hooks/use-upload';
 import { DanmuMsgTypeEnum, LiveRoomTypeEnum, MediaTypeEnum } from '@/interface';
 import { AppRootState, useAppStore } from '@/store/app';
 import { usePiniaCacheStore } from '@/store/cache';
@@ -338,6 +396,7 @@ const {
   sendDanmu,
   keydownDanmu,
   sendBlob,
+  msgIsFile,
   mySocketId,
   lastCoverImg,
   canvasVideoStream,
@@ -367,6 +426,8 @@ const webaudioVideo = ref<HTMLVideoElement>();
 const fabricCanvas = ref<fabric.Canvas>();
 const startTime = ref(+new Date());
 // const startTime = ref(1692807352565); // 1693027352565
+const msgLoading = ref(false);
+const uploadRef = ref<HTMLInputElement>();
 
 const timeCanvasDom = ref<Raw<fabric.Text>[]>([]);
 const stopwatchCanvasDom = ref<Raw<fabric.Text>[]>([]);
@@ -418,12 +479,16 @@ watch(
   () => damuList.value.length,
   () => {
     setTimeout(() => {
-      if (danmuListRef.value) {
-        danmuListRef.value.scrollTop = danmuListRef.value.scrollHeight;
-      }
+      handleScrollTop();
     }, 0);
   }
 );
+
+function handleScrollTop() {
+  if (danmuListRef.value) {
+    danmuListRef.value.scrollTop = danmuListRef.value.scrollHeight + 10000;
+  }
+}
 
 function handleSendBlob(event: BlobEvent) {
   bolbId.value += 1;
@@ -432,6 +497,40 @@ function handleSendBlob(event: BlobEvent) {
     blobId: `${bolbId.value}`,
     delay: chunkDelay.value,
   });
+}
+
+function mockClick() {
+  uploadRef.value?.click();
+}
+
+function handleWait() {
+  window.$message.warning('敬请期待！');
+}
+
+async function uploadChange() {
+  const fileList = uploadRef.value?.files;
+  if (fileList?.length) {
+    try {
+      msgLoading.value = true;
+      msgIsFile.value = true;
+      const res = await useUpload({
+        prefix: QINIU_LIVE.prefix['billd-live/msg-image/'],
+        file: fileList[0],
+      });
+      if (res?.resultUrl) {
+        danmuStr.value = res.resultUrl || '错误图片';
+        sendDanmu();
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      msgIsFile.value = false;
+      msgLoading.value = false;
+      if (uploadRef.value) {
+        uploadRef.value.value = '';
+      }
+    }
+  }
 }
 
 function handleAllType() {
@@ -508,32 +607,14 @@ onUnmounted(() => {
   clearFrame();
 });
 
-function initUserMedia() {
-  navigator.mediaDevices
-    .getUserMedia({
-      video: true,
-      audio: false,
-    })
-    .then(() => {
-      console.log('初始化获取摄像头成功');
-    })
-    .catch(() => {
-      console.log('初始化获取摄像头失败');
-    })
-    .finally(() => {
-      navigator.mediaDevices
-        .getUserMedia({
-          video: false,
-          audio: true,
-        })
-        .then(() => {
-          console.log('初始化获取麦克风成功');
-        })
-        .catch(() => {
-          console.log('初始化获取麦克风失败');
-          showOpenMicophoneTipCpt.value = true;
-        });
-    });
+async function initUserMedia() {
+  const res1 = await handleUserMedia({ video: true, audio: false });
+  console.log('初始化获取摄像头成功');
+  const res2 = await handleUserMedia({ video: false, audio: true });
+  console.log('初始化获取麦克风成功');
+  if (!res1 || !res2) {
+    showOpenMicophoneTipCpt.value = true;
+  }
 }
 
 function renderAll() {
@@ -1919,7 +2000,7 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
       position: relative;
       flex: 1;
       box-sizing: border-box;
-      padding: 10px;
+      padding: 10px 10px 0px;
       width: 100%;
       border-radius: 6px;
       background-color: papayawhip;
@@ -1929,46 +2010,110 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
       }
       .list {
         overflow: scroll;
-        height: 360px;
+        height: 300px;
 
-        @extend %hideScrollbar;
+        @extend %customScrollbar;
 
         .item {
-          margin-bottom: 10px;
-          font-size: 12px;
+          box-sizing: border-box;
+          margin-bottom: 4px;
+          padding: 2px 0;
+          white-space: normal;
+          word-wrap: break-word;
+          font-size: 13px;
+
           .name {
             color: #9499a0;
+            cursor: pointer;
+            &.system {
+              color: red;
+            }
           }
           .msg {
+            margin-top: 4px;
             color: #61666d;
+            &.img {
+              img {
+                width: 80%;
+              }
+            }
           }
         }
       }
-
       .send-msg {
-        position: absolute;
-        bottom: 10px;
-        left: 50%;
-        display: flex;
-        align-items: center;
+        position: relative;
         box-sizing: border-box;
-        width: calc(100% - 20px);
-        transform: translateX(-50%);
+        padding: 4px 0;
+        width: 100%;
+        .control {
+          display: flex;
+          margin: 4px 0;
+          .ico {
+            margin-right: 6px;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            .input-upload {
+              width: 0;
+              height: 0;
+              opacity: 0;
+            }
+            &.face {
+              @include setBackground('@/assets/img/msg-face.webp');
+            }
+            &.img {
+              @include setBackground('@/assets/img/msg-img.webp');
+            }
+          }
+        }
         .ipt {
           display: block;
           box-sizing: border-box;
           margin: 0 auto;
-          margin-right: 10px;
           padding: 10px;
-          width: 80%;
-          height: 30px;
+          width: 100%;
+          height: 60px;
           outline: none;
           border: 1px solid hsla(0, 0%, 60%, 0.2);
           border-radius: 4px;
           background-color: #f1f2f3;
           font-size: 14px;
         }
+        .btn {
+          box-sizing: border-box;
+          margin-top: 10px;
+          margin-left: auto;
+          padding: 4px;
+          width: 70px;
+          border-radius: 4px;
+          background-color: $theme-color-gold;
+          color: white;
+          text-align: center;
+          font-size: 12px;
+          cursor: pointer;
+        }
       }
+
+      // .send-msg {
+      //   display: flex;
+      //   align-items: center;
+      //   box-sizing: border-box;
+      //   width: calc(100% - 20px);
+      //   .ipt {
+      //     display: block;
+      //     box-sizing: border-box;
+      //     margin: 0 auto;
+      //     margin-right: 10px;
+      //     padding: 10px;
+      //     width: 80%;
+      //     height: 30px;
+      //     outline: none;
+      //     border: 1px solid hsla(0, 0%, 60%, 0.2);
+      //     border-radius: 4px;
+      //     background-color: #f1f2f3;
+      //     font-size: 14px;
+      //   }
+      // }
     }
   }
 }

@@ -59,39 +59,104 @@
         @refresh="handleRefresh"
       ></VideoControls>
     </div>
-    <div class="danmu-list">
-      <div class="title">弹幕专区</div>
-      <div
-        ref="containerRef"
-        class="list"
-        :style="{ height: containerHeight + 'px' }"
+    <div class="n-tab-wrap">
+      <n-tabs
+        type="line"
+        animated
       >
-        <div
-          v-for="(item, index) in damuList"
-          :key="index"
-          class="item"
+        <n-tab-pane
+          name="danmu"
+          tab="聊天"
         >
-          <template v-if="item.msgType === DanmuMsgTypeEnum.danmu">
-            <span class="name">
-              {{ item.userInfo?.username || item.socket_id }}：
-            </span>
-            <span class="msg">{{ item.msg }}</span>
-          </template>
-          <template v-else-if="item.msgType === DanmuMsgTypeEnum.otherJoin">
-            <span class="name system">系统通知：</span>
-            <span class="msg">
-              {{ item.userInfo?.username || item.socket_id }}进入直播！
-            </span>
-          </template>
-          <template v-else-if="item.msgType === DanmuMsgTypeEnum.userLeaved">
-            <span class="name system">系统通知：</span>
-            <span class="msg">
-              {{ item.userInfo?.username || item.socket_id }}离开直播！
-            </span>
-          </template>
-        </div>
-      </div>
+          <div class="danmu-list">
+            <div
+              ref="danmuListRef"
+              class="list"
+              :style="{ height: containerHeight + 'px' }"
+            >
+              <div
+                v-for="(item, index) in damuList"
+                :key="index"
+                class="item"
+              >
+                <template v-if="item.msgType === DanmuMsgTypeEnum.danmu">
+                  <span class="name">
+                    <span v-if="item.userInfo">
+                      {{ item.userInfo.username }}[{{
+                        item.userInfo.roles?.map((v) => v.role_name).join()
+                      }}]
+                    </span>
+                    <span v-else>{{ item.socket_id }}[游客]</span>
+                  </span>
+                  <span>：</span>
+                  <span
+                    class="msg"
+                    v-if="!item.msgIsFile"
+                  >
+                    {{ item.msg }}
+                  </span>
+                  <div
+                    class="msg img"
+                    v-else
+                  >
+                    <img
+                      :src="item.msg"
+                      alt=""
+                      @load="handleScrollTop"
+                    />
+                  </div>
+                </template>
+                <template
+                  v-else-if="item.msgType === DanmuMsgTypeEnum.otherJoin"
+                >
+                  <span class="name system">系统通知：</span>
+                  <span class="msg">
+                    {{ item.userInfo?.username || item.socket_id }}进入直播！
+                  </span>
+                </template>
+                <template
+                  v-else-if="item.msgType === DanmuMsgTypeEnum.userLeaved"
+                >
+                  <span class="name system">系统通知：</span>
+                  <span class="msg">
+                    {{ item.userInfo?.username || item.socket_id }}离开直播！
+                  </span>
+                </template>
+              </div>
+            </div>
+          </div>
+        </n-tab-pane>
+        <n-tab-pane
+          name="customerService"
+          tab="客服"
+        >
+          <div
+            class="customerService-wrap"
+            :style="{ height: containerHeight + 'px' }"
+          >
+            敬请期待！
+          </div>
+        </n-tab-pane>
+        <n-tab-pane
+          name="liveRoomInfo"
+          tab="直播间信息"
+        >
+          <div
+            class="liveRoomInfo-wrap"
+            :style="{ height: containerHeight + 'px' }"
+          >
+            <div>直播间名称：{{ appStore.liveRoomInfo?.name }}</div>
+            <div>直播间简介：{{ appStore.liveRoomInfo?.desc }}</div>
+            <div>
+              直播间分区：{{
+                appStore.liveRoomInfo?.areas?.[0].name || '暂无分区'
+              }}
+            </div>
+          </div>
+        </n-tab-pane>
+      </n-tabs>
     </div>
+
     <div
       ref="bottomRef"
       class="send-msg"
@@ -99,6 +164,7 @@
       <input
         v-model="danmuStr"
         class="ipt"
+        placeholder="发个弹幕吧~"
         @keydown="keydownDanmu"
       />
       <n-button
@@ -129,7 +195,7 @@ const cacheStore = usePiniaCacheStore();
 const appStore = useAppStore();
 
 const bottomRef = ref<HTMLDivElement>();
-const containerRef = ref<HTMLDivElement>();
+const danmuListRef = ref<HTMLDivElement>();
 const showPlayBtn = ref(false);
 const containerHeight = ref(0);
 const videoWrapHeight = ref(0);
@@ -165,13 +231,17 @@ watch(
   }
 );
 
+function handleScrollTop() {
+  if (danmuListRef.value) {
+    danmuListRef.value.scrollTop = danmuListRef.value.scrollHeight + 10000;
+  }
+}
+
 watch(
   () => damuList.value.length,
   () => {
     setTimeout(() => {
-      if (containerRef.value) {
-        containerRef.value.scrollTop = containerRef.value.scrollHeight;
-      }
+      handleScrollTop();
     }, 0);
   }
 );
@@ -220,10 +290,10 @@ onMounted(() => {
   videoWrapHeight.value =
     document.documentElement.clientWidth / appStore.videoRatio;
   nextTick(() => {
-    if (containerRef.value && bottomRef.value) {
+    if (danmuListRef.value && bottomRef.value) {
       const res =
         bottomRef.value.getBoundingClientRect().top -
-        containerRef.value.getBoundingClientRect().top;
+        danmuListRef.value.getBoundingClientRect().top;
       containerHeight.value = res;
     }
   });
@@ -233,6 +303,8 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .h5-room-wrap {
+  height: 100vh;
+  background-color: #0c1622;
   .head {
     display: flex;
     align-items: center;
@@ -324,9 +396,24 @@ onMounted(() => {
     }
   }
 
+  .n-tab-wrap {
+    padding-left: 10px;
+    background: #0c1622;
+    color: white;
+    :deep(.n-tabs-tab) {
+      --n-tab-text-color: white;
+    }
+    :deep(.n-tabs-nav-scroll-content) {
+      border-bottom: 0 !important;
+    }
+
+    // :deep(.n-tabs-pane-wrapper) {
+    //   --n-pane-text-color: white;
+    // }
+  }
   .danmu-list {
     box-sizing: border-box;
-    padding: 0 15px;
+    padding: 0;
     background-color: #0c1622;
     text-align: initial;
     .title {
@@ -341,18 +428,36 @@ onMounted(() => {
       @extend %hideScrollbar;
     }
     .item {
-      margin-bottom: 10px;
-      font-size: 12px;
+      box-sizing: border-box;
+      margin-bottom: 4px;
+      padding: 2px;
+      white-space: normal;
+      word-wrap: break-word;
+      font-size: 13px;
+
       .name {
-        color: #ccc;
+        color: #9499a0;
+        cursor: pointer;
         &.system {
           color: red;
         }
       }
       .msg {
-        color: #fff;
+        margin-top: 4px;
+        color: #61666d;
+        &.img {
+          img {
+            width: 80%;
+          }
+        }
       }
     }
+  }
+  .customerService-wrap,
+  .liveRoomInfo-wrap {
+    height: 100%;
+    height: 300px;
+    color: white;
   }
   .send-msg {
     position: fixed;
@@ -362,7 +467,7 @@ onMounted(() => {
     align-items: center;
     justify-content: space-evenly;
     box-sizing: border-box;
-    padding: 0 10px;
+    padding: 0;
     width: 100%;
     height: 40px;
     background-color: #0c1622;

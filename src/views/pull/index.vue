@@ -234,6 +234,7 @@
             @click="mockClick"
           >
             <input
+              placeholder="发个弹幕吧~"
               ref="uploadRef"
               type="file"
               class="input-upload"
@@ -266,7 +267,7 @@
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 
 import { fetchGoodsList } from '@/api/goods';
-import { QINIU_LIVE } from '@/constant';
+import { MODULE_CONFIG_SWITCH, QINIU_LIVE } from '@/constant';
 import { loginTip } from '@/hooks/use-login';
 import { usePull } from '@/hooks/use-pull';
 import { useUpload } from '@/hooks/use-upload';
@@ -416,6 +417,10 @@ async function uploadChange() {
 }
 
 function handlePay() {
+  if (!MODULE_CONFIG_SWITCH.pay) {
+    window.$message.info('敬请期待！');
+    return;
+  }
   window.$message.info('敬请期待！');
 }
 
@@ -444,6 +449,10 @@ async function getGoodsList() {
 }
 
 function handleRecharge() {
+  if (!MODULE_CONFIG_SWITCH.pay) {
+    window.$message.info('敬请期待！');
+    return;
+  }
   if (!loginTip()) return;
   showRecharge.value = true;
 }
