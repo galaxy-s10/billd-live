@@ -37,8 +37,7 @@ export const COMMON_URL = {
   apifox:
     'https://apifox.com/apidoc/shared-c7556b54-17b2-494e-a039-572d83f103ed/',
   admin: 'https://live-admin.hsslive.cn',
-  mobileApk:
-    'https://resource.hsslive.cn/billd-live/image/e859ec0e1fac824ce92b6522104f53ed.apk',
+  mobileApk: 'https://resource.hsslive.cn/billd-live/image/app-release.apk',
   bilibiliCollectiondetail:
     'https://space.bilibili.com/381307133/channel/collectiondetail?sid=1458070&ctype=0',
   payCoursesArticle: 'https://www.hsslive.cn/article/151',
