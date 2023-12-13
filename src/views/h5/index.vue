@@ -53,7 +53,7 @@
                 直播中
               </div>
               <div
-                v-if="iten.live_room?.cdn === 1"
+                v-if="iten.live_room?.cdn === LiveRoomUseCDNEnum.yes"
                 class="cdn-ico"
               >
                 <div class="txt">CDN</div>
@@ -83,6 +83,7 @@ import {
   IAreaLiveRoom,
   LiveRoomIsShowEnum,
   LiveRoomPullIsShouldAuthEnum,
+  LiveRoomUseCDNEnum,
 } from '@/interface';
 import router, { mobileRouterName, routerName } from '@/router';
 import { useAppStore } from '@/store/app';

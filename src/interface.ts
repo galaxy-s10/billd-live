@@ -202,12 +202,13 @@ export enum LiveRoomPullIsShouldAuthEnum {
   /** 不需要鉴权 */
   no,
 }
+
 /** 是否使用cdn */
 export enum LiveRoomUseCDNEnum {
   /** 使用cdn */
-  yes = 1,
+  yes,
   /** 不使用cdn */
-  no = 2,
+  no,
 }
 
 /** 直播间状态 */

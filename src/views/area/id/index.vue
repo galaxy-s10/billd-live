@@ -31,7 +31,7 @@
               直播中
             </div>
             <div
-              v-if="iten?.cdn === 1"
+              v-if="iten?.cdn === LiveRoomUseCDNEnum.yes"
               class="cdn-ico"
             >
               <div class="txt">CDN</div>
@@ -56,7 +56,11 @@ import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchLiveRoomList } from '@/api/area';
-import { ILiveRoom, LiveRoomPullIsShouldAuthEnum } from '@/interface';
+import {
+  ILiveRoom,
+  LiveRoomPullIsShouldAuthEnum,
+  LiveRoomUseCDNEnum,
+} from '@/interface';
 import router, { routerName } from '@/router';
 
 const liveRoomList = ref<ILiveRoom[]>([]);

@@ -44,7 +44,7 @@
           @click="showJoinBtn = !showJoinBtn"
         >
           <div
-            v-if="currentLiveRoom?.live_room?.cdn === 1"
+            v-if="currentLiveRoom?.live_room?.cdn === LiveRoomUseCDNEnum.yes"
             class="cdn-ico"
           >
             <div class="txt">CDN</div>
@@ -111,7 +111,7 @@
               <div class="hidden">
                 <div
                   class="cdn-ico"
-                  v-if="item?.live_room?.cdn === 1"
+                  v-if="item?.live_room?.cdn === LiveRoomUseCDNEnum.yes"
                 >
                   <div class="txt">CDN</div>
                 </div>
@@ -168,7 +168,7 @@
                 "
               ></PullAuthTip>
               <div
-                v-if="iten?.live_room?.cdn === 1"
+                v-if="iten?.live_room?.cdn === LiveRoomUseCDNEnum.yes"
                 class="cdn-ico"
               >
                 <div class="txt">CDN</div>
@@ -210,6 +210,7 @@ import {
   LiveRoomIsShowEnum,
   LiveRoomPullIsShouldAuthEnum,
   LiveRoomTypeEnum,
+  LiveRoomUseCDNEnum,
 } from '@/interface';
 import { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
