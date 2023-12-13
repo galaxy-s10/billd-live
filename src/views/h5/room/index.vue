@@ -182,6 +182,7 @@
         发送
       </n-button>
     </div>
+    <LoginModal v-if="appStore.showLoginModal"></LoginModal>
   </div>
 </template>
 
@@ -230,6 +231,7 @@ const {
 onUnmounted(() => {
   closeWs();
   closeRtc();
+  appStore.showLoginModal = false;
 });
 
 onMounted(() => {

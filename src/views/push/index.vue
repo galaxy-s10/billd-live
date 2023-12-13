@@ -358,6 +358,7 @@ import { useRoute } from 'vue-router';
 import * as workerTimers from 'worker-timers';
 
 import { QINIU_LIVE, mediaTypeEnumMap } from '@/constant';
+import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { usePush } from '@/hooks/use-push';
 import { useRTCParams } from '@/hooks/use-rtcParams';
 import { useUpload } from '@/hooks/use-upload';
@@ -500,10 +501,22 @@ function handleSendBlob(event: BlobEvent) {
 }
 
 function mockClick() {
+  if (!loginTip()) {
+    return;
+  }
+  if (!commentAuthTip()) {
+    return;
+  }
   uploadRef.value?.click();
 }
 
 function handleWait() {
+  if (!loginTip()) {
+    return;
+  }
+  if (!commentAuthTip()) {
+    return;
+  }
   window.$message.warning('敬请期待！');
 }
 

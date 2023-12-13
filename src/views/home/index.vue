@@ -207,6 +207,7 @@ import { usePull } from '@/hooks/use-pull';
 import {
   ILive,
   LiveLineEnum,
+  LiveRoomIsShowEnum,
   LiveRoomPullIsShouldAuthEnum,
   LiveRoomTypeEnum,
 } from '@/interface';
@@ -312,6 +313,7 @@ function changeLiveRoom(item: ILive) {
 async function getLiveRoomList() {
   try {
     const res = await fetchLiveList({
+      live_room_is_show: LiveRoomIsShowEnum.yes,
       orderName: 'created_at',
       orderBy: 'desc',
     });

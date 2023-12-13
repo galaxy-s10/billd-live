@@ -210,8 +210,49 @@ export enum LiveRoomUseCDNEnum {
   no = 2,
 }
 
+/** 直播间状态 */
+export enum LiveRoomStatusEnum {
+  /** 正常 */
+  normal,
+  /** 禁用 */
+  disable,
+}
+
+/** 直播间是否显示 */
+export enum LiveRoomIsShowEnum {
+  /** 显示 */
+  yes,
+  /** 不显示 */
+  no,
+}
+
 export interface ILiveRoom {
   id?: number;
+  /** 直播间名称 */
+  name?: string;
+  /** 直播间简介 */
+  desc?: string;
+  /** 直播间备注 */
+  remark?: string;
+  /** 是否使用cdn */
+  cdn?: LiveRoomUseCDNEnum;
+  /** 拉流是否需要鉴权 */
+  pull_is_should_auth?: LiveRoomPullIsShouldAuthEnum;
+  /** 权重 */
+  weight?: number;
+  /** 推流秘钥 */
+  key?: string;
+  /** 直播间类型 */
+  type?: LiveRoomTypeEnum;
+  /** 开播预览图 */
+  cover_img?: string;
+  /** 直播间背景图 */
+  bg_img?: string;
+  /** 直播间状态 */
+  status?: LiveRoomStatusEnum;
+  /** 直播间是否显示 */
+  is_show?: LiveRoomIsShowEnum;
+
   /** 用户信息 */
   user?: IUser;
   /** 用户信息 */
@@ -223,22 +264,11 @@ export interface ILiveRoom {
   /** 直播信息 */
   live?: ILive;
   user_live_room?: IUserLiveRoom & { user: IUser };
-  name?: string;
-  desc?: string;
-  cdn?: LiveRoomUseCDNEnum;
-  /** 权重 */
-  weight?: number;
-  /** 推流秘钥 */
-  key?: string;
-  /** 直播间类型 */
-  type?: LiveRoomTypeEnum;
-  /** 拉流是否需要鉴权 */
-  pull_is_should_auth?: LiveRoomPullIsShouldAuthEnum;
-  cover_img?: string;
-  bg_img?: string;
+
   rtmp_url?: string;
   flv_url?: string;
   hls_url?: string;
+
   created_at?: string;
   updated_at?: string;
   deleted_at?: string;
@@ -365,10 +395,13 @@ export interface IQqUser {
 export interface IArea {
   id?: number;
   name?: string;
+  /** 备注 */
   remark?: string;
   /** 权重 */
   weight?: number;
   area_live_rooms?: IAreaLiveRoom[];
+  live_room_is_show?: LiveRoomIsShowEnum;
+  live_room_status?: LiveRoomStatusEnum;
   created_at?: string;
   updated_at?: string;
   deleted_at?: string;
@@ -387,24 +420,43 @@ export interface IAreaLiveRoom {
   deleted_at?: string;
 }
 
-export interface ILive {
+export interface ISrsPublishStream {
+  /** 客户端在获取信息时，必须检查ServerID是否改变，改变时就是服务器重启，之前所有的数据都应该作废了。 */
+  srs_server_id?: string;
+  srs_service_id?: string;
+  srs_action?: string;
+  srs_client_id?: string;
+  srs_ip?: string;
+  srs_vhost?: string;
+  srs_app?: string;
+  srs_tcUrl?: string;
+  srs_stream?: string;
+  srs_param?: string;
+  srs_stream_url?: string;
+  srs_stream_id?: string;
+}
+
+export interface ILive extends ISrsPublishStream {
   id?: number;
   /** 用户信息 */
   user?: IUser;
   /** 直播间信息 */
   live_room?: ILiveRoom;
+
   socket_id?: string;
   user_id?: number;
   live_room_id?: number;
+  live_room_is_show?: LiveRoomIsShowEnum;
+  live_room_status?: LiveRoomStatusEnum;
   /** 1开启;2关闭 */
   track_video?: number;
   /** 1开启;2关闭 */
   track_audio?: number;
+
   created_at?: string;
   updated_at?: string;
   deleted_at?: string;
 }
-
 export enum MediaTypeEnum {
   camera,
   screen,

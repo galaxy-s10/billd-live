@@ -268,7 +268,7 @@ import { onMounted, onUnmounted, ref, watch } from 'vue';
 
 import { fetchGoodsList } from '@/api/goods';
 import { MODULE_CONFIG_SWITCH, QINIU_LIVE } from '@/constant';
-import { loginTip } from '@/hooks/use-login';
+import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { usePull } from '@/hooks/use-pull';
 import { useUpload } from '@/hooks/use-upload';
 import { DanmuMsgTypeEnum, GoodsTypeEnum, IGoods } from '@/interface';
@@ -383,10 +383,22 @@ function getBg() {
 }
 
 function handleWait() {
+  if (!loginTip()) {
+    return;
+  }
+  if (!commentAuthTip()) {
+    return;
+  }
   window.$message.warning('敬请期待！');
 }
 
 function mockClick() {
+  if (!loginTip()) {
+    return;
+  }
+  if (!commentAuthTip()) {
+    return;
+  }
   uploadRef.value?.click();
 }
 
@@ -512,7 +524,7 @@ function handleScrollTop() {
     width: $w-1000;
     height: 100%;
     border-radius: 6px;
-    background-color: papayawhip;
+    background-color: $theme-color-papayawhip;
     color: #61666d;
     vertical-align: top;
     .head {
@@ -724,7 +736,7 @@ function handleScrollTop() {
     box-sizing: border-box;
     width: $w-250;
     border-radius: 6px;
-    background-color: papayawhip;
+    background-color: $theme-color-papayawhip;
     color: #9499a0;
     .tab {
       display: flex;
@@ -737,7 +749,7 @@ function handleScrollTop() {
       overflow-y: scroll;
       padding: 0 15px;
       height: 100px;
-      background-color: papayawhip;
+      background-color: $theme-color-papayawhip;
 
       @extend %customScrollbar;
       .item {

@@ -37,10 +37,7 @@ export function fetchLogin({ id, password }) {
 }
 
 export function fetchUserInfo() {
-  return request.instance({
-    url: '/user/get_user_info',
-    method: 'get',
-  });
+  return request.get<IUser>('/user/get_user_info');
 }
 export function fetchFindUser(userId: number) {
   return request.instance({

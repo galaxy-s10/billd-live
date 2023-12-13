@@ -1,11 +1,6 @@
 import request from '@/utils/request';
 
-export function fetchLiveList(params: {
-  orderName: string;
-  orderBy: string;
-  nowPage?: number;
-  pageSize?: number;
-}) {
+export function fetchLiveList(params) {
   return request.instance({
     url: '/live/list',
     method: 'get',

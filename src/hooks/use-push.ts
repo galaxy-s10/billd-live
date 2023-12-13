@@ -14,7 +14,7 @@ import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 import { createVideo, generateBase64 } from '@/utils';
 
-import { loginTip } from './use-login';
+import { commentAuthTip, loginTip } from './use-login';
 import { useSrsWs } from './use-srs-ws';
 import { useTip } from './use-tip';
 
@@ -314,6 +314,12 @@ export function usePush() {
   }
 
   function sendDanmu() {
+    if (!loginTip()) {
+      return;
+    }
+    if (!commentAuthTip()) {
+      return;
+    }
     if (!danmuStr.value.length) {
       window.$message.warning('请输入弹幕内容！');
       return;

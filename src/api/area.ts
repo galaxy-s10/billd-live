@@ -6,10 +6,7 @@ export function fetchAreaList() {
     method: 'get',
   });
 }
-export function fetchAreaLiveRoomList(params: {
-  orderName: string;
-  orderBy: string;
-}) {
+export function fetchAreaLiveRoomList(params) {
   return request.instance({
     url: '/area/area_live_room_list',
     method: 'get',

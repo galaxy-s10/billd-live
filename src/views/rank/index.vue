@@ -86,7 +86,7 @@
             <div
               v-if="item.live?.live && currRankType === RankTypeEnum.liveRoom"
               class="living-tag"
-              @click="handleJoin(item.live)"
+              @click.stop="handleJoin(item.live)"
             >
               直播中
             </div>
@@ -105,7 +105,12 @@ import { fetchLiveRoomList } from '@/api/liveRoom';
 import { fetchBlogUserList, fetchUserList } from '@/api/user';
 import { fetchWalletList } from '@/api/wallet';
 import { fullLoading } from '@/components/FullLoading';
-import { ILiveRoom, IUser, RankTypeEnum } from '@/interface';
+import {
+  ILiveRoom,
+  IUser,
+  LiveRoomIsShowEnum,
+  RankTypeEnum,
+} from '@/interface';
 import router, { routerName } from '@/router';
 
 export interface IRankType {
@@ -240,6 +245,7 @@ async function getLiveRoomList() {
   try {
     fullLoading({ loading: true });
     const res = await fetchLiveRoomList({
+      is_show: LiveRoomIsShowEnum.yes,
       orderName: 'updated_at',
       orderBy: 'desc',
     });

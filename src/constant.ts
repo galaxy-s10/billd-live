@@ -61,6 +61,49 @@ export const QINIU_LIVE = {
   },
 };
 
+export const DEFAULT_AUTH_INFO = {
+  ALL_AUTH: {
+    id: 1,
+    auth_value: 'ALL_AUTH',
+  },
+  USER_MANAGE: {
+    id: 2,
+    auth_value: 'USER_MANAGE',
+  },
+  ROLE_MANAGE: {
+    id: 3,
+    auth_value: 'ROLE_MANAGE',
+  },
+  AUTH_MANAGE: {
+    id: 4,
+    auth_value: 'AUTH_MANAGE',
+  },
+  COMMONENT_MANAGE: {
+    id: 5,
+    auth_value: 'COMMONENT_MANAGE',
+  },
+  LOG_MANAGE: {
+    id: 6,
+    auth_value: 'LOG_MANAGE',
+  },
+  LIVE_MANAGE: {
+    id: 7,
+    auth_value: 'LIVE_MANAGE',
+  },
+  LIVE_PUSH: {
+    id: 8,
+    auth_value: 'LIVE_PUSH',
+  },
+  LIVE_PULL: {
+    id: 9,
+    auth_value: 'LIVE_PULL',
+  },
+  LIVE_PULL_SVIP: {
+    id: 10,
+    auth_value: 'LIVE_PULL_SVIP',
+  },
+};
+
 // 全局的cookie的key
 export const COOKIE_KEY = {
   thirdLoginInfo: 'thirdLoginInfo',
@@ -104,6 +147,8 @@ export const MODULE_CONFIG_SWITCH = {
   // qq登录
   qqLogin: true,
   // 微信扫码登录
+  wechatQrcodeLogin: false,
+  // 微信登录
   wechatLogin: false,
   // github登录
   githubLogin: true,

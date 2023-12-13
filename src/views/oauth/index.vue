@@ -10,9 +10,12 @@ import { useRoute } from 'vue-router';
 import { fetchWechatLogin } from '@/api/wechatUser';
 import { handleQQLogin } from '@/hooks/use-login';
 import { PlatformEnum } from '@/interface';
+import router, { routerName } from '@/router';
+import { useUserStore } from '@/store/user';
 import { clearThirdLoginInfo, getThirdLoginInfo } from '@/utils/cookie';
 
 const route = useRoute();
+const userStore = useUserStore();
 
 const errMsg = ref('');
 const currentOauth = ref('');
@@ -97,6 +100,9 @@ onMounted(async () => {
       });
       if (res.code === 200) {
         window.$message.success('登录成功！');
+        userStore.setToken(res.data, qrcodeExp);
+        userStore.getUserInfo();
+        router.push({ name: routerName.h5 });
       } else {
         window.$message.error(res.message);
       }

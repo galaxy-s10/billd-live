@@ -4,6 +4,7 @@ import { createApp } from 'vue';
 import { fetchQQLogin } from '@/api/qqUser';
 import { fullLoading } from '@/components/FullLoading';
 import {
+  DEFAULT_AUTH_INFO,
   QQ_CLIENT_ID,
   QQ_OAUTH_URL,
   QQ_REDIRECT_URI,
@@ -66,6 +67,21 @@ export function loginTip(show = false) {
     window.$message.warning('请先登录！');
     // instance.show = true;
     appStore.showLoginModal = true;
+    return false;
+  }
+  return true;
+}
+
+export function commentAuthTip() {
+  const userStore = useUserStore();
+  if (
+    !userStore.auths?.find(
+      (v) => v.auth_value === DEFAULT_AUTH_INFO.COMMONENT_MANAGE.auth_value
+    )
+  ) {
+    window.$message.error(
+      `没有${DEFAULT_AUTH_INFO.COMMONENT_MANAGE.auth_value}权限！`
+    );
     return false;
   }
   return true;

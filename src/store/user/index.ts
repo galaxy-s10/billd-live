@@ -1,39 +1,44 @@
 import { defineStore } from 'pinia';
 
 import { fetchLogin, fetchUserInfo } from '@/api/user';
-import { IRole, IUser } from '@/interface';
+import { IAuth, IRole, IUser } from '@/interface';
 import cache from '@/utils/cache';
 
 type UserRootState = {
-  userInfo: IUser | null;
-  token: string | null;
-  roles: IRole[] | null;
+  userInfo?: IUser;
+  token?: string;
+  roles?: IRole[];
+  auths?: IAuth[];
 };
 
 export const useUserStore = defineStore('user', {
   state: (): UserRootState => {
     return {
-      token: null,
-      roles: null,
-      userInfo: null,
+      token: undefined,
+      roles: undefined,
+      userInfo: undefined,
+      auths: undefined,
     };
   },
   actions: {
-    setUserInfo(res) {
+    setUserInfo(res: UserRootState['userInfo']) {
       this.userInfo = res;
     },
-    setToken(res, exp: number) {
+    setToken(res: UserRootState['token'], exp: number) {
       cache.setStorageExp('token', res, exp);
       this.token = res;
     },
-    setRoles(res) {
+    setRoles(res: UserRootState['roles']) {
       this.roles = res;
+    },
+    setAuths(res: UserRootState['auths']) {
+      this.auths = res;
     },
     logout() {
       cache.clearStorage('token');
-      this.token = null;
-      this.userInfo = null;
-      this.roles = null;
+      this.token = undefined;
+      this.userInfo = undefined;
+      this.roles = undefined;
     },
     async pwdLogin({ id, password }) {
       try {
@@ -50,9 +55,10 @@ export const useUserStore = defineStore('user', {
     },
     async getUserInfo() {
       try {
-        const { code, data }: any = await fetchUserInfo();
+        const { code, data } = await fetchUserInfo();
         this.setUserInfo(data);
         this.setRoles(data.roles);
+        this.setAuths(data.auths);
         return { code, data };
       } catch (error) {
         return error;

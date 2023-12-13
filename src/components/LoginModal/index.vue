@@ -75,9 +75,9 @@
               </n-button>
             </n-tab-pane>
             <n-tab-pane
-              v-if="MODULE_CONFIG_SWITCH.wechatLogin"
+              v-if="MODULE_CONFIG_SWITCH.wechatQrcodeLogin && !isMobile()"
               name="qrcodelogin"
-              tab="微信登录"
+              tab="微信扫码登录"
             >
               <div
                 class="qrcode"
@@ -103,7 +103,8 @@
               src="@/assets/img/qq_logo.webp"
             />
           </div>
-          <!-- <div
+          <div
+            v-if="MODULE_CONFIG_SWITCH.wechatLogin"
             class="logo-wrap"
             @click="handleWechatLogin()"
           >
@@ -111,7 +112,7 @@
               class="logo"
               src="@/assets/img/wechat_logo.webp"
             />
-          </div> -->
+          </div>
           <div
             v-if="MODULE_CONFIG_SWITCH.githubLogin"
             class="logo-wrap"
@@ -130,12 +131,13 @@
 
 <script lang="ts" setup>
 import { LockClosedOutline, PersonOutline } from '@vicons/ionicons5';
+import { getRandomString, isMobile, isWechat } from 'billd-utils';
 import QRCode from 'qrcode';
-import { onUnmounted, reactive, ref } from 'vue';
+import { onMounted, onUnmounted, reactive, ref } from 'vue';
 
 import { fetchQrcodeLogin, fetchQrcodeLoginStatus } from '@/api/user';
 import { MODULE_CONFIG_SWITCH, QRCODE_LOGIN_URI } from '@/constant';
-import { useQQLogin } from '@/hooks/use-login';
+import { useQQLogin, useWechatLogin } from '@/hooks/use-login';
 import { useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
 
@@ -162,6 +164,9 @@ const currentTab = ref('pwdlogin'); // qrcodelogin,pwdlogin
 const loopTimer = ref();
 const emits = defineEmits(['close']);
 
+onMounted(() => {
+  console.log('onMountedonMounted');
+});
 onUnmounted(() => {
   clearInterval(loopTimer.value);
 });
@@ -186,7 +191,19 @@ function handleQQLogin() {
   useQQLogin({ exp: 24 });
 }
 
-async function handleWechatLogin() {
+function handleWechatLogin() {
+  if (!isWechat()) {
+    window.$message.warning('请在微信打开！');
+  } else {
+    useWechatLogin({
+      platform: 'wechat',
+      exp: 24,
+      loginId: getRandomString(8),
+    });
+  }
+}
+
+async function handleWechatQrcodeLogin() {
   const res = await fetchQrcodeLogin({
     platform: qrcodeParams.platform,
     exp: qrcodeParams.exp,
@@ -238,7 +255,7 @@ function handleClose() {
 const handleLogin = async () => {
   let token = null;
   if (currentTab.value === 'qrcodelogin') {
-    handleWechatLogin();
+    handleWechatQrcodeLogin();
   } else {
     token = await userStore.pwdLogin({
       id: +loginForm.value.id,
@@ -264,7 +281,7 @@ const tabChange = (v) => {
   currentTab.value = v;
   clearInterval(loopTimer.value);
   if (currentTab.value === 'qrcodelogin') {
-    handleWechatLogin();
+    handleWechatQrcodeLogin();
   }
 };
 const focus = ref(false);

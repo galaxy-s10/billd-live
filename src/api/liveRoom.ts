@@ -1,9 +1,6 @@
 import request from '@/utils/request';
 
-export function fetchLiveRoomList(params: {
-  orderName: string;
-  orderBy: string;
-}) {
+export function fetchLiveRoomList(params) {
   return request.instance({
     url: '/live_room/list',
     method: 'get',

@@ -1,6 +1,7 @@
 import { onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
+import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { useFlvPlay, useHlsPlay } from '@/hooks/use-play';
 import { useSrsWs } from '@/hooks/use-srs-ws';
 import {
@@ -370,6 +371,12 @@ export function usePull() {
   }
 
   function sendDanmu() {
+    if (!loginTip()) {
+      return;
+    }
+    if (!commentAuthTip()) {
+      return;
+    }
     if (!danmuStr.value.trim().length) {
       window.$message.warning('请输入弹幕内容！');
       return;

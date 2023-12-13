@@ -81,10 +81,13 @@ import { fetchAreaLiveRoomList } from '@/api/area';
 import {
   IArea,
   IAreaLiveRoom,
+  LiveRoomIsShowEnum,
   LiveRoomPullIsShouldAuthEnum,
 } from '@/interface';
 import router, { mobileRouterName, routerName } from '@/router';
+import { useAppStore } from '@/store/app';
 
+const appStore = useAppStore();
 const liveRoomList = ref<IArea[]>([]);
 
 const swiperList = ref([
@@ -98,6 +101,7 @@ const currentSwiper = ref(swiperList.value[0]);
 async function getLiveRoomList() {
   try {
     const res = await fetchAreaLiveRoomList({
+      live_room_is_show: LiveRoomIsShowEnum.yes,
       orderName: 'created_at',
       orderBy: 'desc',
     });
@@ -141,6 +145,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   clearInterval(swiperTimer.value);
+  appStore.showLoginModal = false;
 });
 </script>
 
