@@ -2,9 +2,9 @@
   <div class="h5-wrap">
     <div
       class="swiper"
-      :style="{ backgroundColor: currentSwiper.bg }"
+      :style="{ backgroundImage: `url(${currentSwiper.bgi})` }"
     >
-      {{ currentSwiper.txt }}
+      <!-- {{ currentSwiper.txt }} -->
     </div>
 
     <div class="type-list">
@@ -92,9 +92,24 @@ const appStore = useAppStore();
 const liveRoomList = ref<IArea[]>([]);
 
 const swiperList = ref([
-  { id: 1, txt: '广告位1', bg: '#FFCC70', url: '' },
-  { id: 2, txt: '广告位2', bg: '#C850C0', url: '' },
-  { id: 3, txt: '广告位3', bg: '#4158D0', url: '' },
+  {
+    id: 1,
+    txt: '广告位1',
+    bgi: 'https://resource.hsslive.cn/billd-live/image/ecdece08eb3eda2f37433cb7c748766f.webp',
+    url: '',
+  },
+  {
+    id: 2,
+    txt: '广告位2',
+    bgi: 'https://resource.hsslive.cn/billd-live/image/b2e3459e7d4a70463cd201ee468491a1.webp',
+    url: '',
+  },
+  {
+    id: 3,
+    txt: '广告位3',
+    bgi: 'https://resource.hsslive.cn/billd-live/image/71d01ff0bd34c57586500e425e21938f.webp',
+    url: '',
+  },
 ]);
 const swiperTimer = ref();
 const currentSwiper = ref(swiperList.value[0]);
@@ -192,12 +207,10 @@ onUnmounted(() => {
   }
   .swiper {
     width: 100%;
-    height: 130px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    user-select: none;
-    font-size: 30px;
+    height: 180px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
   }
   .type-list {
     .item {

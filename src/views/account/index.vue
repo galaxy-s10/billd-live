@@ -32,33 +32,41 @@
         </div>
         <div>直播间名称：{{ userInfo?.live_rooms?.[0].name }}</div>
         <div>直播间简介：{{ userInfo?.live_rooms?.[0].desc }}</div>
-        <div
-          v-loading="keyLoading"
-          class="rtmp-url"
+        <template
+          v-if="
+            userStore.auths?.find(
+              (v) => v.auth_value === DEFAULT_AUTH_INFO.LIVE_PUSH.auth_value
+            )
+          "
         >
-          <span>
-            推流地址：{{
-              newRtmpUrl ||
-              handleUrl({
-                url: userInfo?.live_rooms?.[0].rtmp_url!,
-                token: userInfo?.live_rooms?.[0].key!,
-              })
-            }}，
-          </span>
-          <span
-            class="link"
-            @click="handleCopy"
+          <div
+            v-loading="keyLoading"
+            class="rtmp-url"
           >
-            复制
-          </span>
-          <span>，</span>
-          <span
-            class="link"
-            @click="handleUpdateKey"
-          >
-            更新
-          </span>
-        </div>
+            <span>
+              推流地址：{{
+                newRtmpUrl ||
+                handleUrl({
+                  url: userInfo?.live_rooms?.[0].rtmp_url!,
+                  token: userInfo?.live_rooms?.[0].key!,
+                })
+              }}，
+            </span>
+            <span
+              class="link"
+              @click="handleCopy"
+            >
+              复制
+            </span>
+            <span>，</span>
+            <span
+              class="link"
+              @click="handleUpdateKey"
+            >
+              更新
+            </span>
+          </div>
+        </template>
       </div>
     </div>
   </div>
@@ -71,15 +79,17 @@ import { useRouter } from 'vue-router';
 
 import { fetchUpdateLiveRoomKey } from '@/api/liveRoom';
 import { fetchUserInfo } from '@/api/user';
-import { SRS_CB_URL_PARAMS } from '@/constant';
+import { DEFAULT_AUTH_INFO, SRS_CB_URL_PARAMS } from '@/constant';
 import { loginTip } from '@/hooks/use-login';
 import { IUser, LiveRoomTypeEnum } from '@/interface';
 import { routerName } from '@/router';
+import { useUserStore } from '@/store/user';
 import { getLiveRoomPageUrl } from '@/utils';
 
 const newRtmpUrl = ref();
 const keyLoading = ref(false);
 const router = useRouter();
+const userStore = useUserStore();
 
 const userInfo = ref<IUser>();
 

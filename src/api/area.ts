@@ -14,11 +14,7 @@ export function fetchAreaLiveRoomList(params) {
   });
 }
 
-export function fetchLiveRoomList(params: {
-  pageSize?: string;
-  nowPage?: string;
-  id: number;
-}) {
+export function fetchLiveRoomList(params) {
   return request.instance({
     url: '/area/live_room_list',
     method: 'get',

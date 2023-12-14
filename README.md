@@ -117,7 +117,7 @@ Mac端：TODO
 
 ### 安卓端
 
-- 首页、分区、排行
+- ​	
 
 <img
   src="https://resource.hsslive.cn/billd-live/image/38a0fae4c5104913ca0b7617ca58b518.webp" 
@@ -140,7 +140,7 @@ Mac端：TODO
   style="width:300px"
 />
 
-- 我的已登录/未登录
+- ​	
 
 <img
   src="https://resource.hsslive.cn/billd-live/image/3a777718d31f94e6d25071d29f5e5185.webp" 

@@ -54,6 +54,7 @@ import { useRoute } from 'vue-router';
 import { fetchLiveRoomList } from '@/api/area';
 import {
   ILiveRoom,
+  LiveRoomIsShowEnum,
   LiveRoomPullIsShouldAuthEnum,
   LiveRoomUseCDNEnum,
 } from '@/interface';
@@ -80,6 +81,7 @@ onMounted(() => {
 async function getData() {
   const res = await fetchLiveRoomList({
     id: Number(route.params.id),
+    live_room_is_show: LiveRoomIsShowEnum.yes,
   });
   if (res.code === 200) {
     liveRoomList.value = res.data.rows;
