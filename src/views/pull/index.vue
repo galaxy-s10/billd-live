@@ -179,11 +179,33 @@
         >
           <template v-if="item.msgType === DanmuMsgTypeEnum.danmu">
             <span class="name">
-              <span v-if="item.userInfo">
+              <span
+                v-if="
+                  item.userInfo && userStore.userInfo?.id === item.userInfo.id
+                "
+              >
                 {{ item.userInfo.username }}[{{
                   item.userInfo.roles?.map((v) => v.role_name).join()
                 }}]
               </span>
+              <Dropdown
+                trigger="click"
+                positon="left"
+                v-else-if="item.userInfo"
+              >
+                <template #btn>
+                  {{ item.userInfo.username }}[{{
+                    item.userInfo.roles?.map((v) => v.role_name).join()
+                  }}]
+                </template>
+                <template #list>
+                  <div class="list">
+                    <div class="item">{{ item.userInfo.username }}</div>
+                    <div class="item operator">禁言该用户</div>
+                    <div class="item operator">踢掉该用户</div>
+                  </div>
+                </template>
+              </Dropdown>
               <span v-else>{{ item.socket_id }}[游客]</span>
             </span>
             <span>：</span>
@@ -798,6 +820,16 @@ function handleScrollTop() {
           cursor: pointer;
           &.system {
             color: red;
+          }
+          .list {
+            .item {
+              &:hover {
+                &.operator {
+                  cursor: pointer;
+                  color: $theme-color-gold;
+                }
+              }
+            }
           }
         }
         .msg {

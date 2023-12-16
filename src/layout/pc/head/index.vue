@@ -71,7 +71,6 @@
       </div>
       <div class="right">
         <Dropdown
-          v-model="dropdownDoc"
           class="doc"
           v-if="MODULE_CONFIG_SWITCH.appdownload"
         >
@@ -119,7 +118,6 @@
         </Dropdown>
 
         <Dropdown
-          v-model="dropdownSys"
           class="ecosystem"
           v-if="MODULE_CONFIG_SWITCH.ecosystem"
         >
@@ -164,7 +162,6 @@
         </Dropdown>
 
         <Dropdown
-          v-model="dropdownAbout"
           class="about"
           v-if="MODULE_CONFIG_SWITCH.about"
         >
@@ -330,9 +327,6 @@ const router = useRouter();
 const userStore = useUserStore();
 const appStore = useAppStore();
 const githubStar = ref('');
-const dropdownDoc = ref(false);
-const dropdownSys = ref(false);
-const dropdownAbout = ref(false);
 
 const about = ref([
   {

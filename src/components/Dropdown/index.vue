@@ -1,15 +1,19 @@
 <template>
-  <div class="dropdown-wrap">
-    <div
-      class="btn"
-      @click="emits('update:modelValue', !modelValue)"
-    >
+  <div
+    class="dropdown-wrap"
+    :class="{ hover: props.trigger === 'hover' }"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
+    @click="handleClick"
+  >
+    <div class="btn">
       <slot name="btn"></slot>
     </div>
     <div
       class="container"
+      :class="{ [props.positon]: 1 }"
       :style="{
-        display: !isMobile() ? 'auto' : modelValue ? 'block' : 'none',
+        display: show ? 'block' : 'none',
       }"
     >
       <div class="wrap">
@@ -20,22 +24,50 @@
 </template>
 
 <script lang="ts" setup>
-import { isMobile } from 'billd-utils';
+import { ref } from 'vue';
 
-defineProps({
-  modelValue: { type: Boolean, default: false },
-});
-const emits = defineEmits(['update:modelValue']);
+const show = ref(false);
+
+const props = withDefaults(
+  defineProps<{
+    trigger?: 'hover' | 'click';
+    positon?: 'left' | 'right';
+  }>(),
+  {
+    trigger: 'hover',
+    positon: 'right',
+  }
+);
+
+function handleClick() {
+  console.log('handleClick');
+  show.value = true;
+}
+function handleMouseEnter() {
+  console.log('handleMouseEnter');
+  if (props.trigger === 'hover') {
+    show.value = true;
+  }
+}
+function handleMouseLeave() {
+  console.log('handleMouseLeave');
+  show.value = false;
+}
 </script>
 
 <style lang="scss" scoped>
 .dropdown-wrap {
+  display: inline-block;
   position: relative;
-  &:hover {
-    .container {
-      display: block;
+  cursor: initial;
+  &.hover {
+    &:hover {
+      .container {
+        display: block;
+      }
     }
   }
+
   .btn {
     cursor: pointer;
     user-select: none;
@@ -46,6 +78,12 @@ const emits = defineEmits(['update:modelValue']);
     right: 0;
     z-index: 3;
     display: none;
+    &.right {
+      right: 0;
+    }
+    &.left {
+      left: 0;
+    }
     .wrap {
       box-sizing: border-box;
       margin-top: 5px;
