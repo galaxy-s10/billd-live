@@ -5,7 +5,7 @@ import {
   LiveRoomTypeEnum,
 } from './interface';
 
-// websocket连接状态
+/** websocket连接状态 */
 export enum WsConnectStatusEnum {
   /** 已连接 */
   connection = 'connection',
@@ -23,7 +23,7 @@ export enum WsConnectStatusEnum {
   connect = 'connect',
 }
 
-// websocket消息类型
+/** websocket消息类型 */
 export enum WsMsgTypeEnum {
   /** 用户进入聊天 */
   join = 'join',
@@ -48,6 +48,10 @@ export enum WsMsgTypeEnum {
   heartbeat = 'heartbeat',
   startLive = 'startLive',
   endLive = 'endLive',
+  /** 主播禁言用户 */
+  disableSpeaking = 'disableSpeaking',
+  /** 主播踢掉用户 */
+  kick = 'kick',
 
   offer = 'offer',
   answer = 'answer',
@@ -57,12 +61,16 @@ export enum WsMsgTypeEnum {
 }
 
 export interface IWsFormat<T> {
+  /** 消息id */
+  request_id: string;
   /** 用户socket_id */
   socket_id: string;
   /** 是否是主播 */
   is_anchor: boolean;
   /** 用户信息 */
   user_info?: IUser;
+  /** 用户token */
+  user_token?: string;
   data: T;
 }
 
@@ -72,19 +80,28 @@ export type WsUpdateJoinInfoType = IWsFormat<{
   rtmp_url?: string;
 }>;
 
+/** 获取在线用户 */
 export type WSGetRoomAllUserType = IWsFormat<{
   liveUser: { id: any; rooms: any[] }[];
 }>;
 
+/** 获取在线用户 */
+export type WsGetLiveUserType = IWsFormat<{
+  live_room_id: number;
+}>;
+
+/** 直播间正在直播 */
 export type WsRoomLivingType = IWsFormat<{
   live_room: ILiveRoom;
   anchor_socket_id: string;
 }>;
 
-export type WsGetLiveUserType = IWsFormat<{
-  live_room_id: number;
+/** 直播间没在直播 */
+export type WsRoomNoLiveType = IWsFormat<{
+  live_room: ILiveRoom;
 }>;
 
+/** ws消息 */
 export type WsMessageType = IWsFormat<{
   msgType: DanmuMsgTypeEnum;
   msgIsFile: boolean;
@@ -92,6 +109,27 @@ export type WsMessageType = IWsFormat<{
   live_room_id: number;
 }>;
 
+/** 禁言用户 */
+export type WsDisableSpeakingType = IWsFormat<{
+  /** 被禁言用户socket_id */
+  socket_id: number;
+  /** 被禁言用户id */
+  user_id: number;
+  /** 直播间id */
+  live_room_id: number;
+  /** 禁言时长（单位：秒） */
+  duration?: number;
+  /** 禁言创建消息 */
+  disable_created_at?: number;
+  /** 禁言到期消息 */
+  disable_expired_at?: number;
+  /** 是否解除禁言 */
+  restore?: boolean;
+  /** 消息id */
+  request_id?: number;
+}>;
+
+/** 其他用户加入直播间 */
 export type WsOtherJoinType = IWsFormat<{
   live_room: ILiveRoom;
   live_room_user_info: IUser;
@@ -99,6 +137,7 @@ export type WsOtherJoinType = IWsFormat<{
   join_socket_id: string;
 }>;
 
+/** 开始直播 */
 export type WsStartLiveType = IWsFormat<{
   cover_img: string;
   name: string;
@@ -106,6 +145,7 @@ export type WsStartLiveType = IWsFormat<{
   chunkDelay: number;
 }>;
 
+/** 用户加入直播间 */
 export type WsJoinType = IWsFormat<{
   socket_id: string;
   live_room: ILiveRoom;
@@ -113,13 +153,23 @@ export type WsJoinType = IWsFormat<{
   user_info?: IUser;
 }>;
 
+/** 用户离开直播间 */
 export type WsLeavedType = IWsFormat<{
   socket_id: string;
   user_info?: IUser;
 }>;
 
-export type WsRoomNoLiveType = IWsFormat<{
-  live_room: ILiveRoom;
+/** 心跳检测 */
+export type WsHeartbeatType = IWsFormat<{
+  socket_id: string;
+}>;
+
+/** msr直播发送blob */
+export type WsMsrBlobType = IWsFormat<{
+  live_room_id: number;
+  blob: any;
+  blob_id: string;
+  delay: number;
 }>;
 
 export type WsOfferType = IWsFormat<{
@@ -136,20 +186,9 @@ export type WsAnswerType = IWsFormat<{
   live_room_id: number;
 }>;
 
-export type WsHeartbeatType = IWsFormat<{
-  socket_id: string;
-}>;
-
 export type WsCandidateType = IWsFormat<{
   live_room_id: number;
   candidate: RTCIceCandidate;
   receiver: string;
   sender: string;
-}>;
-
-export type WsMsrBlobType = IWsFormat<{
-  live_room_id: number;
-  blob: any;
-  blob_id: string;
-  delay: number;
 }>;

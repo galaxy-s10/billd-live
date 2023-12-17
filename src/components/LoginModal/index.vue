@@ -164,9 +164,7 @@ const currentTab = ref('pwdlogin'); // qrcodelogin,pwdlogin
 const loopTimer = ref();
 const emits = defineEmits(['close']);
 
-onMounted(() => {
-  console.log('onMountedonMounted');
-});
+onMounted(() => {});
 onUnmounted(() => {
   clearInterval(loopTimer.value);
 });

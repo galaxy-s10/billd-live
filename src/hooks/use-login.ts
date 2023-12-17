@@ -76,11 +76,11 @@ export function commentAuthTip() {
   const userStore = useUserStore();
   if (
     !userStore.auths?.find(
-      (v) => v.auth_value === DEFAULT_AUTH_INFO.COMMONENT_MANAGE.auth_value
+      (v) => v.auth_value === DEFAULT_AUTH_INFO.MESSAGE_SEND.auth_value
     )
   ) {
     window.$message.error(
-      `没有${DEFAULT_AUTH_INFO.COMMONENT_MANAGE.auth_value}权限！`
+      `没有${DEFAULT_AUTH_INFO.MESSAGE_SEND.auth_value}权限！`
     );
     return false;
   }

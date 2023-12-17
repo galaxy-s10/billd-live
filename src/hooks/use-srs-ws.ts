@@ -15,6 +15,7 @@ import {
   WsAnswerType,
   WsCandidateType,
   WsConnectStatusEnum,
+  WsDisableSpeakingType,
   WsGetLiveUserType,
   WsHeartbeatType,
   WsJoinType,
@@ -72,6 +73,7 @@ export const useSrsWs = () => {
       const ws = networkStore.wsMap.get(roomId.value);
       if (!ws) return;
       ws.send<WsHeartbeatType['data']>({
+        requestId: getRandomString(8),
         msgType: WsMsgTypeEnum.heartbeat,
         data: {
           socket_id: socketId,
@@ -107,6 +109,7 @@ export const useSrsWs = () => {
       tid: getRandomString(10),
     });
     networkStore.wsMap.get(roomId.value)?.send<WsUpdateJoinInfoType['data']>({
+      requestId: getRandomString(8),
       msgType: WsMsgTypeEnum.updateJoinInfo,
       data: {
         live_room_id: Number(roomId.value),
@@ -142,6 +145,7 @@ export const useSrsWs = () => {
   }) {
     console.log('handleStartLivehandleStartLive', receiver);
     networkStore.wsMap.get(roomId.value)?.send<WsStartLiveType['data']>({
+      requestId: getRandomString(8),
       msgType: WsMsgTypeEnum.startLive,
       data: {
         cover_img: coverImg!,
@@ -165,6 +169,7 @@ export const useSrsWs = () => {
     const instance = networkStore.wsMap.get(roomId.value);
     if (!instance) return;
     instance.send<WsJoinType['data']>({
+      requestId: getRandomString(8),
       msgType: WsMsgTypeEnum.join,
       data: {
         socket_id: mySocketId.value,
@@ -254,6 +259,7 @@ export const useSrsWs = () => {
         if (answer) {
           await rtc.setLocalDescription(answer);
           ws.send<WsAnswerType['data']>({
+            requestId: getRandomString(8),
             msgType: WsMsgTypeEnum.answer,
             data: {
               live_room_id: Number(roomId.value),
@@ -331,6 +337,7 @@ export const useSrsWs = () => {
     ws.socketIo.on(WsMsgTypeEnum.message, (data: WsMessageType) => {
       prettierReceiveWsMsg(WsMsgTypeEnum.message, data);
       damuList.value.push({
+        request_id: data.request_id,
         socket_id: data.socket_id,
         msgType: DanmuMsgTypeEnum.danmu,
         msg: data.data.msg,
@@ -338,6 +345,20 @@ export const useSrsWs = () => {
         msgIsFile: data.data.msgIsFile,
       });
     });
+
+    // 收到disableSpeaking
+    ws.socketIo.on(
+      WsMsgTypeEnum.disableSpeaking,
+      (data: WsDisableSpeakingType['data']) => {
+        prettierReceiveWsMsg(WsMsgTypeEnum.disableSpeaking, data);
+        if (data.disable_expired_at) {
+          window.$message.error('你已被禁言！');
+          damuList.value = damuList.value.filter(
+            (v) => v.request_id !== data.request_id
+          );
+        }
+      }
+    );
 
     // 用户加入房间完成
     ws.socketIo.on(WsMsgTypeEnum.joined, (data: WsJoinType['data']) => {
@@ -349,6 +370,7 @@ export const useSrsWs = () => {
       appStore.setLiveRoomInfo(data.live_room);
       anchorInfo.value = data.anchor_info;
       ws.send<WsGetLiveUserType['data']>({
+        requestId: getRandomString(8),
         msgType: WsMsgTypeEnum.getLiveUser,
         data: {
           live_room_id: data.live_room.id!,
@@ -363,7 +385,9 @@ export const useSrsWs = () => {
         id: data.join_socket_id,
         userInfo: data.join_user_info,
       });
+      const requestId = getRandomString(8);
       const danmu: IDanmu = {
+        request_id: requestId,
         msgType: DanmuMsgTypeEnum.otherJoin,
         socket_id: data.join_socket_id,
         userInfo: data.join_user_info,
@@ -372,6 +396,7 @@ export const useSrsWs = () => {
       };
       damuList.value.push(danmu);
       ws.send<WsGetLiveUserType['data']>({
+        requestId,
         msgType: WsMsgTypeEnum.getLiveUser,
         data: {
           live_room_id: data.live_room.id!,
@@ -444,6 +469,7 @@ export const useSrsWs = () => {
       damuList.value.push({
         socket_id: data.socket_id,
         msgType: DanmuMsgTypeEnum.userLeaved,
+        msgIsFile: false,
         userInfo: data.user_info,
         msg: '',
       });

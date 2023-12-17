@@ -1,5 +1,5 @@
+import { getRandomString } from 'billd-utils';
 import { onUnmounted, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
 
 import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { useFlvPlay, useHlsPlay } from '@/hooks/use-play';
@@ -18,13 +18,11 @@ import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 import { createVideo, videoToCanvas } from '@/utils';
 
-export function usePull() {
-  const route = useRoute();
+export function usePull(roomId: string) {
   const userStore = useUserStore();
   const networkStore = useNetworkStore();
   const cacheStore = usePiniaCacheStore();
   const appStore = useAppStore();
-  const roomId = ref(route.params.roomId as string);
   const localStream = ref<MediaStream>();
   const danmuStr = ref('');
   const msgIsFile = ref(false);
@@ -325,11 +323,11 @@ export function usePull() {
   watch(
     [
       () => userStore.userInfo,
-      () => networkStore.wsMap.get(roomId.value)?.socketIo?.connected,
+      () => networkStore.wsMap.get(roomId)?.socketIo?.connected,
     ],
     ([userInfo, connected]) => {
       if (userInfo && connected) {
-        const instance = networkStore.wsMap.get(roomId.value);
+        const instance = networkStore.wsMap.get(roomId);
         if (!instance) return;
       }
     }
@@ -341,13 +339,13 @@ export function usePull() {
       videoLoading.value = true;
     }
     initSrsWs({
-      roomId: roomId.value,
+      roomId,
       isAnchor: false,
     });
   }
 
   function closeWs() {
-    const instance = networkStore.wsMap.get(roomId.value);
+    const instance = networkStore.wsMap.get(roomId);
     instance?.close();
   }
 
@@ -381,9 +379,11 @@ export function usePull() {
       window.$message.warning('请输入弹幕内容！');
       return;
     }
-    const instance = networkStore.wsMap.get(roomId.value);
+    const instance = networkStore.wsMap.get(roomId);
     if (!instance) return;
+    const requestId = getRandomString(8);
     const danmu: IDanmu = {
+      request_id: requestId,
       socket_id: mySocketId.value,
       userInfo: userStore.userInfo!,
       msgType: DanmuMsgTypeEnum.danmu,
@@ -393,10 +393,11 @@ export function usePull() {
     const messageData: WsMessageType['data'] = {
       msg: danmuStr.value,
       msgType: DanmuMsgTypeEnum.danmu,
-      live_room_id: Number(roomId.value),
+      live_room_id: Number(roomId),
       msgIsFile: msgIsFile.value,
     };
     instance.send({
+      requestId,
       msgType: WsMsgTypeEnum.message,
       data: messageData,
     });

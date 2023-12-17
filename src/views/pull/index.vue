@@ -201,8 +201,34 @@
                 <template #list>
                   <div class="list">
                     <div class="item">{{ item.userInfo.username }}</div>
-                    <div class="item operator">禁言该用户</div>
-                    <div class="item operator">踢掉该用户</div>
+                    <div
+                      class="item operator"
+                      @click="
+                        handleDisableSpeakingUser({
+                          userId: item.userInfo.id,
+                          socketId: item.socket_id,
+                        })
+                      "
+                    >
+                      禁言该用户
+                    </div>
+                    <div
+                      class="item operator"
+                      @click="
+                        handleRestoreSpeakingUser({
+                          userId: item.userInfo.id,
+                          socketId: item.socket_id,
+                        })
+                      "
+                    >
+                      解除禁言该用户
+                    </div>
+                    <div
+                      class="item operator"
+                      @click="handleKickUser"
+                    >
+                      踢掉该用户
+                    </div>
                   </div>
                 </template>
               </Dropdown>
@@ -286,7 +312,9 @@
 </template>
 
 <script lang="ts" setup>
+import { getRandomString } from 'billd-utils';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
 import { fetchGoodsList } from '@/api/goods';
 import { MODULE_CONFIG_SWITCH, QINIU_LIVE } from '@/constant';
@@ -294,15 +322,20 @@ import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { usePull } from '@/hooks/use-pull';
 import { useUpload } from '@/hooks/use-upload';
 import { DanmuMsgTypeEnum, GoodsTypeEnum, IGoods } from '@/interface';
+import { WsDisableSpeakingType, WsMsgTypeEnum } from '@/interface-ws';
 import router, { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
+import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 import { NODE_ENV } from 'script/constant';
 
 import RechargeCpt from './recharge/index.vue';
 
+const route = useRoute();
 const userStore = useUserStore();
 const appStore = useAppStore();
+const networkStore = useNetworkStore();
+const roomId = ref(route.params.roomId as string);
 const configBg = ref();
 const configVideo = ref();
 const giftGoodsList = ref<IGoods[]>([]);
@@ -333,7 +366,7 @@ const {
   liveUserList,
   danmuStr,
   anchorInfo,
-} = usePull();
+} = usePull(roomId.value);
 
 onMounted(() => {
   setTimeout(() => {
@@ -387,6 +420,49 @@ watch(
     deep: true,
   }
 );
+
+/**
+ * 禁言用户逻辑：
+ * 主播开播了，可以禁言所有看自己直播的用户
+ * 使用redis存储记录，key是主播直播间id，value是禁言用户id
+ */
+function handleDisableSpeakingUser({ socketId, userId }) {
+  console.log('handleDisableSpeakingUser');
+  const instance = networkStore.wsMap.get(roomId.value);
+  if (instance) {
+    instance.send<WsDisableSpeakingType['data']>({
+      requestId: getRandomString(8),
+      msgType: WsMsgTypeEnum.disableSpeaking,
+      data: {
+        socket_id: socketId,
+        user_id: userId,
+        live_room_id: Number(roomId.value),
+        duration: 60 * 5,
+      },
+    });
+  }
+}
+
+function handleRestoreSpeakingUser({ socketId, userId }) {
+  console.log('handleRestoreSpeakingUser');
+  const instance = networkStore.wsMap.get(roomId.value);
+  if (instance) {
+    instance.send<WsDisableSpeakingType['data']>({
+      requestId: getRandomString(8),
+      msgType: WsMsgTypeEnum.disableSpeaking,
+      data: {
+        socket_id: socketId,
+        user_id: userId,
+        live_room_id: Number(roomId.value),
+        restore: true,
+      },
+    });
+  }
+}
+
+function handleKickUser() {
+  console.log('handleKickUser');
+}
 
 function getBg() {
   try {
@@ -821,12 +897,17 @@ function handleScrollTop() {
           &.system {
             color: red;
           }
+          .dropdown-wrap {
+            :deep(.container) {
+              width: 120px;
+            }
+          }
           .list {
             .item {
               &:hover {
                 &.operator {
-                  cursor: pointer;
                   color: $theme-color-gold;
+                  cursor: pointer;
                 }
               }
             }

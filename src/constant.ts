@@ -78,28 +78,36 @@ export const DEFAULT_AUTH_INFO = {
     id: 4,
     auth_value: 'AUTH_MANAGE',
   },
-  COMMONENT_MANAGE: {
+  MESSAGE_MANAGE: {
     id: 5,
-    auth_value: 'COMMONENT_MANAGE',
+    auth_value: 'MESSAGE_MANAGE',
+  },
+  MESSAGE_SEND: {
+    id: 6,
+    auth_value: 'MESSAGE_SEND',
+  },
+  MESSAGE_DISABLE: {
+    id: 7,
+    auth_value: 'MESSAGE_DISABLE',
   },
   LOG_MANAGE: {
-    id: 6,
+    id: 8,
     auth_value: 'LOG_MANAGE',
   },
   LIVE_MANAGE: {
-    id: 7,
+    id: 9,
     auth_value: 'LIVE_MANAGE',
   },
   LIVE_PUSH: {
-    id: 8,
+    id: 10,
     auth_value: 'LIVE_PUSH',
   },
   LIVE_PULL: {
-    id: 9,
+    id: 11,
     auth_value: 'LIVE_PULL',
   },
   LIVE_PULL_SVIP: {
-    id: 10,
+    id: 12,
     auth_value: 'LIVE_PULL_SVIP',
   },
 };

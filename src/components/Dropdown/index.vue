@@ -40,17 +40,14 @@ const props = withDefaults(
 );
 
 function handleClick() {
-  console.log('handleClick');
   show.value = true;
 }
 function handleMouseEnter() {
-  console.log('handleMouseEnter');
   if (props.trigger === 'hover') {
     show.value = true;
   }
 }
 function handleMouseLeave() {
-  console.log('handleMouseLeave');
   show.value = false;
 }
 </script>

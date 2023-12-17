@@ -226,7 +226,7 @@ const {
   anchorInfo,
   remoteVideo,
   videoHeight,
-} = usePull();
+} = usePull(route.params.roomId as string);
 
 onUnmounted(() => {
   closeWs();

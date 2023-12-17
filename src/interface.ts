@@ -497,6 +497,7 @@ export interface IDanmu {
   msgType: DanmuMsgTypeEnum;
   msg: string;
   socket_id: string;
+  request_id?: string;
   userInfo?: IUser;
   msgIsFile: boolean;
 }

@@ -109,12 +109,11 @@ import {
   VolumeMuteOutline,
 } from '@vicons/ionicons5';
 import { debounce } from 'billd-utils';
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 
 import { LiveLineEnum, LiveRoomTypeEnum } from '@/interface';
 import { useAppStore } from '@/store/app';
 import { usePiniaCacheStore } from '@/store/cache';
-import { useUserStore } from '@/store/user';
 
 withDefaults(
   defineProps<{
@@ -128,22 +127,10 @@ const emits = defineEmits(['refresh']);
 const debounceRefresh = debounce(() => {
   emits('refresh');
 }, 500);
-
-const userStore = useUserStore();
 const cacheStore = usePiniaCacheStore();
 const appStore = useAppStore();
 const showLine = ref(false);
 const showSpeed = ref(false);
-
-watch(
-  () => userStore.userInfo,
-  (newVal) => {
-    console.log('userInfo变了', newVal);
-  },
-  {
-    deep: true,
-  }
-);
 
 function handleTip() {
   window.$message.info('敬请期待！');

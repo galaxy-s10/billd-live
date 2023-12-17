@@ -397,6 +397,7 @@ export class WebRTCClass {
         const roomId = this.roomId.split('___')[0];
         const receiver = this.roomId.split('___')[1];
         networkStore.wsMap.get(roomId)?.send<WsCandidateType['data']>({
+          requestId: getRandomString(8),
           msgType: WsMsgTypeEnum.candidate,
           data: {
             candidate: event.candidate,

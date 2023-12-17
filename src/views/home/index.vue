@@ -198,7 +198,7 @@
 
 <script lang="ts" setup>
 import { onMounted, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import { fetchLiveList } from '@/api/live';
 import { fetchFindLiveConfigByKey } from '@/api/liveConfig';
@@ -215,6 +215,7 @@ import {
 import { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
 
+const route = useRoute();
 const router = useRouter();
 const appStore = useAppStore();
 const canvasRef = ref<Element>();
@@ -239,7 +240,7 @@ const {
   videoHeight,
   handleStopDrawing,
   handlePlay,
-} = usePull();
+} = usePull(route.params.roomId as string);
 
 onMounted(() => {
   handleSlideList();

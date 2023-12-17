@@ -1,4 +1,4 @@
-import { windowReload } from 'billd-utils';
+import { getRandomString, windowReload } from 'billd-utils';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -268,6 +268,7 @@ export function usePush() {
     const instance = networkStore.wsMap.get(roomId.value);
     if (instance) {
       instance.send({
+        requestId: getRandomString(8),
         msgType: WsMsgTypeEnum.roomNoLive,
       });
     }
@@ -278,6 +279,7 @@ export function usePush() {
     const instance = networkStore.wsMap.get(roomId.value);
     if (instance) {
       instance.send<WsMsrBlobType['data']>({
+        requestId: getRandomString(8),
         msgType: WsMsgTypeEnum.msrBlob,
         data: {
           live_room_id: Number(roomId.value),
@@ -330,6 +332,7 @@ export function usePush() {
       return;
     }
     instance.send<WsMessageType['data']>({
+      requestId: getRandomString(8),
       msgType: WsMsgTypeEnum.message,
       data: {
         msg: danmuStr.value,

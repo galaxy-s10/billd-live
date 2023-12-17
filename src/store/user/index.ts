@@ -6,7 +6,7 @@ import cache from '@/utils/cache';
 
 type UserRootState = {
   userInfo?: IUser;
-  token?: string;
+  token?: string | null;
   roles?: IRole[];
   auths?: IAuth[];
 };
@@ -14,7 +14,7 @@ type UserRootState = {
 export const useUserStore = defineStore('user', {
   state: (): UserRootState => {
     return {
-      token: undefined,
+      token: cache.getStorageExp('token'),
       roles: undefined,
       userInfo: undefined,
       auths: undefined,
