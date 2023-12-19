@@ -111,8 +111,9 @@ export type WsMessageType = IWsFormat<{
 
 /** 禁言用户 */
 export type WsDisableSpeakingType = IWsFormat<{
+  request_id?: string;
   /** 被禁言用户socket_id */
-  socket_id: number;
+  socket_id: string;
   /** 被禁言用户id */
   user_id: number;
   /** 直播间id */
@@ -123,10 +124,14 @@ export type WsDisableSpeakingType = IWsFormat<{
   disable_created_at?: number;
   /** 禁言到期消息 */
   disable_expired_at?: number;
+  /** 禁言成功 */
+  disable_ok?: boolean;
+  /** 解除禁言成功 */
+  restore_disable_ok?: boolean;
+  /** 是否正在禁言 */
+  is_disable_speaking?: boolean;
   /** 是否解除禁言 */
   restore?: boolean;
-  /** 消息id */
-  request_id?: number;
 }>;
 
 /** 其他用户加入直播间 */

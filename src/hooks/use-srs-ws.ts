@@ -33,7 +33,7 @@ import { WebSocketClass, prettierReceiveWsMsg } from '@/network/webSocket';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
-import { createVideo } from '@/utils';
+import { createVideo, formatDownTime } from '@/utils';
 
 import { useRTCParams } from './use-rtcParams';
 
@@ -57,7 +57,7 @@ export const useSrsWs = () => {
   const currentMaxBitrate = ref(maxBitrate.value[3].value);
   const currentMaxFramerate = ref(maxFramerate.value[2].value);
   const currentResolutionRatio = ref(resolutionRatio.value[3].value);
-
+  const timerObj = ref({});
   const damuList = ref<IDanmu[]>([]);
 
   onUnmounted(() => {
@@ -351,11 +351,56 @@ export const useSrsWs = () => {
       WsMsgTypeEnum.disableSpeaking,
       (data: WsDisableSpeakingType['data']) => {
         prettierReceiveWsMsg(WsMsgTypeEnum.disableSpeaking, data);
-        if (data.disable_expired_at) {
+        if (
+          (data.user_id === userStore.userInfo?.id &&
+            data.disable_expired_at) ||
+          data.is_disable_speaking
+        ) {
           window.$message.error('你已被禁言！');
+          appStore.disableSpeaking.set(data.live_room_id, {
+            exp: data.disable_expired_at,
+            label: formatDownTime({
+              startTime: +new Date(),
+              endTime: data.disable_expired_at,
+            }),
+          });
+          clearTimeout(timerObj.value[data.live_room_id]);
+          timerObj.value[data.live_room_id] = setInterval(() => {
+            if (
+              data.disable_expired_at &&
+              +new Date() > data.disable_expired_at
+            ) {
+              clearTimeout(timerObj.value[data.live_room_id]);
+            }
+            appStore.disableSpeaking.set(data.live_room_id, {
+              exp: data.disable_expired_at!,
+              label: formatDownTime({
+                startTime: +new Date(),
+                endTime: data.disable_expired_at!,
+              }),
+            });
+          }, 1000);
           damuList.value = damuList.value.filter(
             (v) => v.request_id !== data.request_id
           );
+        }
+        if (data.user_id !== userStore.userInfo?.id && data.disable_ok) {
+          console.log('disable_ok', data);
+          window.$message.success('禁言成功！');
+        }
+        if (
+          data.user_id !== userStore.userInfo?.id &&
+          data.restore_disable_ok
+        ) {
+          window.$message.success('解除禁言成功！');
+        }
+        if (
+          data.user_id === userStore.userInfo?.id &&
+          data.restore_disable_ok
+        ) {
+          window.$message.success('禁言接触了！');
+          clearTimeout(timerObj.value[data.live_room_id]);
+          appStore.disableSpeaking.delete(data.live_room_id);
         }
       }
     );

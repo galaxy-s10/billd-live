@@ -38,6 +38,7 @@ export type AppRootState = {
   liveLine: LiveLineEnum;
   liveRoomInfo?: ILiveRoom;
   showLoginModal: boolean;
+  disableSpeaking: Map<number, { exp: number; label: string }>;
 };
 
 export const useAppStore = defineStore('app', {
@@ -55,6 +56,7 @@ export const useAppStore = defineStore('app', {
       liveLine: LiveLineEnum.hls,
       liveRoomInfo: undefined,
       showLoginModal: false,
+      disableSpeaking: new Map(),
     };
   },
   actions: {

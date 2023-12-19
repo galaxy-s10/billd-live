@@ -4,7 +4,7 @@
     :class="{ hover: props.trigger === 'hover' }"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
-    @click="handleClick"
+    @click="handleClickWrap"
   >
     <div class="btn">
       <slot name="btn"></slot>
@@ -15,6 +15,7 @@
       :style="{
         display: show ? 'block' : 'none',
       }"
+      @click.stop="handleClick"
     >
       <div class="wrap">
         <slot name="list"></slot>
@@ -40,6 +41,9 @@ const props = withDefaults(
 );
 
 function handleClick() {
+  show.value = false;
+}
+function handleClickWrap() {
   show.value = true;
 }
 function handleMouseEnter() {

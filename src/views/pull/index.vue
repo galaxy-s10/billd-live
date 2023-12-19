@@ -270,6 +270,18 @@
         class="send-msg"
         v-loading="msgLoading"
       >
+        <div
+          class="disableSpeaking"
+          v-if="appStore.disableSpeaking.get(appStore.liveRoomInfo?.id || -1)"
+        >
+          <div class="bg"></div>
+          <span class="txt">
+            你被禁言了（{{
+              appStore.disableSpeaking.get(appStore.liveRoomInfo?.id || -1)
+                ?.label
+            }}）
+          </span>
+        </div>
         <div class="control">
           <div
             class="ico face"
@@ -282,7 +294,6 @@
             @click="mockClick"
           >
             <input
-              placeholder="发个弹幕吧~"
               ref="uploadRef"
               type="file"
               class="input-upload"
@@ -292,6 +303,7 @@
           </div>
         </div>
         <textarea
+          :placeholder="'发个弹幕吧~'"
           v-model="danmuStr"
           class="ipt"
           @keydown="keydownDanmu"
@@ -893,7 +905,6 @@ function handleScrollTop() {
 
         .name {
           color: #9499a0;
-          cursor: pointer;
           &.system {
             color: red;
           }
@@ -929,6 +940,23 @@ function handleScrollTop() {
       box-sizing: border-box;
       padding: 4px 10px;
       width: 100%;
+      .disableSpeaking {
+        cursor: no-drop;
+
+        .bg {
+          @extend %maskBg;
+          position: absolute !important;
+        }
+        .txt {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          font-size: 14px;
+          width: 100%;
+          text-align: center;
+        }
+      }
       .control {
         display: flex;
         margin: 4px 0;
