@@ -488,9 +488,15 @@ export interface IUpdateJoinInfo {
 }
 
 export interface ILiveUser {
-  id: string;
-  rooms?: string[];
-  userInfo?: IUser;
+  // id: string;
+  // rooms?: string[];
+  // userInfo?: IUser;
+  created_at: string;
+  value: {
+    socketId: string;
+    joinRoomId: number;
+    userInfo?: IUser;
+  };
 }
 
 export interface IDanmu {

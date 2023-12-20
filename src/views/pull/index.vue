@@ -138,33 +138,33 @@
       </div>
       <div class="user-list">
         <div
-          v-for="(item, index) in liveUserList.filter(
-            (item) => item.id !== mySocketId
-          )"
+          v-for="(item, index) in liveUserList"
           :key="index"
           class="item"
         >
-          <div class="info">
+          <div
+            class="info"
+            v-if="item.value.userInfo"
+            @click="jumpProfile(item.value.userInfo.id!)"
+          >
             <div
               class="avatar"
-              :style="{ backgroundImage: `url(${item.userInfo?.avatar})` }"
+              :style="{
+                backgroundImage: `url(${item.value.userInfo.avatar})`,
+              }"
             ></div>
             <div class="username">
-              {{ item.userInfo?.username || item.id }}
+              {{ item.value.userInfo.username }}
             </div>
           </div>
-        </div>
-        <div
-          v-if="userStore.userInfo"
-          class="item"
-        >
-          <div class="info">
-            <img
-              :src="userStore.userInfo.avatar"
-              class="avatar"
-              alt=""
-            />
-            <div class="username">{{ userStore.userInfo.username }}</div>
+          <div
+            class="info"
+            v-else
+          >
+            <div class="avatar"></div>
+            <div class="username">
+              {{ item.value.socketId }}
+            </div>
           </div>
         </div>
       </div>
@@ -324,7 +324,7 @@
 </template>
 
 <script lang="ts" setup>
-import { getRandomString } from 'billd-utils';
+import { getRandomString, openToTarget } from 'billd-utils';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -470,6 +470,14 @@ function handleRestoreSpeakingUser({ socketId, userId }) {
       },
     });
   }
+}
+
+function jumpProfile(userId: number) {
+  const url = router.resolve({
+    name: routerName.profile,
+    params: { userId },
+  });
+  openToTarget(url.href);
 }
 
 function handleKickUser() {

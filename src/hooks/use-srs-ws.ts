@@ -322,14 +322,9 @@ export const useSrsWs = () => {
     ws.socketIo.on(
       WsMsgTypeEnum.liveUser,
       (data: WSGetRoomAllUserType['data']) => {
+        console.log('当前所有在线用户当前所有在线用户', data.liveUser.length);
         prettierReceiveWsMsg(WsMsgTypeEnum.liveUser, data);
-        const res = data.liveUser.map((item) => {
-          return {
-            id: item.id,
-            // userInfo: item.id,
-          };
-        });
-        liveUserList.value = res;
+        liveUserList.value = data.liveUser;
       }
     );
 
@@ -351,11 +346,7 @@ export const useSrsWs = () => {
       WsMsgTypeEnum.disableSpeaking,
       (data: WsDisableSpeakingType['data']) => {
         prettierReceiveWsMsg(WsMsgTypeEnum.disableSpeaking, data);
-        if (
-          (data.user_id === userStore.userInfo?.id &&
-            data.disable_expired_at) ||
-          data.is_disable_speaking
-        ) {
+        if (data.is_disable_speaking) {
           window.$message.error('你已被禁言！');
           appStore.disableSpeaking.set(data.live_room_id, {
             exp: data.disable_expired_at,
@@ -385,7 +376,6 @@ export const useSrsWs = () => {
           );
         }
         if (data.user_id !== userStore.userInfo?.id && data.disable_ok) {
-          console.log('disable_ok', data);
           window.$message.success('禁言成功！');
         }
         if (
@@ -408,10 +398,10 @@ export const useSrsWs = () => {
     // 用户加入房间完成
     ws.socketIo.on(WsMsgTypeEnum.joined, (data: WsJoinType['data']) => {
       prettierReceiveWsMsg(WsMsgTypeEnum.joined, data);
-      liveUserList.value.push({
-        id: data.socket_id,
-        userInfo: data.user_info,
-      });
+      // liveUserList.value.push({
+      //   id: data.socket_id,
+      //   userInfo: data.user_info,
+      // });
       appStore.setLiveRoomInfo(data.live_room);
       anchorInfo.value = data.anchor_info;
       ws.send<WsGetLiveUserType['data']>({
@@ -426,10 +416,10 @@ export const useSrsWs = () => {
     // 其他用户加入房间
     ws.socketIo.on(WsMsgTypeEnum.otherJoin, (data: WsOtherJoinType['data']) => {
       prettierReceiveWsMsg(WsMsgTypeEnum.otherJoin, data);
-      liveUserList.value.push({
-        id: data.join_socket_id,
-        userInfo: data.join_user_info,
-      });
+      // liveUserList.value.push({
+      //   id: data.join_socket_id,
+      //   userInfo: data.join_user_info,
+      // });
       const requestId = getRandomString(8);
       const danmu: IDanmu = {
         request_id: requestId,
@@ -507,10 +497,10 @@ export const useSrsWs = () => {
         .get(`${roomId.value}___${data.socket_id as string}`)
         ?.close();
       networkStore.removeRtc(`${roomId.value}___${data.socket_id as string}`);
-      const res = liveUserList.value.filter(
-        (item) => item.id !== data.socket_id
-      );
-      liveUserList.value = res;
+      // const res = liveUserList.value.filter(
+      //   (item) => item.id !== data.socket_id
+      // );
+      // liveUserList.value = res;
       damuList.value.push({
         socket_id: data.socket_id,
         msgType: DanmuMsgTypeEnum.userLeaved,
