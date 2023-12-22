@@ -338,6 +338,7 @@ export const useSrsWs = () => {
         msg: data.data.msg,
         userInfo: data.user_info,
         msgIsFile: data.data.msgIsFile,
+        sendMsgTime: data.data.sendMsgTime,
       });
     });
 
@@ -428,6 +429,7 @@ export const useSrsWs = () => {
         userInfo: data.join_user_info,
         msgIsFile: false,
         msg: '',
+        sendMsgTime: +new Date(),
       };
       damuList.value.push(danmu);
       ws.send<WsGetLiveUserType['data']>({

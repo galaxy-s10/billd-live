@@ -389,12 +389,14 @@ export function usePull(roomId: string) {
       msgType: DanmuMsgTypeEnum.danmu,
       msg: danmuStr.value,
       msgIsFile: msgIsFile.value,
+      sendMsgTime: +new Date(),
     };
     const messageData: WsMessageType['data'] = {
       msg: danmuStr.value,
       msgType: DanmuMsgTypeEnum.danmu,
       live_room_id: Number(roomId),
       msgIsFile: msgIsFile.value,
+      sendMsgTime: +new Date(),
     };
     instance.send({
       requestId,

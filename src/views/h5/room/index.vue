@@ -80,13 +80,24 @@
                 class="item"
               >
                 <template v-if="item.msgType === DanmuMsgTypeEnum.danmu">
+                  <span class="time"
+                    >[{{ formatTimeHour(item.sendMsgTime) }}]</span
+                  >
                   <span class="name">
                     <span v-if="item.userInfo">
-                      {{ item.userInfo.username }}[{{
-                        item.userInfo.roles?.map((v) => v.role_name).join()
-                      }}]
+                      <span>{{ item.userInfo.username }}</span>
+                      <span v-if="MODULE_CONFIG_SWITCH.pullShowAuth">
+                        [{{
+                          item.userInfo.roles?.map((v) => v.role_name).join()
+                        }}]
+                      </span>
                     </span>
-                    <span v-else>{{ item.socket_id }}[游客]</span>
+                    <span v-else>
+                      <span>{{ item.socket_id }}</span>
+                      <span v-if="MODULE_CONFIG_SWITCH.pullShowAuth">
+                        [游客]
+                      </span>
+                    </span>
                     <span>：</span>
                   </span>
                   <span
@@ -167,6 +178,23 @@
       ref="bottomRef"
       class="send-msg"
     >
+      <div
+        class="emoji-list"
+        v-if="showEmoji"
+      >
+        <div
+          class="item"
+          v-for="(item, index) in emojiArray"
+          :key="index"
+          @click="handlePushStr(item)"
+        >
+          {{ item }}
+        </div>
+      </div>
+      <div
+        class="face"
+        @click="showEmoji = !showEmoji"
+      ></div>
       <input
         v-model="danmuStr"
         class="ipt"
@@ -192,11 +220,14 @@ import { useRoute } from 'vue-router';
 
 import { fetchFindLiveConfigByKey } from '@/api/liveConfig';
 import { fetchFindLiveRoom } from '@/api/liveRoom';
+import { MODULE_CONFIG_SWITCH } from '@/constant';
+import { emojiArray } from '@/emoji';
 import { usePull } from '@/hooks/use-pull';
 import { DanmuMsgTypeEnum, LiveRoomTypeEnum } from '@/interface';
 import router, { mobileRouterName } from '@/router';
 import { useAppStore } from '@/store/app';
 import { usePiniaCacheStore } from '@/store/cache';
+import { formatTimeHour } from '@/utils';
 
 const route = useRoute();
 const cacheStore = usePiniaCacheStore();
@@ -205,6 +236,8 @@ const appStore = useAppStore();
 const bottomRef = ref<HTMLDivElement>();
 const danmuListRef = ref<HTMLDivElement>();
 const showPlayBtn = ref(false);
+const showEmoji = ref(false);
+
 const containerHeight = ref(0);
 const videoWrapHeight = ref(0);
 const frontendWechatQrcode = ref('');
@@ -251,6 +284,11 @@ onMounted(() => {
   });
   getLiveRoomInfo();
 });
+
+function handlePushStr(str) {
+  danmuStr.value += str;
+  showEmoji.value = false;
+}
 
 watch(
   () => remoteVideo.value,
@@ -467,7 +505,8 @@ async function getWechatQrcode() {
       word-wrap: break-word;
       font-size: 13px;
 
-      .name {
+      .name,
+      .time {
         color: white;
         opacity: 0.8;
         cursor: pointer;
@@ -513,7 +552,38 @@ async function getWechatQrcode() {
     padding: 0;
     width: 100%;
     height: 40px;
-    background-color: #0c1622;
+    background-color: white;
+    .emoji-list {
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      overflow: scroll;
+      box-sizing: border-box;
+      padding-top: 5px;
+      padding-left: 5px;
+      height: 160px;
+      background-color: #fff;
+      transform: translateY(-100%);
+
+      @extend %customScrollbar;
+      .item {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        width: 8vw;
+        height: 8vw;
+        border: 1px solid #f8f8f8;
+        font-size: 20px;
+      }
+    }
+    .face {
+      width: 20px;
+      height: 20px;
+
+      @include setBackground('@/assets/img/msg-face.webp');
+    }
     .ipt {
       display: block;
       box-sizing: border-box;

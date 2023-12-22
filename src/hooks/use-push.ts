@@ -339,6 +339,7 @@ export function usePush() {
         msgType: DanmuMsgTypeEnum.danmu,
         live_room_id: Number(roomId.value),
         msgIsFile: msgIsFile.value,
+        sendMsgTime: +new Date(),
       },
     });
     damuList.value.push({
@@ -347,6 +348,7 @@ export function usePush() {
       msg: danmuStr.value,
       userInfo: userStore.userInfo!,
       msgIsFile: msgIsFile.value,
+      sendMsgTime: +new Date(),
     });
     danmuStr.value = '';
   }

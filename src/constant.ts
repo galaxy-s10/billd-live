@@ -120,6 +120,12 @@ export const COOKIE_KEY = {
 export const lsKeyPrefix = 'billd_live___';
 
 export const MODULE_CONFIG_SWITCH = {
+  logo: true,
+  home: true,
+  area: true,
+  shop: true,
+  pullGiftList: true,
+  pullShowAuth: false,
   // 后台入口
   admin: true,
   // app下载入口

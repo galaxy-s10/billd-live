@@ -121,6 +121,7 @@
           <div class="price">￥{{ item.price }}</div>
         </div>
         <div
+          v-if="MODULE_CONFIG_SWITCH.pullGiftList"
           class="item"
           @click="handleRecharge"
         >
@@ -178,15 +179,17 @@
           class="item"
         >
           <template v-if="item.msgType === DanmuMsgTypeEnum.danmu">
+            <span class="time">[{{ formatTimeHour(item.sendMsgTime) }}]</span>
             <span class="name">
               <span
                 v-if="
                   item.userInfo && userStore.userInfo?.id === item.userInfo.id
                 "
               >
-                {{ item.userInfo.username }}[{{
-                  item.userInfo.roles?.map((v) => v.role_name).join()
-                }}]
+                <span>{{ item.userInfo.username }}</span>
+                <span v-if="MODULE_CONFIG_SWITCH.pullShowAuth">
+                  [{{ item.userInfo.roles?.map((v) => v.role_name).join() }}]
+                </span>
               </span>
               <Dropdown
                 trigger="click"
@@ -194,9 +197,10 @@
                 v-else-if="item.userInfo"
               >
                 <template #btn>
-                  {{ item.userInfo.username }}[{{
-                    item.userInfo.roles?.map((v) => v.role_name).join()
-                  }}]
+                  <span>{{ item.userInfo.username }}</span>
+                  <span v-if="MODULE_CONFIG_SWITCH.pullShowAuth">
+                    [{{ item.userInfo.roles?.map((v) => v.role_name).join() }}]
+                  </span>
                 </template>
                 <template #list>
                   <div class="list">
@@ -232,7 +236,10 @@
                   </div>
                 </template>
               </Dropdown>
-              <span v-else>{{ item.socket_id }}[游客]</span>
+              <span v-else>
+                <span>{{ item.socket_id }}</span>
+                <span v-if="MODULE_CONFIG_SWITCH.pullShowAuth">[游客]</span>
+              </span>
             </span>
             <span>：</span>
             <span
@@ -284,9 +291,22 @@
         </div>
         <div class="control">
           <div
+            class="emoji-list"
+            v-if="showEmoji"
+          >
+            <div
+              class="item"
+              v-for="(item, index) in emojiArray"
+              :key="index"
+              @click="handlePushStr(item)"
+            >
+              {{ item }}
+            </div>
+          </div>
+          <div
             class="ico face"
             title="表情"
-            @click="handleWait"
+            @click="handleEmoji"
           ></div>
           <div
             class="ico img"
@@ -303,6 +323,7 @@
           </div>
         </div>
         <textarea
+          ref="danmuIptRef"
           :placeholder="'发个弹幕吧~'"
           v-model="danmuStr"
           class="ipt"
@@ -330,6 +351,7 @@ import { useRoute } from 'vue-router';
 
 import { fetchGoodsList } from '@/api/goods';
 import { MODULE_CONFIG_SWITCH, QINIU_LIVE } from '@/constant';
+import { emojiArray } from '@/emoji';
 import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { usePull } from '@/hooks/use-pull';
 import { useUpload } from '@/hooks/use-upload';
@@ -339,6 +361,7 @@ import router, { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
+import { formatTimeHour } from '@/utils';
 import { NODE_ENV } from 'script/constant';
 
 import RechargeCpt from './recharge/index.vue';
@@ -354,6 +377,7 @@ const giftGoodsList = ref<IGoods[]>([]);
 const height = ref(0);
 const giftLoading = ref(false);
 const showRecharge = ref(false);
+const showEmoji = ref(false);
 const msgLoading = ref(false);
 const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
@@ -361,6 +385,7 @@ const danmuListRef = ref<HTMLDivElement>();
 const remoteVideoRef = ref<HTMLDivElement>();
 const containerRef = ref<HTMLDivElement>();
 const uploadRef = ref<HTMLInputElement>();
+const danmuIptRef = ref<HTMLTextAreaElement>();
 const {
   initPull,
   closeWs,
@@ -385,7 +410,9 @@ onMounted(() => {
     scrollTo(0, 0);
   }, 100);
   appStore.setPlay(true);
-  getGoodsList();
+  if (MODULE_CONFIG_SWITCH.pullGiftList) {
+    getGoodsList();
+  }
   if (topRef.value && bottomRef.value && containerRef.value) {
     const res =
       bottomRef.value.getBoundingClientRect().top -
@@ -500,14 +527,20 @@ function getBg() {
   }
 }
 
-function handleWait() {
+function handlePushStr(str) {
+  danmuStr.value += str;
+  showEmoji.value = false;
+  danmuIptRef.value?.focus();
+}
+
+function handleEmoji() {
   if (!loginTip()) {
     return;
   }
   if (!commentAuthTip()) {
     return;
   }
-  window.$message.warning('敬请期待！');
+  showEmoji.value = !showEmoji.value;
 }
 
 function mockClick() {
@@ -911,7 +944,8 @@ function handleScrollTop() {
         word-wrap: break-word;
         font-size: 13px;
 
-        .name {
+        .name,
+        .time {
           color: #9499a0;
           &.system {
             color: red;
@@ -968,6 +1002,32 @@ function handleScrollTop() {
       .control {
         display: flex;
         margin: 4px 0;
+        .emoji-list {
+          position: absolute;
+          top: 0;
+          right: 0;
+          left: 0;
+          overflow: scroll;
+          box-sizing: border-box;
+          padding-top: 5px;
+          padding-left: 5px;
+          height: 160px;
+          background-color: #fff;
+          transform: translateY(-100%);
+
+          @extend %customScrollbar;
+          .item {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            width: 14%;
+            height: 18%;
+            border: 1px solid #f8f8f8;
+            font-size: 20px;
+            cursor: pointer;
+          }
+        }
         .ico {
           margin-right: 6px;
           width: 24px;

@@ -107,6 +107,7 @@ export type WsMessageType = IWsFormat<{
   msgType: DanmuMsgTypeEnum;
   msgIsFile: boolean;
   msg: string;
+  sendMsgTime: number;
   live_room_id: number;
 }>;
 

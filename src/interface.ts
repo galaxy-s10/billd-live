@@ -506,4 +506,5 @@ export interface IDanmu {
   request_id?: string;
   userInfo?: IUser;
   msgIsFile: boolean;
+  sendMsgTime: number;
 }

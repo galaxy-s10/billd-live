@@ -3,6 +3,7 @@
     <div class="head">
       <div class="left">
         <div
+          v-if="MODULE_CONFIG_SWITCH.logo"
           class="logo-wrap"
           @click="router.push('/')"
         >
@@ -12,6 +13,7 @@
         <div class="nav">
           <a
             class="item"
+            v-if="MODULE_CONFIG_SWITCH.home"
             :class="{
               active: router.currentRoute.value.path === '/',
             }"
@@ -21,6 +23,7 @@
             首页
           </a>
           <a
+            v-if="MODULE_CONFIG_SWITCH.area"
             class="item"
             :class="{
               active: router.currentRoute.value.name === routerName.area,
@@ -30,6 +33,7 @@
             分区
           </a>
           <a
+            v-if="MODULE_CONFIG_SWITCH.shop"
             class="item"
             :class="{
               active: router.currentRoute.value.name === routerName.shop,
