@@ -305,7 +305,7 @@ export const createVideo = ({
   videoEl.muted = muted;
   videoEl.playsInline = true;
   videoEl.loop = true;
-  videoEl.controls = true;
+  videoEl.controls = false;
   videoEl.setAttribute('webkit-playsinline', 'true');
   videoEl.setAttribute('x5-video-player-type', 'h5');
   videoEl.setAttribute('x5-video-player-fullscreen', 'true');
