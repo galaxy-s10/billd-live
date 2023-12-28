@@ -96,6 +96,14 @@
           <div class="iten">0.5x</div>
         </div>
       </div>
+      <div class="full">
+        <span
+          class="txt"
+          @click="emits('fullScreen')"
+        >
+          全屏
+        </span>
+      </div>
     </div>
   </div>
 </template>
@@ -122,7 +130,7 @@ withDefaults(
   {}
 );
 
-const emits = defineEmits(['refresh']);
+const emits = defineEmits(['refresh', 'fullScreen']);
 
 const debounceRefresh = debounce(() => {
   emits('refresh');
@@ -218,7 +226,8 @@ function changeLiveLine(item) {
     }
     .resolution,
     .line,
-    .speed {
+    .speed,
+    .full {
       position: relative;
       margin-right: 15px;
       &:hover {
@@ -255,7 +264,7 @@ function changeLiveLine(item) {
         }
       }
     }
-    .speed {
+    .full {
       margin-right: 0;
     }
   }
