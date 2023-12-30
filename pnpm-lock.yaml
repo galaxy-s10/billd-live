@@ -18,8 +18,8 @@ dependencies:
     specifier: ^0.0.8
     version: 0.0.8
   billd-utils:
-    specifier: ^0.0.19
-    version: 0.0.19(typescript@5.1.6)
+    specifier: ^0.0.22
+    version: 0.0.22(typescript@5.1.6)
   fabric:
     specifier: ^5.3.0
     version: 5.3.0
@@ -3604,7 +3604,7 @@ packages:
       '@babel/compat-data': 7.21.0
       '@babel/core': 7.21.3
       '@babel/helper-define-polyfill-provider': 0.3.3(@babel/core@7.21.3)
-      semver: 6.3.0
+      semver: 6.3.1
     transitivePeerDependencies:
       - supports-color
 
@@ -3672,8 +3672,8 @@ packages:
     requiresBuild: true
     dev: false
 
-  /billd-utils@0.0.19(typescript@5.1.6):
-    resolution: {integrity: sha512-sap3/whp9sAnFqgpCormuPA911hexCzCzuMNMrQCVarEgTXkTQ7vOW4saZxLw5/HauajsXHEBGd4ZNmvQ0hZGw==}
+  /billd-utils@0.0.22(typescript@5.1.6):
+    resolution: {integrity: sha512-koOfFzbzSkw6gMYyOKNMzAJHYMhUWHr3swPW48rT7PwZMvBkAtH93bHEVuDCwariWrSwxCGIqozOzp5YaeePqQ==}
     requiresBuild: true
     dependencies:
       '@babel/core': 7.21.3
