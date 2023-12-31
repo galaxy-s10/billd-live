@@ -25,6 +25,31 @@ function handlePlayUrl(url: string) {
       }=${userInfo.id!}&${SRS_CB_URL_PARAMS.randomId}=${getRandomString(8)}`;
 }
 
+export function useFullScreen(video) {
+  if (video.requestFullscreen) {
+    console.log('requestFullscreen-1');
+    video.requestFullscreen();
+  } else if (video.mozRequestFullScreen) {
+    console.log('mozRequestFullScreen-2');
+    // Firefox
+    video.mozRequestFullScreen();
+  } else if (video.webkitRequestFullscreen) {
+    console.log('webkitRequestFullscreen-3');
+    // Chrome, Safari和Opera
+    video.webkitRequestFullscreen();
+  } else if (video.msRequestFullscreen) {
+    console.log('msRequestFullscreen-4');
+    // IE/Edge
+    video.msRequestFullscreen();
+  } else if (video.webkitEnterFullscreen) {
+    console.log('webkitEnterFullscreen-4');
+    // IOS
+    video.webkitEnterFullscreen();
+  } else {
+    console.log('不支持全屏');
+  }
+}
+
 export function useFlvPlay() {
   // const flvPlayer = ref<flvJs.Player>();
   const flvPlayer = ref<mpegts.Player>();
