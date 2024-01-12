@@ -16,6 +16,12 @@
   基于Vue3 + WebRTC + Node + SRS + FFmpeg搭建的直播间
 </p>
 
+## 致敬开源
+
+billd-live自2023年3月开源以来，仅有作者（也就是我）一个人维护，深知做开源的难处。
+
+如果你做过开源项目，并且单个仓库拿到 **`128+star`**，我个人认为这是非常不容易的，因为这代表了你的开源被很多人关注或认同，如果此时你正在了解直播相关方面的内容，我录制的 [**billd-live付费课**](https://www.hsslive.cn/article/151) 或许会对你有一定帮助，它将对你进行**免费**，作为我认同你在开源方面做的贡献，以及我对你力所能及的回馈，希望你能不忘初心，砥砺前行~
+
 ## 生态
 
 | 名称         | 仓库                                                                             | star & fork                                                                                                                                                                                                                                                                                                                         | 线上地址                                                       |
@@ -117,7 +123,7 @@ Mac端：TODO
 
 ### 安卓端
 
-- ​	
+-
 
 <img
   src="https://resource.hsslive.cn/billd-live/image/38a0fae4c5104913ca0b7617ca58b518.webp" 
@@ -140,7 +146,7 @@ Mac端：TODO
   style="width:300px"
 />
 
-- ​	
+-
 
 <img
   src="https://resource.hsslive.cn/billd-live/image/3a777718d31f94e6d25071d29f5e5185.webp" 
