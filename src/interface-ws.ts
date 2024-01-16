@@ -58,6 +58,10 @@ export enum WsMsgTypeEnum {
   answer = 'answer',
   candidate = 'candidate',
 
+  nativeWebRtcOffer = 'nativeWebRtcOffer',
+  nativeWebRtcAnswer = 'nativeWebRtcAnswer',
+  nativeWebRtcCandidate = 'nativeWebRtcCandidate',
+
   msrBlob = 'msrBlob',
 }
 

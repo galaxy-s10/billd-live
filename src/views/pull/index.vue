@@ -145,7 +145,7 @@
         >
           <div
             class="info"
-            v-if="item.value.userInfo"
+            v-if="item.value?.userInfo"
             @click="jumpProfile(item.value.userInfo.id!)"
           >
             <div
@@ -164,7 +164,7 @@
           >
             <div class="avatar"></div>
             <div class="username">
-              {{ item.value.socketId }}
+              {{ item.value?.socketId }}
             </div>
           </div>
         </div>
