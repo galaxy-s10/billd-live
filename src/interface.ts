@@ -300,6 +300,8 @@ export enum LiveRoomTypeEnum {
   user_obs,
   /** 主播使用msr直播 */
   user_msr,
+  /** 主播打pk */
+  user_pk,
 }
 
 export interface BilldHtmlWebpackPluginLog {
@@ -468,6 +470,7 @@ export enum MediaTypeEnum {
   time,
   stopwatch,
   webAudio,
+  pk,
 }
 
 export enum DanmuMsgTypeEnum {

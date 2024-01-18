@@ -39,6 +39,7 @@ export type AppRootState = {
   liveRoomInfo?: ILiveRoom;
   showLoginModal: boolean;
   disableSpeaking: Map<number, { exp: number; label: string }>;
+  pkStream?: MediaStream;
 };
 
 export const useAppStore = defineStore('app', {

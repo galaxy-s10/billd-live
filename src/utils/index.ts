@@ -299,13 +299,15 @@ export const createVideo = ({
   autoplay = true,
   appendChild = false,
   show = false,
+  controls = false,
+  size = 100,
 }) => {
   const videoEl = document.createElement('video');
   videoEl.autoplay = autoplay;
   videoEl.muted = muted;
   videoEl.playsInline = true;
   videoEl.loop = true;
-  videoEl.controls = false;
+  videoEl.controls = controls;
   videoEl.setAttribute('webkit-playsinline', 'true');
   videoEl.setAttribute('x5-video-player-type', 'h5');
   videoEl.setAttribute('x5-video-player-fullscreen', 'true');
@@ -319,6 +321,9 @@ export const createVideo = ({
       videoEl.style.height = `1px`;
       videoEl.style.opacity = '0';
       videoEl.style.pointerEvents = 'none';
+    } else {
+      videoEl.style.width = `${size}px`;
+      videoEl.style.height = `${size}px`;
     }
     videoEl.style.position = 'fixed';
     videoEl.style.bottom = '0';

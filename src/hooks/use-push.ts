@@ -15,8 +15,8 @@ import { useUserStore } from '@/store/user';
 import { createVideo, generateBase64 } from '@/utils';
 
 import { commentAuthTip, loginTip } from './use-login';
-import { useSrsWs } from './use-srs-ws';
 import { useTip } from './use-tip';
+import { useWebsocket } from './use-websocket';
 
 export function usePush() {
   const route = useRoute();
@@ -46,8 +46,30 @@ export function usePush() {
     currentMaxFramerate,
     currentMaxBitrate,
     currentResolutionRatio,
-  } = useSrsWs();
+  } = useWebsocket();
+
   isPull.value = false;
+
+  onMounted(() => {
+    if (!loginTip()) return;
+  });
+
+  onUnmounted(() => {
+    closeWs();
+    closeRtc();
+  });
+
+  function closeWs() {
+    const instance = networkStore.wsMap.get(roomId.value);
+    instance?.close();
+  }
+
+  function closeRtc() {
+    networkStore.rtcMap.forEach((rtc) => {
+      rtc.close();
+      networkStore.removeRtc(rtc.roomId);
+    });
+  }
 
   watch(
     () => appStore.allTrack,
@@ -81,26 +103,6 @@ export function usePush() {
       });
     }
   );
-
-  // watch(
-  //   () => currentMaxFramerate.value,
-  //   () => {
-  //     handleMaxFramerate({
-  //       stream: canvasVideoStream.value!,
-  //       height: currentResolutionRatio.value,
-  //       frameRate: currentMaxFramerate.value,
-  //     });
-  //     console.log(currentMaxFramerate.value, 'kkkkkk');
-  //     // networkStore.rtcMap.forEach(async (rtc) => {
-  //     //   const res = await rtc.setMaxFramerate(newVal);
-  //     //   if (res === 1) {
-  //     //     window.$message.success('切换帧率成功！');
-  //     //   } else {
-  //     //     window.$message.success('切换帧率失败！');
-  //     //   }
-  //     // });
-  //   }
-  // );
 
   watch(
     () => currentMaxBitrate.value,
@@ -147,7 +149,7 @@ export function usePush() {
     () => userStore.userInfo,
     async (newVal) => {
       if (newVal) {
-        const res = await userHasLiveRoom();
+        const res = await handleUserHasLiveRoom();
         if (!res) {
           await useTip('你还没有直播间，是否立即开通？');
           await handleCreateUserLiveRoom();
@@ -161,33 +163,13 @@ export function usePush() {
     { immediate: true }
   );
 
-  onMounted(() => {
-    roomId.value = route.query.roomId as string;
-    if (!loginTip()) return;
-  });
-
-  onUnmounted(() => {
-    closeWs();
-    closeRtc();
-  });
-
-  function closeWs() {
-    const instance = networkStore.wsMap.get(roomId.value);
-    instance?.close();
-  }
-
-  function closeRtc() {
-    networkStore.rtcMap.forEach((rtc) => {
-      rtc.close();
-      networkStore.removeRtc(rtc.roomId);
-    });
-  }
-
-  async function userHasLiveRoom() {
+  async function handleUserHasLiveRoom() {
     const res = await fetchUserHasLiveRoom(userStore.userInfo?.id!);
     if (res.code === 200 && res.data) {
       liveRoomInfo.value = res.data.live_room;
-      router.push({ query: { ...route.query, roomId: roomId.value } });
+      router.push({
+        query: { ...route.query, roomId: liveRoomInfo.value?.id },
+      });
       return true;
     }
     return false;
@@ -217,10 +199,9 @@ export function usePush() {
     });
   }
 
-  async function startLive({ type, receiver, chunkDelay }) {
-    console.log('startLive', { type, receiver, chunkDelay });
+  async function startLive({ type, msrDelay }) {
     if (!loginTip()) return;
-    const flag = await userHasLiveRoom();
+    const flag = await handleUserHasLiveRoom();
     if (!flag) {
       await useTip('你还没有直播间，是否立即开通？');
       await handleCreateUserLiveRoom();
@@ -257,8 +238,7 @@ export function usePush() {
       coverImg: lastCoverImg.value,
       name: roomName.value,
       type,
-      receiver,
-      chunkDelay,
+      msrDelay,
     });
   }
 
@@ -297,8 +277,8 @@ export function usePush() {
       window.$message.warning('请输入房间名！');
       return false;
     }
-    if (roomName.value.length < 3 || roomName.value.length > 30) {
-      window.$message.warning('房间名要求3-30个字符！');
+    if (roomName.value.length < 3 || roomName.value.length > 20) {
+      window.$message.warning('房间名要求3-20个字符！');
       return false;
     }
     return true;

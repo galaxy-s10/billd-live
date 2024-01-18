@@ -38,7 +38,9 @@
         <div class="hr"></div>
         <div class="item">
           <h2>联系方式</h2>
-          <p>微信号: shuisheng9905，加微信请备注: 私有化部署+用途</p>
+          <p>添加时请备注: 私有化部署+用途</p>
+          <p>微信号: shuisheng9905</p>
+          <p>qq号: 2274751790</p>
         </div>
       </div>
     </div>

@@ -54,9 +54,9 @@ export enum WsMsgTypeEnum {
   /** 主播踢掉用户 */
   kick = 'kick',
 
-  offer = 'offer',
-  answer = 'answer',
-  candidate = 'candidate',
+  srsOffer = 'srsOffer',
+  srsAnswer = 'srsAnswer',
+  srsCandidate = 'srsCandidate',
 
   nativeWebRtcOffer = 'nativeWebRtcOffer',
   nativeWebRtcAnswer = 'nativeWebRtcAnswer',
@@ -153,7 +153,8 @@ export type WsStartLiveType = IWsFormat<{
   cover_img: string;
   name: string;
   type: LiveRoomTypeEnum;
-  chunkDelay: number;
+  /** 单位：毫秒 */
+  msrDelay: number;
 }>;
 
 /** 用户加入直播间 */
@@ -180,6 +181,7 @@ export type WsMsrBlobType = IWsFormat<{
   live_room_id: number;
   blob: any;
   blob_id: string;
+  /** 单位：毫秒 */
   delay: number;
 }>;
 

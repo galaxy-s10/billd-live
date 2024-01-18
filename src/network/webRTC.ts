@@ -64,7 +64,9 @@ export async function handleMaxFramerate(data: {
 }
 
 export class WebRTCClass {
+  isAnchor = false;
   roomId = '-1';
+  sender = '';
   receiver = '';
 
   videoEl: HTMLVideoElement;
@@ -83,17 +85,22 @@ export class WebRTCClass {
   isSRS: boolean;
 
   constructor(data: {
+    isAnchor: boolean;
     roomId: string;
     videoEl: HTMLVideoElement;
     maxBitrate?: number;
     maxFramerate?: number;
     resolutionRatio?: number;
     isSRS: boolean;
+    sender: string;
     receiver: string;
     localStream?: MediaStream;
   }) {
+    this.isAnchor = data.isAnchor;
     this.roomId = data.roomId;
     this.videoEl = data.videoEl;
+    // document.body.appendChild(this.videoEl);
+    this.sender = data.sender;
     this.receiver = data.receiver;
     this.localStream = data.localStream;
     if (data.maxBitrate) {
@@ -205,10 +212,11 @@ export class WebRTCClass {
         });
       }
     });
-    if (addTrack.length) {
-      appStore.setAllTrack([...appStore.allTrack, ...addTrack]);
-    }
+    // if (addTrack.length) {
+    //   appStore.setAllTrack([...appStore.allTrack, ...addTrack]);
+    // }
     this.localStream = stream;
+    appStore.pkStream = stream;
   };
 
   /** 设置分辨率 */
@@ -394,15 +402,21 @@ export class WebRTCClass {
       if (event.candidate) {
         const networkStore = useNetworkStore();
         console.log('准备发送candidate', event.candidate.candidate);
-        const roomId = this.roomId.split('___')[0];
-        const receiver = this.roomId.split('___')[1];
+        const roomId = this.roomId;
+        console.log({
+          roomId,
+          sender: this.sender,
+          receiver: this.receiver,
+        });
         networkStore.wsMap.get(roomId)?.send<WsCandidateType['data']>({
           requestId: getRandomString(8),
-          msgType: WsMsgTypeEnum.candidate,
+          msgType: this.isSRS
+            ? WsMsgTypeEnum.srsCandidate
+            : WsMsgTypeEnum.nativeWebRtcCandidate,
           data: {
             candidate: event.candidate,
-            sender: networkStore.wsMap.get(roomId)?.socketIo?.id || '',
-            receiver,
+            sender: this.isAnchor ? this.sender : this.receiver,
+            receiver: this.isAnchor ? this.receiver : this.sender,
             live_room_id: Number(roomId),
           },
         });
@@ -494,6 +508,10 @@ export class WebRTCClass {
         }
       }
     );
+    // negotiationneeded
+    // this.peerConnection.addEventListener('negotiationneeded', (event: any) => {
+    //   console.log(this.roomId, 'pc收到negotiationneeded', event);
+    // });
   };
 
   // 创建对等连接

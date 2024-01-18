@@ -3,7 +3,7 @@ import { onUnmounted, ref, watch } from 'vue';
 
 import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { useFlvPlay, useHlsPlay } from '@/hooks/use-play';
-import { useSrsWs } from '@/hooks/use-srs-ws';
+import { useWebsocket } from '@/hooks/use-websocket';
 import {
   DanmuMsgTypeEnum,
   IDanmu,
@@ -47,7 +47,7 @@ export function usePull(roomId: string) {
     anchorInfo,
     liveUserList,
     damuList,
-  } = useSrsWs();
+  } = useWebsocket();
   isPull.value = true;
   const { flvVideoEl, flvIsPlaying, startFlvPlay, destroyFlv } = useFlvPlay();
   const { hlsVideoEl, hlsIsPlaying, startHlsPlay, destroyHls } = useHlsPlay();
