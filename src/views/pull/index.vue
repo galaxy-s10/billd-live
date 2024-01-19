@@ -57,7 +57,12 @@
             </div>
           </div>
         </div>
-        <div class="other">在线人数：{{ liveUserList.length }}</div>
+        <div
+          class="other"
+          @click="handlePk"
+        >
+          在线人数：{{ liveUserList.length }}
+        </div>
       </div>
       <div
         ref="containerRef"
@@ -346,7 +351,7 @@
 
 <script lang="ts" setup>
 import { getRandomString, openToTarget } from 'billd-utils';
-import { onMounted, onUnmounted, ref, watch } from 'vue';
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchGoodsList } from '@/api/goods';
@@ -429,11 +434,48 @@ onUnmounted(() => {
   closeRtc();
 });
 
+async function handleUserMedia({ video, audio }) {
+  try {
+    const event = await navigator.mediaDevices.getUserMedia({
+      video,
+      audio,
+    });
+    return event;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function handlePk() {
+  const stream = await handleUserMedia({ video: true, audio: true });
+  const rtc = networkStore.getRtcMap(`${roomId.value}`)!;
+  if (rtc?.peerConnection) {
+    rtc.peerConnection.onnegotiationneeded = (event) => {
+      console.log('onnegotiationneeded', event);
+    };
+    stream?.getTracks().forEach((track) => {
+      console.log(rtc, stream, track);
+      rtc.peerConnection?.addTrack(track, stream);
+    });
+  }
+}
+
 watch(
   () => remoteVideo.value,
   (newVal) => {
     newVal.forEach((item) => {
-      remoteVideoRef.value?.appendChild(item);
+      console.log(
+        'kkkkk',
+        remoteVideoRef.value,
+        roomLiving.value,
+        videoLoading.value,
+        item
+      );
+      nextTick(() => {
+        setTimeout(() => {
+          remoteVideoRef.value?.appendChild(item);
+        }, 500);
+      });
     });
   },
   {

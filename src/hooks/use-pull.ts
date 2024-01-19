@@ -66,6 +66,31 @@ export function usePull(roomId: string) {
     remoteVideo.value = [];
   }
 
+  watch(
+    () => appStore.pkStream,
+    (newval) => {
+      console.log('pkStream变了', newval);
+      stopDrawingArr.value = [];
+      stopDrawingArr.value.forEach((cb) => cb());
+      console.log(
+        networkStore.getRtcMap(`${mySocketId.value}___${roomId}`)?.videoEl!
+      );
+      const { canvas, stopDrawing } = videoToCanvas({
+        videoEl: networkStore.getRtcMap(`${mySocketId.value}___${roomId}`)
+          ?.videoEl!,
+        resize: ({ w, h }) => {
+          videoHeight.value = `${w}x${h}`;
+        },
+      });
+      console.log(canvas);
+      document.body.appendChild(canvas);
+      stopDrawingArr.value.push(stopDrawing);
+      remoteVideo.value.push(canvas);
+      roomLiving.value = true;
+      videoLoading.value = false;
+    }
+  );
+
   watch(hlsVideoEl, () => {
     stopDrawingArr.value = [];
     stopDrawingArr.value.forEach((cb) => cb());
@@ -345,8 +370,10 @@ export function usePull(roomId: string) {
   }
 
   function closeWs() {
-    const instance = networkStore.wsMap.get(roomId);
-    instance?.close();
+    networkStore.wsMap.forEach((ws) => {
+      ws.close();
+      networkStore.removeWs(ws.roomId);
+    });
   }
 
   function closeRtc() {

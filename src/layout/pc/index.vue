@@ -1,14 +1,16 @@
 <template>
-  <div class="layout">
-    <div class="fixed-mask"></div>
-    <HeadCpt></HeadCpt>
-    <router-view v-slot="{ Component }">
-      <component :is="Component"></component>
-    </router-view>
-    <ModalCpt></ModalCpt>
-    <SidebarCpt v-if="MODULE_CONFIG_SWITCH.sidebar"></SidebarCpt>
-    <LoginModal v-if="appStore.showLoginModal"></LoginModal>
-  </div>
+  <n-dialog-provider>
+    <div class="layout">
+      <div class="fixed-mask"></div>
+      <HeadCpt></HeadCpt>
+      <router-view v-slot="{ Component }">
+        <component :is="Component"></component>
+      </router-view>
+      <ModalCpt></ModalCpt>
+      <SidebarCpt v-if="MODULE_CONFIG_SWITCH.sidebar"></SidebarCpt>
+      <LoginModal v-if="appStore.showLoginModal"></LoginModal>
+    </div>
+  </n-dialog-provider>
 </template>
 
 <script lang="ts" setup>

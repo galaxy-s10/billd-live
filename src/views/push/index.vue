@@ -517,6 +517,7 @@ function handleScrollTop() {
 
 function handleSendBlob(event: BlobEvent) {
   bolbId.value += 1;
+  console.log(event.data);
   sendBlob({
     blob: event.data,
     blobId: `${bolbId.value}`,
@@ -2079,29 +2080,37 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
       .title {
         text-align: initial;
       }
-      .item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin: 5px 0;
-        font-size: 14px;
-        // &:hover {
-        //   .control {
-        //     display: flex;
-        //     align-items: center;
-        //   }
-        // }
-        .control {
+      .list {
+        overflow: scroll;
+        height: 218px;
+
+        @extend %customScrollbar;
+
+        .item {
           display: flex;
           align-items: center;
-          .control-item {
-            cursor: pointer;
-            &:not(:last-child) {
-              margin-right: 6px;
+          justify-content: space-between;
+          margin: 5px 0;
+          font-size: 14px;
+          // &:hover {
+          //   .control {
+          //     display: flex;
+          //     align-items: center;
+          //   }
+          // }
+          .control {
+            display: flex;
+            align-items: center;
+            .control-item {
+              cursor: pointer;
+              &:not(:last-child) {
+                margin-right: 6px;
+              }
             }
           }
         }
       }
+
       .bottom {
         position: absolute;
         bottom: 0;

@@ -402,7 +402,7 @@ export class WebRTCClass {
       if (event.candidate) {
         const networkStore = useNetworkStore();
         console.log('准备发送candidate', event.candidate.candidate);
-        const roomId = this.roomId;
+        const roomId = this.roomId.split('___')[1];
         console.log({
           roomId,
           sender: this.sender,

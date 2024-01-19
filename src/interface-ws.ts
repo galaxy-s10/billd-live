@@ -186,6 +186,7 @@ export type WsMsrBlobType = IWsFormat<{
 }>;
 
 export type WsOfferType = IWsFormat<{
+  live_room: ILiveRoom;
   sdp: any;
   sender: string;
   receiver: string;

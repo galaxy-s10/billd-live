@@ -35,6 +35,9 @@ export const useNetworkStore = defineStore('network', {
     removeRtc(roomId: string) {
       this.rtcMap.delete(roomId);
     },
+    removeWs(roomId: string) {
+      this.wsMap.delete(roomId);
+    },
     getRtcMap(roomId: string) {
       return this.rtcMap.get(roomId);
     },

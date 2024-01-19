@@ -60,8 +60,10 @@ export function usePush() {
   });
 
   function closeWs() {
-    const instance = networkStore.wsMap.get(roomId.value);
-    instance?.close();
+    networkStore.wsMap.forEach((ws) => {
+      ws.close();
+      networkStore.removeWs(ws.roomId);
+    });
   }
 
   function closeRtc() {
