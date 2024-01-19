@@ -102,12 +102,14 @@ export const useWebsocket = () => {
     name,
     type,
     msrDelay,
+    msrMaxDelay,
   }: {
     coverImg?: string;
     name?: string;
     type: LiveRoomTypeEnum;
     videoEl?: HTMLVideoElement;
     msrDelay: number;
+    msrMaxDelay: number;
   }) {
     networkStore.wsMap.get(roomId.value)?.send<WsStartLiveType['data']>({
       requestId: getRandomString(8),
@@ -117,6 +119,7 @@ export const useWebsocket = () => {
         name: name!,
         type,
         msrDelay,
+        msrMaxDelay,
       },
     });
     if (type === LiveRoomTypeEnum.user_msr) {

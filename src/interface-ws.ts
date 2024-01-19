@@ -155,6 +155,8 @@ export type WsStartLiveType = IWsFormat<{
   type: LiveRoomTypeEnum;
   /** 单位：毫秒 */
   msrDelay: number;
+  /** 单位：毫秒 */
+  msrMaxDelay: number;
 }>;
 
 /** 用户加入直播间 */
@@ -183,6 +185,8 @@ export type WsMsrBlobType = IWsFormat<{
   blob_id: string;
   /** 单位：毫秒 */
   delay: number;
+  /** 单位：毫秒 */
+  max_delay: number;
 }>;
 
 export type WsOfferType = IWsFormat<{

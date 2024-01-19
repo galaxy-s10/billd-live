@@ -443,7 +443,8 @@ const liveType = Number(route.query.liveType);
 const recorder = ref<MediaRecorder>();
 const sendBlobTimer = ref();
 const bolbId = ref(0);
-const msrDelay = ref(1000 * 2);
+const msrDelay = ref(1000 * 1);
+const msrMaxDelay = ref(1000 * 5);
 
 watch(
   () => roomLiving.value,
@@ -522,6 +523,7 @@ function handleSendBlob(event: BlobEvent) {
     blob: event.data,
     blobId: `${bolbId.value}`,
     delay: msrDelay.value,
+    max_delay: msrMaxDelay.value,
   });
 }
 
@@ -794,6 +796,7 @@ function handleStartLive() {
   startLive({
     type: liveType,
     msrDelay: msrDelay.value,
+    msrMaxDelay: 5000,
   });
   if (liveType === LiveRoomTypeEnum.user_msr) {
     const stream = pushCanvasRef.value!.captureStream();

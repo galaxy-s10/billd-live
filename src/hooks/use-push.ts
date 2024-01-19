@@ -201,7 +201,7 @@ export function usePush() {
     });
   }
 
-  async function startLive({ type, msrDelay }) {
+  async function startLive({ type, msrDelay, msrMaxDelay }) {
     if (!loginTip()) return;
     const flag = await handleUserHasLiveRoom();
     if (!flag) {
@@ -241,6 +241,7 @@ export function usePush() {
       name: roomName.value,
       type,
       msrDelay,
+      msrMaxDelay,
     });
   }
 
@@ -258,7 +259,7 @@ export function usePush() {
     closeRtc();
   }
 
-  function sendBlob(data: { blob; blobId: string; delay }) {
+  function sendBlob(data: { blob; blobId: string; delay; max_delay }) {
     const instance = networkStore.wsMap.get(roomId.value);
     if (instance) {
       instance.send<WsMsrBlobType['data']>({
@@ -269,6 +270,7 @@ export function usePush() {
           blob: data.blob,
           blob_id: data.blobId,
           delay: data.delay,
+          max_delay: data.max_delay,
         },
       });
     }

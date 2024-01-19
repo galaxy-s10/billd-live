@@ -464,13 +464,6 @@ watch(
   () => remoteVideo.value,
   (newVal) => {
     newVal.forEach((item) => {
-      console.log(
-        'kkkkk',
-        remoteVideoRef.value,
-        roomLiving.value,
-        videoLoading.value,
-        item
-      );
       nextTick(() => {
         setTimeout(() => {
           remoteVideoRef.value?.appendChild(item);
