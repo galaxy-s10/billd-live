@@ -518,7 +518,18 @@ function handleScrollTop() {
 
 function handleSendBlob(event: BlobEvent) {
   bolbId.value += 1;
-  console.log(event.data);
+  // const val = bolbId.value;
+  // if (val % 3 === 0) {
+  //   setTimeout(() => {
+  //     sendBlob({
+  //       blob: event.data,
+  //       blobId: `${val}`,
+  //       delay: msrDelay.value,
+  //       max_delay: msrMaxDelay.value,
+  //     });
+  //   }, 1000);
+  //   return;
+  // }
   sendBlob({
     blob: event.data,
     blobId: `${bolbId.value}`,
@@ -679,7 +690,12 @@ function clearFrame() {
 
 function renderFrame() {
   // currentMaxFramerate等于20，实际fps是17.68
-  const delay = 1000 / (currentMaxFramerate.value / (17.68 / 20)); // 60帧的话即16.666666666666668
+  /**
+   * currentMaxFramerate等于20，即每秒20帧，即1000 / 20 = 50毫秒轮询一次
+   * currentMaxFramerate等于30，即每秒30帧，即1000 / 30 = 33.333毫秒轮询一次
+   * currentMaxFramerate等于30，即每秒60帧，即1000 / 60 = 16.666毫秒轮询一次
+   */
+  const delay = Math.floor(1000 / currentMaxFramerate.value); // 60帧的话即16.666666666666668
   workerTimerId.value = workerTimers.setInterval(() => {
     renderAll();
   }, delay);
