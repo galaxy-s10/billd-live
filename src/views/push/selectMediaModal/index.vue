@@ -4,6 +4,7 @@
       title="选择直播素材"
       :mask-closable="false"
       @close="emits('close')"
+      width="'350px'"
     >
       <n-space justify="center">
         <n-button
@@ -44,9 +45,7 @@ onMounted(() => {});
 <style lang="scss" scoped>
 .select-media-wrap {
   text-align: initial;
-  :deep(.container) {
-    width: 350px;
-  }
+
   .container {
     padding-top: 10px;
   }

@@ -2,6 +2,7 @@ import { copyToClipBoard, getRandomString } from 'billd-utils';
 import { NButton, useDialog } from 'naive-ui';
 import { computed, h, onUnmounted, ref, watch } from 'vue';
 
+import { fetchVerifyPkKey } from '@/api/liveRoom';
 import { fetchRtcV1Publish } from '@/api/srs';
 import { SRS_CB_URL_PARAMS, THEME_COLOR, WEBSOCKET_URL } from '@/constant';
 import {
@@ -37,11 +38,13 @@ import {
   WsStartLiveType,
 } from '@/types/websocket';
 import { createVideo } from '@/utils';
+import { useRoute } from 'vue-router';
 
 import { useRTCParams } from './use-rtcParams';
 import { useTip } from './use-tip';
 
 export const useWebsocket = () => {
+  const route = useRoute();
   const appStore = useAppStore();
   const userStore = useUserStore();
   const networkStore = useNetworkStore();
@@ -73,8 +76,8 @@ export const useWebsocket = () => {
   watch(
     () => appStore.pkStream,
     (newval) => {
-      console.log('转推到srs', newval);
       if (newval && isAnchor.value) {
+        console.log('转推到srs', newval);
         srsWebRtc.sendOffer({
           isPk: true,
           sender: mySocketId.value,
@@ -148,9 +151,7 @@ export const useWebsocket = () => {
       msgType: WsMsgTypeEnum.join,
       data: {
         socket_id: mySocketId.value,
-        live_room: {
-          id: Number(roomId.value),
-        },
+        live_room_id: Number(roomId.value),
         user_info: userStore.userInfo,
       },
     });
@@ -371,12 +372,10 @@ export const useWebsocket = () => {
           api: `/rtc/v1/publish/`,
           clientip: null,
           sdp: offerSdp!.sdp!,
-          // eslint-disable-next-line
           streamurl: `${myLiveRoom.rtmp_url!}?${
             SRS_CB_URL_PARAMS.publishKey
-            // eslint-disable-next-line
           }=${myLiveRoom.key!}&${SRS_CB_URL_PARAMS.publishType}=${
-            LiveRoomTypeEnum.user_srs
+            isPk ? LiveRoomTypeEnum.user_pk : LiveRoomTypeEnum.user_srs
           }`,
           tid: getRandomString(10),
         });
@@ -530,35 +529,42 @@ export const useWebsocket = () => {
       WsMsgTypeEnum.nativeWebRtcOffer,
       async (data: WsOfferType['data']) => {
         console.log('收到nativeWebRtcOffer', data);
-        console.log(data.live_room.type, LiveRoomTypeEnum.user_pk);
         if (data.live_room.type === LiveRoomTypeEnum.user_pk) {
           if (!isAnchor.value) {
-            dialog.warning({
-              title: '提示',
-              content: '是否加入PK',
-              positiveText: '确认',
-              onPositiveClick() {
-                return new Promise((resolve) => {
-                  resolve(1);
-                  if (data.receiver === mySocketId.value) {
-                    console.warn('是发给我的nativeWebRtcOffer');
-                    nativeWebRtc.sendAnswer({
-                      isPk: data.live_room.type === LiveRoomTypeEnum.user_pk,
-                      sender: data.sender,
-                      receiver: data.receiver,
-                      sdp: data.sdp,
-                    });
-                  } else {
-                    console.error('不是发给我的nativeWebRtcOffer');
-                  }
-                });
-              },
+            const res = await fetchVerifyPkKey({
+              liveRoomId: Number(roomId.value),
+              key: route.query.pkKey,
             });
+            if (res.code === 200 && res.data === true) {
+              dialog.warning({
+                title: '提示',
+                content: '是否加入PK',
+                positiveText: '确认',
+                onPositiveClick() {
+                  return new Promise((resolve) => {
+                    resolve(1);
+                    if (data.receiver === mySocketId.value) {
+                      console.warn('是发给我的nativeWebRtcOffer');
+                      nativeWebRtc.sendAnswer({
+                        isPk: true,
+                        sender: data.sender,
+                        receiver: data.receiver,
+                        sdp: data.sdp,
+                      });
+                    } else {
+                      console.error('不是发给我的nativeWebRtcOffer');
+                    }
+                  });
+                },
+              });
+            } else {
+              window.$message.error('验证pkKey错误！');
+            }
           } else {
             if (data.receiver === mySocketId.value) {
               console.warn('是发给我的nativeWebRtcOffer');
               nativeWebRtc.sendAnswer({
-                isPk: data.live_room.type === LiveRoomTypeEnum.user_pk,
+                isPk: true,
                 sender: data.sender,
                 receiver: data.receiver,
                 sdp: data.sdp,
@@ -727,17 +733,13 @@ export const useWebsocket = () => {
     // 用户加入房间完成
     ws.socketIo.on(WsMsgTypeEnum.joined, (data: WsJoinType['data']) => {
       prettierReceiveWsMsg(WsMsgTypeEnum.joined, data);
-      // liveUserList.value.push({
-      //   id: data.socket_id,
-      //   userInfo: data.user_info,
-      // });
       appStore.setLiveRoomInfo(data.live_room);
       anchorInfo.value = data.anchor_info;
       ws.send<WsGetLiveUserType['data']>({
         requestId: getRandomString(8),
         msgType: WsMsgTypeEnum.getLiveUser,
         data: {
-          live_room_id: data.live_room.id!,
+          live_room_id: data.live_room_id,
         },
       });
     });
@@ -745,10 +747,6 @@ export const useWebsocket = () => {
     // 其他用户加入房间
     ws.socketIo.on(WsMsgTypeEnum.otherJoin, (data: WsOtherJoinType['data']) => {
       prettierReceiveWsMsg(WsMsgTypeEnum.otherJoin, data);
-      // liveUserList.value.push({
-      //   id: data.join_socket_id,
-      //   userInfo: data.join_user_info,
-      // });
       const requestId = getRandomString(8);
       const danmu: IDanmu = {
         live_room_id: data.live_room.id!,

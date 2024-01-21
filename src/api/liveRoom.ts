@@ -8,6 +8,11 @@ export function fetchLiveRoomList(params) {
   });
 }
 
+export function fetchVerifyPkKey(data: { liveRoomId: number; key }) {
+  return request.get(`/live_room/verify_pk_key/${data.liveRoomId}`, {
+    params: { key: data.key },
+  });
+}
 export function fetchUpdateLiveRoomKey() {
   return request.instance({
     url: '/live_room/update_key',

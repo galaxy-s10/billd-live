@@ -185,7 +185,8 @@ export type WsStartLiveType = IWsFormat<{
 /** 用户加入直播间 */
 export type WsJoinType = IWsFormat<{
   socket_id: string;
-  live_room: ILiveRoom;
+  live_room_id: number;
+  live_room?: ILiveRoom;
   anchor_info?: IUser;
   user_info?: IUser;
 }>;
