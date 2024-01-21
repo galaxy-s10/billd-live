@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia';
 
 import { fetchLogin, fetchUserInfo } from '@/api/user';
-import { IAuth, IRole, IUser } from '@/interface';
+import { IAuth, IRole } from '@/interface';
+import { IUser } from '@/types/IUser';
 import cache from '@/utils/cache';
 
 type UserRootState = {

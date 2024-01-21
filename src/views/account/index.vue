@@ -81,9 +81,10 @@ import { fetchUpdateLiveRoomKey } from '@/api/liveRoom';
 import { fetchUserInfo } from '@/api/user';
 import { DEFAULT_AUTH_INFO, SRS_CB_URL_PARAMS } from '@/constant';
 import { loginTip } from '@/hooks/use-login';
-import { IUser, LiveRoomTypeEnum } from '@/interface';
 import { routerName } from '@/router';
 import { useUserStore } from '@/store/user';
+import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
+import { IUser } from '@/types/IUser';
 import { getLiveRoomPageUrl } from '@/utils';
 
 const newRtmpUrl = ref();

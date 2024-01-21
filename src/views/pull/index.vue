@@ -184,7 +184,7 @@
           class="item"
         >
           <template v-if="item.msgType === DanmuMsgTypeEnum.danmu">
-            <span class="time">[{{ formatTimeHour(item.sendMsgTime) }}]</span>
+            <span class="time">[{{ formatTimeHour(item.send_msg_time) }}]</span>
             <span class="name">
               <span
                 v-if="
@@ -249,7 +249,7 @@
             <span>：</span>
             <span
               class="msg"
-              v-if="!item.msgIsFile"
+              v-if="item.msgIsFile === WsMessageMsgIsFileEnum.no"
             >
               {{ item.msg }}
             </span>
@@ -355,17 +355,25 @@ import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchGoodsList } from '@/api/goods';
+import { fetchGetWsMessageList } from '@/api/wsMessage';
 import { MODULE_CONFIG_SWITCH, QINIU_LIVE } from '@/constant';
 import { emojiArray } from '@/emoji';
 import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { usePull } from '@/hooks/use-pull';
 import { useUpload } from '@/hooks/use-upload';
-import { DanmuMsgTypeEnum, GoodsTypeEnum, IGoods } from '@/interface';
-import { WsDisableSpeakingType, WsMsgTypeEnum } from '@/interface-ws';
+import {
+  DanmuMsgTypeEnum,
+  GoodsTypeEnum,
+  IGoods,
+  WsMessageMsgIsFileEnum,
+  WsMessageMsgIsShowEnum,
+  WsMessageMsgIsVerifyEnum,
+} from '@/interface';
 import router, { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
+import { WsDisableSpeakingType, WsMsgTypeEnum } from '@/types/websocket';
 import { formatTimeHour } from '@/utils';
 import { NODE_ENV } from 'script/constant';
 
@@ -414,6 +422,7 @@ onMounted(() => {
   setTimeout(() => {
     scrollTo(0, 0);
   }, 100);
+  handleHistoryMsg();
   appStore.setPlay(true);
   if (MODULE_CONFIG_SWITCH.pullGiftList) {
     getGoodsList();
@@ -433,6 +442,52 @@ onUnmounted(() => {
   closeWs();
   closeRtc();
 });
+
+async function handleHistoryMsg() {
+  try {
+    const res = await fetchGetWsMessageList({
+      nowPage: 1,
+      pageSize: appStore.liveRoomInfo?.history_msg_total || 10,
+      orderName: 'created_at',
+      orderBy: 'desc',
+      live_room_id: Number(roomId.value),
+      is_show: WsMessageMsgIsShowEnum.yes,
+      is_verify: WsMessageMsgIsVerifyEnum.yes,
+    });
+    if (res.code === 200) {
+      res.data.rows.forEach((v) => {
+        damuList.value.unshift({
+          ...v,
+          live_room_id: v.live_room_id!,
+          msg_id: v.id!,
+          socket_id: '',
+          msgType: v.msg_type!,
+          msgIsFile: v.msg_is_file!,
+          userInfo: v.user,
+          msg: v.content!,
+          username: v.username!,
+          send_msg_time: Number(v.send_msg_time),
+          redbag_send_id: v.redbag_send_id,
+        });
+      });
+      if (
+        appStore.liveRoomInfo?.system_msg &&
+        appStore.liveRoomInfo?.system_msg !== ''
+      ) {
+        damuList.value.push({
+          live_room_id: Number(roomId.value),
+          socket_id: '',
+          msgType: DanmuMsgTypeEnum.system,
+          msgIsFile: WsMessageMsgIsFileEnum.no,
+          msg: appStore.liveRoomInfo.system_msg,
+          send_msg_time: Number(+new Date()),
+        });
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 async function handleUserMedia({ video, audio }) {
   try {
@@ -593,7 +648,7 @@ async function uploadChange() {
   if (fileList?.length) {
     try {
       msgLoading.value = true;
-      msgIsFile.value = true;
+      msgIsFile.value = WsMessageMsgIsFileEnum.yes;
       const res = await useUpload({
         prefix: QINIU_LIVE.prefix['billd-live/msg-image/'],
         file: fileList[0],
@@ -605,7 +660,7 @@ async function uploadChange() {
     } catch (error) {
       console.log(error);
     } finally {
-      msgIsFile.value = false;
+      msgIsFile.value = WsMessageMsgIsFileEnum.no;
       msgLoading.value = false;
       if (uploadRef.value) {
         uploadRef.value.value = '';
@@ -1044,8 +1099,8 @@ function handleScrollTop() {
           left: 0;
           overflow: scroll;
           box-sizing: border-box;
-          padding-top: 5px;
-          padding-left: 5px;
+          padding: 3px;
+          padding-right: 0;
           height: 160px;
           background-color: #fff;
           transform: translateY(-100%);

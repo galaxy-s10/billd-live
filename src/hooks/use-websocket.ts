@@ -1,18 +1,26 @@
-import { getRandomString } from 'billd-utils';
-import { useDialog } from 'naive-ui';
-import { computed, onUnmounted, ref, watch } from 'vue';
+import { copyToClipBoard, getRandomString } from 'billd-utils';
+import { NButton, useDialog } from 'naive-ui';
+import { computed, h, onUnmounted, ref, watch } from 'vue';
 
 import { fetchRtcV1Publish } from '@/api/srs';
-import { SRS_CB_URL_PARAMS, WEBSOCKET_URL } from '@/constant';
+import { SRS_CB_URL_PARAMS, THEME_COLOR, WEBSOCKET_URL } from '@/constant';
 import {
   DanmuMsgTypeEnum,
-  IDanmu,
   ILiveUser,
-  IUser,
-  LiveRoomTypeEnum,
+  WsMessageMsgIsFileEnum,
 } from '@/interface';
+import { WebRTCClass } from '@/network/webRTC';
+import { WebSocketClass, prettierReceiveWsMsg } from '@/network/webSocket';
+import router, { routerName } from '@/router';
+import { useAppStore } from '@/store/app';
+import { useNetworkStore } from '@/store/network';
+import { useUserStore } from '@/store/user';
+import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
+import { IUser } from '@/types/IUser';
 import {
+  IDanmu,
   WSGetRoomAllUserType,
+  WSLivePkKeyType,
   WsAnswerType,
   WsCandidateType,
   WsConnectStatusEnum,
@@ -27,15 +35,11 @@ import {
   WsOtherJoinType,
   WsRoomLivingType,
   WsStartLiveType,
-} from '@/interface-ws';
-import { WebRTCClass } from '@/network/webRTC';
-import { WebSocketClass, prettierReceiveWsMsg } from '@/network/webSocket';
-import { useAppStore } from '@/store/app';
-import { useNetworkStore } from '@/store/network';
-import { useUserStore } from '@/store/user';
-import { createVideo, formatDownTime } from '@/utils';
+} from '@/types/websocket';
+import { createVideo } from '@/utils';
 
 import { useRTCParams } from './use-rtcParams';
+import { useTip } from './use-tip';
 
 export const useWebsocket = () => {
   const appStore = useAppStore();
@@ -367,8 +371,10 @@ export const useWebsocket = () => {
           api: `/rtc/v1/publish/`,
           clientip: null,
           sdp: offerSdp!.sdp!,
+          // eslint-disable-next-line
           streamurl: `${myLiveRoom.rtmp_url!}?${
             SRS_CB_URL_PARAMS.publishKey
+            // eslint-disable-next-line
           }=${myLiveRoom.key!}&${SRS_CB_URL_PARAMS.publishType}=${
             LiveRoomTypeEnum.user_srs
           }`,
@@ -408,6 +414,41 @@ export const useWebsocket = () => {
       if (!ws) return;
       ws.status = WsConnectStatusEnum.disconnect;
       ws.update();
+    });
+
+    // 收到livePkKey
+    ws.socketIo.on(WsMsgTypeEnum.livePkKey, (data: WSLivePkKeyType['data']) => {
+      console.log('收到livePkKey', data);
+      const url = router.resolve({
+        name: routerName.pull,
+        params: { roomId: data.live_room_id },
+        query: {
+          pkKey: data.key,
+        },
+      });
+      const pkurl = `${window.location.origin}${url.href}`;
+      useTip({
+        title: '邀请主播加入PK',
+        width: '360px',
+        hiddenCancel: true,
+        content: h('div', [
+          h('div', { style: { marginBottom: '5px' } }, `${pkurl}`),
+          h(
+            NButton,
+            {
+              size: 'small',
+              type: 'primary',
+              color: THEME_COLOR,
+              onClick: () => {
+                copyToClipBoard(pkurl);
+                window.$message.success('复制成功！');
+              },
+            },
+            () => '复制链接' // 用箭头函数返回性能更好。
+          ),
+          h('div', { style: { marginTop: '5px' } }, '注意，有效期：5分钟'),
+        ]),
+      }).catch(() => {});
     });
 
     // 收到srsOffer
@@ -617,13 +658,15 @@ export const useWebsocket = () => {
     ws.socketIo.on(WsMsgTypeEnum.message, (data: WsMessageType) => {
       prettierReceiveWsMsg(WsMsgTypeEnum.message, data);
       damuList.value.push({
+        user_agent: data.data.user_agent,
+        live_room_id: data.data.live_room_id,
         request_id: data.request_id,
         socket_id: data.socket_id,
         msgType: DanmuMsgTypeEnum.danmu,
         msg: data.data.msg,
         userInfo: data.user_info,
         msgIsFile: data.data.msgIsFile,
-        sendMsgTime: data.data.sendMsgTime,
+        send_msg_time: data.data.send_msg_time,
       });
     });
 
@@ -632,35 +675,35 @@ export const useWebsocket = () => {
       WsMsgTypeEnum.disableSpeaking,
       (data: WsDisableSpeakingType['data']) => {
         prettierReceiveWsMsg(WsMsgTypeEnum.disableSpeaking, data);
-        if (data.is_disable_speaking) {
-          window.$message.error('你已被禁言！');
-          appStore.disableSpeaking.set(data.live_room_id, {
-            exp: data.disable_expired_at,
-            label: formatDownTime({
-              startTime: +new Date(),
-              endTime: data.disable_expired_at,
-            }),
-          });
-          clearTimeout(timerObj.value[data.live_room_id]);
-          timerObj.value[data.live_room_id] = setInterval(() => {
-            if (
-              data.disable_expired_at &&
-              +new Date() > data.disable_expired_at
-            ) {
-              clearTimeout(timerObj.value[data.live_room_id]);
-            }
-            appStore.disableSpeaking.set(data.live_room_id, {
-              exp: data.disable_expired_at!,
-              label: formatDownTime({
-                startTime: +new Date(),
-                endTime: data.disable_expired_at!,
-              }),
-            });
-          }, 1000);
-          damuList.value = damuList.value.filter(
-            (v) => v.request_id !== data.request_id
-          );
-        }
+        // if (data.is_disable_speaking) {
+        //   window.$message.error('你已被禁言！');
+        //   appStore.disableSpeaking.set(data.live_room_id, {
+        //     exp: data.disable_expired_at,
+        //     label: formatDownTime({
+        //       startTime: +new Date(),
+        //       endTime: data.disable_expired_at,
+        //     }),
+        //   });
+        //   clearTimeout(timerObj.value[data.live_room_id]);
+        //   timerObj.value[data.live_room_id] = setInterval(() => {
+        //     if (
+        //       data.disable_expired_at &&
+        //       +new Date() > data.disable_expired_at
+        //     ) {
+        //       clearTimeout(timerObj.value[data.live_room_id]);
+        //     }
+        //     appStore.disableSpeaking.set(data.live_room_id, {
+        //       exp: data.disable_expired_at!,
+        //       label: formatDownTime({
+        //         startTime: +new Date(),
+        //         endTime: data.disable_expired_at!,
+        //       }),
+        //     });
+        //   }, 1000);
+        //   damuList.value = damuList.value.filter(
+        //     (v) => v.request_id !== data.request_id
+        //   );
+        // }
         if (data.user_id !== userStore.userInfo?.id && data.disable_ok) {
           window.$message.success('禁言成功！');
         }
@@ -708,13 +751,14 @@ export const useWebsocket = () => {
       // });
       const requestId = getRandomString(8);
       const danmu: IDanmu = {
+        live_room_id: data.live_room.id!,
         request_id: requestId,
         msgType: DanmuMsgTypeEnum.otherJoin,
         socket_id: data.join_socket_id,
         userInfo: data.join_user_info,
-        msgIsFile: false,
+        msgIsFile: WsMessageMsgIsFileEnum.no,
         msg: '',
-        sendMsgTime: +new Date(),
+        send_msg_time: +new Date(),
       };
       damuList.value.push(danmu);
       ws.send<WsGetLiveUserType['data']>({
@@ -758,12 +802,13 @@ export const useWebsocket = () => {
       // );
       // liveUserList.value = res;
       damuList.value.push({
+        live_room_id: Number(roomId.value),
         socket_id: data.socket_id,
         msgType: DanmuMsgTypeEnum.userLeaved,
-        msgIsFile: false,
+        msgIsFile: WsMessageMsgIsFileEnum.no,
         userInfo: data.user_info,
         msg: '',
-        sendMsgTime: +new Date(),
+        send_msg_time: +new Date(),
       });
     });
   }

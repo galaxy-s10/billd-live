@@ -1,4 +1,5 @@
-import { IPaging, IUser } from '@/interface';
+import { IPaging } from '@/interface';
+import { IUser } from '@/types/IUser';
 import request from '@/utils/request';
 
 export function fetchQrcodeLogin({ platform, exp }) {

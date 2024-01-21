@@ -1,4 +1,4 @@
-import { ComponentPublicInstance, createApp } from 'vue';
+import { ComponentPublicInstance, VNode, createApp } from 'vue';
 
 import ModalCpt from './modal/index.vue';
 
@@ -10,15 +10,19 @@ const instance: ComponentPublicInstance<InstanceType<typeof ModalCpt>> =
 
 document.body.appendChild(container);
 
-export function useTip(
-  msg: string,
-  hiddenCancel?: boolean,
-  hiddenClose?: boolean
-) {
+export function useTip(data: {
+  title?: string;
+  width?: string;
+  content: string | VNode;
+  hiddenCancel?: boolean;
+  hiddenClose?: boolean;
+}) {
   instance.show = true;
-  instance.msg = msg;
-  instance.hiddenCancel = !!hiddenCancel;
-  instance.hiddenClose = !!hiddenClose;
+  instance.title = data.title || '提示';
+  instance.width = data.width || '320px';
+  instance.content = data.content;
+  instance.hiddenCancel = !!data.hiddenCancel;
+  instance.hiddenClose = !!data.hiddenClose;
   return new Promise((resolve, reject) => {
     instance.handleOk = () => {
       instance.show = false;

@@ -6,16 +6,15 @@ import { useFlvPlay, useHlsPlay } from '@/hooks/use-play';
 import { useWebsocket } from '@/hooks/use-websocket';
 import {
   DanmuMsgTypeEnum,
-  IDanmu,
-  ILiveRoom,
   LiveLineEnum,
-  LiveRoomTypeEnum,
+  WsMessageMsgIsFileEnum,
 } from '@/interface';
-import { WsMessageType, WsMsgTypeEnum } from '@/interface-ws';
 import { useAppStore } from '@/store/app';
 import { usePiniaCacheStore } from '@/store/cache';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
+import { ILiveRoom, LiveRoomTypeEnum } from '@/types/ILiveRoom';
+import { WsMessageType, WsMsgTypeEnum } from '@/types/websocket';
 import { createVideo, videoToCanvas } from '@/utils';
 
 export function usePull(roomId: string) {
@@ -25,7 +24,7 @@ export function usePull(roomId: string) {
   const appStore = useAppStore();
   const localStream = ref<MediaStream>();
   const danmuStr = ref('');
-  const msgIsFile = ref(false);
+  const msgIsFile = ref<WsMessageMsgIsFileEnum>(WsMessageMsgIsFileEnum.no);
   const autoplayVal = ref(false);
   const videoLoading = ref(false);
   const isPlaying = ref(false);
@@ -409,28 +408,21 @@ export function usePull(roomId: string) {
     const instance = networkStore.wsMap.get(roomId);
     if (!instance) return;
     const requestId = getRandomString(8);
-    const danmu: IDanmu = {
-      request_id: requestId,
-      socket_id: mySocketId.value,
-      userInfo: userStore.userInfo!,
-      msgType: DanmuMsgTypeEnum.danmu,
-      msg: danmuStr.value,
-      msgIsFile: msgIsFile.value,
-      sendMsgTime: +new Date(),
-    };
     const messageData: WsMessageType['data'] = {
+      socket_id: '',
       msg: danmuStr.value,
       msgType: DanmuMsgTypeEnum.danmu,
       live_room_id: Number(roomId),
       msgIsFile: msgIsFile.value,
-      sendMsgTime: +new Date(),
+      send_msg_time: +new Date(),
+      user_agent: navigator.userAgent,
     };
     instance.send({
       requestId,
       msgType: WsMsgTypeEnum.message,
       data: messageData,
     });
-    damuList.value.push(danmu);
+    // damuList.value.push(danmu);
     danmuStr.value = '';
   }
 

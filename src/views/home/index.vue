@@ -204,16 +204,15 @@ import { fetchLiveList } from '@/api/live';
 import { fetchFindLiveConfigByKey } from '@/api/liveConfig';
 import { MODULE_CONFIG_SWITCH, sliderList } from '@/constant';
 import { usePull } from '@/hooks/use-pull';
+import { ILive, LiveLineEnum } from '@/interface';
+import { routerName } from '@/router';
+import { useAppStore } from '@/store/app';
 import {
-  ILive,
-  LiveLineEnum,
   LiveRoomIsShowEnum,
   LiveRoomPullIsShouldAuthEnum,
   LiveRoomTypeEnum,
   LiveRoomUseCDNEnum,
-} from '@/interface';
-import { routerName } from '@/router';
-import { useAppStore } from '@/store/app';
+} from '@/types/ILiveRoom';
 
 const route = useRoute();
 const router = useRouter();

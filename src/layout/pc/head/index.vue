@@ -273,7 +273,7 @@
                 class="item"
                 @click.prevent="handleStartLive(LiveRoomTypeEnum.user_pk)"
               >
-                <div class="txt">打PK</div>
+                <div class="txt">一对一打PK</div>
               </a>
             </div>
           </template>
@@ -328,10 +328,10 @@ import VPIconChevronDown from '@/components/icons/VPIconChevronDown.vue';
 import VPIconExternalLink from '@/components/icons/VPIconExternalLink.vue';
 import { COMMON_URL, MODULE_CONFIG_SWITCH } from '@/constant';
 import { loginTip } from '@/hooks/use-login';
-import { LiveRoomTypeEnum } from '@/interface';
 import { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
+import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 
 const router = useRouter();
 const userStore = useUserStore();

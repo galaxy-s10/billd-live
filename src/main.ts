@@ -1,7 +1,7 @@
 // 一定要引入webrtc-adapter（约等于垫片，适配safari等其他浏览器）
+import '@/assets/main.scss';
+import '@/utils/showBilldVersion';
 import 'webrtc-adapter';
-import './main.scss';
-import './showBilldVersion';
 // import 'windi.css'; // windicss-webpack-plugin会解析windi.css这个MODULE_ID
 import { createApp } from 'vue';
 

@@ -105,13 +105,10 @@ import { fetchLiveRoomList } from '@/api/liveRoom';
 import { fetchBlogUserList, fetchUserList } from '@/api/user';
 import { fetchWalletList } from '@/api/wallet';
 import { fullLoading } from '@/components/FullLoading';
-import {
-  ILiveRoom,
-  IUser,
-  LiveRoomIsShowEnum,
-  RankTypeEnum,
-} from '@/interface';
+import { RankTypeEnum } from '@/interface';
 import router, { routerName } from '@/router';
+import { ILiveRoom, LiveRoomIsShowEnum } from '@/types/ILiveRoom';
+import { IUser } from '@/types/IUser';
 
 export interface IRankType {
   type: RankTypeEnum;

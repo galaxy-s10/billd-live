@@ -1,8 +1,9 @@
 import { UploadFileInfo } from 'naive-ui';
 import { defineStore } from 'pinia';
 
-import { ILiveRoom, LiveLineEnum, MediaTypeEnum } from '@/interface';
+import { LiveLineEnum, MediaTypeEnum } from '@/interface';
 import { mobileRouterName } from '@/router';
+import { ILiveRoom } from '@/types/ILiveRoom';
 
 export type AppRootState = {
   play: boolean;

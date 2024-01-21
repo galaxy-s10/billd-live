@@ -52,13 +52,13 @@ import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchLiveRoomList } from '@/api/area';
+import router, { routerName } from '@/router';
 import {
   ILiveRoom,
   LiveRoomIsShowEnum,
   LiveRoomPullIsShouldAuthEnum,
   LiveRoomUseCDNEnum,
-} from '@/interface';
-import router, { routerName } from '@/router';
+} from '@/types/ILiveRoom';
 
 const liveRoomList = ref<ILiveRoom[]>([]);
 

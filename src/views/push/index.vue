@@ -221,7 +221,7 @@
                 <span>：</span>
                 <span
                   class="msg"
-                  v-if="!item.msgIsFile"
+                  v-if="item.msgIsFile === WsMessageMsgIsFileEnum.no"
                 >
                   {{ item.msg }}
                 </span>
@@ -261,9 +261,22 @@
         >
           <div class="control">
             <div
+              class="emoji-list"
+              v-if="showEmoji"
+            >
+              <div
+                class="item"
+                v-for="(item, index) in emojiArray"
+                :key="index"
+                @click="handlePushStr(item)"
+              >
+                {{ item }}
+              </div>
+            </div>
+            <div
               class="ico face"
               title="表情"
-              @click="handleWait"
+              @click="showEmoji = !showEmoji"
             ></div>
             <div
               class="ico img"
@@ -358,15 +371,21 @@ import { useRoute } from 'vue-router';
 import * as workerTimers from 'worker-timers';
 
 import { QINIU_LIVE, mediaTypeEnumMap } from '@/constant';
+import { emojiArray } from '@/emoji';
 import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { usePush } from '@/hooks/use-push';
 import { useRTCParams } from '@/hooks/use-rtcParams';
 import { useUpload } from '@/hooks/use-upload';
-import { DanmuMsgTypeEnum, LiveRoomTypeEnum, MediaTypeEnum } from '@/interface';
+import {
+  DanmuMsgTypeEnum,
+  MediaTypeEnum,
+  WsMessageMsgIsFileEnum,
+} from '@/interface';
 import { AppRootState, useAppStore } from '@/store/app';
 import { usePiniaCacheStore } from '@/store/cache';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
+import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import {
   createVideo,
   formatDownTime,
@@ -430,6 +449,7 @@ const startTime = ref(+new Date());
 const msgLoading = ref(false);
 const uploadRef = ref<HTMLInputElement>();
 const nullAudioStream = ref<MediaStream>();
+const showEmoji = ref(false);
 
 const timeCanvasDom = ref<Raw<fabric.Text>[]>([]);
 const stopwatchCanvasDom = ref<Raw<fabric.Text>[]>([]);
@@ -510,6 +530,11 @@ watch(
   }
 );
 
+function handlePushStr(str) {
+  danmuStr.value += str;
+  showEmoji.value = false;
+}
+
 function handleScrollTop() {
   if (danmuListRef.value) {
     danmuListRef.value.scrollTop = danmuListRef.value.scrollHeight + 10000;
@@ -563,7 +588,7 @@ async function uploadChange() {
   if (fileList?.length) {
     try {
       msgLoading.value = true;
-      msgIsFile.value = true;
+      msgIsFile.value = WsMessageMsgIsFileEnum.yes;
       const res = await useUpload({
         prefix: QINIU_LIVE.prefix['billd-live/msg-image/'],
         file: fileList[0],
@@ -575,7 +600,7 @@ async function uploadChange() {
     } catch (error) {
       console.log(error);
     } finally {
-      msgIsFile.value = false;
+      msgIsFile.value = WsMessageMsgIsFileEnum.no;
       msgLoading.value = false;
       if (uploadRef.value) {
         uploadRef.value.value = '';
@@ -689,13 +714,17 @@ function clearFrame() {
 }
 
 function renderFrame() {
-  // currentMaxFramerate等于20，实际fps是17.68
   /**
+   * 理论情况：
    * currentMaxFramerate等于20，即每秒20帧，即1000 / 20 = 50毫秒轮询一次
    * currentMaxFramerate等于30，即每秒30帧，即1000 / 30 = 33.333毫秒轮询一次
    * currentMaxFramerate等于30，即每秒60帧，即1000 / 60 = 16.666毫秒轮询一次
+   * 实际情况：
+   * currentMaxFramerate等于20，即50毫秒轮询一次，实际fps是18
+   * currentMaxFramerate等于20，希望fps是20，即需要(18/20) * 50 = 45毫秒轮询一次
    */
-  const delay = Math.floor(1000 / currentMaxFramerate.value); // 60帧的话即16.666666666666668
+  let delay = 1000 / currentMaxFramerate.value;
+  delay = (18 / 20) * delay;
   workerTimerId.value = workerTimers.setInterval(() => {
     renderAll();
   }, delay);
@@ -2189,6 +2218,32 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
         .control {
           display: flex;
           margin: 4px 0;
+          .emoji-list {
+            position: absolute;
+            top: 0;
+            right: 0;
+            left: 0;
+            overflow: scroll;
+            box-sizing: border-box;
+            padding: 3px;
+            padding-right: 0;
+            height: 160px;
+            background-color: #fff;
+            transform: translateY(-100%);
+
+            @extend %customScrollbar;
+            .item {
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              box-sizing: border-box;
+              width: 14%;
+              height: 18%;
+              border: 1px solid #f8f8f8;
+              font-size: 20px;
+              cursor: pointer;
+            }
+          }
           .ico {
             margin-right: 6px;
             width: 24px;

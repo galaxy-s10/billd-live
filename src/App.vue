@@ -9,13 +9,13 @@ import { isMobile } from 'billd-utils';
 import { GlobalThemeOverrides, NConfigProvider } from 'naive-ui';
 import { onMounted } from 'vue';
 
+import { THEME_COLOR } from '@/constant';
 import { useCheckUpdate } from '@/hooks/use-checkUpdate';
 import { loginMessage } from '@/hooks/use-login';
+import { usePiniaCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
 import { getLastBuildDate, setLastBuildDate } from '@/utils/localStorage/app';
 import { getToken } from '@/utils/localStorage/user';
-
-import { usePiniaCacheStore } from './store/cache';
 
 const { appInfo } = useCheckUpdate();
 const cacheStore = usePiniaCacheStore();
@@ -23,8 +23,8 @@ const userStore = useUserStore();
 
 const themeOverrides: GlobalThemeOverrides = {
   common: {
-    primaryColor: '#ffd700',
-    primaryColorHover: '#ffd700',
+    primaryColor: THEME_COLOR,
+    primaryColorHover: THEME_COLOR,
   },
 };
 

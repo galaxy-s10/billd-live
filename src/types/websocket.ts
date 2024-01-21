@@ -1,10 +1,10 @@
 import {
   DanmuMsgTypeEnum,
-  ILiveRoom,
   ILiveUser,
-  IUser,
-  LiveRoomTypeEnum,
-} from './interface';
+  WsMessageMsgIsFileEnum,
+} from '@/interface';
+import { ILiveRoom, LiveRoomTypeEnum } from '@/types/ILiveRoom';
+import { IUser } from '@/types/IUser';
 
 /** websocket连接状态 */
 export enum WsConnectStatusEnum {
@@ -44,11 +44,18 @@ export enum WsMsgTypeEnum {
   roomLiving = 'roomLiving',
   /** 房间不在直播 */
   roomNoLive = 'roomNoLive',
+  /** 获取在线用户 */
   getLiveUser = 'getLiveUser',
+  /** 更新加入信息 */
   updateJoinInfo = 'updateJoinInfo',
+  /** 心跳 */
   heartbeat = 'heartbeat',
+  /** 开始直播 */
   startLive = 'startLive',
+  /** 结束直播 */
   endLive = 'endLive',
+  /** 直播pk秘钥 */
+  livePkKey = 'livePkKey',
   /** 主播禁言用户 */
   disableSpeaking = 'disableSpeaking',
   /** 主播踢掉用户 */
@@ -85,6 +92,12 @@ export type WsUpdateJoinInfoType = IWsFormat<{
   rtmp_url?: string;
 }>;
 
+/** 直播pk秘钥 */
+export type WSLivePkKeyType = IWsFormat<{
+  live_room_id: number;
+  key: string;
+}>;
+
 /** 获取在线用户 */
 export type WSGetRoomAllUserType = IWsFormat<{
   liveUser: ILiveUser[];
@@ -106,14 +119,24 @@ export type WsRoomNoLiveType = IWsFormat<{
   live_room: ILiveRoom;
 }>;
 
-/** ws消息 */
-export type WsMessageType = IWsFormat<{
+export interface IDanmu {
   msgType: DanmuMsgTypeEnum;
-  msgIsFile: boolean;
+  msgIsFile: WsMessageMsgIsFileEnum;
   msg: string;
-  sendMsgTime: number;
+  username?: string;
+  user_agent?: string;
+  send_msg_time: number;
   live_room_id: number;
-}>;
+  redbag_send_id?: number;
+  msg_id?: number;
+
+  socket_id: string;
+  request_id?: string;
+  userInfo?: IUser;
+}
+
+/** ws消息 */
+export type WsMessageType = IWsFormat<IDanmu>;
 
 /** 禁言用户 */
 export type WsDisableSpeakingType = IWsFormat<{

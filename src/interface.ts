@@ -1,4 +1,9 @@
-/** 这里放项目里面的类型 */
+import {
+  ILiveRoom,
+  LiveRoomIsShowEnum,
+  LiveRoomStatusEnum,
+} from './types/ILiveRoom';
+import { IUser } from './types/IUser';
 
 export interface IQiniuData {
   id?: number;
@@ -13,6 +18,92 @@ export interface IQiniuData {
   qiniu_type?: number;
   qiniu_status?: number;
   qiniu_md5?: string;
+}
+
+export enum WsMessageMsgIsFileEnum {
+  yes,
+  no,
+}
+
+export enum WsMessageMsgIsShowEnum {
+  yes,
+  no,
+}
+
+export enum WsMessageMsgIsVerifyEnum {
+  yes,
+  no,
+}
+
+export interface IWsMessage {
+  id?: number;
+  username?: string;
+  origin_username?: string;
+  content?: string;
+  origin_content?: string;
+  redbag_send_id?: number;
+  live_room_id?: number;
+  user_id?: number;
+  ip?: string;
+  msg_is_file?: WsMessageMsgIsFileEnum;
+  msg_type?: DanmuMsgTypeEnum;
+  user_agent?: string;
+  send_msg_time?: number;
+  is_show?: WsMessageMsgIsShowEnum;
+  is_verify?: WsMessageMsgIsVerifyEnum;
+
+  user?: IUser;
+  redbag_send?: IRedbagSend;
+
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string;
+}
+
+export interface IRedbagSend {
+  id?: number;
+
+  user_id?: number;
+  live_room_id?: number;
+
+  total_amount?: string;
+  remaining_amount?: string;
+  total_nums?: number;
+  remaining_nums?: number;
+  remark?: string;
+
+  /** 用户信息 */
+  user?: IUser;
+  /** 直播间信息 */
+  live_room?: IGoods;
+
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string;
+}
+
+export enum RedbagIsGrantEnum {
+  yes,
+  no,
+}
+
+export interface IRedbagRecv {
+  id?: number;
+
+  user_id?: number;
+  redbag_send_id?: number;
+  amount?: string;
+  remark?: string;
+
+  /** 抢到红包了，是否已发放 */
+  is_grant?: RedbagIsGrantEnum;
+
+  /** 用户信息 */
+  user?: IUser;
+
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string;
 }
 
 export enum LiveLineEnum {
@@ -80,9 +171,10 @@ export interface IWallet {
   updated_at?: string;
   deleted_at?: string;
 }
+
 export type IList<T> = {
-  nowPage?: string;
-  pageSize?: string;
+  nowPage?: number;
+  pageSize?: number;
   orderBy?: string;
   orderName?: string;
   keyWord?: string;
@@ -195,86 +287,6 @@ export interface IGoods {
   deleted_at?: string;
 }
 
-/** 拉流是否需要鉴权 */
-export enum LiveRoomPullIsShouldAuthEnum {
-  /** 需要鉴权 */
-  yes,
-  /** 不需要鉴权 */
-  no,
-}
-
-/** 是否使用cdn */
-export enum LiveRoomUseCDNEnum {
-  /** 使用cdn */
-  yes,
-  /** 不使用cdn */
-  no,
-}
-
-/** 直播间状态 */
-export enum LiveRoomStatusEnum {
-  /** 正常 */
-  normal,
-  /** 禁用 */
-  disable,
-}
-
-/** 直播间是否显示 */
-export enum LiveRoomIsShowEnum {
-  /** 显示 */
-  yes,
-  /** 不显示 */
-  no,
-}
-
-export interface ILiveRoom {
-  id?: number;
-  /** 直播间名称 */
-  name?: string;
-  /** 直播间简介 */
-  desc?: string;
-  /** 直播间备注 */
-  remark?: string;
-  /** 是否使用cdn */
-  cdn?: LiveRoomUseCDNEnum;
-  /** 拉流是否需要鉴权 */
-  pull_is_should_auth?: LiveRoomPullIsShouldAuthEnum;
-  /** 权重 */
-  weight?: number;
-  /** 推流秘钥 */
-  key?: string;
-  /** 直播间类型 */
-  type?: LiveRoomTypeEnum;
-  /** 开播预览图 */
-  cover_img?: string;
-  /** 直播间背景图 */
-  bg_img?: string;
-  /** 直播间状态 */
-  status?: LiveRoomStatusEnum;
-  /** 直播间是否显示 */
-  is_show?: LiveRoomIsShowEnum;
-
-  /** 用户信息 */
-  user?: IUser;
-  /** 用户信息 */
-  users?: IUser[];
-  /** 分区信息 */
-  area?: IArea;
-  /** 分区信息 */
-  areas?: IArea[];
-  /** 直播信息 */
-  live?: ILive;
-  user_live_room?: IUserLiveRoom & { user: IUser };
-
-  rtmp_url?: string;
-  flv_url?: string;
-  hls_url?: string;
-
-  created_at?: string;
-  updated_at?: string;
-  deleted_at?: string;
-}
-
 export interface IUserLiveRoom {
   id?: number;
   user_id?: number;
@@ -286,22 +298,6 @@ export interface IUserLiveRoom {
   created_at?: string;
   updated_at?: string;
   deleted_at?: string;
-}
-
-/** 直播间类型 */
-export enum LiveRoomTypeEnum {
-  /** 系统直播 */
-  system,
-  /** 主播使用webrtc直播 */
-  user_wertc,
-  /** 主播使用srs直播 */
-  user_srs,
-  /** 主播使用obs/ffmpeg直播 */
-  user_obs,
-  /** 主播使用msr直播 */
-  user_msr,
-  /** 主播打pk */
-  user_pk,
 }
 
 export interface BilldHtmlWebpackPluginLog {
@@ -347,52 +343,6 @@ export interface IRole {
   deleted_at?: null;
   role_auths?: number[];
   c_roles?: number[];
-}
-
-export interface IUser {
-  id?: number;
-  username?: string;
-  password?: string;
-  email?: string;
-  status?: number;
-  avatar?: string;
-  desc?: string;
-  token?: string;
-
-  wallet?: IWallet;
-  live_room?: ILiveRoom;
-  live_rooms?: ILiveRoom[];
-
-  roles?: IRole[];
-  auths?: IAuth[];
-  user_roles?: number[];
-
-  qq_users?: IQqUser[];
-
-  created_at?: string;
-  updated_at?: string;
-  deleted_at?: string;
-}
-
-export interface IQqUser {
-  id?: number;
-  client_id?: number;
-  openid?: string;
-  unionid?: string;
-  username?: string;
-  figureurl?: string;
-  figureurl_1?: string;
-  figureurl_2?: string;
-  figureurl_qq_1?: string;
-  figureurl_qq_2?: string;
-  constellation?: string;
-  gender?: string;
-  city?: string;
-  province?: string;
-  year?: string;
-  created_at?: string;
-  updated_at?: string;
-  deleted_at?: any;
 }
 
 export interface IArea {
@@ -477,6 +427,8 @@ export enum DanmuMsgTypeEnum {
   danmu,
   otherJoin,
   userLeaved,
+  system,
+  redbag,
 }
 
 export interface IUpdateJoinInfo {
@@ -500,14 +452,4 @@ export interface ILiveUser {
     joinRoomId: number;
     userInfo?: IUser;
   };
-}
-
-export interface IDanmu {
-  msgType: DanmuMsgTypeEnum;
-  msg: string;
-  socket_id: string;
-  request_id?: string;
-  userInfo?: IUser;
-  msgIsFile: boolean;
-  sendMsgTime: number;
 }

@@ -119,9 +119,10 @@ import {
 import { debounce } from 'billd-utils';
 import { ref } from 'vue';
 
-import { LiveLineEnum, LiveRoomTypeEnum } from '@/interface';
+import { LiveLineEnum } from '@/interface';
 import { useAppStore } from '@/store/app';
 import { usePiniaCacheStore } from '@/store/cache';
+import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 
 withDefaults(
   defineProps<{

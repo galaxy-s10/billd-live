@@ -81,7 +81,7 @@
               >
                 <template v-if="item.msgType === DanmuMsgTypeEnum.danmu">
                   <span class="time"
-                    >[{{ formatTimeHour(item.sendMsgTime) }}]</span
+                    >[{{ formatTimeHour(item.send_msg_time) }}]</span
                   >
                   <span class="name">
                     <span v-if="item.userInfo">
@@ -102,7 +102,7 @@
                   </span>
                   <span
                     class="msg"
-                    v-if="!item.msgIsFile"
+                    v-if="item.msgIsFile === WsMessageMsgIsFileEnum.no"
                   >
                     {{ item.msg }}
                   </span>
@@ -204,7 +204,7 @@
       <n-button
         type="info"
         size="small"
-        color="#ffd700"
+        :color="THEME_COLOR"
         @click="sendDanmu"
       >
         发送
@@ -220,13 +220,14 @@ import { useRoute } from 'vue-router';
 
 import { fetchFindLiveConfigByKey } from '@/api/liveConfig';
 import { fetchFindLiveRoom } from '@/api/liveRoom';
-import { MODULE_CONFIG_SWITCH } from '@/constant';
+import { MODULE_CONFIG_SWITCH, THEME_COLOR } from '@/constant';
 import { emojiArray } from '@/emoji';
 import { usePull } from '@/hooks/use-pull';
-import { DanmuMsgTypeEnum, LiveRoomTypeEnum } from '@/interface';
+import { DanmuMsgTypeEnum, WsMessageMsgIsFileEnum } from '@/interface';
 import router, { mobileRouterName } from '@/router';
 import { useAppStore } from '@/store/app';
 import { usePiniaCacheStore } from '@/store/cache';
+import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import { formatTimeHour } from '@/utils';
 
 const route = useRoute();

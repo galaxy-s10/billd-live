@@ -1,8 +1,12 @@
 import { Socket, io } from 'socket.io-client';
 
-import { IWsFormat, WsConnectStatusEnum, WsMsgTypeEnum } from '@/interface-ws';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
+import {
+  IWsFormat,
+  WsConnectStatusEnum,
+  WsMsgTypeEnum,
+} from '@/types/websocket';
 
 export function prettierReceiveWsMsg(...arg) {
   console.warn('【websocket】收到消息', ...arg);

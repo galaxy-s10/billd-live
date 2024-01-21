@@ -1,9 +1,9 @@
 import { getRandomString } from 'billd-utils';
 
 import { MediaTypeEnum } from '@/interface';
-import { WsCandidateType, WsMsgTypeEnum } from '@/interface-ws';
 import { AppRootState, useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
+import { WsCandidateType, WsMsgTypeEnum } from '@/types/websocket';
 
 /** 设置分辨率 */
 export async function handleResolutionRatio(data: {

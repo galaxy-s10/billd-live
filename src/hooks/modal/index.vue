@@ -7,8 +7,10 @@
       :title="title"
       :mask-closable="maskClosable"
       @close="handleCancel()"
+      :width="width"
     >
-      {{ msg }}
+      <div ref="domRef"></div>
+      <template v-if="typeof content === 'string'">{{ content }}</template>
       <template #footer>
         <div class="footer">
           <div
@@ -31,7 +33,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { VNode, defineComponent, ref, render, watch } from 'vue';
 
 import ModalCpt from '@/components/Modal/index.vue';
 
@@ -39,12 +41,20 @@ export default defineComponent({
   components: { ModalCpt },
   emits: ['ok', 'cancel'],
   setup() {
-    const title = ref('提示');
-    const msg = ref('');
+    const title = ref('');
+    const width = ref('320px');
+    const content = ref<string | VNode>('');
     const show = ref(false);
     const hiddenCancel = ref(false);
     const hiddenClose = ref(false);
     const maskClosable = ref(true);
+    const domRef = ref();
+    watch([() => show.value, () => domRef.value], ([val1, val2]) => {
+      if (!val1 || !val2) return;
+      if (typeof content.value !== 'string') {
+        render(content.value, domRef.value);
+      }
+    });
     function handleCancel(cb?) {
       cb?.();
     }
@@ -53,11 +63,13 @@ export default defineComponent({
     }
     return {
       title,
-      msg,
+      width,
+      content,
       show,
       hiddenCancel,
       hiddenClose,
       maskClosable,
+      domRef,
       handleCancel,
       handleOk,
     };

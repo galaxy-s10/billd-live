@@ -78,14 +78,15 @@
 import { onMounted, onUnmounted, ref } from 'vue';
 
 import { fetchAreaLiveRoomList } from '@/api/area';
+import { IArea, IAreaLiveRoom } from '@/interface';
+
+import router, { mobileRouterName, routerName } from '@/router';
 import {
-  IArea,
-  IAreaLiveRoom,
   LiveRoomIsShowEnum,
   LiveRoomPullIsShouldAuthEnum,
   LiveRoomUseCDNEnum,
-} from '@/interface';
-import router, { mobileRouterName, routerName } from '@/router';
+} from '@/types/ILiveRoom';
+
 import { useAppStore } from '@/store/app';
 
 const appStore = useAppStore();

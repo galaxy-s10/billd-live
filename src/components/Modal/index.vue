@@ -3,7 +3,10 @@
     class="modal-wrap"
     @click.self="maskClose"
   >
-    <div class="container">
+    <div
+      class="container"
+      :style="{ width }"
+    >
       <span class="title">{{ props.title }}</span>
       <i
         v-if="!hiddenClose"
@@ -36,8 +39,11 @@ const props = withDefaults(
     hiddenClose?: Boolean;
     maskClosable?: Boolean;
     title?: string;
+    width?: string;
   }>(),
-  {}
+  {
+    width: '320px',
+  }
 );
 
 function maskClose() {
@@ -61,7 +67,6 @@ const emits = defineEmits(['close']);
     left: 50%;
     box-sizing: border-box;
     padding: 20px;
-    width: 320px;
     border-radius: 10px;
     background-color: #fff;
     font-size: 14px;
@@ -81,17 +86,16 @@ const emits = defineEmits(['close']);
       @include cross(#ccc, 3px);
     }
     .content {
-      margin: 10px 0;
+      margin: 20px 0;
     }
     .footer {
       .btn {
         width: 280px;
         height: 44px;
         border-radius: 100px;
-        background: linear-gradient(270deg, #929dff 4.71%, #3cfdfd 103.24%),
-          linear-gradient(270deg, #b3acff 4.71%, #3ccffd 103.24%),
-          linear-gradient(270deg, #b3acff 4.71%, #3ccffd 103.24%);
+        background: $theme-color-gold;
         color: white;
+        text-align: center;
         font-weight: 600;
         font-size: 16px;
         line-height: 44px;

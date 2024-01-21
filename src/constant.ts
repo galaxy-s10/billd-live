@@ -8,28 +8,22 @@ export const WECHAT_GZH_APPID = 'wxbd243c01ac5ad1b7'; // 公众号
 export const WECHAT_GZH_OAUTH_URL =
   'https://open.weixin.qq.com/connect/oauth2/authorize?';
 
-export const WECHAT_REDIRECT_URI = `http://www.hfgmupw.cn/oauth/wechat_login`;
+export const WECHAT_REDIRECT_URI = `https://live.hsslive.cn/oauth/wechat_login`;
 
-export const QRCODE_LOGIN_URI = `http://www.hfgmupw.cn/qrcodeLogin`;
+export const QRCODE_LOGIN_URI = `https://live.hsslive.cn/qrcodeLogin`;
 
 export const AUTHOR_GITHUB = 'https://github.com/galaxy-s10';
 
-// wss://srs-pull.hsslive.cn
-// ws://www.hfgmupw.cn
 export const WEBSOCKET_URL =
   process.env.NODE_ENV === 'development'
     ? 'ws://localhost:4300'
     : 'wss://srs-pull.hsslive.cn';
 
-// https://live-api.hsslive.cn
-// http://www.hfgmupw.cn/api/
 export const AXIOS_BASEURL =
   process.env.NODE_ENV === 'development'
     ? '/api'
     : 'https://live-api.hsslive.cn';
 
-// .hsslive.cn
-// .hfgmupw.cn
 export const COOKIE_DOMAIN =
   process.env.NODE_ENV === 'development' ? undefined : '.hsslive.cn';
 
@@ -42,6 +36,8 @@ export const COMMON_URL = {
     'https://space.bilibili.com/381307133/channel/collectiondetail?sid=1458070&ctype=0',
   payCoursesArticle: 'https://www.hsslive.cn/article/151',
 };
+
+export const THEME_COLOR = '#ffd700';
 
 export const SRS_CB_URL_PARAMS = {
   publishKey: 'pushkey',

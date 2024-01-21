@@ -6,12 +6,13 @@ import {
   fetchCreateUserLiveRoom,
   fetchUserHasLiveRoom,
 } from '@/api/userLiveRoom';
-import { DanmuMsgTypeEnum, ILiveRoom } from '@/interface';
-import { WsMessageType, WsMsgTypeEnum, WsMsrBlobType } from '@/interface-ws';
+import { DanmuMsgTypeEnum, WsMessageMsgIsFileEnum } from '@/interface';
 import { handleMaxFramerate } from '@/network/webRTC';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
+import { ILiveRoom } from '@/types/ILiveRoom';
+import { WsMessageType, WsMsgTypeEnum, WsMsrBlobType } from '@/types/websocket';
 import { createVideo, generateBase64 } from '@/utils';
 
 import { commentAuthTip, loginTip } from './use-login';
@@ -31,7 +32,7 @@ export function usePush() {
   const liveRoomInfo = ref<ILiveRoom>();
   const localStream = ref<MediaStream>();
   const videoElArr = ref<HTMLVideoElement[]>([]);
-  const msgIsFile = ref(false);
+  const msgIsFile = ref<WsMessageMsgIsFileEnum>(WsMessageMsgIsFileEnum.no);
 
   const {
     roomLiving,
@@ -153,7 +154,7 @@ export function usePush() {
       if (newVal) {
         const res = await handleUserHasLiveRoom();
         if (!res) {
-          await useTip('你还没有直播间，是否立即开通？');
+          await useTip({ content: '你还没有直播间，是否立即开通？' });
           await handleCreateUserLiveRoom();
         } else {
           roomName.value = liveRoomInfo.value?.name || '';
@@ -205,7 +206,7 @@ export function usePush() {
     if (!loginTip()) return;
     const flag = await handleUserHasLiveRoom();
     if (!flag) {
-      await useTip('你还没有直播间，是否立即开通？');
+      await useTip({ content: '你还没有直播间，是否立即开通？' });
       await handleCreateUserLiveRoom();
       return;
     }
@@ -320,21 +321,25 @@ export function usePush() {
       requestId: getRandomString(8),
       msgType: WsMsgTypeEnum.message,
       data: {
+        socket_id: '',
         msg: danmuStr.value,
         msgType: DanmuMsgTypeEnum.danmu,
         live_room_id: Number(roomId.value),
         msgIsFile: msgIsFile.value,
-        sendMsgTime: +new Date(),
+        send_msg_time: +new Date(),
+        user_agent: navigator.userAgent,
       },
     });
-    damuList.value.push({
-      socket_id: mySocketId.value,
-      msgType: DanmuMsgTypeEnum.danmu,
-      msg: danmuStr.value,
-      userInfo: userStore.userInfo!,
-      msgIsFile: msgIsFile.value,
-      sendMsgTime: +new Date(),
-    });
+    // damuList.value.push({
+    //   user_agent: navigator.userAgent,
+    //   live_room_id: Number(roomId.value),
+    //   socket_id: mySocketId.value,
+    //   msgType: DanmuMsgTypeEnum.danmu,
+    //   msg: danmuStr.value,
+    //   userInfo: userStore.userInfo!,
+    //   msgIsFile: msgIsFile.value,
+    //   send_msg_time: +new Date(),
+    // });
     danmuStr.value = '';
   }
 
