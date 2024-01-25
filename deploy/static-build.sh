@@ -6,7 +6,7 @@
 # Email: 2274751790@qq.com
 # FilePath: /billd-live/deploy/static-build.sh
 # Github: https://github.com/galaxy-s10
-# LastEditTime: 2024-01-25 10:09:40
+# LastEditTime: 2024-01-25 10:38:11
 # LastEditors: shuisheng
 ###
 
@@ -24,16 +24,8 @@ PORT=$4         #约定$4为端口号
 TAG=$5          #约定$5为git标签
 PUBLICDIR=/node #约定公共目录为/node
 
-# 注意：要先进入项目所在的目录，然后再执行命令!!!
-if [ $ENV = 'beta' ]; then
-  cd $PUBLICDIR/$JOBNAME/$ENV
-elif [ $ENV = 'preview' ]; then
-  cd $PUBLICDIR/$JOBNAME/$ENV
-elif [ $ENV = 'prod' ]; then
-  cd $PUBLICDIR/$JOBNAME/$ENV
-else
-  cd $PUBLICDIR/$JOBNAME
-fi
+echo 当前目录:
+echo pwd
 
 echo 删除node_modules:
 rm -rf node_modules
@@ -45,7 +37,7 @@ echo 查看npm版本:
 npm -v
 
 echo 设置npm淘宝镜像:
-npm config set registry https://registry.npm.taobao.org/
+npm config set registry https://registry.npmmirror.com/
 
 echo 查看当前npm镜像:
 npm get registry
@@ -61,7 +53,7 @@ echo 查看pnpm版本:
 pnpm -v
 
 echo 设置pnpm淘宝镜像:
-pnpm config set registry https://registry.npm.taobao.org/
+pnpm config set registry https://registry.npmmirror.com/
 pnpm config set @billd:registry http://registry.hsslive.cn/
 
 echo 查看当前pnpm镜像:
