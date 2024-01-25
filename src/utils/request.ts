@@ -54,6 +54,7 @@ class MyAxios {
         if (error.message.indexOf('timeout') !== -1) {
           console.error(error.message);
           window.$message.error('请求超时，请重试');
+          return;
         }
         const statusCode = error.response.status as number;
         const errorResponse = error.response;
