@@ -3,7 +3,7 @@
     v-if="show"
     class="useTip-wrap"
   >
-    <ModalCpt
+    <Modal
       :title="title"
       :mask-closable="maskClosable"
       @close="handleCancel()"
@@ -28,17 +28,14 @@
           </div>
         </div>
       </template>
-    </ModalCpt>
+    </Modal>
   </div>
 </template>
 
 <script lang="ts">
 import { VNode, defineComponent, ref, render, watch } from 'vue';
 
-import ModalCpt from '@/components/Modal/index.vue';
-
 export default defineComponent({
-  components: { ModalCpt },
   emits: ['ok', 'cancel'],
   setup() {
     const title = ref('');

@@ -355,13 +355,31 @@ export function videoToCanvas(data: {
   }
   data.resize?.({ w, h });
   videoEl.addEventListener('resize', handleResize);
+  const defaultRatio = 16 / 9;
   function drawCanvas() {
     canvas.width = w;
     canvas.height = h;
+    const videoRatio = w / h;
+    // 比率的值越大，说明高的值越小
+    // 如果视频的比率比默认dom的比率大，则说明同等宽度的情况下，视频的高度会比默认dom的高度值低
     if (w > h) {
-      canvas.style.minWidth = '100%';
+      if (videoRatio > defaultRatio) {
+        // 视频的比率比dom比率大
+        canvas.style.minWidth = '100%';
+        canvas.style.maxHeight = '100%';
+      } else {
+        canvas.style.minHeight = '100%';
+        canvas.style.maxWidth = '100%';
+      }
     } else {
-      canvas.style.minHeight = '100%';
+      if (videoRatio > defaultRatio) {
+        // 视频的比率比dom比率大
+        canvas.style.minHeight = '100%';
+        canvas.style.maxWidth = '100%';
+      } else {
+        canvas.style.minWidth = '100%';
+        canvas.style.maxHeight = '100%';
+      }
     }
     ctx.drawImage(videoEl, 0, 0, w, h);
     timer = requestAnimationFrame(drawCanvas);

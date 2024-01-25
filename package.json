@@ -9,7 +9,7 @@
   "scripts": {
     "build": "webpack --config ./script/config/webpack.common.ts --env production",
     "commit": "cz",
-    "copy": "node ./handleGiteeJenkins.js",
+    "copy": "ts-node ./handleGiteeJenkins.mjs",
     "lint": "eslint --config ./.eslintrc.js . --ext .js,.jsx,.ts,.tsx,.vue --cache",
     "lint:fix": "eslint --config ./.eslintrc.js . --ext .js,.jsx,.ts,.tsx,.vue --cache --fix",
     "prepare": "husky install",
@@ -49,6 +49,7 @@
     "qrcode": "^1.5.3",
     "socket.io-client": "^4.7.2",
     "spark-md5": "^3.0.2",
+    "trash": "^8.1.1",
     "video.js": "^8.3.0",
     "vue": "^3.3.4",
     "vue-demi": "^0.13.11",

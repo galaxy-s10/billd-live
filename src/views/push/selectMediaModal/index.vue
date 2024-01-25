@@ -4,7 +4,7 @@
       title="选择直播素材"
       :mask-closable="false"
       @close="emits('close')"
-      width="'350px'"
+      :width="'350px'"
     >
       <n-space justify="center">
         <n-button

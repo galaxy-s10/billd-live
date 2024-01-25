@@ -19,6 +19,7 @@ export type AppRootState = {
     deviceId?: string;
     mediaName: string;
     type: MediaTypeEnum;
+    openEye: boolean;
     track?: MediaStreamTrack;
     stream?: MediaStream;
     streamid?: string;

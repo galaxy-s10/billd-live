@@ -5,7 +5,6 @@
     <router-view v-slot="{ Component }">
       <component :is="Component"></component>
     </router-view>
-    <ModalCpt></ModalCpt>
     <SidebarCpt v-if="MODULE_CONFIG_SWITCH.sidebar"></SidebarCpt>
     <LoginModal v-if="appStore.showLoginModal"></LoginModal>
   </div>
@@ -16,7 +15,6 @@ import { MODULE_CONFIG_SWITCH } from '@/constant';
 import { useAppStore } from '@/store/app';
 
 import HeadCpt from './head/index.vue';
-import ModalCpt from './modal/index.vue';
 import SidebarCpt from './sidebar/index.vue';
 
 document.body.style.minWidth = '1200px';

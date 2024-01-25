@@ -3,7 +3,7 @@
     v-if="show"
     class="useTip-wrap"
   >
-    <ModalCpt
+    <Modal
       :title="title"
       :mask-closable="maskClosable"
       @close="show = !show"
@@ -19,25 +19,23 @@
       </div>
 
       <template #footer></template>
-    </ModalCpt>
+    </Modal>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
 
-import ModalCpt from '@/components/Modal/index.vue';
 import { useQQLogin } from '@/hooks/use-login';
 
 export default defineComponent({
-  components: { ModalCpt },
   setup() {
     const title = ref('登录');
     const show = ref(false);
     const maskClosable = ref(true);
     function handleQQlogin() {
       show.value = !show.value;
-      useQQLogin();
+      useQQLogin({ exp: 24 });
     }
     return {
       title,

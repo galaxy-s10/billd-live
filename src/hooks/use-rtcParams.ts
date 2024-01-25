@@ -96,7 +96,7 @@ export const useRTCParams = () => {
     {
       label: '1440P',
       value: 1440,
-      // disabled: true,
+      disabled: true,
     },
   ]);
   const allMediaTypeList: Record<string, { type: MediaTypeEnum; txt: string }> =

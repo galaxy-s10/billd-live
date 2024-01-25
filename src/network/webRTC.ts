@@ -1,6 +1,6 @@
 import { getRandomString } from 'billd-utils';
 
-import { MediaTypeEnum } from '@/interface';
+import { LiveLineEnum, MediaTypeEnum } from '@/interface';
 import { AppRootState, useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { WsCandidateType, WsMsgTypeEnum } from '@/types/websocket';
@@ -151,6 +151,7 @@ export class WebRTCClass {
     this.localStream?.getVideoTracks().forEach((track) => {
       if (!appStore.allTrack.find((info) => info.track?.id === track.id)) {
         addTrack.push({
+          openEye: true,
           id: getRandomString(8),
           track,
           stream,
@@ -167,6 +168,7 @@ export class WebRTCClass {
     this.localStream?.getAudioTracks().forEach((track) => {
       if (!appStore.allTrack.find((info) => info.track?.id === track.id)) {
         addTrack.push({
+          openEye: true,
           id: getRandomString(8),
           track,
           stream,
@@ -183,6 +185,7 @@ export class WebRTCClass {
     stream.getVideoTracks().forEach((track) => {
       if (!appStore.allTrack.find((info) => info.track?.id === track.id)) {
         addTrack.push({
+          openEye: true,
           id: getRandomString(8),
           track,
           stream,
@@ -199,6 +202,7 @@ export class WebRTCClass {
     stream.getAudioTracks().forEach((track) => {
       if (!appStore.allTrack.find((info) => info.track?.id === track.id)) {
         addTrack.push({
+          openEye: true,
           id: getRandomString(8),
           track,
           stream,
@@ -394,6 +398,7 @@ export class WebRTCClass {
 
   handleConnectionEvent = () => {
     if (!this.peerConnection) return;
+    const appStore = useAppStore();
 
     console.warn(`${this.roomId}，开始监听pc的icecandidate`);
     // icecandidate
@@ -478,6 +483,7 @@ export class WebRTCClass {
         if (connectionState === 'connected') {
           // 表示每一个 ICE 连接要么正在使用（connected 或 completed 状态），要么已被关闭（closed 状态）；并且，至少有一个连接处于 connected 或 completed 状态。
           console.warn(this.roomId, 'connectionState:connected');
+          appStore.setLiveLine(LiveLineEnum.rtc);
           if (this.maxBitrate !== -1) {
             this.setMaxBitrate(this.maxBitrate);
           }
@@ -529,7 +535,7 @@ export class WebRTCClass {
             //   urls: 'stun:stun.l.google.com:19302',
             // },
             {
-              urls: 'turn:hsslive.cn:3478',
+              urls: 'turn:live.hsslive.cn:3478',
               username: 'hss',
               credential: '123456',
             },

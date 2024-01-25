@@ -1,6 +1,7 @@
 import { copyToClipBoard, getRandomString } from 'billd-utils';
 import { NButton, useDialog } from 'naive-ui';
 import { computed, h, onUnmounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
 import { fetchVerifyPkKey } from '@/api/liveRoom';
 import { fetchRtcV1Publish } from '@/api/srs';
@@ -38,7 +39,6 @@ import {
   WsStartLiveType,
 } from '@/types/websocket';
 import { createVideo } from '@/utils';
-import { useRoute } from 'vue-router';
 
 import { useRTCParams } from './use-rtcParams';
 import { useTip } from './use-tip';

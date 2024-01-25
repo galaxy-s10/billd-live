@@ -98,9 +98,7 @@
               <i class="ico"></i>
               <span>
                 正在观看：
-                {{
-                  liveUserList.filter((item) => item.id !== mySocketId).length
-                }}
+                {{ liveUserList.length - 1 }}
               </span>
             </span>
           </div>
@@ -136,17 +134,18 @@
             )"
             :key="index"
             class="item"
+            @click="handleActiveObject(item)"
           >
-            <span class="name">
+            <div class="name">
               {{ NODE_ENV === 'development' ? item.id : '' }}({{
                 mediaTypeEnumMap[item.type]
               }}){{ item.mediaName }}
-            </span>
+            </div>
             <div class="control">
               <div
                 v-if="item.audio === 1"
                 class="control-item"
-                @click="handleChangeMuted(item)"
+                @click.stop="handleChangeMuted(item)"
               >
                 <n-popover
                   placement="top"
@@ -170,6 +169,23 @@
               </div>
               <div
                 class="control-item"
+                @click="handleEye(item)"
+              >
+                <n-icon
+                  size="16"
+                  v-if="item.openEye"
+                >
+                  <EyeOutline></EyeOutline>
+                </n-icon>
+                <n-icon
+                  size="16"
+                  v-else
+                >
+                  <EyeOffOutline></EyeOffOutline>
+                </n-icon>
+              </div>
+              <div
+                class="control-item"
                 @click="handleEdit(item)"
               >
                 <n-icon size="16">
@@ -178,7 +194,7 @@
               </div>
               <div
                 class="control-item"
-                @click="handleDel(item)"
+                @click.stop="handleDel(item)"
               >
                 <n-icon size="16">
                   <Close></Close>
@@ -354,6 +370,8 @@
 import {
   Close,
   CreateOutline,
+  EyeOffOutline,
+  EyeOutline,
   VolumeHighOutline,
   VolumeMuteOutline,
 } from '@vicons/ionicons5';
@@ -504,7 +522,8 @@ watch(
     console.log('pkStream', newval);
     if (newval) {
       addMediaOk({
-        id: getRandomEnglishString(8),
+        id: getRandomEnglishString(6),
+        openEye: true,
         audio: 2,
         video: 1,
         mediaName: 'pkStream',
@@ -765,7 +784,8 @@ function handleMixedAudio() {
   const nullAudio = nullAudioStream.value?.getAudioTracks()[0];
   if (nullAudio) {
     allAudioTrack.push({
-      id: getRandomEnglishString(8),
+      openEye: true,
+      id: getRandomEnglishString(6),
       audio: 2,
       video: 1,
       mediaName: '占位空音频',
@@ -1156,6 +1176,7 @@ async function handleCache() {
   cacheStore['resource-list'].forEach((item) => {
     // @ts-ignore
     const obj: AppRootState['allTrack'][0] = {};
+    obj.openEye = item.openEye;
     obj.audio = item.audio;
     obj.video = item.video;
     obj.id = item.id;
@@ -1206,6 +1227,7 @@ async function handleCache() {
             canvasDom.scale(
               item.scaleInfo[window.devicePixelRatio].scaleX || 1
             );
+            canvasDom.opacity = item.openEye ? 1 : 0;
             fabricCanvas.value!.add(canvasDom);
             obj.videoEl = videoEl;
             obj.canvasDom = canvasDom;
@@ -1256,6 +1278,7 @@ async function handleCache() {
           handleMoving({ canvasDom, id: obj.id });
           handleScaling({ canvasDom, id: obj.id });
           canvasDom.scale(item.scaleInfo[window.devicePixelRatio].scaleX || 1);
+          canvasDom.opacity = item.openEye ? 1 : 0;
           fabricCanvas.value.add(canvasDom);
           obj.canvasDom = canvasDom;
         }
@@ -1298,6 +1321,7 @@ async function handleCache() {
             canvasDom.scale(
               item.scaleInfo[window.devicePixelRatio].scaleX || 1
             );
+            canvasDom.opacity = item.openEye ? 1 : 0;
             fabricCanvas.value!.add(canvasDom);
             obj.videoEl = videoEl;
             obj.canvasDom = canvasDom;
@@ -1361,6 +1385,7 @@ async function handleCache() {
           handleMoving({ canvasDom, id: item.id });
           handleScaling({ canvasDom, id: item.id });
           canvasDom.scale(item.scaleInfo[window.devicePixelRatio].scaleX || 1);
+          canvasDom.opacity = item.openEye ? 1 : 0;
           fabricCanvas.value!.add(canvasDom);
           obj.videoEl = videoEl;
           obj.canvasDom = canvasDom;
@@ -1394,6 +1419,7 @@ async function handleCache() {
         handleScaling({ canvasDom, id: obj.id });
         // fabric.Text类型不能除以分辨率
         canvasDom.scale(item.scaleInfo[window.devicePixelRatio].scaleX);
+        canvasDom.opacity = item.openEye ? 1 : 0;
         fabricCanvas.value.add(canvasDom);
         obj.canvasDom = canvasDom;
       }
@@ -1413,6 +1439,7 @@ async function handleCache() {
         handleScaling({ canvasDom, id: obj.id });
         // fabric.Text类型不能除以分辨率
         canvasDom.scale(item.scaleInfo[window.devicePixelRatio].scaleX);
+        canvasDom.opacity = item.openEye ? 1 : 0;
         fabricCanvas.value.add(canvasDom);
         obj.canvasDom = canvasDom;
       }
@@ -1432,6 +1459,7 @@ async function handleCache() {
         handleScaling({ canvasDom, id: obj.id });
         // fabric.Text类型不能除以分辨率
         canvasDom.scale(item.scaleInfo[window.devicePixelRatio].scaleX);
+        canvasDom.opacity = item.openEye ? 1 : 0;
         fabricCanvas.value.add(canvasDom);
         obj.canvasDom = canvasDom;
       }
@@ -1487,7 +1515,8 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     });
     if (!event) return;
     const videoTrack: AppRootState['allTrack'][0] = {
-      id: getRandomEnglishString(8),
+      id: getRandomEnglishString(6),
+      openEye: true,
       audio: 2,
       video: 1,
       mediaName: val.mediaName,
@@ -1515,6 +1544,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
       videoTrack.audio = 1;
       videoTrack.volume = appStore.normalVolume;
       const audioTrack: AppRootState['allTrack'][0] = {
+        openEye: true,
         id: videoTrack.id,
         audio: 1,
         video: 2,
@@ -1548,7 +1578,8 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     });
     if (!event) return;
     const videoTrack: AppRootState['allTrack'][0] = {
-      id: getRandomEnglishString(8),
+      id: getRandomEnglishString(6),
+      openEye: true,
       deviceId: val.deviceId,
       audio: 2,
       video: 1,
@@ -1584,7 +1615,8 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     });
     if (!event) return;
     const videoTrack: AppRootState['allTrack'][0] = {
-      id: getRandomEnglishString(8),
+      id: getRandomEnglishString(6),
+      openEye: true,
       deviceId: val.deviceId,
       audio: 2,
       video: 1,
@@ -1618,7 +1650,8 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     });
     if (!event) return;
     const microphoneVideoTrack: AppRootState['allTrack'][0] = {
-      id: getRandomEnglishString(8),
+      id: getRandomEnglishString(6),
+      openEye: true,
       deviceId: val.deviceId,
       audio: 1,
       video: 2,
@@ -1645,7 +1678,8 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     console.log('获取麦克风成功');
   } else if (val.type === MediaTypeEnum.txt) {
     const txtTrack: AppRootState['allTrack'][0] = {
-      id: getRandomEnglishString(8),
+      id: getRandomEnglishString(6),
+      openEye: true,
       audio: 2,
       video: 1,
       mediaName: val.mediaName,
@@ -1691,7 +1725,8 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     console.log('获取文字成功', fabricCanvas.value);
   } else if (val.type === MediaTypeEnum.time) {
     const timeTrack: AppRootState['allTrack'][0] = {
-      id: getRandomEnglishString(8),
+      id: getRandomEnglishString(6),
+      openEye: true,
       audio: 2,
       video: 1,
       mediaName: val.mediaName,
@@ -1729,7 +1764,8 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     console.log('获取时间成功', fabricCanvas.value);
   } else if (val.type === MediaTypeEnum.stopwatch) {
     const stopwatchTrack: AppRootState['allTrack'][0] = {
-      id: getRandomEnglishString(8),
+      id: getRandomEnglishString(6),
+      openEye: true,
       audio: 2,
       video: 1,
       mediaName: val.mediaName,
@@ -1768,7 +1804,8 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     console.log('获取秒表成功', fabricCanvas.value);
   } else if (val.type === MediaTypeEnum.img) {
     const imgTrack: AppRootState['allTrack'][0] = {
-      id: getRandomEnglishString(8),
+      id: getRandomEnglishString(6),
+      openEye: true,
       audio: 2,
       video: 1,
       mediaName: val.mediaName,
@@ -1829,7 +1866,8 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     console.log('获取图片成功', fabricCanvas.value);
   } else if (val.type === MediaTypeEnum.media) {
     const mediaVideoTrack: AppRootState['allTrack'][0] = {
-      id: getRandomEnglishString(8),
+      id: getRandomEnglishString(6),
+      openEye: true,
       audio: 2,
       video: 1,
       mediaName: val.mediaName,
@@ -1872,6 +1910,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
         mediaVideoTrack.volume = appStore.normalVolume;
         const audioTrack: AppRootState['allTrack'][0] = {
           id: mediaVideoTrack.id,
+          openEye: true,
           audio: 1,
           video: 2,
           mediaName: val.mediaName,
@@ -1931,6 +1970,17 @@ function editMediaOk(val: AppRootState['allTrack'][0]) {
           item.canvasDom.set('text', val.txtInfo?.txt);
         }
       }
+      if (val.openEye) {
+        console.log('显示的');
+        if (item.canvasDom) {
+          item.canvasDom.opacity = 1;
+        }
+      } else {
+        console.log('bu显示的');
+        if (item.canvasDom) {
+          item.canvasDom.opacity = 0;
+        }
+      }
     }
     return item;
   });
@@ -1967,6 +2017,32 @@ function handleChangeVolume(item: AppRootState['allTrack'][0], v) {
   appStore.setAllTrack(res);
   cacheStore.setResourceList(res);
   handleMixedAudio();
+}
+
+function handleEye(item: AppRootState['allTrack'][0]) {
+  let current;
+  appStore.allTrack.forEach((iten) => {
+    if (iten.id === item.id) {
+      iten.openEye = !iten.openEye;
+      current = iten;
+    }
+  });
+  if (current) {
+    editMediaOk(current);
+  }
+  cacheStore.setResourceList(appStore.allTrack);
+}
+
+function handleActiveObject(item: AppRootState['allTrack'][0]) {
+  let current: AppRootState['allTrack'][0] | undefined;
+  appStore.allTrack.forEach((iten) => {
+    if (iten.id === item.id) {
+      current = iten;
+    }
+  });
+  if (current?.canvasDom) {
+    fabricCanvas.value?.setActiveObject(current.canvasDom);
+  }
 }
 
 function handleDel(item: AppRootState['allTrack'][0]) {
@@ -2111,7 +2187,7 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
     justify-content: space-between;
     box-sizing: border-box;
     margin-left: 10px;
-    width: $w-250;
+    width: $w-300;
     border-radius: 6px;
     background-color: white;
     color: #9499a0;
@@ -2131,6 +2207,7 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
       .list {
         overflow: scroll;
         height: 218px;
+        width: calc(100% + 5px);
 
         @extend %customScrollbar;
 
@@ -2140,12 +2217,9 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
           justify-content: space-between;
           margin: 5px 0;
           font-size: 14px;
-          // &:hover {
-          //   .control {
-          //     display: flex;
-          //     align-items: center;
-          //   }
-          // }
+          height: 20px;
+          cursor: pointer;
+          user-select: none;
           .control {
             display: flex;
             align-items: center;
