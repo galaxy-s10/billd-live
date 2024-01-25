@@ -47,7 +47,7 @@
   // ts-node的时候会读取这里的配置
   "ts-node": {
     "compilerOptions": {
-      "module": "ESNext" // 指定生成什么模块代码。
+      "module": "CommonJS" // 指定生成什么模块代码。
     },
     "transpileOnly": true // 只编译，报警告或者错误一样运行
   }

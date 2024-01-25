@@ -6,7 +6,7 @@
 # Email: 2274751790@qq.com
 # FilePath: /billd-live/deploy/static-build.sh
 # Github: https://github.com/galaxy-s10
-# LastEditTime: 2024-01-25 10:38:11
+# LastEditTime: 2024-01-25 10:39:21
 # LastEditors: shuisheng
 ###
 
@@ -25,7 +25,7 @@ TAG=$5          #约定$5为git标签
 PUBLICDIR=/node #约定公共目录为/node
 
 echo 当前目录:
-echo pwd
+pwd
 
 echo 删除node_modules:
 rm -rf node_modules
