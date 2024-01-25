@@ -1,5 +1,5 @@
 // TIP: ctrl+cmd+t,生成函数注释
-import { getRangeRandom } from 'billd-utils';
+import { computeBox, getRangeRandom } from 'billd-utils';
 import sparkMD5 from 'spark-md5';
 
 export const formatTimeHour = (timestamp: number) => {
@@ -335,8 +335,9 @@ export const createVideo = ({
 };
 
 export function videoToCanvas(data: {
+  wrapSize: { width: number; height: number };
   videoEl: HTMLVideoElement;
-  resize?: (data: { w: number; h: number }) => void;
+  videoResize?: (data: { w: number; h: number }) => void;
 }) {
   const { videoEl } = data;
   if (!videoEl) {
@@ -351,36 +352,55 @@ export function videoToCanvas(data: {
   function handleResize() {
     w = videoEl.videoWidth;
     h = videoEl.videoHeight;
-    data.resize?.({ w, h });
+    data.videoResize?.({ w, h });
+    setVideoSize({ width: w, height: h });
   }
-  data.resize?.({ w, h });
+  function setVideoSize({ width, height }) {
+    const res = computeBox({
+      width,
+      height,
+      maxHeight: data.wrapSize.height,
+      minHeight: data.wrapSize.height,
+      maxWidth: data.wrapSize.width,
+      minWidth: data.wrapSize.width,
+    });
+    canvas.style.width = `${res.width as number}px`;
+    canvas.style.height = `${res.height as number}px`;
+  }
+  setVideoSize({ width: w, height: h });
+  data.videoResize?.({ w, h });
   videoEl.addEventListener('resize', handleResize);
-  const defaultRatio = 16 / 9;
+  // const defaultRatio = 16 / 9;
   function drawCanvas() {
     canvas.width = w;
     canvas.height = h;
-    const videoRatio = w / h;
-    // 比率的值越大，说明高的值越小
-    // 如果视频的比率比默认dom的比率大，则说明同等宽度的情况下，视频的高度会比默认dom的高度值低
-    if (w > h) {
-      if (videoRatio > defaultRatio) {
-        // 视频的比率比dom比率大
-        canvas.style.minWidth = '100%';
-        canvas.style.maxHeight = '100%';
-      } else {
-        canvas.style.minHeight = '100%';
-        canvas.style.maxWidth = '100%';
-      }
-    } else {
-      if (videoRatio > defaultRatio) {
-        // 视频的比率比dom比率大
-        canvas.style.minHeight = '100%';
-        canvas.style.maxWidth = '100%';
-      } else {
-        canvas.style.minWidth = '100%';
-        canvas.style.maxHeight = '100%';
-      }
-    }
+    // const videoRatio = w / h;
+    // if (w > h) {
+    //   // 视频宽大于高
+    //   // 比率的值越大，说明高的值越小
+    //   // 如果视频的比率比默认dom的比率大，则说明同等宽度的情况下，视频的高度会比默认dom的高度值低
+    //   if (videoRatio > defaultRatio) {
+    //     // 视频的比率比dom比率大
+    //     canvas.style.minWidth = '100%';
+    //     canvas.style.maxHeight = '100%';
+    //   } else {
+    //     canvas.style.minHeight = '100%';
+    //     canvas.style.maxWidth = '100%';
+    //   }
+    // } else {
+    //   // 视频宽小于高
+    //   // 比率的值越大，说明高的值越小
+    //   // 如果视频的比率比默认dom的比率大，则说明同等宽度的情况下，视频的高度会比默认dom的高度值低
+
+    //   if (videoRatio > defaultRatio) {
+    //     // 视频的比率比dom比率大
+    //     canvas.style.minHeight = '100%';
+    //     canvas.style.maxWidth = '100%';
+    //   } else {
+    //     canvas.style.minWidth = '100%';
+    //     canvas.style.maxHeight = '100%';
+    //   }
+    // }
     ctx.drawImage(videoEl, 0, 0, w, h);
     timer = requestAnimationFrame(drawCanvas);
   }

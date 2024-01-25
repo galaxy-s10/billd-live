@@ -24,6 +24,7 @@
     <div
       v-loading="videoLoading"
       class="video-wrap"
+      ref="videoWrapTmpRef"
       :style="{
         height: videoWrapHeight + 'px',
         '--max-height': videoWrapHeight + 'px',
@@ -234,6 +235,7 @@ const route = useRoute();
 const cacheStore = usePiniaCacheStore();
 const appStore = useAppStore();
 
+const videoWrapTmpRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
 const danmuListRef = ref<HTMLDivElement>();
 const showPlayBtn = ref(false);
@@ -245,6 +247,7 @@ const frontendWechatQrcode = ref('');
 const remoteVideoRef = ref<HTMLDivElement>();
 
 const {
+  videoWrapRef,
   handlePlay,
   initPull,
   keydownDanmu,
@@ -269,6 +272,7 @@ onUnmounted(() => {
 });
 
 onMounted(() => {
+  videoWrapRef.value = videoWrapTmpRef.value;
   getWechatQrcode();
   setTimeout(() => {
     scrollTo(0, 0);

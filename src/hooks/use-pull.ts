@@ -30,6 +30,7 @@ export function usePull(roomId: string) {
   const isPlaying = ref(false);
   const flvurl = ref('');
   const hlsurl = ref('');
+  const videoWrapRef = ref<HTMLDivElement>();
   const videoHeight = ref();
   const sidebarList = ref<
     {
@@ -74,34 +75,47 @@ export function usePull(roomId: string) {
       console.log(
         networkStore.getRtcMap(`${mySocketId.value}___${roomId}`)?.videoEl!
       );
-      const { canvas, stopDrawing } = videoToCanvas({
-        videoEl: networkStore.getRtcMap(`${mySocketId.value}___${roomId}`)
-          ?.videoEl!,
-        resize: ({ w, h }) => {
-          videoHeight.value = `${w}x${h}`;
-        },
-      });
-      console.log(canvas);
-      document.body.appendChild(canvas);
-      stopDrawingArr.value.push(stopDrawing);
-      remoteVideo.value.push(canvas);
-      roomLiving.value = true;
-      videoLoading.value = false;
+      if (videoWrapRef.value) {
+        const rect = videoWrapRef.value.getBoundingClientRect();
+        const { canvas, stopDrawing } = videoToCanvas({
+          wrapSize: {
+            width: rect.width,
+            height: rect.height,
+          },
+          videoEl: networkStore.getRtcMap(`${mySocketId.value}___${roomId}`)
+            ?.videoEl!,
+          videoResize: ({ w, h }) => {
+            videoHeight.value = `${w}x${h}`;
+          },
+        });
+        document.body.appendChild(canvas);
+        stopDrawingArr.value.push(stopDrawing);
+        remoteVideo.value.push(canvas);
+        roomLiving.value = true;
+        videoLoading.value = false;
+      }
     }
   );
 
   watch(hlsVideoEl, () => {
     stopDrawingArr.value = [];
     stopDrawingArr.value.forEach((cb) => cb());
-    const { canvas, stopDrawing } = videoToCanvas({
-      videoEl: hlsVideoEl.value!,
-      resize: ({ w, h }) => {
-        videoHeight.value = `${w}x${h}`;
-      },
-    });
-    stopDrawingArr.value.push(stopDrawing);
-    remoteVideo.value.push(canvas);
-    videoLoading.value = false;
+    if (videoWrapRef.value) {
+      const rect = videoWrapRef.value.getBoundingClientRect();
+      const { canvas, stopDrawing } = videoToCanvas({
+        wrapSize: {
+          width: rect.width,
+          height: rect.height,
+        },
+        videoEl: hlsVideoEl.value!,
+        videoResize: ({ w, h }) => {
+          videoHeight.value = `${w}x${h}`;
+        },
+      });
+      stopDrawingArr.value.push(stopDrawing);
+      remoteVideo.value.push(canvas);
+      videoLoading.value = false;
+    }
   });
 
   function handleHlsPlay(url: string) {
@@ -117,15 +131,22 @@ export function usePull(roomId: string) {
   watch(flvVideoEl, () => {
     stopDrawingArr.value = [];
     stopDrawingArr.value.forEach((cb) => cb());
-    const { canvas, stopDrawing } = videoToCanvas({
-      videoEl: flvVideoEl.value!,
-      resize: ({ w, h }) => {
-        videoHeight.value = `${w}x${h}`;
-      },
-    });
-    stopDrawingArr.value.push(stopDrawing);
-    remoteVideo.value.push(canvas);
-    videoLoading.value = false;
+    if (videoWrapRef.value) {
+      const rect = videoWrapRef.value.getBoundingClientRect();
+      const { canvas, stopDrawing } = videoToCanvas({
+        wrapSize: {
+          width: rect.width,
+          height: rect.height,
+        },
+        videoEl: flvVideoEl.value!,
+        videoResize: ({ w, h }) => {
+          videoHeight.value = `${w}x${h}`;
+        },
+      });
+      stopDrawingArr.value.push(stopDrawing);
+      remoteVideo.value.push(canvas);
+      videoLoading.value = false;
+    }
   });
 
   function handleFlvPlay() {
@@ -268,14 +289,21 @@ export function usePull(roomId: string) {
       if (appStore.liveRoomInfo?.type === LiveRoomTypeEnum.user_wertc) {
         newVal.forEach((item) => {
           videoLoading.value = false;
-          const { canvas } = videoToCanvas({
-            videoEl: item.videoEl,
-            resize: ({ w, h }) => {
-              videoHeight.value = `${w}x${h}`;
-            },
-          });
-          videoElArr.value.push(item.videoEl);
-          remoteVideo.value.push(canvas);
+          if (videoWrapRef.value) {
+            const rect = videoWrapRef.value.getBoundingClientRect();
+            const { canvas } = videoToCanvas({
+              wrapSize: {
+                width: rect.width,
+                height: rect.height,
+              },
+              videoEl: item.videoEl,
+              videoResize: ({ w, h }) => {
+                videoHeight.value = `${w}x${h}`;
+              },
+            });
+            videoElArr.value.push(item.videoEl);
+            remoteVideo.value.push(canvas);
+          }
         });
       }
     },
@@ -427,6 +455,7 @@ export function usePull(roomId: string) {
   }
 
   return {
+    videoWrapRef,
     handlePlay,
     handleStopDrawing,
     initPull,

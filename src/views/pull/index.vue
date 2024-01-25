@@ -400,6 +400,7 @@ const containerRef = ref<HTMLDivElement>();
 const uploadRef = ref<HTMLInputElement>();
 const danmuIptRef = ref<HTMLTextAreaElement>();
 const {
+  videoWrapRef,
   initPull,
   closeWs,
   closeRtc,
@@ -419,6 +420,7 @@ const {
 } = usePull(roomId.value);
 
 onMounted(() => {
+  videoWrapRef.value = containerRef.value;
   setTimeout(() => {
     scrollTo(0, 0);
   }, 100);

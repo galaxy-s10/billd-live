@@ -41,6 +41,7 @@
         <div
           v-loading="videoLoading"
           class="left"
+          ref="videoWrapTmpRef"
           @click="showJoinBtn = !showJoinBtn"
         >
           <div
@@ -229,10 +230,12 @@ const topLiveRoomList = ref<ILive[]>([]);
 const otherLiveRoomList = ref<ILive[]>([]);
 const currentLiveRoom = ref<ILive>();
 const interactionList = ref<any[]>([]);
+const videoWrapTmpRef = ref<HTMLDivElement>();
 const remoteVideoRef = ref<HTMLDivElement>();
 const docW = document.documentElement.clientWidth;
 
 const {
+  videoWrapRef,
   videoLoading,
   remoteVideo,
   roomLiving,
@@ -245,6 +248,7 @@ onMounted(() => {
   handleSlideList();
   getLiveRoomList();
   getBg();
+  videoWrapRef.value = videoWrapTmpRef.value;
 });
 
 watch(
