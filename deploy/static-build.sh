@@ -4,9 +4,9 @@
 # Date: 2022-04-26 01:54:48
 # Description: https://github.com/galaxy-s10/sh/blob/master/build.sh
 # Email: 2274751790@qq.com
-# FilePath: /billd-live/static-build.sh
+# FilePath: /billd-live/deploy/static-build.sh
 # Github: https://github.com/galaxy-s10
-# LastEditTime: 2023-04-28 13:06:17
+# LastEditTime: 2024-01-25 10:09:40
 # LastEditors: shuisheng
 ###
 
@@ -23,6 +23,17 @@ WORKSPACE=$3    #约定$3为Jenkins工作区
 PORT=$4         #约定$4为端口号
 TAG=$5          #约定$5为git标签
 PUBLICDIR=/node #约定公共目录为/node
+
+# 注意：要先进入项目所在的目录，然后再执行命令!!!
+if [ $ENV = 'beta' ]; then
+  cd $PUBLICDIR/$JOBNAME/$ENV
+elif [ $ENV = 'preview' ]; then
+  cd $PUBLICDIR/$JOBNAME/$ENV
+elif [ $ENV = 'prod' ]; then
+  cd $PUBLICDIR/$JOBNAME/$ENV
+else
+  cd $PUBLICDIR/$JOBNAME
+fi
 
 echo 删除node_modules:
 rm -rf node_modules
