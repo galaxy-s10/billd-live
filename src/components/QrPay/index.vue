@@ -1,6 +1,6 @@
 <template>
   <div class="qr-pay-wrap">
-    <div class="money">金额：{{ props.money }}元</div>
+    <div class="money">金额：{{ props.money.toFixed(2) }}元</div>
     <div class="qrcode-wrap">
       <img
         v-if="aliPayBase64 !== ''"
@@ -8,7 +8,12 @@
         :src="aliPayBase64"
         alt=""
       />
-      <template v-if="currentPayStatus !== PayStatusEnum.wait">
+      <template v-if="isExpired">
+        <div class="mask">
+          <div class="txt">二维码已过期</div>
+        </div>
+      </template>
+      <template v-else-if="currentPayStatus !== PayStatusEnum.wait">
         <div class="mask">
           <div class="txt">
             {{
@@ -23,10 +28,24 @@
     <div v-if="aliPayBase64 !== ''">
       <div class="bottom">
         <div class="sao">打开支付宝扫一扫</div>
-        <div class="expr">
+        <div
+          class="expr"
+          v-if="!isExpired"
+        >
           有效期5分钟（{{
             formatDownTime({ endTime: downTimeEnd, startTime: downTimeStart })
           }}）
+        </div>
+        <div
+          class="expr"
+          v-else
+        >
+          <span
+            class="link"
+            @click="handleStartPay"
+          >
+            点击重新获取
+          </span>
         </div>
       </div>
     </div>
@@ -37,13 +56,6 @@
     >
       ps：支付宝标题显示：东圃牛杂档，是正常的~
     </h3>
-
-    <div
-      v-if="payOk"
-      class="bottom"
-    >
-      <h2>支付成功！</h2>
-    </div>
   </div>
 </template>
 
@@ -54,21 +66,31 @@ import { onMounted, onUnmounted, ref } from 'vue';
 
 import { fetchAliPay, fetchAliPayStatus } from '@/api/order';
 import { PayStatusEnum } from '@/interface';
+import { useUserStore } from '@/store/user';
 import { formatDownTime } from '@/utils';
 
-const payOk = ref(false);
+const userStore = useUserStore();
 const aliPayBase64 = ref('');
 const payStatusTimer = ref();
 const downTimer = ref();
 const downTimeStart = ref();
 const downTimeEnd = ref();
+const isExpired = ref(false);
 
 const currentPayStatus = ref(PayStatusEnum.wait);
-const props = defineProps({
-  money: { type: String, default: '0.00' },
-  goodsId: { type: Number, default: -1 },
-  liveRoomId: { type: Number, default: -1 },
-});
+
+const props = withDefaults(
+  defineProps<{
+    money: number;
+    goodsId: number;
+    liveRoomId: number;
+  }>(),
+  {
+    money: 0,
+    goodsId: -1,
+    liveRoomId: -1,
+  }
+);
 
 onUnmounted(() => {
   clearInterval(payStatusTimer.value);
@@ -76,11 +98,7 @@ onUnmounted(() => {
 });
 
 onMounted(() => {
-  startPay({
-    goodsId: props.goodsId,
-    liveRoomId: props.liveRoomId,
-    money: props.money,
-  });
+  handleStartPay();
 });
 
 async function generateQR(text) {
@@ -97,27 +115,28 @@ async function generateQR(text) {
 
 function handleDownTime() {
   clearInterval(downTimer.value);
-  downTimeEnd.value = +new Date() + 1000 * 60 * 5;
-  downTimeStart.value = +new Date();
+  const nowTime = Math.floor(Date.now() / 1000) * 1000;
+  downTimeEnd.value = nowTime + 1000 * 60 * 5;
+  downTimeStart.value = nowTime;
   downTimer.value = setInterval(() => {
-    downTimeStart.value = +new Date();
+    if (downTimeEnd.value - downTimeStart.value <= 0) {
+      clearInterval(downTimer.value);
+      isExpired.value = true;
+    }
+    downTimeStart.value = Math.floor(Date.now() / 1000) * 1000;
   }, 1000);
 }
 
-async function startPay(data: {
-  goodsId: number;
-  liveRoomId: number;
-  money?: string;
-}) {
+async function handleStartPay() {
+  isExpired.value = false;
   currentPayStatus.value = PayStatusEnum.wait;
-  payOk.value = false;
   clearInterval(payStatusTimer.value);
   clearInterval(downTimer.value);
   try {
     const res = await fetchAliPay({
-      money: data.money,
-      goodsId: data.goodsId,
-      liveRoomId: data.liveRoomId,
+      money: props.money * 100,
+      goodsId: props.goodsId,
+      liveRoomId: props.liveRoomId,
     });
     if (res.code === 200) {
       if (isMobile()) {
@@ -149,8 +168,8 @@ function getPayStatus(outTradeNo: string) {
         currentPayStatus.value = PayStatusEnum.TRADE_SUCCESS;
         clearInterval(downTimer.value);
         clearInterval(payStatusTimer.value);
+        userStore.updateMyWallet();
         console.log('支付成功！');
-        payOk.value = true;
       }
     } catch (error) {
       console.log(error);
@@ -197,6 +216,10 @@ function getPayStatus(outTradeNo: string) {
     width: 100%;
     text-align: center;
     font-size: 14px;
+    .link {
+      cursor: pointer;
+      color: $theme-color-gold;
+    }
   }
 }
 </style>

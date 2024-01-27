@@ -19,11 +19,18 @@
 </template>
 
 <script lang="ts" setup>
-defineProps({
-  avatar: { type: String, default: '' },
-  size: { type: Number, default: 100 },
-  living: { type: Boolean, default: false },
-});
+withDefaults(
+  defineProps<{
+    avatar: string;
+    size: number;
+    living: boolean;
+  }>(),
+  {
+    avatar: '',
+    size: 100,
+    living: false,
+  }
+);
 </script>
 
 <style lang="scss" scoped>

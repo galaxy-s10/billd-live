@@ -52,8 +52,9 @@
                     query: { id: appStore.liveRoomInfo?.areas?.[0].id },
                   })
                 "
-                >{{ appStore.liveRoomInfo?.areas?.[0].name }}</span
               >
+                {{ appStore.liveRoomInfo?.areas?.[0].name }}
+              </span>
             </div>
           </div>
         </div>
@@ -61,7 +62,33 @@
           class="other"
           @click="handlePk"
         >
-          在线人数：{{ liveUserList.length }}
+          <div class="top">在线人数：{{ liveUserList.length }}</div>
+          <div class="bottom">
+            <n-popover
+              placement="bottom"
+              trigger="hover"
+            >
+              <template #trigger>
+                <div class="tag">收到礼物</div>
+              </template>
+              <div class="popover-list">
+                <template v-if="giftGroupList.length">
+                  <div
+                    class="item"
+                    v-for="(item, index) in giftGroupList"
+                    :key="index"
+                  >
+                    <div
+                      class="ico"
+                      :style="{ backgroundImage: `url(${item.goods?.cover})` }"
+                    ></div>
+                    <div class="nums">x{{ item.nums }}</div>
+                  </div>
+                </template>
+                <span v-else>暂未收到礼物</span>
+              </div>
+            </n-popover>
+          </div>
         </div>
       </div>
       <div
@@ -108,7 +135,7 @@
           v-for="(item, index) in giftGoodsList"
           :key="index"
           class="item"
-          @click="handlePay()"
+          @click="handlePay({ goodsId: item.id })"
         >
           <div
             class="ico"
@@ -123,7 +150,7 @@
             </div>
           </div>
           <div class="name">{{ item.name }}</div>
-          <div class="price">￥{{ item.price }}</div>
+          <div class="price">￥{{ formatMoney(item.price) }}</div>
         </div>
         <div
           v-if="MODULE_CONFIG_SWITCH.pullGiftList"
@@ -131,7 +158,9 @@
           @click="handleRecharge"
         >
           <div class="ico wallet"></div>
-          <div class="name">余额:{{ userStore.userInfo?.wallet?.balance }}</div>
+          <div class="name">
+            余额:{{ formatMoney(userStore.userInfo?.wallet?.balance) }}元
+          </div>
           <div class="price">立即充值</div>
         </div>
       </div>
@@ -354,6 +383,11 @@ import { getRandomString, openToTarget } from 'billd-utils';
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
+import {
+  fetchGiftGroupList,
+  fetchGiftRecordCreate,
+  fetchGiftRecordList,
+} from '@/api/giftRecord';
 import { fetchGoodsList } from '@/api/goods';
 import { fetchGetWsMessageList } from '@/api/wsMessage';
 import { MODULE_CONFIG_SWITCH, QINIU_LIVE } from '@/constant';
@@ -363,7 +397,9 @@ import { usePull } from '@/hooks/use-pull';
 import { useUpload } from '@/hooks/use-upload';
 import {
   DanmuMsgTypeEnum,
+  GiftRecordStatusEnum,
   GoodsTypeEnum,
+  IGiftRecord,
   IGoods,
   WsMessageMsgIsFileEnum,
   WsMessageMsgIsShowEnum,
@@ -374,7 +410,7 @@ import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 import { WsDisableSpeakingType, WsMsgTypeEnum } from '@/types/websocket';
-import { formatTimeHour } from '@/utils';
+import { formatMoney, formatTimeHour } from '@/utils';
 import { NODE_ENV } from 'script/constant';
 
 import RechargeCpt from './recharge/index.vue';
@@ -387,6 +423,8 @@ const roomId = ref(route.params.roomId as string);
 const configBg = ref();
 const configVideo = ref();
 const giftGoodsList = ref<IGoods[]>([]);
+const giftRecordList = ref<IGiftRecord[]>([]);
+const giftGroupList = ref<Array<IGiftRecord & { nums: number }>>([]);
 const height = ref(0);
 const giftLoading = ref(false);
 const showRecharge = ref(false);
@@ -426,9 +464,7 @@ onMounted(() => {
   }, 100);
   handleHistoryMsg();
   appStore.setPlay(true);
-  if (MODULE_CONFIG_SWITCH.pullGiftList) {
-    getGoodsList();
-  }
+  getGoodsList();
   if (topRef.value && bottomRef.value && containerRef.value) {
     const res =
       bottomRef.value.getBoundingClientRect().top -
@@ -438,12 +474,43 @@ onMounted(() => {
   }
   getBg();
   initPull();
+  getGiftRecord();
+  getGiftGroupList();
 });
 
 onUnmounted(() => {
   closeWs();
   closeRtc();
 });
+
+async function getGiftGroupList() {
+  const res = await fetchGiftGroupList({
+    live_room_id: Number(roomId.value),
+    status: GiftRecordStatusEnum.ok,
+  });
+  if (res.code === 200) {
+    // @ts-ignore
+    giftGroupList.value = res.data.rows.map((item) => {
+      try {
+        const json = JSON.parse(item.goods_snapshot!);
+        item.goods = json;
+      } catch (error) {
+        console.log(error);
+      }
+      return item;
+    });
+  }
+}
+
+async function getGiftRecord() {
+  const res = await fetchGiftRecordList({
+    live_room_id: Number(roomId.value),
+    status: GiftRecordStatusEnum.ok,
+  });
+  if (res.code === 200) {
+    giftRecordList.value = res.data.rows;
+  }
+}
 
 async function handleHistoryMsg() {
   try {
@@ -671,12 +738,17 @@ async function uploadChange() {
   }
 }
 
-function handlePay() {
-  if (!MODULE_CONFIG_SWITCH.pay) {
-    window.$message.info('敬请期待！');
-    return;
+async function handlePay({ goodsId }) {
+  const res = await fetchGiftRecordCreate({
+    goodsId,
+    goodsNums: 1,
+    liveRoomId: Number(roomId.value),
+  });
+  if (res.code === 200) {
+    window.$message.success('打赏成功！');
   }
-  window.$message.info('敬请期待！');
+  userStore.updateMyWallet();
+  getGiftGroupList();
 }
 
 function handleRefresh() {
@@ -720,6 +792,37 @@ function handleScrollTop() {
 </script>
 
 <style lang="scss" scoped>
+.popover-list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  width: 140px;
+  .item {
+    margin-top: 10px;
+    margin-right: 10px;
+    text-align: center;
+    &:nth-child(1),
+    &:nth-child(2),
+    &:nth-child(3) {
+      margin-top: 5px;
+    }
+    &:nth-child(3n) {
+      margin-right: 0px;
+    }
+    .ico {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      background-position: center center;
+      background-size: cover;
+      background-repeat: no-repeat;
+    }
+    .nums {
+      margin-top: 5px;
+      color: #18191c;
+    }
+  }
+}
 .pull-wrap {
   display: flex;
   justify-content: space-around;
@@ -773,7 +876,10 @@ function handleScrollTop() {
     .head {
       display: flex;
       justify-content: space-between;
+      box-sizing: border-box;
       padding: 10px 20px;
+      height: 70px;
+      color: #18191c;
 
       .info {
         display: flex;
@@ -792,7 +898,6 @@ function handleScrollTop() {
         .detail {
           .top {
             margin-bottom: 10px;
-            color: #18191c;
           }
           .bottom {
             font-size: 14px;
@@ -809,6 +914,22 @@ function handleScrollTop() {
         flex-direction: column;
         justify-content: center;
         font-size: 14px;
+        .top {
+          margin-bottom: 10px;
+        }
+        .bottom {
+          font-size: 12px;
+          .tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 10px;
+            background-color: $theme-color-gold;
+            color: white;
+            text-align: center;
+            line-height: 1;
+            cursor: pointer;
+          }
+        }
       }
     }
     .container {
@@ -1078,17 +1199,18 @@ function handleScrollTop() {
         cursor: no-drop;
 
         .bg {
-          @extend %maskBg;
           position: absolute !important;
+
+          @extend %maskBg;
         }
         .txt {
           position: absolute;
           top: 50%;
           left: 50%;
-          transform: translate(-50%, -50%);
-          font-size: 14px;
           width: 100%;
           text-align: center;
+          font-size: 14px;
+          transform: translate(-50%, -50%);
         }
       }
       .control {

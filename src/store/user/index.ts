@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 
 import { fetchLogin, fetchUserInfo } from '@/api/user';
+import { fetchMyWallet } from '@/api/wallet';
 import { IAuth, IRole } from '@/interface';
 import { IUser } from '@/types/IUser';
 import cache from '@/utils/cache';
@@ -52,6 +53,14 @@ export const useUserStore = defineStore('user', {
       } catch (error: any) {
         // 错误返回401，全局的响应拦截会打印报错信息
         return null;
+      }
+    },
+    async updateMyWallet() {
+      const res = await fetchMyWallet();
+      if (res.code === 200) {
+        if (this.userInfo?.wallet?.balance) {
+          this.userInfo.wallet.balance = res.data.balance;
+        }
       }
     },
     async getUserInfo() {

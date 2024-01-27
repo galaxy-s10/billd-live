@@ -8,27 +8,32 @@
       class="container"
       @update:show="handleOnClose"
     >
-      <div>
-        充值金额（最低充值{{ minMoney }}元，最高充值{{ maxMoney }}元）
+      <n-input-group>
+        <n-input-group-label>
+          金额（{{ minMoney }}-{{ maxMoney }}元）
+        </n-input-group-label>
         <n-input-number
           v-model:value="money"
           :precision="2"
           :min="minMoney"
           :max="maxMoney"
+          :placeholder="'请输入金额'"
           clearable
         >
           <template #prefix>￥</template>
+          <template #suffix>元</template>
         </n-input-number>
-      </div>
-      <n-button
-        type="primary"
-        @click="startPay"
-      >
-        确定充值
-      </n-button>
+        <n-button
+          type="primary"
+          @click="startPay"
+        >
+          充值
+        </n-button>
+      </n-input-group>
+
       <QrPayCpt
         v-if="showQrPay"
-        :money="goodsInfo.money"
+        :money="money"
         :goods-id="goodsInfo.goodsId"
         :live-room-id="goodsInfo.liveRoomId"
       ></QrPayCpt>
@@ -46,18 +51,22 @@ import { GoodsTypeEnum } from '@/interface';
 const showModal = ref(false);
 const maxMoney = 200;
 const minMoney = 0.1;
-const money = ref(minMoney);
+const money = ref(1);
 
 const showQrPay = ref(false);
 const goodsInfo = reactive({
-  money: '0.00',
   goodsId: -1,
   liveRoomId: -1,
 });
 
-const props = defineProps({
-  show: { type: Boolean, default: false },
-});
+const props = withDefaults(
+  defineProps<{
+    show: boolean;
+  }>(),
+  {
+    show: false,
+  }
+);
 
 const emits = defineEmits(['close']);
 
@@ -82,7 +91,6 @@ async function startPay() {
   if (res.code === 200) {
     showQrPay.value = false;
     nextTick(() => {
-      goodsInfo.money = `${money.value}`;
       goodsInfo.goodsId = res.data.id!;
       showQrPay.value = true;
     });
@@ -90,4 +98,11 @@ async function startPay() {
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.recharge-wrap {
+  .title {
+    display: flex;
+    align-items: center;
+  }
+}
+</style>

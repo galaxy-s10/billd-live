@@ -106,6 +106,36 @@ export interface IRedbagRecv {
   deleted_at?: string;
 }
 
+export enum GiftRecordIsRecvEnum {
+  yew,
+  no,
+}
+
+export enum GiftRecordStatusEnum {
+  ok,
+  balanceError,
+}
+
+export interface IGiftRecord {
+  id?: number;
+  is_recv?: GiftRecordIsRecvEnum;
+  goods_id?: number;
+  goods_nums?: number;
+  goods_snapshot?: string;
+  order_id?: number;
+  live_room_id?: number;
+  send_user_id?: number;
+  recv_user_id?: number;
+  status?: GiftRecordStatusEnum;
+  remark?: string;
+
+  goods?: IGoods;
+
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string;
+}
+
 export enum LiveLineEnum {
   rtc = 'rtc',
   hls = 'hls',
@@ -166,7 +196,7 @@ export enum RankTypeEnum {
 export interface IWallet {
   id?: number;
   user_id?: number;
-  balance?: string;
+  balance?: number;
   created_at?: string;
   updated_at?: string;
   deleted_at?: string;
@@ -276,8 +306,8 @@ export interface IGoods {
   desc?: string;
   short_desc?: string;
   cover?: string;
-  price?: string;
-  original_price?: string;
+  price?: number;
+  original_price?: number;
   nums?: number;
   badge?: string;
   badge_bg?: string;

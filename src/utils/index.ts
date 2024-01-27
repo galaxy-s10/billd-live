@@ -2,6 +2,13 @@
 import { computeBox, getRangeRandom } from 'billd-utils';
 import sparkMD5 from 'spark-md5';
 
+export function formatMoney(money?: number) {
+  if (!money) {
+    return '0.00';
+  }
+  return (money / 100).toFixed(2);
+}
+
 export const formatTimeHour = (timestamp: number) => {
   function addZero(num: number) {
     return num < 10 ? `0${num}` : num;

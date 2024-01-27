@@ -3,15 +3,11 @@ import request from '@/utils/request';
 
 /**
  * 开始支付
- * @param total_amount 订单总金额，单位为元，精确到小数点后两位，取值范围为 [0.01,100000000]，金额不能为 0。
- * @param subject 订单标题。注意：不可使用特殊字符，如 /，=，& 等。
- * @param body 订单附加信息。如果请求时传递了该参数，将在异步通知、对账单中原样返回，同时会在商户和用户的pc账单详情中作为交易描述展示
- * @returns
  */
 export function fetchAliPay(data: {
   goodsId: number;
   liveRoomId: number;
-  money?: string;
+  money?: number;
 }) {
   return request.instance({
     url: '/order/pay',
