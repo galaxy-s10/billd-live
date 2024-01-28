@@ -1,7 +1,10 @@
 <template>
   <div class="qr-pay-wrap">
-    <div class="money">金额：{{ props.money.toFixed(2) }}元</div>
-    <div class="qrcode-wrap">
+    <div class="money">金额：{{ formatMoney(props.money * 100) }}元</div>
+    <div
+      class="qrcode-wrap"
+      v-loading="loading"
+    >
       <img
         v-if="aliPayBase64 !== ''"
         class="qrcode"
@@ -67,7 +70,7 @@ import { onMounted, onUnmounted, ref } from 'vue';
 import { fetchAliPay, fetchAliPayStatus } from '@/api/order';
 import { PayStatusEnum } from '@/interface';
 import { useUserStore } from '@/store/user';
-import { formatDownTime } from '@/utils';
+import { formatDownTime, formatMoney } from '@/utils';
 
 const userStore = useUserStore();
 const aliPayBase64 = ref('');
@@ -75,6 +78,7 @@ const payStatusTimer = ref();
 const downTimer = ref();
 const downTimeStart = ref();
 const downTimeEnd = ref();
+const loading = ref(false);
 const isExpired = ref(false);
 
 const currentPayStatus = ref(PayStatusEnum.wait);
@@ -128,6 +132,8 @@ function handleDownTime() {
 }
 
 async function handleStartPay() {
+  loading.value = true;
+  aliPayBase64.value = '';
   isExpired.value = false;
   currentPayStatus.value = PayStatusEnum.wait;
   clearInterval(payStatusTimer.value);
@@ -150,6 +156,8 @@ async function handleStartPay() {
     }
   } catch (error) {
     console.log(error);
+  } finally {
+    loading.value = false;
   }
 }
 

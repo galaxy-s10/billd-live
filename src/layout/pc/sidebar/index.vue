@@ -1,7 +1,6 @@
 <template>
   <aside class="sidebar-wrap">
     <div
-      v-if="MODULE_CONFIG_SWITCH.sidebarRank"
       class="item"
       @click="router.push({ name: routerName.rank })"
     >
@@ -9,7 +8,6 @@
       <div class="txt">排行榜</div>
     </div>
     <div
-      v-if="MODULE_CONFIG_SWITCH.sidebarShop"
       class="item"
       @click="router.push({ name: routerName.shop })"
     >
@@ -17,18 +15,23 @@
       <div class="txt">商店</div>
     </div>
     <div
-      v-if="MODULE_CONFIG_SWITCH.sidebarOrder"
       class="item"
       @click="router.push({ name: routerName.order })"
     >
-      <div class="ico pay"></div>
-      <div class="txt">订单</div>
+      <div class="ico data"></div>
+      <div class="txt">全站充值</div>
+    </div>
+    <div
+      class="item"
+      @click="router.push({ name: routerName.wallet })"
+    >
+      <div class="ico wallet"></div>
+      <div class="txt">我的收支</div>
     </div>
   </aside>
 </template>
 
 <script lang="ts" setup>
-import { MODULE_CONFIG_SWITCH } from '@/constant';
 import router, { routerName } from '@/router';
 </script>
 
@@ -39,7 +42,7 @@ import router, { routerName } from '@/router';
   right: 0;
   z-index: 10;
   padding: 15px 10px;
-  width: 50px;
+  width: 60px;
   border-radius: 20px 0 0 20px;
   background-color: white;
   box-shadow: 0 0 20px 1px rgba($theme-color-gold, 0.15);
@@ -58,14 +61,18 @@ import router, { routerName } from '@/router';
       opacity: 0.9;
 
       @extend %containBg;
+
       &.rank {
         @include setBackground('@/assets/img/rank.png');
       }
       &.shop {
         @include setBackground('@/assets/img/shop.png');
       }
-      &.pay {
-        @include setBackground('@/assets/img/pay.png');
+      &.wallet {
+        @include setBackground('@/assets/img/wallet.png');
+      }
+      &.data {
+        @include setBackground('@/assets/img/data.png');
       }
     }
     .txt {

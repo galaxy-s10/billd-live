@@ -38,12 +38,12 @@
           <div class="info">100%好评</div>
           <div class="desc">{{ item.desc }}</div>
           <div class="price-wrap">
-            <span class="price">￥{{ item.price }}</span>
+            <span class="price">￥{{ formatMoney(item.price) }}</span>
             <del
               v-if="item.price !== item.original_price"
               class="original-price"
             >
-              {{ item.original_price }}
+              {{ formatMoney(item.original_price) }}
             </del>
           </div>
         </div>
@@ -64,16 +64,16 @@ import { useRoute } from 'vue-router';
 
 import { fetchGoodsList } from '@/api/goods';
 import QrPayCpt from '@/components/QrPay/index.vue';
-import { MODULE_CONFIG_SWITCH } from '@/constant';
 import { GoodsTypeEnum, IGoods } from '@/interface';
 import router from '@/router';
+import { formatMoney } from '@/utils';
 
 const route = useRoute();
 const list = ref<IGoods[]>([]);
 const loading = ref(false);
 const showQrPay = ref(false);
 const goodsInfo = reactive({
-  money: '0.00',
+  money: 0,
   goodsId: -1,
   liveRoomId: -1,
 });
@@ -121,11 +121,7 @@ function changeTab(type: GoodsTypeEnum) {
 }
 
 function startPay(item: IGoods) {
-  if (!MODULE_CONFIG_SWITCH.pay) {
-    window.$message.info('敬请期待！');
-    return;
-  }
-  if (Number(item.price) === 0) {
+  if (item.price! <= 0) {
     window.$message.info('该商品是免费的，不需要购买！');
     return;
   }

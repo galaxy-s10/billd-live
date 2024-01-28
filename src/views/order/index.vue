@@ -41,6 +41,7 @@
         </div>
         <div class="time">{{ item.send_pay_date || '-' }}</div>
       </div>
+      <div v-if="!payList.length">暂无数据</div>
     </div>
   </div>
 </template>

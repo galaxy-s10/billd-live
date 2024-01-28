@@ -30,6 +30,7 @@ export const routerName = {
   privatizationDeployment: 'privatizationDeployment',
   support: 'support',
   order: 'order',
+  wallet: 'wallet',
   shop: 'shop',
   link: 'link',
   ad: 'ad',
@@ -140,6 +141,11 @@ export const defaultRoutes: RouteRecordRaw[] = [
         name: routerName.order,
         path: '/order',
         component: () => import('@/views/order/index.vue'),
+      },
+      {
+        name: routerName.wallet,
+        path: '/wallet',
+        component: () => import('@/views/wallet/index.vue'),
       },
       {
         name: routerName.ad,

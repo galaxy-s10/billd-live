@@ -3,7 +3,6 @@
     <div class="head">
       <div class="left">
         <div
-          v-if="MODULE_CONFIG_SWITCH.logo"
           class="logo-wrap"
           @click="router.push('/')"
         >
@@ -13,7 +12,6 @@
         <div class="nav">
           <a
             class="item"
-            v-if="MODULE_CONFIG_SWITCH.home"
             :class="{
               active: router.currentRoute.value.path === '/',
             }"
@@ -23,7 +21,6 @@
             首页
           </a>
           <a
-            v-if="MODULE_CONFIG_SWITCH.area"
             class="item"
             :class="{
               active: router.currentRoute.value.name === routerName.area,
@@ -33,7 +30,6 @@
             分区
           </a>
           <a
-            v-if="MODULE_CONFIG_SWITCH.shop"
             class="item"
             :class="{
               active: router.currentRoute.value.name === routerName.shop,
@@ -46,7 +42,6 @@
             class="item"
             :href="COMMON_URL.admin"
             @click.prevent="openToTarget(COMMON_URL.admin)"
-            v-if="MODULE_CONFIG_SWITCH.admin"
           >
             直播后台
           </a>
@@ -54,7 +49,6 @@
             class="item"
             :href="COMMON_URL.mobileApk"
             @click.prevent="openToTarget(COMMON_URL.mobileApk)"
-            v-if="MODULE_CONFIG_SWITCH.appdownload"
           >
             App下载
             <div class="badge">
@@ -74,10 +68,7 @@
         </div>
       </div>
       <div class="right">
-        <Dropdown
-          class="doc"
-          v-if="MODULE_CONFIG_SWITCH.appdownload"
-        >
+        <Dropdown class="doc">
           <template #btn>
             <div class="btn">
               文档<VPIconChevronDown class="icon"></VPIconChevronDown>
@@ -121,10 +112,7 @@
           </template>
         </Dropdown>
 
-        <Dropdown
-          class="ecosystem"
-          v-if="MODULE_CONFIG_SWITCH.ecosystem"
-        >
+        <Dropdown class="ecosystem">
           <template #btn>
             <div class="btn">
               生态系统<VPIconChevronDown class="icon"></VPIconChevronDown>
@@ -165,10 +153,7 @@
           </template>
         </Dropdown>
 
-        <Dropdown
-          class="about"
-          v-if="MODULE_CONFIG_SWITCH.about"
-        >
+        <Dropdown class="about">
           <template #btn>
             <div class="btn">
               关于<VPIconChevronDown class="icon"></VPIconChevronDown>
@@ -198,7 +183,6 @@
         </Dropdown>
 
         <a
-          v-if="MODULE_CONFIG_SWITCH.sponsors"
           class="sponsors"
           :class="{
             active: router.currentRoute.value.name === routerName.sponsors,
@@ -209,7 +193,21 @@
           赞助
         </a>
         <a
-          v-if="MODULE_CONFIG_SWITCH.privatizationDeployment"
+          class="signin"
+          :class="{
+            active:
+              router.currentRoute.value.name ===
+              routerName.privatizationDeployment,
+          }"
+          @click="handleSignin"
+        >
+          签到
+          <div
+            class="red-dot"
+            v-if="appStore.showSigninRedDot"
+          ></div>
+        </a>
+        <a
           class="privatizationDeployment"
           :class="{
             active:
@@ -228,7 +226,6 @@
         </a>
 
         <a
-          v-if="MODULE_CONFIG_SWITCH.github"
           class="github"
           target="_blank"
           href="https://github.com/galaxy-s10/billd-live"
@@ -239,31 +236,25 @@
           />
         </a>
 
-        <Dropdown
-          class="start-live"
-          v-if="MODULE_CONFIG_SWITCH.startLive"
-        >
+        <Dropdown class="start-live">
           <template #btn>
             <div class="btn">我要开播</div>
           </template>
           <template #list>
             <div class="list">
               <a
-                v-if="MODULE_CONFIG_SWITCH.startLiveSRS"
                 class="item"
                 @click.prevent="handleStartLive(LiveRoomTypeEnum.user_srs)"
               >
                 <div class="txt">srs开播</div>
               </a>
               <a
-                v-if="MODULE_CONFIG_SWITCH.startLiveWebRTC"
                 class="item"
                 @click.prevent="handleStartLive(LiveRoomTypeEnum.user_wertc)"
               >
                 <div class="txt">webrtc开播</div>
               </a>
               <a
-                v-if="MODULE_CONFIG_SWITCH.startLiveWebMSR"
                 class="item"
                 @click.prevent="handleStartLive(LiveRoomTypeEnum.user_msr)"
               >
@@ -320,13 +311,14 @@
 
 <script lang="ts" setup>
 import { openToTarget, windowReload } from 'billd-utils';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
+import { fetchCreateSignin, fetchTodayIsSignin } from '@/api/signin';
 import Dropdown from '@/components/Dropdown/index.vue';
 import VPIconChevronDown from '@/components/icons/VPIconChevronDown.vue';
 import VPIconExternalLink from '@/components/icons/VPIconExternalLink.vue';
-import { COMMON_URL, MODULE_CONFIG_SWITCH } from '@/constant';
+import { COMMON_URL } from '@/constant';
 import { loginTip } from '@/hooks/use-login';
 import { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
@@ -342,18 +334,22 @@ const about = ref([
   {
     label: '常见问题',
     routerName: routerName.faq,
+    url: '',
   },
   {
     label: '团队',
     routerName: routerName.team,
+    url: '',
   },
   {
     label: '官方群',
     routerName: routerName.group,
+    url: '',
   },
   {
     label: '版本发布',
     routerName: routerName.release,
+    url: '',
   },
 ]);
 const resource = ref([
@@ -404,6 +400,40 @@ const plugins = ref([
     url: 'https://github.com/galaxy-s10/billd-html-webpack-plugin',
   },
 ]);
+
+watch(
+  () => userStore.userInfo?.id,
+  (newval) => {
+    if (newval) {
+      initSigninStatus();
+    }
+  },
+  {
+    immediate: true,
+  }
+);
+
+async function handleSignin() {
+  const res = await fetchCreateSignin({});
+  if (res.code === 200) {
+    appStore.showSigninRedDot = false;
+    // eslint-disable-next-line
+    window.$message.success(`签到成功！已连续签到${res.data.nums}天`);
+  }
+}
+
+async function initSigninStatus() {
+  const res = await fetchTodayIsSignin({
+    liveRoomId: appStore.liveRoomInfo?.id,
+  });
+  if (res.code === 200) {
+    if (res.data) {
+      appStore.showSigninRedDot = false;
+    } else {
+      appStore.showSigninRedDot = true;
+    }
+  }
+}
 
 function handleLogout() {
   userStore.logout();
@@ -475,6 +505,15 @@ function handleStartLive(key: LiveRoomTypeEnum) {
 
         @include minFont(10);
       }
+    }
+    .red-dot {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: red;
     }
     .hr {
       width: 100%;
@@ -599,12 +638,14 @@ function handleStartLive(key: LiveRoomTypeEnum) {
 
       .github,
       .sponsors,
-      .privatizationDeployment {
+      .privatizationDeployment,
+      .signin {
         display: flex;
         align-items: center;
         margin-right: 20px;
         color: black;
         text-decoration: none;
+        cursor: pointer;
         &:hover {
           color: $theme-color-gold;
         }
@@ -612,7 +653,8 @@ function handleStartLive(key: LiveRoomTypeEnum) {
           margin-right: 5px;
         }
       }
-      .privatizationDeployment {
+      .privatizationDeployment,
+      .signin {
         position: relative;
       }
 

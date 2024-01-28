@@ -42,6 +42,7 @@ export type AppRootState = {
   showLoginModal: boolean;
   disableSpeaking: Map<number, { exp: number; label: string }>;
   pkStream?: MediaStream;
+  showSigninRedDot: boolean;
 };
 
 export const useAppStore = defineStore('app', {
@@ -60,6 +61,7 @@ export const useAppStore = defineStore('app', {
       liveRoomInfo: undefined,
       showLoginModal: false,
       disableSpeaking: new Map(),
+      showSigninRedDot: false,
     };
   },
   actions: {

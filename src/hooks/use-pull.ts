@@ -24,7 +24,8 @@ export function usePull(roomId: string) {
   const appStore = useAppStore();
   const localStream = ref<MediaStream>();
   const danmuStr = ref('');
-  const msgIsFile = ref<WsMessageMsgIsFileEnum>(WsMessageMsgIsFileEnum.no);
+  const msgIsFile = ref(WsMessageMsgIsFileEnum.no);
+  const danmuMsgType = ref<DanmuMsgTypeEnum>(DanmuMsgTypeEnum.danmu);
   const autoplayVal = ref(false);
   const videoLoading = ref(false);
   const isPlaying = ref(false);
@@ -439,7 +440,7 @@ export function usePull(roomId: string) {
     const messageData: WsMessageType['data'] = {
       socket_id: '',
       msg: danmuStr.value,
-      msgType: DanmuMsgTypeEnum.danmu,
+      msgType: danmuMsgType.value,
       live_room_id: Number(roomId),
       msgIsFile: msgIsFile.value,
       send_msg_time: +new Date(),
@@ -450,7 +451,7 @@ export function usePull(roomId: string) {
       msgType: WsMsgTypeEnum.message,
       data: messageData,
     });
-    // damuList.value.push(danmu);
+
     danmuStr.value = '';
   }
 
@@ -464,6 +465,7 @@ export function usePull(roomId: string) {
     keydownDanmu,
     sendDanmu,
     addVideo,
+    danmuMsgType,
     isPlaying,
     msgIsFile,
     mySocketId,

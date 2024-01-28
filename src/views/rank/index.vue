@@ -49,7 +49,7 @@
             </div>
           </div>
           <div v-if="item.balance && currRankType === RankTypeEnum.wallet">
-            钱包：{{ item.balance }}
+            钱包：{{ formatMoney(item.balance) }}元
           </div>
         </div>
       </div>
@@ -80,7 +80,7 @@
             <div class="username">{{ item.users[0]?.username }}</div>
             <div class="wallet">
               <div v-if="currRankType === RankTypeEnum.wallet">
-                （钱包：{{ item.balance }}）
+                （钱包：{{ formatMoney(item.balance) }}元）
               </div>
             </div>
             <div
@@ -109,6 +109,7 @@ import { RankTypeEnum } from '@/interface';
 import router, { routerName } from '@/router';
 import { ILiveRoom, LiveRoomIsShowEnum } from '@/types/ILiveRoom';
 import { IUser } from '@/types/IUser';
+import { formatMoney } from '@/utils';
 
 export interface IRankType {
   type: RankTypeEnum;
@@ -143,7 +144,7 @@ const mockRank: {
   rank: number;
   level: number;
   score: number;
-  balance: string;
+  balance: number;
   live?: ILiveRoom;
 }[] = [
   {

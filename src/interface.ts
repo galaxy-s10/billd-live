@@ -136,6 +136,22 @@ export interface IGiftRecord {
   deleted_at?: string;
 }
 
+export interface ISignin {
+  id?: number;
+  user_id?: number;
+  live_room_id?: number;
+  nums?: number;
+
+  /** 用户信息 */
+  user?: IUser;
+  /** 直播间信息 */
+  live_room?: ILiveRoom;
+
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string;
+}
+
 export enum LiveLineEnum {
   rtc = 'rtc',
   hls = 'hls',
@@ -241,6 +257,32 @@ export interface ILiveConfig {
   value?: string;
   desc?: string;
   type?: FormTypeEnum;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string;
+}
+
+export enum WalletRecordEnum {
+  reward,
+  recharge,
+  signin,
+}
+
+export enum WalletRecordAmountStatusEnum {
+  add,
+  del,
+}
+
+export interface IWalletRecord {
+  id?: number;
+  user_id?: number;
+  order_id?: number;
+  type?: WalletRecordEnum;
+  name?: string;
+  amount?: number;
+  amount_status?: WalletRecordAmountStatusEnum;
+  remark?: string;
+
   created_at?: string;
   updated_at?: string;
   deleted_at?: string;
@@ -459,6 +501,7 @@ export enum DanmuMsgTypeEnum {
   userLeaved,
   system,
   redbag,
+  reward,
 }
 
 export interface IUpdateJoinInfo {

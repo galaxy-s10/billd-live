@@ -33,7 +33,7 @@
 
       <QrPayCpt
         v-if="showQrPay"
-        :money="money"
+        :money="goodsInfo.money"
         :goods-id="goodsInfo.goodsId"
         :live-room-id="goodsInfo.liveRoomId"
       ></QrPayCpt>
@@ -55,6 +55,7 @@ const money = ref(1);
 
 const showQrPay = ref(false);
 const goodsInfo = reactive({
+  money: 0,
   goodsId: -1,
   liveRoomId: -1,
 });
@@ -90,7 +91,9 @@ async function startPay() {
   const res = await fetchFindByTypeGoods(GoodsTypeEnum.recharge);
   if (res.code === 200) {
     showQrPay.value = false;
+    console.log(money.value, '-----');
     nextTick(() => {
+      goodsInfo.money = money.value;
       goodsInfo.goodsId = res.data.id!;
       showQrPay.value = true;
     });

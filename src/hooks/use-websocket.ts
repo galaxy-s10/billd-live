@@ -668,7 +668,7 @@ export const useWebsocket = () => {
         live_room_id: data.data.live_room_id,
         request_id: data.request_id,
         socket_id: data.socket_id,
-        msgType: DanmuMsgTypeEnum.danmu,
+        msgType: data.data.msgType,
         msg: data.data.msg,
         userInfo: data.user_info,
         msgIsFile: data.data.msgIsFile,

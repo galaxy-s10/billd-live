@@ -38,7 +38,13 @@
             "
           ></div>
           <div class="detail">
-            <div class="top">{{ anchorInfo?.username }}</div>
+            <div class="top">
+              <div class="name">{{ anchorInfo?.username }}</div>
+              <div class="follow">
+                <div class="f-left">+关注</div>
+                <div class="f-right">666</div>
+              </div>
+            </div>
             <div class="bottom">
               <span>{{ appStore.liveRoomInfo?.desc }}</span>
               <span v-if="NODE_ENV === 'development'">
@@ -62,14 +68,18 @@
           class="other"
           @click="handlePk"
         >
-          <div class="top">在线人数：{{ liveUserList.length }}</div>
+          <div class="top">
+            <div class="item">666人看过</div>
+            <div class="item">666点赞</div>
+            <div class="item">当前在线:{{ liveUserList.length }}人</div>
+          </div>
           <div class="bottom">
             <n-popover
               placement="bottom"
               trigger="hover"
             >
               <template #trigger>
-                <div class="tag">收到礼物</div>
+                <div class="tag">礼物成就</div>
               </template>
               <div class="popover-list">
                 <template v-if="giftGroupList.length">
@@ -85,9 +95,10 @@
                     <div class="nums">x{{ item.nums }}</div>
                   </div>
                 </template>
-                <span v-else>暂未收到礼物</span>
+                <span v-else>暂无</span>
               </div>
             </n-popover>
+            <div class="tag">人气榜</div>
           </div>
         </div>
       </div>
@@ -135,7 +146,7 @@
           v-for="(item, index) in giftGoodsList"
           :key="index"
           class="item"
-          @click="handlePay({ goodsId: item.id })"
+          @click="handlePay(item)"
         >
           <div
             class="ico"
@@ -212,6 +223,14 @@
           :key="index"
           class="item"
         >
+          <template v-if="item.msgType === DanmuMsgTypeEnum.reward">
+            <div class="reward">
+              <span>[{{ formatTimeHour(item.send_msg_time) }}]</span>
+              <span>
+                {{ item.userInfo?.username }} 打赏了{{ item.msg }}！
+              </span>
+            </div>
+          </template>
           <template v-if="item.msgType === DanmuMsgTypeEnum.danmu">
             <span class="time">[{{ formatTimeHour(item.send_msg_time) }}]</span>
             <span class="name">
@@ -445,6 +464,7 @@ const {
   keydownDanmu,
   sendDanmu,
   handlePlay,
+  danmuMsgType,
   msgIsFile,
   mySocketId,
   videoHeight,
@@ -723,6 +743,7 @@ async function uploadChange() {
         file: fileList[0],
       });
       if (res?.resultUrl) {
+        danmuMsgType.value = DanmuMsgTypeEnum.danmu;
         danmuStr.value = res.resultUrl || '错误图片';
         sendDanmu();
       }
@@ -738,14 +759,17 @@ async function uploadChange() {
   }
 }
 
-async function handlePay({ goodsId }) {
+async function handlePay(item: IGoods) {
   const res = await fetchGiftRecordCreate({
-    goodsId,
+    goodsId: item.id!,
     goodsNums: 1,
     liveRoomId: Number(roomId.value),
   });
   if (res.code === 200) {
     window.$message.success('打赏成功！');
+    danmuMsgType.value = DanmuMsgTypeEnum.reward;
+    danmuStr.value = item.name || '';
+    sendDanmu();
   }
   userStore.updateMyWallet();
   getGiftGroupList();
@@ -776,10 +800,6 @@ async function getGoodsList() {
 }
 
 function handleRecharge() {
-  if (!MODULE_CONFIG_SWITCH.pay) {
-    window.$message.info('敬请期待！');
-    return;
-  }
   if (!loginTip()) return;
   showRecharge.value = true;
 }
@@ -868,7 +888,7 @@ function handleScrollTop() {
     overflow: hidden;
     box-sizing: border-box;
     width: $w-1000;
-    height: 100%;
+    height: 740px;
     border-radius: 6px;
     background-color: $theme-color-papayawhip;
     color: #61666d;
@@ -878,7 +898,7 @@ function handleScrollTop() {
       justify-content: space-between;
       box-sizing: border-box;
       padding: 10px 20px;
-      height: 70px;
+      height: 80px;
       color: #18191c;
 
       .info {
@@ -897,7 +917,32 @@ function handleScrollTop() {
         }
         .detail {
           .top {
+            display: flex;
             margin-bottom: 10px;
+            .follow {
+              display: flex;
+              align-items: center;
+              margin-left: 10px;
+              height: 20px;
+              border-radius: 12px;
+              background-color: $theme-color-gold;
+              font-size: 12px;
+              .f-left {
+                display: flex;
+                align-items: center;
+                padding: 0 10px;
+                color: white;
+                cursor: pointer;
+              }
+              .f-right {
+                display: flex;
+                align-items: center;
+                padding: 0 10px;
+                height: 100%;
+                border-radius: 0 12px 12px 0;
+                background-color: #e3e5e7;
+              }
+            }
           }
           .bottom {
             font-size: 14px;
@@ -915,12 +960,17 @@ function handleScrollTop() {
         justify-content: center;
         font-size: 14px;
         .top {
+          display: flex;
           margin-bottom: 10px;
+          .item {
+            margin-right: 10px;
+          }
         }
         .bottom {
           font-size: 12px;
           .tag {
             display: inline-block;
+            margin-right: 10px;
             padding: 4px 10px;
             border-radius: 10px;
             background-color: $theme-color-gold;
@@ -1035,8 +1085,7 @@ function handleScrollTop() {
       align-items: center;
       justify-content: space-around;
       box-sizing: border-box;
-      margin: 5px 0;
-      height: 100px;
+      padding: 5px 0;
       > :last-child {
         position: absolute;
       }
@@ -1044,10 +1093,9 @@ function handleScrollTop() {
         display: flex;
         align-items: center;
         flex-direction: column;
-        justify-content: center;
         box-sizing: border-box;
-        width: 100px;
-        height: 100px;
+        width: 90px;
+        height: 88px;
         text-align: center;
         cursor: pointer;
         &:hover {
@@ -1056,8 +1104,9 @@ function handleScrollTop() {
 
         .ico {
           position: relative;
-          width: 45px;
-          height: 45px;
+          width: 40px;
+          height: 40px;
+          margin-top: 12px;
           background-position: center center;
           background-size: cover;
           background-repeat: no-repeat;
@@ -1099,6 +1148,7 @@ function handleScrollTop() {
     display: inline-block;
     box-sizing: border-box;
     width: $w-250;
+    height: 740px;
     border-radius: 6px;
     background-color: $theme-color-papayawhip;
     color: #9499a0;
@@ -1106,7 +1156,7 @@ function handleScrollTop() {
       display: flex;
       align-items: center;
       justify-content: space-evenly;
-      padding: 5px 0;
+      height: 27px;
       font-size: 12px;
     }
     .user-list {
@@ -1156,6 +1206,10 @@ function handleScrollTop() {
         white-space: normal;
         word-wrap: break-word;
         font-size: 13px;
+        .reward {
+          color: $theme-color-gold;
+          font-weight: bold;
+        }
 
         .name,
         .time {
@@ -1279,6 +1333,7 @@ function handleScrollTop() {
         margin-left: auto;
         padding: 4px;
         width: 70px;
+        height: 24px;
         border-radius: 4px;
         background-color: $theme-color-gold;
         color: white;
