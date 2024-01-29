@@ -48,11 +48,25 @@
         </div>
       </div>
     </div>
+    <div
+      class="paging-wrap"
+      v-if="pageParams.hasMore"
+    >
+      <n-pagination
+        v-model:page="pageParams.nowPage"
+        v-model:page-size="pageParams.pageSize"
+        :item-count="pageParams.total"
+        show-size-picker
+        :page-sizes="[30, 50, 100, 200]"
+        @update-page="getData"
+        @update-page-size="handleUpdatePageSize"
+      />
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchLiveRoomList } from '@/api/area';
@@ -69,14 +83,27 @@ const liveRoomList = ref<ILiveRoom[]>([]);
 const route = useRoute();
 
 const loading = ref(false);
+const pageParams = reactive({
+  nowPage: 1,
+  pageSize: 30,
+  total: 0,
+  hasMore: false,
+});
 
 watch(
   () => route.params.id,
   (newVal) => {
     if (!newVal) return;
+    pageParams.nowPage = 1;
     getData();
   }
 );
+
+function handleUpdatePageSize(v) {
+  pageParams.nowPage = 1;
+  pageParams.pageSize = v;
+  getData();
+}
 
 function goRoom(item: ILiveRoom) {
   if (!item.live) {
@@ -99,9 +126,13 @@ async function getData() {
     const res = await fetchLiveRoomList({
       id: Number(route.params.id),
       live_room_is_show: LiveRoomIsShowEnum.yes,
+      nowPage: pageParams.nowPage,
+      pageSize: pageParams.pageSize,
     });
     if (res.code === 200) {
       liveRoomList.value = res.data.rows;
+      pageParams.total = res.data.total;
+      pageParams.hasMore = res.data.hasMore;
     }
   } catch (error) {
     console.log(error);
@@ -194,6 +225,12 @@ async function getData() {
         }
       }
     }
+  }
+  .paging-wrap {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 </style>

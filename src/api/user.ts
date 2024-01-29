@@ -30,10 +30,9 @@ export function fetchQrcodeLoginStatus({ platform, login_id }) {
 }
 
 export function fetchLogin({ id, password }) {
-  return request.instance({
-    url: '/user/login',
-    method: 'post',
-    data: { id, password },
+  return request.post('/user/login', {
+    id,
+    password,
   });
 }
 
@@ -41,10 +40,7 @@ export function fetchUserInfo() {
   return request.get<IUser>('/user/get_user_info');
 }
 export function fetchFindUser(userId: number) {
-  return request.instance({
-    url: `/user/find/${userId}`,
-    method: 'get',
-  });
+  return request.get(`/user/find/${userId}`);
 }
 
 export function fetchUserList(params: { orderName: string; orderBy: string }) {

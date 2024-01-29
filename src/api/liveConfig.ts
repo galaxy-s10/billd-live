@@ -14,11 +14,7 @@ export function fetchFindLiveConfigByKey(key: string) {
 }
 
 export function fetchCreateFrontend(data: ILiveConfig) {
-  return request.instance({
-    url: `/live_config/create`,
-    method: 'post',
-    data,
-  });
+  return request.post(`/live_config/create`, data);
 }
 
 export function fetchUpdateFrontend(data: ILiveConfig) {

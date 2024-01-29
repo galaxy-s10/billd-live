@@ -6,9 +6,7 @@ export function fetchLivePlayList(params: {
   nowPage?: number;
   pageSize?: number;
 }) {
-  return request.instance({
-    url: '/live_play/list',
-    method: 'get',
+  return request.get('/live_play/list', {
     params,
   });
 }

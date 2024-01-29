@@ -1,8 +1,8 @@
-import { IWallet } from '@/interface';
+import { IPaging, IWallet } from '@/interface';
 import request from '@/utils/request';
 
 export function fetchWalletList(params) {
-  return request.get('/wallet/list', {
+  return request.get<IPaging<IWallet>>('/wallet/list', {
     params,
   });
 }

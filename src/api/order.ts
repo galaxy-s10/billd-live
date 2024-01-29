@@ -9,11 +9,7 @@ export function fetchAliPay(data: {
   liveRoomId: number;
   money?: number;
 }) {
-  return request.instance({
-    url: '/order/pay',
-    method: 'post',
-    data,
-  });
+  return request.post('/order/pay', data);
 }
 
 /**
@@ -22,21 +18,18 @@ export function fetchAliPay(data: {
  * @returns
  */
 export function fetchAliPayStatus(params: { out_trade_no: string }) {
-  return request.instance({
-    url: '/order/pay_status',
-    method: 'get',
+  return request.get('/order/pay_status', {
     params,
   });
 }
+
 /**
  * 支付列表（支付中和已支付）
  * @param out_trade_no 订单支付时传入的商户订单号
  * @returns
  */
 export function fetchOrderList(params: IList<IOrder>) {
-  return request.instance({
-    url: '/order/order_list',
-    method: 'get',
+  return request.get('/order/order_list', {
     params,
   });
 }

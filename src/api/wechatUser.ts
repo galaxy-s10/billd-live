@@ -7,9 +7,5 @@ export function fetchWechatLogin(data: {
   exp: number;
   login_id: string;
 }) {
-  return request.instance({
-    url: `/wechat_user/login`,
-    method: 'post',
-    data,
-  });
+  return request.post(`/wechat_user/login`, data);
 }

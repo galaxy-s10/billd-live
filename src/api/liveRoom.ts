@@ -1,9 +1,9 @@
+import { IList, IPaging } from '@/interface';
+import { ILiveRoom } from '@/types/ILiveRoom';
 import request from '@/utils/request';
 
-export function fetchLiveRoomList(params) {
-  return request.instance({
-    url: '/live_room/list',
-    method: 'get',
+export function fetchLiveRoomList(params: IList<ILiveRoom>) {
+  return request.get<IPaging<ILiveRoom>>('/live_room/list', {
     params,
   });
 }
@@ -21,8 +21,5 @@ export function fetchUpdateLiveRoomKey() {
 }
 
 export function fetchFindLiveRoom(roomId: string) {
-  return request.instance({
-    url: `/live_room/find/${roomId}`,
-    method: 'get',
-  });
+  return request.get<ILiveRoom>(`/live_room/find/${roomId}`);
 }

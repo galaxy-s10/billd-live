@@ -8,16 +8,12 @@ export interface IQiniuKey {
 }
 
 export function fetchQiniuDataList(params) {
-  return request.instance({
-    url: '/qiniu_data/list',
-    method: 'get',
+  return request.get('/qiniu_data/list', {
     params,
   });
 }
 export function fetchDiff(params) {
-  return request.instance({
-    url: '/qiniu_data/diff',
-    method: 'get',
+  return request.get('/qiniu_data/diff', {
     params,
   });
 }
@@ -66,11 +62,7 @@ export function fetchUploadProgress(params: IQiniuKey) {
 }
 
 export function fetchCreateLink(data: IQiniuData) {
-  return request.instance({
-    url: '/qiniu_data/create',
-    method: 'post',
-    data,
-  });
+  return request.post('/qiniu_data/create', data);
 }
 export function fetchUpdateQiniuData(data: IQiniuData) {
   return request.instance({

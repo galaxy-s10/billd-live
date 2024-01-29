@@ -235,6 +235,8 @@ export interface ILiveRoom {
   live?: ILive;
   user_live_room?: IUserLiveRoom & { user: IUser };
 
+  hidden_cover_img?: boolean;
+
   created_at?: string;
   updated_at?: string;
   deleted_at?: string;

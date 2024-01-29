@@ -207,12 +207,16 @@ export enum RankTypeEnum {
   sponsors = 'sponsors',
   wallet = 'wallet',
   blog = 'blog',
+  signin = 'signin',
 }
 
 export interface IWallet {
   id?: number;
   user_id?: number;
   balance?: number;
+
+  user?: IUser;
+
   created_at?: string;
   updated_at?: string;
   deleted_at?: string;

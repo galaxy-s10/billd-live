@@ -7,12 +7,9 @@ export function fetchRtcV1Publish(data: {
   streamurl: string;
   tid: string;
 }) {
-  return request.instance({
-    url: `/srs/rtcV1Publish`,
-    method: 'post',
-    data,
-  });
+  return request.post(`/srs/rtcV1Publish`, data);
 }
+
 export function fetchRtcV1Play(data: {
   api: string;
   clientip: string | null;
@@ -20,9 +17,5 @@ export function fetchRtcV1Play(data: {
   streamurl: string;
   tid: string;
 }) {
-  return request.instance({
-    url: `/srs/rtcV1Play`,
-    method: 'post',
-    data,
-  });
+  return request.post(`/srs/rtcV1Play`, data);
 }
