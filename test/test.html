@@ -1,285 +1,108 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
+    <meta
+      name="renderer"
+      content="webkit"
+    />
     <meta
       http-equiv="X-UA-Compatible"
-      content="IE=edge"
+      content="IE=Edge"
     />
+    <meta charset="utf-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
     />
-    <title>项目概览</title>
+    <meta
+      name="description"
+      content=""
+    />
+    <meta
+      name="author"
+      content="ThemeBucket"
+    />
+    <link
+      rel="shortcut icon"
+      href="#"
+      type="image/png"
+    />
+
+    <title>管理后台登陆</title>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="/common/js/bootstrap/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="/common/fonts/css/font-awesome.min.css"
+    />
+    <link
+      href="/assets/backend/css/style.css?v=2"
+      rel="stylesheet"
+    />
+    <link
+      href="/assets/backend/css/style-responsive.css"
+      rel="stylesheet"
+    />
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="/common/js/html5shiv.js"></script>
+      <script src="/common/js/respond.min.js"></script>
+    <![endif]-->
   </head>
 
-  <body>
-    <h1>这只是一个中转页，列出了目前我个人业余（非工作）的大部分项目~</h1>
-    <p>最后更新：2023年12月17日00:46:58</p>
-    <p>
-      概览：
-      <a
-        target="_blank"
-        href="https://www.hsslive.cn/works"
+  <body class="login-body">
+    <div class="container">
+      <form
+        class="form-signin"
+        action="/admin/auth/login"
+        method="POST"
       >
-        https://www.hsslive.cn/works
-      </a>
-    </p>
-    <ul>
-      <h2>直播</h2>
-      <li>
-        直播前台（web）
-        <a
-          target="_blank"
-          href="https://live.hsslive.cn"
-        >
-          https://live.hsslive.cn
-        </a>
-      </li>
-      <li>
-        直播后台（web）
-        <a
-          target="_blank"
-          href="https://live-admin.hsslive.cn"
-        >
-          https://live-admin.hsslive.cn
-        </a>
-      </li>
-      <li>
-        直播客户端（flutter）
-        <a
-          target="_blank"
-          href="https://github.com/galaxy-s10/billd-live-flutter"
-        >
-          https://github.com/galaxy-s10/billd-live-flutter
-        </a>
-      </li>
-    </ul>
+        <div class="form-signin-heading text-center">
+          <img
+            style="max-height: 45px"
+            src="/assets/backend/images/logo.png?v=4"
+            alt=""
+          />
+        </div>
+        <div class="login-wrap">
+          <input
+            type="hidden"
+            name="_token"
+            value="k32pH8wdW5qsnnUo6nMYAk9eQWI9tq29OCw7e30b"
+          />
+          <input
+            type="hidden"
+            name="back"
+            value="https://vip.cneiie9.com/admin/user/ajaxuserlist?page=1"
+          />
+          <input
+            type="text"
+            name="login"
+            class="form-control"
+            placeholder="用户名"
+            value=""
+            autofocus
+          />
+          <input
+            type="password"
+            name="password"
+            class="form-control"
+            placeholder="密码"
+          />
 
-    <ul>
-      <h2>博客</h2>
-      <li>
-        博客后台（vue3）
-        <a
-          target="_blank"
-          href="https://admin.hsslive.cn"
-        >
-          https://admin.hsslive.cn
-        </a>
-      </li>
-      <li>
-        博客前台（nuxt3）
-        <a
-          target="_blank"
-          href="https://nuxt2.hsslive.cn"
-        >
-          https://nuxt2.hsslive.cn
-        </a>
-      </li>
-      <li>
-        博客前台（nuxt2）
-        <a
-          target="_blank"
-          href="https://www.hsslive.cn"
-        >
-          https://www.hsslive.cn
-        </a>
-      </li>
-      <li>
-        博客前台（next12）
-        <a
-          target="_blank"
-          href="https://next.hsslive.cn"
-        >
-          https://next.hsslive.cn
-        </a>
-      </li>
-      <li>
-        博客前台（react18）
-        <a
-          target="_blank"
-          href="https://project.hsslive.cn/react18-blog-client/"
-        >
-          https://project.hsslive.cn/react18-blog-client/
-        </a>
-      </li>
-    </ul>
-
-    <ul>
-      <h2>billd系列</h2>
-      <li>
-        billd-monorepo（monorepo）
-        <a
-          target="_blank"
-          href="https://project.hsslive.cn/billd-monorepo/"
-        >
-          https://project.hsslive.cn/billd-monorepo/
-        </a>
-      </li>
-      <li>
-        billd-ui（vue2组件库）
-        <a
-          target="_blank"
-          href="https://project.hsslive.cn/billd-ui/"
-        >
-          https://project.hsslive.cn/billd-ui/
-        </a>
-      </li>
-      <li>
-        billd-utils（积累常用 js 方法 ）
-        <a
-          target="_blank"
-          href="https://github.com/galaxy-s10/billd-utils"
-        >
-          https://github.com/galaxy-s10/billd-utils
-        </a>
-      </li>
-      <li>
-        billd-scss（积累常用 scss 类 ）
-        <a
-          target="_blank"
-          href="https://github.com/galaxy-s10/billd-scss"
-        >
-          https://github.com/galaxy-s10/billd-scss
-        </a>
-      </li>
-      <li>
-        billd-deploy（部署插件）
-        <a
-          target="_blank"
-          href="https://github.com/galaxy-s10/billd-deploy"
-        >
-          https://github.com/galaxy-s10/billd-deploy
-        </a>
-      </li>
-      <li>
-        babel-plugin-import-billd（按需加载插件）
-        <a
-          target="_blank"
-          href="https://github.com/galaxy-s10/babel-plugin-import-billd"
-        >
-          https://github.com/galaxy-s10/babel-plugin-import-billd
-        </a>
-      </li>
-    </ul>
-
-    <ul>
-      <h2>project.hsslive.cn</h2>
-      <li>
-        仿网易云官网（react17）
-        <a
-          target="_blank"
-          href="https://project.hsslive.cn/netease-cloud-music/"
-        >
-          https://project.hsslive.cn/netease-cloud-music/
-        </a>
-      </li>
-      <li>
-        react17项目模板（实现cra）
-        <a
-          target="_blank"
-          href="https://project.hsslive.cn/react17-webpack5-template/"
-        >
-          https://project.hsslive.cn/react17-webpack5-template/
-        </a>
-      </li>
-      <li>
-        vue3项目模板（实现vue-cli）
-        <a
-          target="_blank"
-          href="https://project.hsslive.cn/vue3-webpack5-template/"
-        >
-          https://project.hsslive.cn/vue3-webpack5-template/
-        </a>
-      </li>
-      <li>
-        overview（umi）
-        <a
-          target="_blank"
-          href="https://project.hsslive.cn/overview/"
-        >
-          https://project.hsslive.cn/overview/
-        </a>
-      </li>
-      <li>
-        多环境部署-prod（生产环境）
-        <a
-          target="_blank"
-          href="https://project.hsslive.cn/multi-env-project/prod/"
-        >
-          https://project.hsslive.cn/multi-env-project/prod/
-        </a>
-      </li>
-      <li>
-        多环境部署-preview（预发布环境）
-        <a
-          target="_blank"
-          href="https://project.hsslive.cn/multi-env-project/preview/"
-        >
-          https://project.hsslive.cn/multi-env-project/preview/
-        </a>
-      </li>
-      <li>
-        多环境部署-beta（测试环境）
-        <a
-          target="_blank"
-          href="https://project.hsslive.cn/multi-env-project/beta/"
-        >
-          https://project.hsslive.cn/multi-env-project/beta/
-        </a>
-      </li>
-      <li>
-        根据浏览器语言跳转（国际化）
-        <a
-          target="_blank"
-          href="https://project.hsslive.cn/lang/"
-        >
-          https://project.hsslive.cn/lang/
-        </a>
-      </li>
-    </ul>
-
-    <ul>
-      <h2>基建</h2>
-      <li>
-        私有仓库（verdaccio）
-        <a
-          target="_blank"
-          href="http://registry.hsslive.cn"
-          >http://registry.hsslive.cn
-        </a>
-      </li>
-      <li>
-        线上部署（jenkins）
-        <a
-          target="_blank"
-          href="https://jenkins.hsslive.cn"
-        >
-          https://jenkins.hsslive.cn
-        </a>
-      </li>
-    </ul>
-
-    <ul>
-      <h2>其他</h2>
-      <li>
-        github主页：
-        <a
-          target="_blank"
-          href="https://github.com/galaxy-s10"
-        >
-          https://github.com/galaxy-s10
-        </a>
-      </li>
-      <li>
-        发布的npm包：
-        <a
-          target="_blank"
-          href="https://www.npmjs.com/~huangshuisheng"
-        >
-          https://www.npmjs.com/~huangshuisheng
-        </a>
-      </li>
-    </ul>
+          <button
+            class="btn btn-lg btn-login btn-block"
+            type="submit"
+          >
+            <i class="fa fa-check"></i>
+          </button>
+        </div>
+      </form>
+    </div>
   </body>
 </html>

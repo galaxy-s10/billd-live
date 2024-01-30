@@ -136,13 +136,37 @@ export interface IGiftRecord {
   deleted_at?: string;
 }
 
-export interface ISignin {
+export interface ISigninStatistics {
   id?: number;
   user_id?: number;
   live_room_id?: number;
+  /** 当前连续签到次数 */
   nums?: number;
+  /** 历史最高连续签到次数 */
+  max_nums?: number;
+  /** 累计签到次数 */
+  sum_nums?: number;
+  /** 上次签到日期 */
+  recently_signin_time?: string;
 
   /** 用户信息 */
+  username?: string;
+  user?: IUser;
+  /** 直播间信息 */
+  live_room?: ILiveRoom;
+
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string;
+}
+
+export interface ISigninRecord {
+  id?: number;
+  user_id?: number;
+  live_room_id?: number;
+
+  /** 用户信息 */
+  username?: string;
   user?: IUser;
   /** 直播间信息 */
   live_room?: ILiveRoom;

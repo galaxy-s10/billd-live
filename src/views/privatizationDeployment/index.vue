@@ -19,6 +19,16 @@
       <div class="list">
         <div class="hr"></div>
         <div class="item">
+          <h2>简介</h2>
+          <p>目前核心实现：</p>
+          <ol>
+            <li>服务器自建SRS直播。</li>
+            <li>服务器自建WebRTC直播。</li>
+            <li>接入第三方腾讯云直播。</li>
+          </ol>
+        </div>
+        <div class="hr"></div>
+        <div class="item">
           <h2>远程协助</h2>
           <p>如果在部署期间遇到问题，可以联系作者获取远程协助（付费）。</p>
         </div>
@@ -46,6 +56,7 @@
     </div>
     <div class="aside">
       <div class="title">本页目录</div>
+      <div class="item">简介</div>
       <div class="item">远程协助</div>
       <div class="item">定制服务</div>
       <div class="item">收费标准</div>

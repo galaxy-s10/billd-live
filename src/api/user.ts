@@ -51,8 +51,7 @@ export function fetchBlogUserList(params: {
   orderName: string;
   orderBy: string;
 }) {
-  return request.get<IPaging<IUser>>(
-    'https://api.hsslive.cn/prodapi/user/list',
-    { params }
-  );
+  return request.get<IPaging<IUser>>('https://cdnapi.hsslive.cn/user/list', {
+    params,
+  });
 }

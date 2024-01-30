@@ -17,6 +17,8 @@ export enum LiveRoomTypeEnum {
   user_wertc,
   /** 主播使用srs直播 */
   user_srs,
+  /** 主播使用腾讯云css直播 */
+  user_tencent_css,
   /** 主播使用obs/ffmpeg直播 */
   user_obs,
   /** 主播使用msr直播 */

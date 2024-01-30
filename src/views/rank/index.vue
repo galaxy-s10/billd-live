@@ -18,7 +18,7 @@
       <div class="top">
         <div
           v-for="(item, index) in [rankList[1], rankList[0], rankList[2]]"
-          :key="index"
+          :key="currRankType + '-' + index"
           :class="{ item: 1, [`rank-${item.rank}`]: 1 }"
         >
           <div
@@ -58,7 +58,7 @@
             class="signin"
             v-if="currRankType === RankTypeEnum.signin"
           >
-            连续签到：{{ item.signin_nums }}天
+            累计签到：{{ item.signin_nums }}天
           </div>
         </div>
       </div>
@@ -97,7 +97,7 @@
               class="signin"
               v-if="currRankType === RankTypeEnum.signin"
             >
-              （连续签到：{{ item.signin_nums }}天）
+              （累计签到：{{ item.signin_nums }}天）
             </div>
             <div
               v-if="item.live?.live && currRankType === RankTypeEnum.liveRoom"
@@ -177,8 +177,8 @@ const mockRank: {
       },
     ],
     rank: 1,
-    level: -1,
-    score: -1,
+    level: 0,
+    score: 0,
     balance: 0,
     signin_nums: 0,
     live: undefined,
@@ -192,8 +192,8 @@ const mockRank: {
       },
     ],
     rank: 2,
-    level: -1,
-    score: -1,
+    level: 0,
+    score: 0,
     balance: 0,
     signin_nums: 0,
     live: undefined,
@@ -207,8 +207,8 @@ const mockRank: {
       },
     ],
     rank: 3,
-    level: -1,
-    score: -1,
+    level: 0,
+    score: 0,
     balance: 0,
     signin_nums: 0,
     live: undefined,
@@ -222,8 +222,8 @@ const mockRank: {
       },
     ],
     rank: 4,
-    level: -1,
-    score: -1,
+    level: 0,
+    score: 0,
     balance: 0,
     signin_nums: 0,
     live: undefined,
@@ -404,7 +404,7 @@ async function getSigninList() {
           level: 0,
           score: 0,
           balance: 0,
-          signin_nums: item.nums || 0,
+          signin_nums: item.sum_nums || 0,
         };
       });
       if (length < mockDataNums) {

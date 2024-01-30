@@ -242,6 +242,9 @@
           </template>
           <template #list>
             <div class="list">
+              <a class="item">
+                <div class="txt">腾讯云开播</div>
+              </a>
               <a
                 class="item"
                 @click.prevent="handleStartLive(LiveRoomTypeEnum.user_srs)"

@@ -50,7 +50,7 @@
     </div>
     <div
       class="paging-wrap"
-      v-if="pageParams.hasMore"
+      v-if="pageParams.total > pageParams.pageSize"
     >
       <n-pagination
         v-model:page="pageParams.nowPage"
