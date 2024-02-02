@@ -127,6 +127,7 @@ function startPay(item: IGoods) {
   }
   showQrPay.value = false;
   nextTick(() => {
+    console.log(item.price, '333');
     goodsInfo.money = item.price!;
     goodsInfo.goodsId = item.id!;
     showQrPay.value = true;

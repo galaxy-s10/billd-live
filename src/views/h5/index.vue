@@ -66,7 +66,7 @@
             v-if="!item.area_live_rooms?.length"
             class="null"
           >
-            暂无数据
+            {{ t('common.nonedata') }}
           </div>
         </div>
       </div>
@@ -76,6 +76,7 @@
 
 <script lang="ts" setup>
 import { onMounted, onUnmounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import { fetchAreaLiveRoomList } from '@/api/area';
 import { IArea, IAreaLiveRoom } from '@/interface';
@@ -89,6 +90,7 @@ import {
 
 const appStore = useAppStore();
 const liveRoomList = ref<IArea[]>([]);
+const { t } = useI18n();
 
 const swiperList = ref([
   {

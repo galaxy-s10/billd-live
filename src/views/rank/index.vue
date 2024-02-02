@@ -7,7 +7,7 @@
         :class="{ item: 1, active: item.type === currRankType }"
         @click="changeCurrRankType(item.type)"
       >
-        {{ item.label }}
+        {{ t(item.label) }}
       </div>
     </div>
 
@@ -45,20 +45,23 @@
               class="living"
               @click="handleJoin(item.live)"
             >
-              直播中
+              {{ t('common.living') }}
             </div>
           </div>
           <div
             class="wallet"
             v-if="currRankType === RankTypeEnum.wallet"
           >
-            钱包：{{ formatMoney(item.balance) }}元
+            <span>{{ t('common.wallet') }}: </span>
+            <span>{{ formatMoney(item.balance) }}￥</span>
           </div>
           <div
             class="signin"
             v-if="currRankType === RankTypeEnum.signin"
           >
-            累计签到：{{ item.signin_nums }}天
+            <span>
+              {{ t('rank.accumulatedSignin', { nums: item.signin_nums }) }}
+            </span>
           </div>
         </div>
       </div>
@@ -91,20 +94,25 @@
               class="wallet"
               v-if="currRankType === RankTypeEnum.wallet"
             >
-              （钱包：{{ formatMoney(item.balance) }}元）
+              <span>{{ t('common.wallet') }}: </span>
+              <span>{{ formatMoney(item.balance) }}￥</span>
             </div>
             <div
               class="signin"
               v-if="currRankType === RankTypeEnum.signin"
             >
-              （累计签到：{{ item.signin_nums }}天）
+              <span>
+                （{{
+                  t('rank.accumulatedSignin', { nums: item.signin_nums })
+                }}）
+              </span>
             </div>
             <div
               v-if="item.live?.live && currRankType === RankTypeEnum.liveRoom"
               class="living-tag"
               @click.stop="handleJoin(item.live)"
             >
-              直播中
+              {{ t('common.living') }}
             </div>
           </div>
           <div class="right"></div>
@@ -116,6 +124,7 @@
 
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import { fetchLiveRoomList } from '@/api/liveRoom';
 import { fetchSigninList } from '@/api/signin';
@@ -135,19 +144,19 @@ export interface IRankType {
 const rankTypeList = ref<IRankType[]>([
   {
     type: RankTypeEnum.liveRoom,
-    label: '直播榜',
+    label: 'rank.liveRank',
   },
   {
     type: RankTypeEnum.user,
-    label: '用户榜',
+    label: 'rank.userRank',
   },
   {
     type: RankTypeEnum.wallet,
-    label: '土豪榜',
+    label: 'rank.richRank',
   },
   {
     type: RankTypeEnum.signin,
-    label: '签到榜',
+    label: 'rank.signinRank',
   },
   // {
   //   type: RankTypeEnum.blog,
@@ -158,7 +167,7 @@ const rankTypeList = ref<IRankType[]>([
 const mockDataNums = 4;
 
 const currRankType = ref(RankTypeEnum.liveRoom);
-
+const { t } = useI18n();
 const mockRank: {
   users: { id; username; avatar }[];
   rank: number;

@@ -3,6 +3,7 @@ import { computeBox, getRangeRandom } from 'billd-utils';
 import sparkMD5 from 'spark-md5';
 
 export function formatMoney(money?: number) {
+  console.log('formatMoneyformatMoney', money);
   if (!money) {
     return '0.00';
   }

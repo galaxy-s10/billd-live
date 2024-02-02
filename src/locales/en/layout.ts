@@ -1,0 +1,40 @@
+import { nameSpaceWrap } from '@/locales/util';
+
+export default nameSpaceWrap('layout', {
+  home: 'Home',
+  area: 'Area',
+  shop: 'Shop',
+  liveAdmin: 'LiveAdmin',
+  appdownload: 'App Download',
+  doc: 'Doc',
+  ecosystem: 'Ecosystem',
+  about: 'About',
+  sponsor: 'Sponsor',
+  signin: 'Signin',
+  deploy: 'Private Deploy',
+  startLive: 'Start Live',
+  login: 'Login',
+  logout: 'Logout',
+  profile: 'Profile',
+  resource: 'Resource',
+  libraries: 'Official libraries',
+  rank: 'Rank',
+  siteOrder: 'Site Order',
+  myWallet: 'My Wallet',
+
+  guide: 'Guide',
+  apiDoc: 'Api Doc',
+  bilibiliTutorial: 'Bilibili Tutorial',
+  vipCourses: 'Vip Courses',
+
+  faq: 'FAQ',
+  team: 'Team',
+  officialGroup: 'Official Group',
+  release: 'Version Release',
+
+  tencentCssLive: 'Tencent Css Live',
+  srsLive: 'SRS Live',
+  webrtcLive: 'WebRTC Live',
+  msrLive: 'Msr Live',
+  pkLive: 'PK Live',
+});

@@ -5,34 +5,38 @@
       @click="router.push({ name: routerName.rank })"
     >
       <div class="ico rank"></div>
-      <div class="txt">排行榜</div>
+      <div class="txt">{{ t('layout.rank') }}</div>
     </div>
     <div
       class="item"
       @click="router.push({ name: routerName.shop })"
     >
       <div class="ico shop"></div>
-      <div class="txt">商店</div>
+      <div class="txt">{{ t('layout.shop') }}</div>
     </div>
     <div
       class="item"
       @click="router.push({ name: routerName.order })"
     >
       <div class="ico data"></div>
-      <div class="txt">全站充值</div>
+      <div class="txt">{{ t('layout.siteOrder') }}</div>
     </div>
     <div
       class="item"
       @click="router.push({ name: routerName.wallet })"
     >
       <div class="ico wallet"></div>
-      <div class="txt">我的收支</div>
+      <div class="txt">{{ t('layout.myWallet') }}</div>
     </div>
   </aside>
 </template>
 
 <script lang="ts" setup>
+import { useI18n } from 'vue-i18n';
+
 import router, { routerName } from '@/router';
+
+const { t } = useI18n();
 </script>
 
 <style lang="scss" scoped>
@@ -42,7 +46,7 @@ import router, { routerName } from '@/router';
   right: 0;
   z-index: 10;
   padding: 15px 10px;
-  width: 60px;
+  width: 70px;
   border-radius: 20px 0 0 20px;
   background-color: white;
   box-shadow: 0 0 20px 1px rgba($theme-color-gold, 0.15);

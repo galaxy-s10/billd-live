@@ -135,14 +135,14 @@
             v-else
             class="none"
           >
-            当前没有在线的直播间
+            {{ t('home.noliveRoomTip') }}
           </div>
         </div>
       </div>
     </div>
     <div class="area-container">
       <div class="area-item">
-        <div class="title">推荐直播</div>
+        <div class="title">{{ t('home.recommendLive') }}</div>
         <div class="live-room-list">
           <div
             v-for="(iten, indey) in otherLiveRoomList"
@@ -182,7 +182,7 @@
             v-if="!otherLiveRoomList.length"
             class="null"
           >
-            暂无数据
+            {{ t('common.nonedata') }}
           </div>
         </div>
       </div>
@@ -192,13 +192,14 @@
       class="foot"
       v-if="MODULE_CONFIG_SWITCH.copyrightNotice"
     >
-      *部分内容来源网络，如有侵权，请联系我删除~
+      *{{ t('home.copyrightTip') }}~
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { onMounted, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
 import { fetchLiveList } from '@/api/live';
@@ -234,6 +235,7 @@ const videoWrapTmpRef = ref<HTMLDivElement>();
 const remoteVideoRef = ref<HTMLDivElement>();
 const docW = document.documentElement.clientWidth;
 
+const { t } = useI18n();
 const {
   videoWrapRef,
   videoLoading,

@@ -44,7 +44,7 @@
           v-if="!liveRoomList.length"
           class="null"
         >
-          暂无数据
+          {{ t('common.nonedata') }}
         </div>
       </div>
     </div>
@@ -67,6 +67,7 @@
 
 <script lang="ts" setup>
 import { onMounted, reactive, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 
 import { fetchLiveRoomList } from '@/api/area';
@@ -79,7 +80,7 @@ import {
 } from '@/types/ILiveRoom';
 
 const liveRoomList = ref<ILiveRoom[]>([]);
-
+const { t } = useI18n();
 const route = useRoute();
 
 const loading = ref(false);

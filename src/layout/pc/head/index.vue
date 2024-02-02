@@ -18,7 +18,7 @@
             href="/"
             @click.prevent="router.push('/')"
           >
-            首页
+            {{ t('layout.home') }}
           </a>
           <a
             class="item"
@@ -27,7 +27,7 @@
             }"
             @click.prevent="router.push({ name: routerName.area })"
           >
-            分区
+            {{ t('layout.area') }}
           </a>
           <a
             class="item"
@@ -36,21 +36,21 @@
             }"
             @click.prevent="router.push({ name: routerName.shop })"
           >
-            商店
+            {{ t('layout.shop') }}
           </a>
           <a
             class="item"
             :href="COMMON_URL.admin"
             @click.prevent="openToTarget(COMMON_URL.admin)"
           >
-            直播后台
+            {{ t('layout.liveAdmin') }}
           </a>
           <a
             class="item"
             :href="COMMON_URL.mobileApk"
             @click.prevent="openToTarget(COMMON_URL.mobileApk)"
           >
-            App下载
+            {{ t('layout.appdownload') }}
             <div class="badge">
               <div class="txt">new</div>
             </div>
@@ -71,7 +71,8 @@
         <Dropdown class="doc">
           <template #btn>
             <div class="btn">
-              文档<VPIconChevronDown class="icon"></VPIconChevronDown>
+              <span>{{ t('layout.doc') }}</span>
+              <VPIconChevronDown class="icon"></VPIconChevronDown>
             </div>
           </template>
           <template #list>
@@ -80,14 +81,14 @@
                 class="item"
                 @click="quickStart"
               >
-                <div class="txt">快速上手</div>
+                <div class="txt">{{ t('layout.guide') }}</div>
               </a>
               <a
                 class="item"
                 :href="COMMON_URL.apifox"
                 @click.prevent="openToTarget(COMMON_URL.apifox)"
               >
-                <div class="txt">接口文档</div>
+                <div class="txt">{{ t('layout.apiDoc') }}</div>
                 <VPIconExternalLink class="icon"></VPIconExternalLink>
               </a>
               <a
@@ -97,7 +98,7 @@
                   openToTarget(COMMON_URL.bilibiliCollectiondetail)
                 "
               >
-                <div class="txt">b站教程</div>
+                <div class="txt">{{ t('layout.bilibiliTutorial') }}</div>
                 <VPIconExternalLink class="icon"></VPIconExternalLink>
               </a>
               <a
@@ -105,7 +106,7 @@
                 :href="COMMON_URL.payCoursesArticle"
                 @click.prevent="openToTarget(COMMON_URL.payCoursesArticle)"
               >
-                <div class="txt">billd-live付费课</div>
+                <div class="txt">{{ t('layout.vipCourses') }}</div>
                 <VPIconExternalLink class="icon"></VPIconExternalLink>
               </a>
             </div>
@@ -115,12 +116,13 @@
         <Dropdown class="ecosystem">
           <template #btn>
             <div class="btn">
-              生态系统<VPIconChevronDown class="icon"></VPIconChevronDown>
+              <span>{{ t('layout.ecosystem') }}</span>
+              <VPIconChevronDown class="icon"></VPIconChevronDown>
             </div>
           </template>
           <template #list>
             <div class="list">
-              <div class="title">资源</div>
+              <div class="title">{{ t('layout.resource') }}</div>
               <a
                 v-for="(item, index) in resource"
                 :key="index"
@@ -135,7 +137,7 @@
                 ></VPIconExternalLink>
               </a>
               <div class="hr"></div>
-              <div class="title">官方库</div>
+              <div class="title">{{ t('layout.libraries') }}</div>
               <a
                 v-for="(item, index) in plugins"
                 :key="index"
@@ -156,7 +158,8 @@
         <Dropdown class="about">
           <template #btn>
             <div class="btn">
-              关于<VPIconChevronDown class="icon"></VPIconChevronDown>
+              <span>{{ t('layout.about') }}</span>
+              <VPIconChevronDown class="icon"></VPIconChevronDown>
             </div>
           </template>
           <template #list>
@@ -172,7 +175,7 @@
                     : openToTarget(item.url)
                 "
               >
-                <div class="txt">{{ item.label }}</div>
+                <div class="txt">{{ t(item.label) }}</div>
                 <VPIconExternalLink
                   v-if="item.url"
                   class="icon"
@@ -190,7 +193,7 @@
           href="/sponsors"
           @click.prevent="router.push({ name: routerName.sponsors })"
         >
-          赞助
+          {{ t('layout.sponsor') }}
         </a>
         <a
           class="signin"
@@ -201,7 +204,7 @@
           }"
           @click="handleSignin"
         >
-          签到
+          {{ t('layout.signin') }}
           <div
             class="red-dot"
             v-if="appStore.showSigninRedDot"
@@ -219,7 +222,7 @@
             router.push({ name: routerName.privatizationDeployment })
           "
         >
-          私有化部署
+          {{ t('layout.deploy') }}
           <div class="badge">
             <div class="txt">new</div>
           </div>
@@ -238,36 +241,36 @@
 
         <Dropdown class="start-live">
           <template #btn>
-            <div class="btn">我要开播</div>
+            <div class="btn">{{ t('layout.startLive') }}</div>
           </template>
           <template #list>
             <div class="list">
               <a class="item">
-                <div class="txt">腾讯云开播</div>
+                <div class="txt">{{ t('layout.tencentCssLive') }}</div>
               </a>
               <a
                 class="item"
                 @click.prevent="handleStartLive(LiveRoomTypeEnum.user_srs)"
               >
-                <div class="txt">srs开播</div>
+                <div class="txt">{{ t('layout.srsLive') }}</div>
               </a>
               <a
                 class="item"
                 @click.prevent="handleStartLive(LiveRoomTypeEnum.user_wertc)"
               >
-                <div class="txt">webrtc开播</div>
+                <div class="txt">{{ t('layout.webrtcLive') }}</div>
               </a>
               <a
                 class="item"
                 @click.prevent="handleStartLive(LiveRoomTypeEnum.user_msr)"
               >
-                <div class="txt">msr开播</div>
+                <div class="txt">{{ t('layout.msrLive') }}</div>
               </a>
               <a
                 class="item"
                 @click.prevent="handleStartLive(LiveRoomTypeEnum.user_pk)"
               >
-                <div class="txt">一对一打PK</div>
+                <div class="txt">{{ t('layout.pkLive') }}</div>
               </a>
             </div>
           </template>
@@ -278,7 +281,7 @@
           class="qqlogin"
           @click="appStore.showLoginModal = true"
         >
-          <div class="btn">登录</div>
+          <div class="btn">{{ t('layout.login') }}</div>
         </div>
         <Dropdown
           v-else
@@ -296,13 +299,35 @@
                 class="item"
                 @click.prevent="router.push({ name: routerName.account })"
               >
-                <div class="txt">个人信息</div>
+                <div class="txt">{{ t('layout.profile') }}</div>
               </a>
               <a
                 class="item"
                 @click.prevent="handleLogout"
               >
-                <div class="txt">退出</div>
+                <div class="txt">{{ t('layout.logout') }}</div>
+              </a>
+            </div>
+          </template>
+        </Dropdown>
+
+        <Dropdown class="switch-lang">
+          <template #btn>
+            <div class="btn">
+              {{ localeMap[locale] }}
+              <VPIconChevronDown class="icon"></VPIconChevronDown>
+            </div>
+          </template>
+          <template #list>
+            <div class="list">
+              <a
+                class="item"
+                v-for="(item, index) in localeMap"
+                :key="index"
+                :class="{ active: item === localeMap[locale] }"
+                @click="locale = index"
+              >
+                <div class="txt">{{ item }}</div>
               </a>
             </div>
           </template>
@@ -315,6 +340,7 @@
 <script lang="ts" setup>
 import { openToTarget, windowReload } from 'billd-utils';
 import { onMounted, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
 import { fetchCreateSignin, fetchTodayIsSignin } from '@/api/signin';
@@ -328,29 +354,35 @@ import { useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 
+const { t, locale } = useI18n();
 const router = useRouter();
 const userStore = useUserStore();
 const appStore = useAppStore();
 const githubStar = ref('');
 
+const localeMap = {
+  zh: '中文',
+  en: 'English',
+};
+
 const about = ref([
   {
-    label: '常见问题',
+    label: 'layout.faq',
     routerName: routerName.faq,
     url: '',
   },
   {
-    label: '团队',
+    label: 'layout.team',
     routerName: routerName.team,
     url: '',
   },
   {
-    label: '官方群',
+    label: 'layout.officialGroup',
     routerName: routerName.group,
     url: '',
   },
   {
-    label: '版本发布',
+    label: 'layout.release',
     routerName: routerName.release,
     url: '',
   },
@@ -693,6 +725,8 @@ function handleStartLive(key: LiveRoomTypeEnum) {
         }
       }
       .qqlogin {
+        margin-right: 20px;
+
         .btn {
           display: flex;
           align-items: center;
@@ -702,7 +736,7 @@ function handleStartLive(key: LiveRoomTypeEnum) {
           height: 35px;
           border-radius: 50%;
           background-color: papayawhip;
-          font-size: 13px;
+          font-size: 12px;
           cursor: pointer;
 
           @extend %containBg;
@@ -716,6 +750,38 @@ function handleStartLive(key: LiveRoomTypeEnum) {
             cursor: pointer;
             &:hover {
               color: $theme-color-gold;
+            }
+          }
+        }
+      }
+      .switch-lang {
+        .btn {
+          display: flex;
+          align-items: center;
+          .icon {
+            margin-left: 5px;
+            width: 13px;
+
+            fill: currentColor;
+          }
+        }
+        .list {
+          width: 80px;
+          .item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            padding: 0 15px;
+            cursor: pointer;
+
+            &:hover,
+            &.active {
+              color: $theme-color-gold;
+            }
+            &.disabled {
+              color: initial !important;
+              opacity: 0.5;
+              cursor: not-allowed;
             }
           }
         }

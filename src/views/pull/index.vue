@@ -95,7 +95,7 @@
                     <div class="nums">x{{ item.nums }}</div>
                   </div>
                 </template>
-                <span v-else>暂无</span>
+                <span v-else>{{ t('common.nonedata') }}</span>
               </div>
             </n-popover>
             <div class="tag">人气榜</div>
@@ -400,6 +400,7 @@
 <script lang="ts" setup>
 import { getRandomString, openToTarget } from 'billd-utils';
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 
 import {
@@ -438,6 +439,8 @@ const route = useRoute();
 const userStore = useUserStore();
 const appStore = useAppStore();
 const networkStore = useNetworkStore();
+const { t } = useI18n();
+
 const roomId = ref(route.params.roomId as string);
 const configBg = ref();
 const configVideo = ref();

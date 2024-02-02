@@ -41,19 +41,21 @@
         </div>
         <div class="time">{{ item.send_pay_date || '-' }}</div>
       </div>
-      <div v-if="!payList.length">暂无数据</div>
+      <div v-if="!payList.length">{{ t('common.nonedata') }}</div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { onMounted, onUnmounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import { fetchOrderList } from '@/api/order';
 import { fullLoading } from '@/components/FullLoading';
 import { IOrder, PayStatusEnum } from '@/interface';
 
 const payList = ref<IOrder[]>([]);
+const { t } = useI18n();
 
 const headList = ref([
   {

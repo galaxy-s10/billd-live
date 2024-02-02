@@ -1,0 +1,40 @@
+import { nameSpaceWrap } from '@/locales/util';
+
+export default nameSpaceWrap('layout', {
+  home: '首页',
+  area: '分区',
+  shop: '商店',
+  liveAdmin: '直播后台',
+  appdownload: 'App下载',
+  doc: '文档',
+  ecosystem: '生态系统',
+  about: '关于',
+  sponsor: '赞助',
+  signin: '签到',
+  deploy: '私有化部署',
+  startLive: '我要开播',
+  login: '登录',
+  logout: '退出',
+  profile: '个人信息',
+  resource: '资源',
+  libraries: '官方库',
+  rank: '排行榜',
+  siteOrder: '全站充值',
+  myWallet: '我的收支',
+
+  guide: '快速上升',
+  apiDoc: '接口文档',
+  bilibiliTutorial: 'b站教程',
+  vipCourses: 'billd-live付费课',
+
+  faq: '常见问题',
+  team: '团队',
+  officialGroup: '官方群',
+  release: '版本发布',
+
+  tencentCssLive: '腾讯云开播',
+  srsLive: 'SRS开播',
+  webrtcLive: 'WebRTC开播',
+  msrLive: 'Msr开播',
+  pkLive: '一对一打PK',
+});

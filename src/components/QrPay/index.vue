@@ -1,6 +1,8 @@
 <template>
   <div class="qr-pay-wrap">
-    <div class="money">金额：{{ formatMoney(props.money * 100) }}元</div>
+    <div class="money">
+      {{ t('common.payMoney', { money: formatMoney(props.money) }) }}
+    </div>
     <div
       class="qrcode-wrap"
       v-loading="loading"
@@ -30,13 +32,22 @@
     </div>
     <div v-if="aliPayBase64 !== ''">
       <div class="bottom">
-        <div class="sao">打开支付宝扫一扫</div>
+        <div class="sao">
+          {{ t('common.aliPayScanTip') }}
+        </div>
         <div
           class="expr"
           v-if="!isExpired"
         >
-          有效期5分钟（{{
-            formatDownTime({ endTime: downTimeEnd, startTime: downTimeStart })
+          {{
+            t('common.aliPayScanTip', {
+              minutes: 5,
+            })
+          }}（{{
+            formatDownTime({
+              endTime: downTimeEnd,
+              startTime: downTimeStart,
+            })
           }}）
         </div>
         <div
@@ -66,6 +77,7 @@
 import { hrefToTarget, isMobile } from 'billd-utils';
 import QRCode from 'qrcode';
 import { onMounted, onUnmounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import { fetchAliPay, fetchAliPayStatus } from '@/api/order';
 import { PayStatusEnum } from '@/interface';
@@ -82,7 +94,7 @@ const loading = ref(false);
 const isExpired = ref(false);
 
 const currentPayStatus = ref(PayStatusEnum.wait);
-
+const { t } = useI18n();
 const props = withDefaults(
   defineProps<{
     money: number;
@@ -140,7 +152,7 @@ async function handleStartPay() {
   clearInterval(downTimer.value);
   try {
     const res = await fetchAliPay({
-      money: props.money * 100,
+      money: props.money,
       goodsId: props.goodsId,
       liveRoomId: props.liveRoomId,
     });

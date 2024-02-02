@@ -32,13 +32,14 @@
           <span>{{ formatMoney(item.amount) }}元</span>
         </div>
       </div>
-      <div v-if="!walletRecordList.length">暂无数据</div>
+      <div v-if="!walletRecordList.length">{{ t('common.nonedata') }}</div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { onMounted, onUnmounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import { fetchWalletRecordMyList } from '@/api/walletRecord';
 import { fullLoading } from '@/components/FullLoading';
@@ -52,6 +53,7 @@ import { formatMoney } from '@/utils';
 
 const userStore = useUserStore();
 const walletRecordList = ref<IWalletRecord[]>([]);
+const { t } = useI18n();
 
 const headList = ref([
   {

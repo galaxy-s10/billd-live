@@ -91,9 +91,9 @@ async function startPay() {
   const res = await fetchFindByTypeGoods(GoodsTypeEnum.recharge);
   if (res.code === 200) {
     showQrPay.value = false;
-    console.log(money.value, '-----');
+    console.log('dddd', money.value);
     nextTick(() => {
-      goodsInfo.money = money.value;
+      goodsInfo.money = money.value * 100;
       goodsInfo.goodsId = res.data.id!;
       showQrPay.value = true;
     });

@@ -7,13 +7,15 @@ import { createApp } from 'vue';
 
 import Message from '@/components/Message/index.vue';
 import registerDirectives from '@/directives';
-import router from '@/router/index';
-import store from '@/store/index';
+import { i18n } from '@/hooks/use-i18n';
+import router from '@/router';
+import store from '@/store';
 
 import App from './App.vue';
 
 const app = createApp(App);
 registerDirectives(app);
+app.use(i18n);
 app.use(store);
 app.use(router);
 
