@@ -20,7 +20,7 @@ export const WEBSOCKET_URL =
     : 'wss://srs-pull.hsslive.cn';
 
 export const AXIOS_BASEURL =
-  process.env.NODE_ENV !== 'development'
+  process.env.NODE_ENV === 'development'
     ? '/api'
     : 'https://live-api.hsslive.cn';
 
