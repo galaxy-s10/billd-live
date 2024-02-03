@@ -386,7 +386,6 @@ import {
   watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
-import * as workerTimers from 'worker-timers';
 
 import { QINIU_LIVE, mediaTypeEnumMap } from '@/constant';
 import { emojiArray } from '@/emoji';
@@ -468,6 +467,9 @@ const msgLoading = ref(false);
 const uploadRef = ref<HTMLInputElement>();
 const nullAudioStream = ref<MediaStream>();
 const showEmoji = ref(false);
+const worker = ref<Worker>();
+const workerTimerId = ref();
+const workerMsrTimerId = ref();
 
 const timeCanvasDom = ref<Raw<fabric.Text>[]>([]);
 const stopwatchCanvasDom = ref<Raw<fabric.Text>[]>([]);
@@ -475,11 +477,9 @@ const wrapSize = reactive({
   width: 0,
   height: 0,
 });
-const workerTimerId = ref(-1);
 const bodyAppendChildElArr = ref<HTMLElement[]>([]);
 const liveType = Number(route.query.liveType);
 const recorder = ref<MediaRecorder>();
-const sendBlobTimer = ref();
 const bolbId = ref(0);
 const msrDelay = ref(1000 * 1);
 const msrMaxDelay = ref(1000 * 5);
@@ -511,7 +511,6 @@ watch(
 watch(
   () => currentMaxFramerate.value,
   () => {
-    workerTimers.clearInterval(workerTimerId.value);
     renderFrame();
   }
 );
@@ -592,16 +591,6 @@ function mockClick() {
   uploadRef.value?.click();
 }
 
-function handleWait() {
-  if (!loginTip()) {
-    return;
-  }
-  if (!commentAuthTip()) {
-    return;
-  }
-  window.$message.warning('敬请期待！');
-}
-
 async function uploadChange() {
   const fileList = uploadRef.value?.files;
   if (fileList?.length) {
@@ -679,13 +668,26 @@ function handleMsr(stream: MediaStream) {
     // audioBitsPerSecond: 1000 * 2000,
   });
   recorder.value.ondataavailable = handleSendBlob;
-  sendBlobTimer.value = setInterval(function () {
-    recorder.value?.stop();
-    recorder.value?.start();
-  }, msrDelay.value);
+  worker.value?.postMessage({
+    type: 'request-clear-loop',
+    timer: workerMsrTimerId.value,
+  });
+  worker.value?.postMessage({
+    type: 'request-start-msr-loop',
+    delay: msrDelay.value,
+  });
+  worker.value?.addEventListener('message', (e) => {
+    if (e.data.type === 'response-start-msr-loop') {
+      workerMsrTimerId.value = e.data.timer;
+    } else if (e.data.type === 'response-msr-looping') {
+      recorder.value?.stop();
+      recorder.value?.start();
+    }
+  });
 }
 
 onMounted(() => {
+  worker.value = new Worker('worker.js');
   setTimeout(() => {
     scrollTo(0, 0);
   }, 100);
@@ -700,6 +702,7 @@ onUnmounted(() => {
     el.remove();
   });
   clearFrame();
+  worker.value?.terminate();
 });
 
 async function initUserMedia() {
@@ -727,9 +730,12 @@ function renderAll() {
 }
 
 function clearFrame() {
-  if (workerTimerId.value !== -1) {
-    workerTimers.clearInterval(workerTimerId.value);
-  }
+  worker.value?.postMessage({
+    type: 'request-clear-loop',
+    data: {
+      timer: workerTimerId.value,
+    },
+  });
 }
 
 function renderFrame() {
@@ -744,9 +750,21 @@ function renderFrame() {
    */
   let delay = 1000 / currentMaxFramerate.value;
   delay = (18 / 20) * delay;
-  workerTimerId.value = workerTimers.setInterval(() => {
-    renderAll();
-  }, delay);
+  worker.value?.postMessage({
+    type: 'request-clear-loop',
+    timer: workerTimerId.value,
+  });
+  worker.value?.postMessage({
+    type: 'request-start-loop',
+    delay,
+  });
+  worker.value?.addEventListener('message', (e) => {
+    if (e.data.type === 'response-start-loop') {
+      workerTimerId.value = e.data.timer;
+    } else if (e.data.type === 'response-looping') {
+      renderAll();
+    }
+  });
 }
 
 function handleNullAudio() {
@@ -845,7 +863,10 @@ function handleMixedAudio() {
 }
 
 function handleEndLive() {
-  clearInterval(sendBlobTimer.value);
+  worker.value?.postMessage({
+    type: 'request-clear-loop',
+    timer: workerMsrTimerId.value,
+  });
   recorder.value?.removeEventListener('dataavailable', handleSendBlob);
   endLive();
 }
