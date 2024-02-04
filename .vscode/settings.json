@@ -11,8 +11,9 @@
 
   // 保存时进行一些操作
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit",
-    "source.organizeImports": "explicit"
+    // 在保存时运行eslint
+    "source.fixAll.eslint": true,
+    "source.organizeImports": true // 保存时整理 import ，去掉没用的导包，会删掉declare global {import utils from 'billd-utils';}，因此先不用
   },
 
   // "eslint.autoFixOnSave": true, // 废弃,使用editor.codeActionsOnSave替代

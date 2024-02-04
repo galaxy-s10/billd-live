@@ -70,10 +70,10 @@ apifox：[https://apifox.com/apidoc/shared-c7556b54-17b2-494e-a039-572d83f103ed]
 
 ## 客户端下载
 
-安卓端：[点击下载](https://resource.hsslive.cn/billd-live/image/e859ec0e1fac824ce92b6522104f53ed.apk)
-苹果端：TODO
-Windows端：TODO
-Mac端：TODO
+- 安卓端：[点击下载](https://resource.hsslive.cn/billd-live/image/e859ec0e1fac824ce92b6522104f53ed.apk)
+- 苹果端：TODO
+- Windows端：TODO
+- Mac端：TODO
 
 ## 预览
 
@@ -125,7 +125,7 @@ Mac端：TODO
   style="height:500px"
 />
 
-### 安卓端
+### 安卓端（flutter）
 
 -
 
@@ -218,7 +218,7 @@ pnpm i billd-utils@latest billd-scss@latest billd-html-webpack-plugin@latest
 
 > 本地必须要有 docker、ffmpeg 环境！
 >
-> 项目启动后，会在项目的 src/config/目录下生成 secret.ts 文件，请填写里面的信息，MYSQL_CONFIG、REDIS_CONFIG、SRS_CONFIG 必填！
+> 项目启动后，会在项目的 src/secret/目录下生成 secret.ts 文件，请填写里面的信息，MYSQL_CONFIG、REDIS_CONFIG、SRS_CONFIG 必填！
 
 ```bash
 # 1.初始化docker容器
@@ -234,7 +234,7 @@ pnpm run dev
 - [x] 三星 s10
 - [x] ipad air 3
 
-## FAQ
+## 常见问题
 
 [https://live.hsslive.cn/about/faq](https://live.hsslive.cn/about/faq)
 

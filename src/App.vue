@@ -1,6 +1,8 @@
 <template>
   <n-config-provider :theme-overrides="themeOverrides">
-    <n-dialog-provider><router-view></router-view></n-dialog-provider>
+    <n-dialog-provider>
+      <router-view></router-view>
+    </n-dialog-provider>
   </n-config-provider>
 </template>
 

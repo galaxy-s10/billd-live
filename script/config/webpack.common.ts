@@ -195,7 +195,7 @@ const commonConfig = (isProduction) => {
       modules: ['node_modules'],
     },
     module: {
-      noParse: /^(vue|vue-router)$/,
+      noParse: /^(vue|vue-router|naive-ui)$/,
       // loader执行顺序：从下往上，从右往左
       rules: [
         {
@@ -208,6 +208,7 @@ const commonConfig = (isProduction) => {
         },
         {
           test: /\.css$/,
+          exclude: /node_modules/,
           oneOf: [
             {
               resourceQuery: /module/,
@@ -229,6 +230,7 @@ const commonConfig = (isProduction) => {
         },
         {
           test: /\.(sass|scss)$/,
+          exclude: /node_modules/,
           oneOf: [
             {
               resourceQuery: /module/,
