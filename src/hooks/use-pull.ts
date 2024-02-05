@@ -48,6 +48,7 @@ export function usePull(roomId: string) {
     anchorInfo,
     liveUserList,
     damuList,
+    handleSendGetLiveUser,
   } = useWebsocket();
   isPull.value = true;
   const { flvVideoEl, flvIsPlaying, startFlvPlay, destroyFlv } = useFlvPlay();
@@ -465,6 +466,7 @@ export function usePull(roomId: string) {
     keydownDanmu,
     sendDanmu,
     addVideo,
+    handleSendGetLiveUser,
     danmuMsgType,
     isPlaying,
     msgIsFile,

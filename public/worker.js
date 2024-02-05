@@ -4,12 +4,12 @@ self.addEventListener('message', function (e) {
       const timer = setInterval(function () {
         self.postMessage({
           type: 'response-msr-looping',
-          data: { timer },
+          timer,
         });
       }, e.data.delay);
       self.postMessage({
         type: 'response-start-msr-loop',
-        data: { timer },
+        timer,
       });
     }
   } else if (e.data.type === 'request-start-loop') {
@@ -17,12 +17,12 @@ self.addEventListener('message', function (e) {
       const timer = setInterval(function () {
         self.postMessage({
           type: 'response-looping',
-          data: { timer },
+          timer,
         });
       }, e.data.delay);
       self.postMessage({
         type: 'response-start-loop',
-        data: { timer },
+        timer,
       });
     }
   } else if (e.data.type === 'request-clear-loop') {

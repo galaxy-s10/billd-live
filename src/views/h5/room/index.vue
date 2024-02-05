@@ -245,7 +245,7 @@ const containerHeight = ref(0);
 const videoWrapHeight = ref(0);
 const frontendWechatQrcode = ref('');
 const remoteVideoRef = ref<HTMLDivElement>();
-
+const roomId = ref(route.params.roomId as string);
 const {
   videoWrapRef,
   handlePlay,
@@ -254,6 +254,7 @@ const {
   sendDanmu,
   closeRtc,
   closeWs,
+  handleSendGetLiveUser,
   isPlaying,
   autoplayVal,
   videoLoading,
@@ -263,7 +264,7 @@ const {
   anchorInfo,
   remoteVideo,
   videoHeight,
-} = usePull(route.params.roomId as string);
+} = usePull(roomId.value);
 
 onUnmounted(() => {
   closeWs();
@@ -288,6 +289,7 @@ onMounted(() => {
     }
   });
   getLiveRoomInfo();
+  handleSendGetLiveUser(Number(roomId.value));
 });
 
 function handlePushStr(str) {
@@ -340,7 +342,7 @@ function handleRefresh() {
 async function getLiveRoomInfo() {
   try {
     videoLoading.value = true;
-    const res = await fetchFindLiveRoom(route.params.roomId as string);
+    const res = await fetchFindLiveRoom(roomId.value);
     if (res.code === 200) {
       appStore.setLiveRoomInfo(res.data);
       if (res.data.type === LiveRoomTypeEnum.user_wertc) {

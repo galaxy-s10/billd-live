@@ -467,6 +467,7 @@ const {
   keydownDanmu,
   sendDanmu,
   handlePlay,
+  handleSendGetLiveUser,
   danmuMsgType,
   msgIsFile,
   mySocketId,
@@ -499,6 +500,7 @@ onMounted(() => {
   initPull();
   getGiftRecord();
   getGiftGroupList();
+  handleSendGetLiveUser(Number(roomId.value));
 });
 
 onUnmounted(() => {

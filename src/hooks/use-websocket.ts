@@ -53,6 +53,7 @@ export const useWebsocket = () => {
   const { maxBitrate, maxFramerate, resolutionRatio } = useRTCParams();
 
   const loopHeartbeatTimer = ref();
+  const loopGetLiveUserTimer = ref();
   const liveUserList = ref<ILiveUser[]>([]);
   const roomId = ref('');
   const isPull = ref(false);
@@ -71,6 +72,7 @@ export const useWebsocket = () => {
 
   onUnmounted(() => {
     clearInterval(loopHeartbeatTimer.value);
+    clearInterval(loopGetLiveUserTimer.value);
   });
 
   watch(
@@ -99,6 +101,21 @@ export const useWebsocket = () => {
         msgType: WsMsgTypeEnum.heartbeat,
         data: {
           socket_id: socketId,
+          live_room_id: Number(roomId.value),
+        },
+      });
+    }, 1000 * 5);
+  }
+
+  function handleSendGetLiveUser(liveRoomId: number) {
+    loopGetLiveUserTimer.value = setInterval(() => {
+      const ws = networkStore.wsMap.get(roomId.value);
+      if (!ws) return;
+      ws.send<WsGetLiveUserType['data']>({
+        requestId: getRandomString(8),
+        msgType: WsMsgTypeEnum.getLiveUser,
+        data: {
+          live_room_id: liveRoomId,
         },
       });
     }, 1000 * 5);
@@ -841,6 +858,7 @@ export const useWebsocket = () => {
     isPull,
     initSrsWs,
     handleStartLive,
+    handleSendGetLiveUser,
     mySocketId,
     canvasVideoStream,
     lastCoverImg,

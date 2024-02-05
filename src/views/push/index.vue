@@ -433,6 +433,8 @@ const {
   sendDanmu,
   keydownDanmu,
   sendBlob,
+  handleSendGetLiveUser,
+  roomId,
   msgIsFile,
   mySocketId,
   lastCoverImg,
@@ -685,6 +687,15 @@ function handleMsr(stream: MediaStream) {
     }
   });
 }
+
+watch(
+  () => roomId.value,
+  (newval) => {
+    if (newval) {
+      handleSendGetLiveUser(Number(newval));
+    }
+  }
+);
 
 onMounted(() => {
   worker.value = new Worker('worker.js');
