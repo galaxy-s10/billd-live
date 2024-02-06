@@ -37,6 +37,7 @@ import {
   WsOtherJoinType,
   WsRoomLivingType,
   WsStartLiveType,
+  WsUpdateJoinInfoType,
 } from '@/types/websocket';
 import { createVideo } from '@/utils';
 
@@ -52,6 +53,7 @@ export const useWebsocket = () => {
 
   const { maxBitrate, maxFramerate, resolutionRatio } = useRTCParams();
 
+  const connectStatus = ref();
   const loopHeartbeatTimer = ref();
   const loopGetLiveUserTimer = ref();
   const liveUserList = ref<ILiveUser[]>([]);
@@ -86,6 +88,24 @@ export const useWebsocket = () => {
         });
       }
     }
+  );
+
+  watch(
+    [() => userStore.userInfo?.id, () => connectStatus.value],
+    ([userInfo, status]) => {
+      if (userInfo && status === WsConnectStatusEnum.connect) {
+        const ws = networkStore.wsMap.get(roomId.value);
+        if (!ws) return;
+        ws.send<WsUpdateJoinInfoType['data']>({
+          requestId: getRandomString(8),
+          msgType: WsMsgTypeEnum.updateJoinInfo,
+          data: {
+            live_room_id: Number(roomId.value),
+          },
+        });
+      }
+    },
+    { immediate: true }
   );
 
   const mySocketId = computed(() => {
@@ -418,6 +438,7 @@ export const useWebsocket = () => {
       prettierReceiveWsMsg(WsConnectStatusEnum.connect, ws.socketIo);
       handleHeartbeat(ws.socketIo!.id);
       if (!ws) return;
+      connectStatus.value = WsConnectStatusEnum.connect;
       ws.status = WsConnectStatusEnum.connect;
       ws.update();
       sendJoin();
@@ -671,7 +692,6 @@ export const useWebsocket = () => {
     ws.socketIo.on(
       WsMsgTypeEnum.liveUser,
       (data: WSGetRoomAllUserType['data']) => {
-        console.log('当前所有在线用户', data.liveUser);
         prettierReceiveWsMsg(WsMsgTypeEnum.liveUser, data);
         liveUserList.value = data.liveUser;
       }
