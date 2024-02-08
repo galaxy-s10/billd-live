@@ -74,27 +74,24 @@ export function usePull(roomId: string) {
       console.log('pkStream变了', newval);
       stopDrawingArr.value = [];
       stopDrawingArr.value.forEach((cb) => cb());
-      console.log(
-        networkStore.getRtcMap(`${mySocketId.value}___${roomId}`)?.videoEl!
-      );
       if (videoWrapRef.value) {
         const rect = videoWrapRef.value.getBoundingClientRect();
-        const { canvas, stopDrawing } = videoToCanvas({
-          wrapSize: {
-            width: rect.width,
-            height: rect.height,
-          },
-          videoEl: networkStore.getRtcMap(`${mySocketId.value}___${roomId}`)
-            ?.videoEl!,
-          videoResize: ({ w, h }) => {
-            videoHeight.value = `${w}x${h}`;
-          },
-        });
-        document.body.appendChild(canvas);
-        stopDrawingArr.value.push(stopDrawing);
-        remoteVideo.value.push(canvas);
-        roomLiving.value = true;
-        videoLoading.value = false;
+        // const { canvas, stopDrawing } = videoToCanvas({
+        //   wrapSize: {
+        //     width: rect.width,
+        //     height: rect.height,
+        //   },
+        //   videoEl: networkStore.getRtcMap(`${mySocketId.value}___${roomId}`)
+        //     ?.videoEl!,
+        //   videoResize: ({ w, h }) => {
+        //     videoHeight.value = `${w}x${h}`;
+        //   },
+        // });
+        // document.body.appendChild(canvas);
+        // stopDrawingArr.value.push(stopDrawing);
+        // remoteVideo.value.push(canvas);
+        // roomLiving.value = true;
+        // videoLoading.value = false;
       }
     }
   );
@@ -291,21 +288,21 @@ export function usePull(roomId: string) {
       if (appStore.liveRoomInfo?.type === LiveRoomTypeEnum.user_wertc) {
         newVal.forEach((item) => {
           videoLoading.value = false;
-          if (videoWrapRef.value) {
-            const rect = videoWrapRef.value.getBoundingClientRect();
-            const { canvas } = videoToCanvas({
-              wrapSize: {
-                width: rect.width,
-                height: rect.height,
-              },
-              videoEl: item.videoEl,
-              videoResize: ({ w, h }) => {
-                videoHeight.value = `${w}x${h}`;
-              },
-            });
-            videoElArr.value.push(item.videoEl);
-            remoteVideo.value.push(canvas);
-          }
+          // if (videoWrapRef.value) {
+          //   const rect = videoWrapRef.value.getBoundingClientRect();
+          //   const { canvas } = videoToCanvas({
+          //     wrapSize: {
+          //       width: rect.width,
+          //       height: rect.height,
+          //     },
+          //     videoEl: item.videoEl,
+          //     videoResize: ({ w, h }) => {
+          //       videoHeight.value = `${w}x${h}`;
+          //     },
+          //   });
+          //   videoElArr.value.push(item.videoEl);
+          //   remoteVideo.value.push(canvas);
+          // }
         });
       }
     },
@@ -400,14 +397,12 @@ export function usePull(roomId: string) {
 
   function closeWs() {
     networkStore.wsMap.forEach((ws) => {
-      ws.close();
       networkStore.removeWs(ws.roomId);
     });
   }
 
   function closeRtc() {
     networkStore.rtcMap.forEach((rtc) => {
-      rtc.close();
       networkStore.removeRtc(rtc.roomId);
     });
   }

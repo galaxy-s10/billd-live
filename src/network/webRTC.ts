@@ -80,7 +80,7 @@ export class WebRTCClass {
   /** 分辨率 */
   resolutionRatio = -1;
 
-  localStream?: MediaStream;
+  localStream?: MediaStream | null;
 
   isSRS: boolean;
 
@@ -216,10 +216,7 @@ export class WebRTCClass {
         });
       }
     });
-    // if (addTrack.length) {
-    //   appStore.setAllTrack([...appStore.allTrack, ...addTrack]);
-    // }
-    this.localStream = stream;
+    // this.localStream = stream;
     appStore.pkStream = stream;
   };
 
@@ -407,22 +404,16 @@ export class WebRTCClass {
       if (event.candidate) {
         const networkStore = useNetworkStore();
         console.log('准备发送candidate', event.candidate.candidate);
-        const roomId = this.roomId.split('___')[1];
-        console.log({
-          roomId,
-          sender: this.sender,
-          receiver: this.receiver,
-        });
-        networkStore.wsMap.get(roomId)?.send<WsCandidateType['data']>({
+        networkStore.wsMap.get(this.roomId)?.send<WsCandidateType['data']>({
           requestId: getRandomString(8),
           msgType: this.isSRS
             ? WsMsgTypeEnum.srsCandidate
             : WsMsgTypeEnum.nativeWebRtcCandidate,
           data: {
             candidate: event.candidate,
-            sender: this.isAnchor ? this.sender : this.receiver,
-            receiver: this.isAnchor ? this.receiver : this.sender,
-            live_room_id: Number(roomId),
+            sender: this.sender,
+            receiver: this.receiver,
+            live_room_id: Number(this.roomId),
           },
         });
       } else {
@@ -447,6 +438,7 @@ export class WebRTCClass {
         if (iceConnectionState === 'connected') {
           // ICE 代理至少对每个候选发现了一个可用的连接，此时仍然会继续测试远程候选以便发现更优的连接。同时可能在继续收集候选。
           console.warn(this.roomId, 'iceConnectionState:connected', event);
+          console.warn('webrtc连接成功！');
         }
         if (iceConnectionState === 'completed') {
           // ICE 代理已经发现了可用的连接，不再测试远程候选。
@@ -551,17 +543,23 @@ export class WebRTCClass {
 
   // 手动关闭webrtc连接
   close = () => {
-    this.prettierLog('手动关闭webrtc连接', 'warn');
-    this.peerConnection?.getSenders().forEach((sender) => {
-      this.peerConnection?.removeTrack(sender);
-    });
-    this.peerConnection?.close();
-    this.peerConnection = null;
+    try {
+      this.prettierLog('手动关闭webrtc连接', 'warn');
+      this.localStream?.getTracks().forEach((track) => {
+        track.stop();
+      });
+      this.localStream = null;
+      this.peerConnection?.close();
+      this.peerConnection = null;
+      this.videoEl.remove();
+    } catch (error) {
+      console.error('手动关闭webrtc连接失败', error);
+    }
   };
 
   // 更新store
   update = () => {
     const networkStore = useNetworkStore();
-    networkStore.updateRtcMap(this.roomId, this);
+    networkStore.updateRtcMap(this.receiver, this);
   };
 }

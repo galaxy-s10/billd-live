@@ -166,18 +166,18 @@ export const useWebsocket = () => {
         msrMaxDelay,
       },
     });
-    if (type === LiveRoomTypeEnum.user_msr) {
-      return;
-    }
-    isSRS.value = true;
-    if (
-      ![LiveRoomTypeEnum.user_wertc, LiveRoomTypeEnum.user_pk].includes(type)
-    ) {
-      srsWebRtc.sendOffer({
-        isPk: false,
-        sender: mySocketId.value,
-      });
-    }
+    // if (type === LiveRoomTypeEnum.user_msr) {
+    //   return;
+    // }
+    // if ([LiveRoomTypeEnum.user_srs, LiveRoomTypeEnum.user_obs].includes(type)) {
+    //   isSRS.value = true;
+    //   srsWebRtc.sendOffer({
+    //     isPk: false,
+    //     sender: mySocketId.value,
+    //   });
+    // } else {
+    //   isSRS.value = false;
+    // }
   }
 
   function sendJoin() {
@@ -223,7 +223,7 @@ export const useWebsocket = () => {
         maxFramerate: currentMaxFramerate.value,
         resolutionRatio: currentResolutionRatio.value,
         isSRS: false,
-        roomId: `${mySocketId.value}___${roomId.value}`,
+        roomId: roomId.value,
         isAnchor,
         videoEl,
         sender,
@@ -246,6 +246,9 @@ export const useWebsocket = () => {
       try {
         const ws = networkStore.wsMap.get(roomId.value);
         if (!ws) return;
+        if (networkStore.rtcMap.get(receiver)) {
+          return;
+        }
         const rtc = nativeWebRtc.newWebrtc({
           isAnchor: true,
           sender,
@@ -304,43 +307,44 @@ export const useWebsocket = () => {
       try {
         const ws = networkStore.wsMap.get(roomId.value);
         if (!ws) return;
-        const rtc = nativeWebRtc.newWebrtc({
-          isAnchor: false,
-          sender,
-          receiver,
-          videoEl: createVideo({ appendChild: true }),
-        });
-        await rtc.setRemoteDescription(sdp);
-        if (isPk) {
-          if (!isAnchor.value) {
-            const stream = await handleUserMedia({ video: true, audio: true });
-            if (rtc?.peerConnection) {
-              rtc.peerConnection.onnegotiationneeded = (event) => {
-                console.log('onnegotiationneeded', event);
-              };
-              stream?.getTracks().forEach((track) => {
-                console.log(rtc, stream, track);
-                rtc.peerConnection?.addTrack(track, stream);
+        const rtc = networkStore.rtcMap.get(receiver);
+        if (rtc) {
+          await rtc.setRemoteDescription(sdp);
+          if (isPk) {
+            if (!isAnchor.value) {
+              const stream = await handleUserMedia({
+                video: true,
+                audio: true,
               });
+              if (rtc?.peerConnection) {
+                rtc.peerConnection.onnegotiationneeded = (event) => {
+                  console.log('onnegotiationneeded', event);
+                };
+                stream?.getTracks().forEach((track) => {
+                  rtc.peerConnection?.addTrack(track, stream);
+                });
+              }
             }
           }
+          const answerSdp = await rtc.createAnswer();
+          if (!answerSdp) {
+            console.error('nativeWebRtc的answerSdp为空');
+            return;
+          }
+          await rtc.setLocalDescription(answerSdp);
+          networkStore.wsMap.get(roomId.value)?.send<WsAnswerType['data']>({
+            requestId: getRandomString(8),
+            msgType: WsMsgTypeEnum.nativeWebRtcAnswer,
+            data: {
+              live_room_id: Number(roomId.value),
+              sender,
+              receiver,
+              sdp: answerSdp,
+            },
+          });
+        } else {
+          console.error('rtc不存在');
         }
-        const answerSdp = await rtc.createAnswer();
-        if (!answerSdp) {
-          console.error('nativeWebRtc的answerSdp为空');
-          return;
-        }
-        await rtc.setLocalDescription(answerSdp);
-        networkStore.wsMap.get(roomId.value)?.send<WsAnswerType['data']>({
-          requestId: getRandomString(8),
-          msgType: WsMsgTypeEnum.nativeWebRtcAnswer,
-          data: {
-            live_room_id: Number(roomId.value),
-            sender: receiver,
-            receiver: sender,
-            sdp: answerSdp,
-          },
-        });
       } catch (error) {
         console.error('nativeWebRtc的sendAnswer错误');
       }
@@ -380,11 +384,7 @@ export const useWebsocket = () => {
         const ws = networkStore.wsMap.get(roomId.value);
         if (!ws) return;
         const rtc = srsWebRtc.newWebrtc({
-          roomId: `${
-            isPk
-              ? `${mySocketId.value}___${roomId.value}___pk`
-              : `${mySocketId.value}___${roomId.value}`
-          }`,
+          roomId: `${isPk ? `${roomId.value}___pk` : `${roomId.value}`}`,
           sender,
           videoEl: createVideo({ appendChild: true }),
         });
@@ -501,7 +501,7 @@ export const useWebsocket = () => {
             maxBitrate: currentMaxBitrate.value,
             maxFramerate: currentMaxFramerate.value,
             resolutionRatio: currentResolutionRatio.value,
-            roomId: `${mySocketId.value}___${roomId.value}`,
+            roomId: roomId.value,
             videoEl,
             isSRS: true,
             sender: data.sender,
@@ -536,10 +536,8 @@ export const useWebsocket = () => {
       console.log('收到srsAnswer', data);
       if (data.receiver === mySocketId.value) {
         console.warn('是发给我的srsAnswer');
-        const rtc = networkStore.getRtcMap(
-          `${mySocketId.value}___${roomId.value}`
-        )!;
-        rtc.setRemoteDescription(data.sdp);
+        const rtc = networkStore.getRtcMap(data.sender);
+        rtc?.setRemoteDescription(data.sdp);
       } else {
         console.error('不是发给我的srsAnswer');
       }
@@ -552,10 +550,8 @@ export const useWebsocket = () => {
         console.log('收到srsCandidate', data);
         if (data.receiver === mySocketId.value) {
           console.warn('是发给我的srsCandidate');
-          const rtc = networkStore.getRtcMap(
-            `${mySocketId.value}___${roomId.value}`
-          )!;
-          rtc.addIceCandidate(data.candidate);
+          const rtc = networkStore.getRtcMap(data.sender);
+          rtc?.addIceCandidate(data.candidate);
         } else {
           console.error('不是发给我的srsCandidate');
         }
@@ -579,20 +575,31 @@ export const useWebsocket = () => {
                 content: '是否加入PK',
                 positiveText: '确认',
                 onPositiveClick() {
-                  return new Promise((resolve) => {
-                    resolve(1);
+                  async function main() {
                     if (data.receiver === mySocketId.value) {
                       console.warn('是发给我的nativeWebRtcOffer');
+                      await nativeWebRtc.newWebrtc({
+                        isAnchor: true,
+                        // 因为这里是收到offer，而offer是房主发的，所以此时的data.data.sender是房主；data.data.receiver是接收者；
+                        // 但是这里的nativeWebRtc的sender，得是自己，不能是data.data.sender，不要混淆
+                        sender: mySocketId.value,
+                        receiver: data.sender,
+                        videoEl: createVideo({
+                          appendChild: true,
+                        }),
+                      });
                       nativeWebRtc.sendAnswer({
                         isPk: true,
-                        sender: data.sender,
-                        receiver: data.receiver,
+                        sender: mySocketId.value,
+                        // data.data.receiver是接收者；我们现在new pc，发送者是自己，接收者肯定是房主，不能是data.data.receiver，因为data.data.receiver是自己
+                        receiver: data.sender,
                         sdp: data.sdp,
                       });
                     } else {
                       console.error('不是发给我的nativeWebRtcOffer');
                     }
-                  });
+                  }
+                  return main();
                 },
               });
             } else {
@@ -601,10 +608,21 @@ export const useWebsocket = () => {
           } else {
             if (data.receiver === mySocketId.value) {
               console.warn('是发给我的nativeWebRtcOffer');
+              await nativeWebRtc.newWebrtc({
+                isAnchor: true,
+                // 因为这里是收到offer，而offer是房主发的，所以此时的data.data.sender是房主；data.data.receiver是接收者；
+                // 但是这里的nativeWebRtc的sender，得是自己，不能是data.data.sender，不要混淆
+                sender: mySocketId.value,
+                receiver: data.sender,
+                videoEl: createVideo({
+                  appendChild: true,
+                }),
+              });
               nativeWebRtc.sendAnswer({
                 isPk: true,
-                sender: data.sender,
-                receiver: data.receiver,
+                sender: mySocketId.value,
+                // data.data.receiver是接收者；我们现在new pc，发送者是自己，接收者肯定是房主，不能是data.data.receiver，因为data.data.receiver是自己
+                receiver: data.sender,
                 sdp: data.sdp,
               });
             } else {
@@ -614,16 +632,28 @@ export const useWebsocket = () => {
         } else {
           if (data.receiver === mySocketId.value) {
             console.warn('是发给我的nativeWebRtcOffer');
+            await nativeWebRtc.newWebrtc({
+              isAnchor: true,
+              // 因为这里是收到offer，而offer是房主发的，所以此时的data.data.sender是房主；data.data.receiver是接收者；
+              // 但是这里的nativeWebRtc的sender，得是自己，不能是data.data.sender，不要混淆
+              sender: mySocketId.value,
+              receiver: data.sender,
+              videoEl: createVideo({
+                appendChild: true,
+              }),
+            });
             await nativeWebRtc.sendAnswer({
               isPk: false,
-              sender: data.sender,
-              receiver: data.receiver,
+              sender: mySocketId.value,
+              // data.data.receiver是接收者；我们现在new pc，发送者是自己，接收者肯定是房主，不能是data.data.receiver，因为data.data.receiver是自己
+              receiver: data.sender,
               sdp: data.sdp,
             });
           } else {
             console.error('不是发给我的nativeWebRtcOffer');
           }
         }
+        return '1';
       }
     );
 
@@ -634,10 +664,10 @@ export const useWebsocket = () => {
         console.log('收到nativeWebRtcAnswer', data);
         if (data.receiver === mySocketId.value) {
           console.warn('是发给我的nativeWebRtcAnswer');
-          const rtc = networkStore.getRtcMap(
-            `${mySocketId.value}___${roomId.value}`
-          )!;
-          await rtc.setRemoteDescription(data.sdp);
+          const rtc = networkStore.getRtcMap(data.sender);
+          if (rtc) {
+            await rtc.setRemoteDescription(data.sdp);
+          }
         } else {
           console.error('不是发给我的nativeWebRtcAnswer');
         }
@@ -651,9 +681,7 @@ export const useWebsocket = () => {
         console.log('收到nativeWebRtcCandidate', data);
         if (data.receiver === mySocketId.value) {
           console.warn('是发给我的nativeWebRtcCandidate');
-          const rtc = networkStore.getRtcMap(
-            `${mySocketId.value}___${roomId.value}`
-          )!;
+          const rtc = networkStore.getRtcMap(data.sender);
           rtc?.addIceCandidate(data.candidate);
         } else {
           console.error('不是发给我的nativeWebRtcCandidate');
@@ -772,13 +800,6 @@ export const useWebsocket = () => {
       prettierReceiveWsMsg(WsMsgTypeEnum.joined, data);
       appStore.setLiveRoomInfo(data.live_room);
       anchorInfo.value = data.anchor_info;
-      ws.send<WsGetLiveUserType['data']>({
-        requestId: getRandomString(8),
-        msgType: WsMsgTypeEnum.getLiveUser,
-        data: {
-          live_room_id: data.live_room_id,
-        },
-      });
     });
 
     // 其他用户加入房间
@@ -796,25 +817,29 @@ export const useWebsocket = () => {
         send_msg_time: +new Date(),
       };
       damuList.value.push(danmu);
-      ws.send<WsGetLiveUserType['data']>({
-        requestId,
-        msgType: WsMsgTypeEnum.getLiveUser,
-        data: {
-          live_room_id: data.live_room.id!,
-        },
-      });
-      if (!isPull.value && !isSRS.value) {
-        if (!roomLiving.value) return;
-      }
-      if (
-        [LiveRoomTypeEnum.user_wertc, LiveRoomTypeEnum.user_pk].includes(
-          data.live_room.type!
-        )
-      ) {
+      if (data.live_room.type === LiveRoomTypeEnum.user_wertc) {
         isSRS.value = false;
         nativeWebRtc.sendOffer({
           sender: mySocketId.value,
           receiver: data.join_socket_id,
+        });
+      } else {
+        data.socket_list.forEach((item) => {
+          if (item !== mySocketId.value) {
+            if (
+              [
+                LiveRoomTypeEnum.user_wertc,
+                LiveRoomTypeEnum.user_wertc_meeting,
+                LiveRoomTypeEnum.user_pk,
+              ].includes(data.live_room.type!)
+            ) {
+              isSRS.value = false;
+              nativeWebRtc.sendOffer({
+                sender: mySocketId.value,
+                receiver: item,
+              });
+            }
+          }
         });
       }
     });
@@ -830,12 +855,7 @@ export const useWebsocket = () => {
       if (anchorSocketId.value === data.socket_id) {
         roomLiving.value = false;
       }
-      networkStore.rtcMap.get(`${roomId.value}`)?.close();
       networkStore.removeRtc(`${roomId.value}`);
-      // const res = liveUserList.value.filter(
-      //   (item) => item.id !== data.socket_id
-      // );
-      // liveUserList.value = res;
       damuList.value.push({
         live_room_id: Number(roomId.value),
         socket_id: data.socket_id,

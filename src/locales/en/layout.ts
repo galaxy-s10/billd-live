@@ -32,9 +32,11 @@ export default nameSpaceWrap('layout', {
   officialGroup: 'Official Group',
   release: 'Version Release',
 
-  tencentCssLive: 'Tencent Css Live',
   srsLive: 'SRS Live',
   webrtcLive: 'WebRTC Live',
+  webrtcMeeting: 'WebRTC Meeting',
   msrLive: 'Msr Live',
   pkLive: 'PK Live',
+  tencentCssLive: 'Tencent Css Live',
+  tencentCssPkLive: 'Tencent Css PK',
 });

@@ -12,7 +12,12 @@ import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 import { ILiveRoom } from '@/types/ILiveRoom';
-import { WsMessageType, WsMsgTypeEnum, WsMsrBlobType } from '@/types/websocket';
+import {
+  WsMessageType,
+  WsMsgTypeEnum,
+  WsMsrBlobType,
+  WsRoomNoLiveType,
+} from '@/types/websocket';
 import { createVideo, generateBase64 } from '@/utils';
 
 import { commentAuthTip, loginTip } from './use-login';
@@ -63,14 +68,12 @@ export function usePush() {
 
   function closeWs() {
     networkStore.wsMap.forEach((ws) => {
-      ws.close();
       networkStore.removeWs(ws.roomId);
     });
   }
 
   function closeRtc() {
     networkStore.rtcMap.forEach((rtc) => {
-      rtc.close();
       networkStore.removeRtc(rtc.roomId);
     });
   }
@@ -253,9 +256,12 @@ export function usePush() {
     localStream.value = undefined;
     const instance = networkStore.wsMap.get(roomId.value);
     if (instance) {
-      instance.send({
+      instance.send<WsRoomNoLiveType['data']>({
         requestId: getRandomString(8),
         msgType: WsMsgTypeEnum.roomNoLive,
+        data: {
+          live_room: appStore.liveRoomInfo!,
+        },
       });
     }
     closeRtc();

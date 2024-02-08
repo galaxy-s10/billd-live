@@ -11,20 +11,24 @@ export enum LiveRoomUseCDNEnum {
 
 /** 直播间类型 */
 export enum LiveRoomTypeEnum {
-  /** 系统直播 */
+  /** 系统推流 */
   system,
-  /** 主播使用webrtc直播 */
+  /** 主播使用webrtc推流，直播 */
   user_wertc,
-  /** 主播使用srs直播 */
+  /** 主播使用webrtc推流，会议 */
+  user_wertc_meeting,
+  /** 主播使用srs推流 */
   user_srs,
-  /** 主播使用腾讯云css直播 */
-  user_tencent_css,
-  /** 主播使用obs/ffmpeg直播 */
+  /** 主播使用obs/ffmpeg推流 */
   user_obs,
-  /** 主播使用msr直播 */
+  /** 主播使用msr推流 */
   user_msr,
   /** 主播打pk */
   user_pk,
+  /** 主播使用腾讯云css推流 */
+  user_tencent_css,
+  /** 主播使用腾讯云css推流打pk */
+  user_tencent_css_pk,
 }
 
 /** 拉流是否需要鉴权 */

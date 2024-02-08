@@ -245,9 +245,6 @@
           </template>
           <template #list>
             <div class="list">
-              <a class="item">
-                <div class="txt">{{ t('layout.tencentCssLive') }}</div>
-              </a>
               <a
                 class="item"
                 @click.prevent="handleStartLive(LiveRoomTypeEnum.user_srs)"
@@ -262,6 +259,14 @@
               </a>
               <a
                 class="item"
+                @click.prevent="
+                  handleStartLive(LiveRoomTypeEnum.user_wertc_meeting)
+                "
+              >
+                <div class="txt">{{ t('layout.webrtcMeeting') }}</div>
+              </a>
+              <a
+                class="item"
                 @click.prevent="handleStartLive(LiveRoomTypeEnum.user_msr)"
               >
                 <div class="txt">{{ t('layout.msrLive') }}</div>
@@ -272,6 +277,13 @@
               >
                 <div class="txt">{{ t('layout.pkLive') }}</div>
               </a>
+              <a class="item">
+                <div class="txt">{{ t('layout.tencentCssLive') }}</div>
+              </a>
+              <a class="item">
+                <div class="txt">{{ t('layout.tencentCssPkLive') }}</div>
+              </a>
+              <div class="tip"><div class="tip-txt">有什么区别？</div></div>
             </div>
           </template>
         </Dropdown>
@@ -695,7 +707,6 @@ function handleStartLive(key: LiveRoomTypeEnum) {
 
       .start-live {
         margin-right: 20px;
-
         .btn {
           padding: 5px 15px;
           border-radius: 6px;
@@ -705,7 +716,9 @@ function handleStartLive(key: LiveRoomTypeEnum) {
           cursor: pointer;
         }
         .list {
-          width: 150px;
+          width: 180px;
+          position: relative;
+
           .item {
             display: flex;
             align-items: center;
@@ -720,6 +733,16 @@ function handleStartLive(key: LiveRoomTypeEnum) {
               color: initial !important;
               opacity: 0.5;
               cursor: not-allowed;
+            }
+          }
+          .tip {
+            display: flex;
+            justify-content: flex-end;
+            padding-right: 6px;
+            color: rgba(60, 60, 60, 0.7);
+            font-size: 12px;
+            .tip-txt {
+              cursor: pointer;
             }
           }
         }

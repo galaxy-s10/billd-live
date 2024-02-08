@@ -32,9 +32,11 @@ export default nameSpaceWrap('layout', {
   officialGroup: '官方群',
   release: '版本发布',
 
-  tencentCssLive: '腾讯云开播',
-  srsLive: 'SRS开播',
-  webrtcLive: 'WebRTC开播',
-  msrLive: 'Msr开播',
-  pkLive: '一对一打PK',
+  srsLive: 'SRS直播(推荐)',
+  webrtcLive: 'WebRTC直播(低延迟)',
+  webrtcMeeting: 'WebRTC会议(低延迟)',
+  msrLive: 'Msr直播(b站实现)',
+  pkLive: '打PK直播(互动)',
+  tencentCssLive: '腾讯云直播(CDN)',
+  tencentCssPkLive: '腾讯云打PK(CDN)',
 });

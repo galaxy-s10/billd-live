@@ -169,6 +169,7 @@ export type WsOtherJoinType = IWsFormat<{
   live_room_user_info: IUser;
   join_user_info?: IUser;
   join_socket_id: string;
+  socket_list: string[];
 }>;
 
 /** 开始直播 */
