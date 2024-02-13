@@ -8,7 +8,7 @@
   "author": "shuisheng <2274751790@qq.com>",
   "scripts": {
     "build": "webpack --config ./script/config/webpack.common.ts --env production",
-    "commit": "cz",
+    "cz": "cz",
     "copy": "ts-node ./deploy/handleGiteeJenkins.mjs",
     "lint": "eslint --config ./.eslintrc.js . --ext .js,.jsx,.ts,.tsx,.vue --cache",
     "lint:fix": "eslint --config ./.eslintrc.js . --ext .js,.jsx,.ts,.tsx,.vue --cache --fix",

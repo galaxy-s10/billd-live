@@ -178,7 +178,7 @@ apifox：[https://apifox.com/apidoc/shared-c7556b54-17b2-494e-a039-572d83f103ed]
 
 ### billd-live
 
-- 安装依赖（建议使用 node 版本：16.16.0）
+- 安装依赖（建议使用 node 版本：v18.19.0）
 
 ```bash
 pnpm i
@@ -204,7 +204,7 @@ npm run build
 
 ### billd-live-server
 
-- 安装依赖（建议使用 node 版本：16.16.0）
+- 安装依赖（建议使用 node 版本：v18.19.0）
 
 ```bash
 pnpm i
@@ -242,10 +242,10 @@ pnpm run dev
 
 ### 本地开发环境
 
-> 配置：macbookpro 2020 m1，8 核 CPU，16G 内存
+> 配置：MacBook Pro 2023 Apple M3 Max，14 核 CPU，36G 内存
 
-- 操作系统：mac os 13.3.1
-- node 版本：16.16.0
+- 操作系统：mac os 14.1
+- node 版本：v18.19.0
 - pnpm 版本：8.6.3
 - docker 版本：24.0.5, build ced0996
 - mysql 版本：基于 docker，镜像：mysql:8.0
