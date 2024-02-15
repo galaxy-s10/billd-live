@@ -1,6 +1,7 @@
 import { getRandomString } from 'billd-utils';
 
 import { LiveLineEnum, MediaTypeEnum } from '@/interface';
+import { domain } from '@/spec-config';
 import { AppRootState, useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { WsCandidateType, WsMsgTypeEnum } from '@/types/websocket';
@@ -527,7 +528,7 @@ export class WebRTCClass {
             //   urls: 'stun:stun.l.google.com:19302',
             // },
             {
-              urls: 'turn:live.hsslive.cn:3478',
+              urls: `turn:live.${domain}:3478`,
               username: 'hss',
               credential: '123456',
             },

@@ -46,12 +46,3 @@ export function fetchFindUser(userId: number) {
 export function fetchUserList(params: { orderName: string; orderBy: string }) {
   return request.get<IPaging<IUser>>('/user/list', { params });
 }
-
-export function fetchBlogUserList(params: {
-  orderName: string;
-  orderBy: string;
-}) {
-  return request.get<IPaging<IUser>>('https://cdnapi.hsslive.cn/user/list', {
-    params,
-  });
-}

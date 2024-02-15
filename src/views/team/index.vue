@@ -110,6 +110,7 @@
 </template>
 
 <script lang="ts" setup>
+import { domain } from '@/spec-config';
 import {
   CodeOutline,
   GlobeOutline,
@@ -143,7 +144,7 @@ const list = ref([
       },
     ],
     social: [{ github: 'https://www.github.com/galaxy-s10' }],
-    website: 'https://www.hsslive.cn',
+    website: `https://www.${domain}`,
   },
 ]);
 </script>

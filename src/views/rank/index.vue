@@ -128,7 +128,7 @@ import { useI18n } from 'vue-i18n';
 
 import { fetchLiveRoomList } from '@/api/liveRoom';
 import { fetchSigninList } from '@/api/signin';
-import { fetchBlogUserList, fetchUserList } from '@/api/user';
+import { fetchUserList } from '@/api/user';
 import { fetchWalletList } from '@/api/wallet';
 import { fullLoading } from '@/components/FullLoading';
 import { RankTypeEnum } from '@/interface';
@@ -355,42 +355,6 @@ async function getUserList() {
   }
 }
 
-async function getBlogUserList() {
-  try {
-    fullLoading({ loading: true });
-    const res = await fetchBlogUserList({
-      orderName: 'updated_at',
-      orderBy: 'desc',
-    });
-    if (res.code === 200) {
-      const length = res.data.rows.length;
-      rankList.value = res.data.rows.map((item, index) => {
-        return {
-          users: [
-            {
-              id: item.id,
-              username: item.username,
-              avatar: item.avatar,
-            },
-          ],
-          rank: index + 1,
-          level: 0,
-          score: 0,
-          balance: 0,
-          signin_nums: 0,
-        };
-      });
-      if (length < mockDataNums) {
-        rankList.value.push(...mockRank.slice(length));
-      }
-    }
-  } catch (error) {
-    console.log(error);
-  } finally {
-    fullLoading({ loading: false });
-  }
-}
-
 async function getSigninList() {
   try {
     fullLoading({ loading: true });
@@ -435,9 +399,6 @@ function changeCurrRankType(type: RankTypeEnum) {
       break;
     case RankTypeEnum.user:
       getUserList();
-      break;
-    case RankTypeEnum.blog:
-      getBlogUserList();
       break;
     case RankTypeEnum.signin:
       getSigninList();
