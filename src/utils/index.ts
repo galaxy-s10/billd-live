@@ -341,6 +341,43 @@ export const createVideo = ({
   return videoEl;
 };
 
+export function videoFullBox(data: {
+  wrapSize: { width: number; height: number };
+  videoEl: HTMLVideoElement;
+  videoResize?: (data: { w: number; h: number }) => void;
+}) {
+  const { videoEl } = data;
+  if (!videoEl) {
+    throw new Error('videoEl不能为空！');
+  }
+
+  let w = videoEl.videoWidth;
+  let h = videoEl.videoHeight;
+  function handleResize() {
+    w = videoEl.videoWidth;
+    h = videoEl.videoHeight;
+    data.videoResize?.({ w, h });
+    setVideoSize({ width: w, height: h });
+  }
+  function setVideoSize({ width, height }) {
+    const res = computeBox({
+      width,
+      height,
+      maxHeight: data.wrapSize.height,
+      minHeight: data.wrapSize.height,
+      maxWidth: data.wrapSize.width,
+      minWidth: data.wrapSize.width,
+    });
+    videoEl.style.width = `${res.width as number}px`;
+    videoEl.style.height = `${res.height as number}px`;
+    videoEl.setAttribute('resolution-width', width);
+    videoEl.setAttribute('resolution-height', height);
+  }
+  setVideoSize({ width: w, height: h });
+  data.videoResize?.({ w, h });
+  videoEl.addEventListener('resize', handleResize);
+}
+
 export function videoToCanvas(data: {
   wrapSize: { width: number; height: number };
   videoEl: HTMLVideoElement;

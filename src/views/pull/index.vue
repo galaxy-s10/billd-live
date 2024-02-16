@@ -399,7 +399,7 @@
 
 <script lang="ts" setup>
 import { getRandomString, openToTarget } from 'billd-utils';
-import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 
@@ -430,7 +430,7 @@ import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 import { WsDisableSpeakingType, WsMsgTypeEnum } from '@/types/websocket';
-import { formatMoney, formatTimeHour } from '@/utils';
+import { formatMoney, formatTimeHour, videoFullBox } from '@/utils';
 import { NODE_ENV } from 'script/constant';
 
 import RechargeCpt from './recharge/index.vue';
@@ -610,14 +610,23 @@ async function handlePk() {
 }
 
 watch(
-  () => remoteVideo.value,
+  () => networkStore.rtcMap,
   (newVal) => {
     newVal.forEach((item) => {
-      nextTick(() => {
-        setTimeout(() => {
-          remoteVideoRef.value?.appendChild(item);
-        }, 500);
-      });
+      const rect = videoWrapRef.value?.getBoundingClientRect();
+      if (rect) {
+        videoFullBox({
+          wrapSize: {
+            width: rect.width,
+            height: rect.height,
+          },
+          videoEl: item.videoEl,
+          videoResize: ({ w, h }) => {
+            videoHeight.value = `${w}x${h}`;
+          },
+        });
+        remoteVideoRef.value?.appendChild(item.videoEl);
+      }
     });
   },
   {

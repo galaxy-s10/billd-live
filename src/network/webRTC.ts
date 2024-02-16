@@ -236,7 +236,6 @@ export class WebRTCClass {
 
   /** 设置最大帧率 */
   setMaxFramerate = async (maxFramerate: number) => {
-    console.log(this.localStream, maxFramerate, '设置最大帧率111');
     if (this.localStream) {
       const res = await handleMaxFramerate({
         frameRate: maxFramerate,

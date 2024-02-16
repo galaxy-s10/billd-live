@@ -110,7 +110,6 @@
 </template>
 
 <script lang="ts" setup>
-import { domain } from '@/spec-config';
 import {
   CodeOutline,
   GlobeOutline,
@@ -121,6 +120,8 @@ import {
 } from '@vicons/ionicons5';
 import { openToTarget } from 'billd-utils';
 import { ref } from 'vue';
+
+import { domain } from '@/spec-config';
 
 const list = ref([
   {
