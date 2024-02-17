@@ -133,6 +133,10 @@ export const useRTCParams = () => {
         type: MediaTypeEnum.stopwatch,
         txt: '秒表',
       },
+      [MediaTypeEnum.metting]: {
+        type: MediaTypeEnum.metting,
+        txt: '会议',
+      },
     };
 
   return { maxBitrate, maxFramerate, resolutionRatio, allMediaTypeList };

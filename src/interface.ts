@@ -510,6 +510,7 @@ export interface ILive extends ISrsPublishStream {
   updated_at?: string;
   deleted_at?: string;
 }
+
 export enum MediaTypeEnum {
   camera,
   screen,
@@ -521,6 +522,7 @@ export enum MediaTypeEnum {
   stopwatch,
   webAudio,
   pk,
+  metting,
 }
 
 export enum DanmuMsgTypeEnum {

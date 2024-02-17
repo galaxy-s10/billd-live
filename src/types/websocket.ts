@@ -89,7 +89,6 @@ export interface IWsFormat<T> {
 export type WsUpdateJoinInfoType = IWsFormat<{
   live_room_id: number;
   track?: { audio: number; video: number };
-  rtmp_url?: string;
 }>;
 
 /** 直播pk秘钥 */
@@ -112,6 +111,7 @@ export type WsGetLiveUserType = IWsFormat<{
 export type WsRoomLivingType = IWsFormat<{
   live_room: ILiveRoom;
   anchor_socket_id: string;
+  socket_list?: string[];
 }>;
 
 /** 直播间没在直播 */
@@ -190,6 +190,7 @@ export type WsJoinType = IWsFormat<{
   live_room?: ILiveRoom;
   anchor_info?: IUser;
   user_info?: IUser;
+  socket_list?: string[];
 }>;
 
 /** 用户离开直播间 */

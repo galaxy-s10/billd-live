@@ -24,21 +24,6 @@ export const useNetworkStore = defineStore('network', {
         this.wsMap.set(roomId, arg);
       }
     },
-    updateRtcMap(roomId: string, arg) {
-      const val = this.rtcMap.get(roomId);
-      if (val) {
-        this.rtcMap.set(roomId, { ...val, ...arg });
-      } else {
-        this.rtcMap.set(roomId, arg);
-      }
-    },
-    removeRtc(roomId: string) {
-      const old = this.rtcMap.get(roomId);
-      if (old) {
-        old.close();
-      }
-      this.rtcMap.delete(roomId);
-    },
     removeWs(roomId: string) {
       const old = this.wsMap.get(roomId);
       if (old) {
@@ -46,8 +31,20 @@ export const useNetworkStore = defineStore('network', {
       }
       this.wsMap.delete(roomId);
     },
-    getRtcMap(roomId: string) {
-      return this.rtcMap.get(roomId);
+    updateRtcMap(socketId: string, arg) {
+      const val = this.rtcMap.get(socketId);
+      if (val) {
+        this.rtcMap.set(socketId, { ...val, ...arg });
+      } else {
+        this.rtcMap.set(socketId, arg);
+      }
+    },
+    removeRtc(socketId: string) {
+      const old = this.rtcMap.get(socketId);
+      if (old) {
+        old.close();
+      }
+      this.rtcMap.delete(socketId);
     },
   },
 });

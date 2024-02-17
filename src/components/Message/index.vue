@@ -4,6 +4,12 @@
   </NMessageProvider>
 </template>
 
+<script lang="ts">
+export default {
+  name: 'naiveuiMessage',
+};
+</script>
+
 <script lang="ts" setup>
 import { NMessageProvider } from 'naive-ui';
 

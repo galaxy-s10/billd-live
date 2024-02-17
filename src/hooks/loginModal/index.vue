@@ -29,6 +29,7 @@ import { defineComponent, ref } from 'vue';
 import { useQQLogin } from '@/hooks/use-login';
 
 export default defineComponent({
+  name: 'loginModal',
   setup() {
     const title = ref('登录');
     const show = ref(false);

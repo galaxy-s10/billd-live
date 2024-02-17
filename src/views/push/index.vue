@@ -98,7 +98,7 @@
               <i class="ico"></i>
               <span>
                 正在观看：
-                {{ liveUserList.length - 1 }}
+                {{ liveUserList.length }}
               </span>
             </span>
           </div>
@@ -510,6 +510,7 @@ watch(
     }
   }
 );
+
 watch(
   () => currentMaxFramerate.value,
   () => {
@@ -538,6 +539,34 @@ watch(
         scaleInfo: {},
       });
     }
+  }
+);
+
+watch(
+  () => networkStore.rtcMap,
+  (newVal) => {
+    console.log('rtcMap变了');
+    newVal.forEach((item) => {
+      addMediaOk({
+        id: getRandomEnglishString(6),
+        openEye: true,
+        audio: 2,
+        video: 1,
+        mediaName: item.receiver,
+        type: MediaTypeEnum.metting,
+        track: item.localStream?.getVideoTracks()[0],
+        trackid: item.localStream?.getVideoTracks()[0].id,
+        stream: item.localStream || undefined,
+        streamid: item.localStream?.id,
+        hidden: false,
+        muted: false,
+        scaleInfo: {},
+      });
+    });
+  },
+  {
+    deep: true,
+    immediate: true,
   }
 );
 
@@ -842,7 +871,7 @@ function handleMixedAudio() {
     gainNode.gain.value = (item.volume || 100) / 100;
     source.connect(gainNode);
     res.push({ source, gainNode });
-    console.log('混流', item.stream?.id, item.stream);
+    // console.log('混流', item.stream?.id, item.stream);
   });
   const destination = audioCtx.createMediaStreamDestination();
   res.forEach((item) => {
@@ -940,40 +969,56 @@ function autoCreateVideo({
   }
   videoEl.srcObject = stream;
   return new Promise<{
-    canvasDom: fabric.Image;
+    canvasDom: Raw<fabric.Image>;
     videoEl: HTMLVideoElement;
     scale: number;
   }>((resolve) => {
     videoEl.onloadedmetadata = () => {
-      const width = stream.getVideoTracks()[0].getSettings().width!;
-      const height = stream.getVideoTracks()[0].getSettings().height!;
-      const ratio = handleScale({ width, height });
-      videoEl.width = width;
-      videoEl.height = height;
-
-      const canvasDom = markRaw(
-        new fabric.Image(videoEl, {
-          top: rect?.top || 0,
-          left: rect?.left || 0,
-          width,
-          height,
-        })
-      );
-      console.log(
-        '初始化',
-        ratio,
-        canvasDom.width,
-        canvasDom.height,
-        width * ratio,
-        height * ratio,
-        canvasDom
-      );
-      handleMoving({ canvasDom, id });
-      handleScaling({ canvasDom, id });
-      canvasDom.scale(ratio / window.devicePixelRatio);
-      fabricCanvas.value!.add(canvasDom);
-
-      resolve({ canvasDom, scale: ratio, videoEl });
+      let canvasDom: Raw<fabric.Image>;
+      let ratio;
+      function main() {
+        const width = stream.getVideoTracks()[0].getSettings().width!;
+        const height = stream.getVideoTracks()[0].getSettings().height!;
+        ratio = handleScale({ width, height });
+        videoEl.width = width;
+        videoEl.height = height;
+        if (canvasDom) {
+          fabricCanvas.value?.remove(canvasDom);
+        }
+        canvasDom = markRaw(
+          new fabric.Image(videoEl, {
+            top: rect?.top || 0,
+            left: rect?.left || 0,
+            width,
+            height,
+          })
+        );
+        appStore.allTrack.forEach((item) => {
+          if (item.id === id) {
+            if (item.canvasDom) {
+              item.canvasDom = canvasDom;
+            }
+          }
+        });
+        console.log(
+          '初始化',
+          ratio,
+          canvasDom.width,
+          canvasDom.height,
+          width * ratio,
+          height * ratio,
+          canvasDom
+        );
+        handleMoving({ canvasDom, id });
+        handleScaling({ canvasDom, id });
+        canvasDom.scale(ratio / window.devicePixelRatio);
+        fabricCanvas.value!.add(canvasDom);
+        resolve({ canvasDom, scale: ratio, videoEl });
+      }
+      main();
+      videoEl.addEventListener('resize', () => {
+        main();
+      });
     };
   });
 }
@@ -1425,6 +1470,9 @@ async function handleCache() {
         };
       });
     }
+    if ([MediaTypeEnum.metting, MediaTypeEnum.pk].includes(obj.type)) {
+      err.push(obj.id);
+    }
 
     if (item.type === MediaTypeEnum.media && item.video === 1) {
       queue.push(handleMediaVideo());
@@ -1499,6 +1547,7 @@ async function handleCache() {
     res.push(obj);
   });
   await Promise.all(queue);
+
   canvasVideoStream.value = pushCanvasRef.value!.captureStream();
   appStore.setAllTrack(res.filter((v) => !err.includes(v.id)));
 }
@@ -1639,12 +1688,13 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     cacheStore.setResourceList(res);
     console.log('获取摄像头成功');
   } else if (val.type === MediaTypeEnum.pk) {
-    const event = await handleUserMedia({
-      video: {
-        deviceId: val.deviceId,
-      },
-      audio: false,
-    });
+    // const event = await handleUserMedia({
+    //   video: {
+    //     deviceId: val.deviceId,
+    //   },
+    //   audio: false,
+    // });
+    const event = val.stream;
     if (!event) return;
     const videoTrack: AppRootState['allTrack'][0] = {
       id: getRandomEnglishString(6),
@@ -1675,6 +1725,38 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     appStore.setAllTrack(res);
     cacheStore.setResourceList(res);
     console.log('获取pk成功');
+  } else if (val.type === MediaTypeEnum.metting) {
+    const event = val.stream;
+    if (!event) return;
+    const videoTrack: AppRootState['allTrack'][0] = {
+      id: getRandomEnglishString(6),
+      openEye: true,
+      deviceId: val.deviceId,
+      audio: 2,
+      video: 1,
+      mediaName: val.mediaName,
+      type: MediaTypeEnum.metting,
+      track: event.getVideoTracks()[0],
+      trackid: event.getVideoTracks()[0].id,
+      stream: event,
+      streamid: event.id,
+      hidden: false,
+      muted: false,
+      scaleInfo: {},
+    };
+    const { canvasDom, videoEl, scale } = await autoCreateVideo({
+      stream: event,
+      id: videoTrack.id,
+    });
+    setScaleInfo({ canvasDom, track: videoTrack, scale });
+    videoTrack.videoEl = videoEl;
+    // @ts-ignore
+    videoTrack.canvasDom = canvasDom;
+
+    const res = [...appStore.allTrack, videoTrack];
+    appStore.setAllTrack(res);
+    cacheStore.setResourceList(res);
+    console.log('获取会议成功');
   } else if (val.type === MediaTypeEnum.microphone) {
     const event = await handleUserMedia({
       video: false,
@@ -2249,7 +2331,6 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
           justify-content: space-between;
           margin: 5px 0;
           font-size: 14px;
-          height: 20px;
           cursor: pointer;
           user-select: none;
           .control {

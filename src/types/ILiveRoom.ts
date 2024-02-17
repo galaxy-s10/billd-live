@@ -13,14 +13,14 @@ export enum LiveRoomUseCDNEnum {
 export enum LiveRoomTypeEnum {
   /** 系统推流 */
   system,
-  /** 主播使用webrtc推流，直播 */
-  user_wertc,
-  /** 主播使用webrtc推流，会议 */
-  user_wertc_meeting,
   /** 主播使用srs推流 */
   user_srs,
   /** 主播使用obs/ffmpeg推流 */
   user_obs,
+  /** 主播使用webrtc推流，直播 */
+  user_wertc,
+  /** 主播使用webrtc推流，会议 */
+  user_wertc_meeting,
   /** 主播使用msr推流 */
   user_msr,
   /** 主播打pk */

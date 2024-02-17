@@ -34,6 +34,7 @@ export async function handleResolutionRatio(data: {
     return 0;
   }
 }
+
 /** 设置帧率 */
 export async function handleMaxFramerate(data: {
   frameRate: number;
@@ -45,7 +46,6 @@ export async function handleMaxFramerate(data: {
   console.log('开始设置帧率', frameRate);
   stream.getTracks().forEach((track) => {
     if (track.kind === 'video') {
-      console.log('开始设置帧率---', frameRate, track.id);
       queue.push(
         track.applyConstraints({
           height: { ideal: height },
@@ -118,107 +118,12 @@ export class WebRTCClass {
     this.createPeerConnection();
   }
 
-  prettierLog = (msg: string, type?: 'log' | 'warn' | 'error', ...args) => {
+  prettierLog = (data: { msg: string; type?: 'log' | 'warn' | 'error' }) => {
+    const { msg, type } = data;
     console[type || 'log'](
-      `${new Date().toLocaleString()}，${this.roomId}，${msg}`,
-      ...args
+      `【WebRTCClass】${new Date().toLocaleString()},房间id:${this.roomId}`,
+      msg
     );
-  };
-
-  addTrack = (stream: MediaStream, isCb?: boolean) => {
-    console.log('开始addTrack,是否是pc的track回调', isCb);
-    console.log('收到新track', stream);
-    console.log('收到新track的视频轨', stream.getVideoTracks());
-    console.log('收到新track的音频轨', stream.getAudioTracks());
-    console.log('原本旧track的视频轨', this.localStream?.getVideoTracks());
-    console.log('原本旧track的音频轨', this.localStream?.getAudioTracks());
-
-    const appStore = useAppStore();
-    if (isCb) {
-      stream.onremovetrack = (event) => {
-        console.log('onremovetrack事件', event);
-        const res = appStore.allTrack.filter((info) => {
-          if (info.track?.id === event.track.id) {
-            return false;
-          }
-          return true;
-        });
-        appStore.setAllTrack(res);
-      };
-    }
-
-    const addTrack: AppRootState['allTrack'] = [];
-
-    this.localStream?.getVideoTracks().forEach((track) => {
-      if (!appStore.allTrack.find((info) => info.track?.id === track.id)) {
-        addTrack.push({
-          openEye: true,
-          id: getRandomString(8),
-          track,
-          stream,
-          audio: 2,
-          video: 1,
-          type: MediaTypeEnum.screen,
-          mediaName: '',
-          streamid: stream.id,
-          trackid: track.id,
-          scaleInfo: {},
-        });
-      }
-    });
-    this.localStream?.getAudioTracks().forEach((track) => {
-      if (!appStore.allTrack.find((info) => info.track?.id === track.id)) {
-        addTrack.push({
-          openEye: true,
-          id: getRandomString(8),
-          track,
-          stream,
-          audio: 1,
-          video: 2,
-          type: MediaTypeEnum.microphone,
-          mediaName: '',
-          streamid: stream.id,
-          trackid: track.id,
-          scaleInfo: {},
-        });
-      }
-    });
-    stream.getVideoTracks().forEach((track) => {
-      if (!appStore.allTrack.find((info) => info.track?.id === track.id)) {
-        addTrack.push({
-          openEye: true,
-          id: getRandomString(8),
-          track,
-          stream,
-          audio: 2,
-          video: 1,
-          type: MediaTypeEnum.screen,
-          mediaName: '',
-          streamid: stream.id,
-          trackid: track.id,
-          scaleInfo: {},
-        });
-      }
-    });
-    stream.getAudioTracks().forEach((track) => {
-      if (!appStore.allTrack.find((info) => info.track?.id === track.id)) {
-        addTrack.push({
-          openEye: true,
-          id: getRandomString(8),
-          track,
-          stream,
-          audio: 1,
-          video: 2,
-          type: MediaTypeEnum.microphone,
-          mediaName: '',
-          streamid: stream.id,
-          trackid: track.id,
-          scaleInfo: {},
-        });
-      }
-    });
-    // this.localStream = stream;
-    appStore.pkStream = stream;
   };
 
   /** 设置分辨率 */
@@ -229,7 +134,6 @@ export class WebRTCClass {
         stream: this.localStream,
         height,
       });
-      console.log(res, '设置分辨率');
       return res;
     }
   };
@@ -242,7 +146,6 @@ export class WebRTCClass {
         stream: this.localStream,
         height: this.resolutionRatio,
       });
-      console.log(res, '设置最大帧率');
       return res;
     }
     // return new Promise<number>((resolve) => {
@@ -305,68 +208,68 @@ export class WebRTCClass {
     });
   };
 
-  // 创建offer
+  /** 创建offer */
   createOffer = async () => {
     if (!this.peerConnection) return;
-    this.prettierLog('createOffer开始', 'warn');
+    this.prettierLog({ msg: 'createOffer开始', type: 'warn' });
     try {
       const sdp = await this.peerConnection.createOffer();
-      this.prettierLog('createOffer成功', 'warn', sdp);
+      this.prettierLog({ msg: 'createOffer成功', type: 'warn' });
       return sdp;
     } catch (error) {
-      this.prettierLog('createOffer失败', 'error');
-      console.log(error);
-    }
-  };
-
-  addIceCandidate = async (candidate: RTCIceCandidateInit) => {
-    try {
-      await this.peerConnection?.addIceCandidate(candidate);
-      console.log('addIceCandidate成功');
-    } catch (error) {
-      console.error('addIceCandidate错误');
-      console.log(error);
-    }
-  };
-
-  // 创建answer
-  createAnswer = async () => {
-    if (!this.peerConnection) return;
-    this.prettierLog('createAnswer开始', 'warn');
-    try {
-      const sdp = await this.peerConnection.createAnswer();
-      this.prettierLog('createAnswer成功', 'warn', sdp);
-      return sdp;
-    } catch (error) {
-      this.prettierLog('createAnswer失败', 'error');
-      console.log(error);
-    }
-  };
-
-  // 设置本地描述
-  setLocalDescription = async (sdp: RTCLocalSessionDescriptionInit) => {
-    if (!this.peerConnection) return;
-    this.prettierLog('setLocalDescription开始', 'warn');
-    try {
-      await this.peerConnection.setLocalDescription(sdp);
-      this.prettierLog('setLocalDescription成功', 'warn', sdp);
-    } catch (error) {
-      this.prettierLog('setLocalDescription失败', 'error');
-      console.error('setLocalDescription', sdp);
+      this.prettierLog({ msg: 'createOffer失败', type: 'error' });
       console.error(error);
     }
   };
 
-  // 设置远端描述
+  /** 创建answer */
+  createAnswer = async () => {
+    if (!this.peerConnection) return;
+    this.prettierLog({ msg: 'createAnswer开始', type: 'warn' });
+    try {
+      const sdp = await this.peerConnection.createAnswer();
+      this.prettierLog({ msg: 'createAnswer成功', type: 'warn' });
+      return sdp;
+    } catch (error) {
+      this.prettierLog({ msg: 'createAnswer失败', type: 'error' });
+      console.error(error);
+    }
+  };
+
+  /** 处理candidate */
+  addIceCandidate = async (candidate: RTCIceCandidateInit) => {
+    this.prettierLog({ msg: 'addIceCandidate开始', type: 'warn' });
+    try {
+      await this.peerConnection?.addIceCandidate(candidate);
+      this.prettierLog({ msg: 'addIceCandidate成功', type: 'warn' });
+    } catch (error) {
+      this.prettierLog({ msg: 'addIceCandidate错误', type: 'error' });
+      console.error(error);
+    }
+  };
+
+  /** 设置本地描述 */
+  setLocalDescription = async (sdp: RTCLocalSessionDescriptionInit) => {
+    if (!this.peerConnection) return;
+    this.prettierLog({ msg: 'setLocalDescription开始', type: 'warn' });
+    try {
+      await this.peerConnection.setLocalDescription(sdp);
+      this.prettierLog({ msg: 'setLocalDescription成功', type: 'warn' });
+    } catch (error) {
+      this.prettierLog({ msg: 'setLocalDescription失败', type: 'error' });
+      console.error(error);
+    }
+  };
+
+  /** 设置远端描述 */
   setRemoteDescription = async (sdp: RTCSessionDescriptionInit) => {
     if (!this.peerConnection) return;
-    this.prettierLog(`setRemoteDescription开始`, 'warn');
+    this.prettierLog({ msg: 'setRemoteDescription开始', type: 'warn' });
     try {
       await this.peerConnection.setRemoteDescription(sdp);
-      this.prettierLog('setRemoteDescription成功', 'warn', sdp);
+      this.prettierLog({ msg: 'setRemoteDescription成功', type: 'warn' });
     } catch (error) {
-      this.prettierLog('setRemoteDescription失败', 'error');
-      console.error('setRemoteDescription', sdp);
+      this.prettierLog({ msg: 'setRemoteDescription失败', type: 'error' });
       console.error(error);
     }
   };
@@ -374,21 +277,107 @@ export class WebRTCClass {
   handleStreamEvent = () => {
     if (!this.peerConnection) return;
     // 废弃：https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/addStream
-    console.warn(`${this.roomId}，开始监听pc的addstream`);
-    this.peerConnection.addEventListener('addstream', () => {
-      // console.warn(`${this.roomId}，pc收到addstream事件`, event);
-      // console.log('addstream事件的stream', event.stream);
-      // console.log('addstream事件的视频轨', event.stream.getVideoTracks());
-      // console.log('addstream事件的音频轨', event.stream.getAudioTracks());
-    });
+    // this.prettierLog({ msg: '开始监听pc的addstream事件', type: 'warn' });
+    // this.peerConnection.addEventListener('addstream', (event) => {
+    //   this.prettierLog({ msg: 'pc收到addstream事件', type: 'warn' });
+    //   console.log('addstream事件的event', event);
+    //   console.log('addstream事件的stream', event.stream);
+    //   console.log('addstream事件的视频轨', event.stream.getVideoTracks());
+    //   console.log('addstream事件的音频轨', event.stream.getAudioTracks());
+    // });
 
-    console.warn(`${this.roomId}，开始监听pc的track`);
+    this.prettierLog({ msg: '开始监听pc的track事件', type: 'warn' });
     this.peerConnection.addEventListener('track', (event) => {
-      console.warn(`${this.roomId}，pc收到track事件`, event);
+      this.prettierLog({ msg: 'pc收到track事件', type: 'warn' });
+      console.log('track事件的event', event);
       console.log('track事件的stream', event.streams[0]);
       console.log('track事件的视频轨', event.streams[0].getVideoTracks());
       console.log('track事件的音频轨', event.streams[0].getAudioTracks());
-      this.addTrack(event.streams[0], true);
+
+      const stream = event.streams[0];
+      this.localStream = stream;
+      const appStore = useAppStore();
+      stream.onremovetrack = (event) => {
+        this.prettierLog({ msg: 'onremovetrack事件', type: 'warn' });
+        const res = appStore.allTrack.filter((info) => {
+          if (info.track?.id === event.track.id) {
+            return false;
+          }
+          return true;
+        });
+        appStore.setAllTrack(res);
+      };
+
+      const addTrack: AppRootState['allTrack'] = [];
+
+      this.localStream?.getVideoTracks().forEach((track) => {
+        if (!appStore.allTrack.find((info) => info.track?.id === track.id)) {
+          addTrack.push({
+            openEye: true,
+            id: getRandomString(8),
+            track,
+            stream,
+            audio: 2,
+            video: 1,
+            type: MediaTypeEnum.screen,
+            mediaName: '',
+            streamid: stream.id,
+            trackid: track.id,
+            scaleInfo: {},
+          });
+        }
+      });
+      this.localStream?.getAudioTracks().forEach((track) => {
+        if (!appStore.allTrack.find((info) => info.track?.id === track.id)) {
+          addTrack.push({
+            openEye: true,
+            id: getRandomString(8),
+            track,
+            stream,
+            audio: 1,
+            video: 2,
+            type: MediaTypeEnum.microphone,
+            mediaName: '',
+            streamid: stream.id,
+            trackid: track.id,
+            scaleInfo: {},
+          });
+        }
+      });
+      stream.getVideoTracks().forEach((track) => {
+        if (!appStore.allTrack.find((info) => info.track?.id === track.id)) {
+          addTrack.push({
+            openEye: true,
+            id: getRandomString(8),
+            track,
+            stream,
+            audio: 2,
+            video: 1,
+            type: MediaTypeEnum.screen,
+            mediaName: '',
+            streamid: stream.id,
+            trackid: track.id,
+            scaleInfo: {},
+          });
+        }
+      });
+      stream.getAudioTracks().forEach((track) => {
+        if (!appStore.allTrack.find((info) => info.track?.id === track.id)) {
+          addTrack.push({
+            openEye: true,
+            id: getRandomString(8),
+            track,
+            stream,
+            audio: 1,
+            video: 2,
+            type: MediaTypeEnum.microphone,
+            mediaName: '',
+            streamid: stream.id,
+            trackid: track.id,
+            scaleInfo: {},
+          });
+        }
+      });
       this.videoEl.srcObject = event.streams[0];
     });
   };
@@ -397,10 +386,9 @@ export class WebRTCClass {
     if (!this.peerConnection) return;
     const appStore = useAppStore();
 
-    console.warn(`${this.roomId}，开始监听pc的icecandidate`);
-    // icecandidate
+    this.prettierLog({ msg: '开始监听pc的icecandidate事件', type: 'warn' });
     this.peerConnection.addEventListener('icecandidate', (event) => {
-      this.prettierLog('pc收到icecandidate', 'warn');
+      this.prettierLog({ msg: 'pc收到icecandidate', type: 'warn' });
       if (event.candidate) {
         const networkStore = useNetworkStore();
         console.log('准备发送candidate', event.candidate.candidate);
@@ -421,98 +409,129 @@ export class WebRTCClass {
       }
     });
 
-    console.warn(`${this.roomId}，开始监听pc的iceconnectionstatechange`);
-    // iceconnectionstatechange
+    this.prettierLog({
+      msg: '开始监听pc的iceconnectionstatechange事件',
+      type: 'warn',
+    });
     this.peerConnection.addEventListener(
       'iceconnectionstatechange',
       (event: any) => {
+        this.prettierLog({
+          msg: 'pc收到iceconnectionstatechange:connected',
+          type: 'warn',
+        });
         // https://developer.mozilla.org/zh-CN/docs/Web/API/RTCPeerConnection/connectionState
         const iceConnectionState = event.currentTarget.iceConnectionState;
-        console.log(
-          this.roomId,
-          'pc收到iceconnectionstatechange',
-          // eslint-disable-next-line
-          `iceConnectionState:${iceConnectionState}`,
-          event
-        );
         if (iceConnectionState === 'connected') {
           // ICE 代理至少对每个候选发现了一个可用的连接，此时仍然会继续测试远程候选以便发现更优的连接。同时可能在继续收集候选。
-          console.warn(this.roomId, 'iceConnectionState:connected', event);
-          console.warn('webrtc连接成功！');
+          this.prettierLog({
+            msg: 'iceConnectionState:connected',
+            type: 'warn',
+          });
+          this.prettierLog({
+            msg: 'webrtc连接成功！',
+            type: 'warn',
+          });
+          console.log('sender', this.sender, 'receiver', this.receiver);
+          this.update();
         }
         if (iceConnectionState === 'completed') {
           // ICE 代理已经发现了可用的连接，不再测试远程候选。
-          console.warn(this.roomId, 'iceConnectionState:completed', event);
+          this.prettierLog({
+            msg: 'iceConnectionState:completed',
+            type: 'warn',
+          });
         }
         if (iceConnectionState === 'failed') {
           // ICE 候选测试了所有远程候选没有发现匹配的候选。也可能有些候选中发现了一些可用连接。
-          console.error(this.roomId, 'iceConnectionState:failed', event);
+          this.prettierLog({
+            msg: 'iceConnectionState:failed',
+            type: 'error',
+          });
         }
         if (iceConnectionState === 'disconnected') {
           // 测试不再活跃，这可能是一个暂时的状态，可以自我恢复。
-          console.error(this.roomId, 'iceConnectionState:disconnected', event);
+          this.prettierLog({
+            msg: 'iceConnectionState:disconnected',
+            type: 'error',
+          });
         }
         if (iceConnectionState === 'closed') {
           // ICE 代理关闭，不再应答任何请求。
-          console.error(this.roomId, 'iceConnectionState:closed', event);
+          this.prettierLog({
+            msg: 'iceConnectionState:closed',
+            type: 'error',
+          });
         }
       }
     );
 
-    console.warn(`${this.roomId}，开始监听pc的connectionstatechange`);
-    // connectionstatechange
+    this.prettierLog({
+      msg: '开始监听pc的connectionstatechange事件',
+      type: 'warn',
+    });
     this.peerConnection.addEventListener(
       'connectionstatechange',
       (event: any) => {
         const connectionState = event.currentTarget.connectionState;
-        console.log(
-          this.roomId,
-          'pc收到connectionstatechange',
-          // eslint-disable-next-line
-          `connectionState:${connectionState}`,
-          event
-        );
+        this.prettierLog({
+          msg: 'pc收到connectionstatechange:connected',
+          type: 'warn',
+        });
         if (connectionState === 'connected') {
           // 表示每一个 ICE 连接要么正在使用（connected 或 completed 状态），要么已被关闭（closed 状态）；并且，至少有一个连接处于 connected 或 completed 状态。
-          console.warn(this.roomId, 'connectionState:connected');
+          this.prettierLog({
+            msg: 'connectionState:connected',
+            type: 'warn',
+          });
           appStore.setLiveLine(LiveLineEnum.rtc);
-          if (this.maxBitrate !== -1) {
-            this.setMaxBitrate(this.maxBitrate);
-          }
-          if (this.maxFramerate !== -1) {
-            this.setMaxFramerate(this.maxFramerate);
-          }
-          if (this.resolutionRatio !== -1) {
-            this.setResolutionRatio(this.resolutionRatio);
-          }
-          console.log(
-            this.maxBitrate,
-            this.maxFramerate,
-            this.resolutionRatio,
-            '配置'
-          );
+          // if (this.maxBitrate !== -1) {
+          //   this.setMaxBitrate(this.maxBitrate);
+          // }
+          // if (this.maxFramerate !== -1) {
+          //   this.setMaxFramerate(this.maxFramerate);
+          // }
+          // if (this.resolutionRatio !== -1) {
+          //   this.setResolutionRatio(this.resolutionRatio);
+          // }
         }
         if (connectionState === 'disconnected') {
           // 表示至少有一个 ICE 连接处于 disconnected 状态，并且没有连接处于 failed、connecting 或 checking 状态。
-          console.error(this.roomId, 'connectionState:disconnected');
+          this.prettierLog({
+            msg: 'connectionState:disconnected',
+            type: 'error',
+          });
         }
         if (connectionState === 'closed') {
           // 表示 RTCPeerConnection 已关闭。
-          console.error(this.roomId, 'connectionState:closed');
+          this.prettierLog({
+            msg: 'connectionState:closed',
+            type: 'error',
+          });
         }
         if (connectionState === 'failed') {
           // 表示至少有一个 ICE 连接处于 failed 的状态。
-          console.error(this.roomId, 'connectionState:failed');
+          this.prettierLog({
+            msg: 'connectionState:failed',
+            type: 'error',
+          });
         }
       }
     );
-    // negotiationneeded
-    // this.peerConnection.addEventListener('negotiationneeded', (event: any) => {
-    //   console.log(this.roomId, 'pc收到negotiationneeded', event);
-    // });
+
+    this.prettierLog({
+      msg: '开始监听pc的negotiationneeded事件',
+      type: 'warn',
+    });
+    this.peerConnection.addEventListener('negotiationneeded', () => {
+      this.prettierLog({
+        msg: 'pc收到negotiationneeded',
+        type: 'warn',
+      });
+    });
   };
 
-  // 创建对等连接
+  /** 创建对等连接 */
   createPeerConnection = () => {
     if (!window.RTCPeerConnection) {
       console.error('当前环境不支持RTCPeerConnection！');
@@ -541,10 +560,10 @@ export class WebRTCClass {
     }
   };
 
-  // 手动关闭webrtc连接
+  /** 手动关闭webrtc连接 */
   close = () => {
     try {
-      this.prettierLog('手动关闭webrtc连接', 'warn');
+      this.prettierLog({ msg: '手动关闭webrtc连接', type: 'warn' });
       this.localStream?.getTracks().forEach((track) => {
         track.stop();
       });
@@ -553,11 +572,12 @@ export class WebRTCClass {
       this.peerConnection = null;
       this.videoEl.remove();
     } catch (error) {
-      console.error('手动关闭webrtc连接失败', error);
+      this.prettierLog({ msg: '手动关闭webrtc连接失败', type: 'error' });
+      console.error(error);
     }
   };
 
-  // 更新store
+  /** 更新store */
   update = () => {
     const networkStore = useNetworkStore();
     networkStore.updateRtcMap(this.receiver, this);

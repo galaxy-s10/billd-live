@@ -11,6 +11,7 @@ import {
 export function prettierReceiveWsMsg(...arg) {
   console.warn('【websocket】收到消息', ...arg);
 }
+
 export function prettierSendWsMsg(data: {
   requestId: string;
   msgType: string;

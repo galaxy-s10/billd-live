@@ -18,6 +18,7 @@
 import { StyleValue, defineComponent, ref } from 'vue';
 
 export default defineComponent({
+  name: 'fullLoading',
   setup() {
     const isFixed = ref(false);
     const loading = ref(false);

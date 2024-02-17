@@ -473,7 +473,6 @@ const {
   mySocketId,
   videoHeight,
   videoLoading,
-  remoteVideo,
   roomLiving,
   damuList,
   liveUserList,
@@ -597,7 +596,7 @@ async function handleUserMedia({ video, audio }) {
 
 async function handlePk() {
   const stream = await handleUserMedia({ video: true, audio: true });
-  const rtc = networkStore.getRtcMap(`${roomId.value}`)!;
+  const rtc = networkStore.rtcMap.get(`${roomId.value}`)!;
   if (rtc?.peerConnection) {
     rtc.peerConnection.onnegotiationneeded = (event) => {
       console.log('onnegotiationneeded', event);
@@ -643,6 +642,7 @@ watch(
     }, 0);
   }
 );
+
 watch(
   () => appStore.liveRoomInfo,
   () => {

@@ -201,7 +201,18 @@ export function usePull(roomId: string) {
     () => roomLiving.value,
     (val) => {
       if (val) {
-        if (appStore.liveRoomInfo?.type !== LiveRoomTypeEnum.user_wertc) {
+        if (
+          appStore.liveRoomInfo &&
+          [
+            LiveRoomTypeEnum.system,
+            LiveRoomTypeEnum.user_msr,
+            LiveRoomTypeEnum.user_srs,
+            LiveRoomTypeEnum.user_obs,
+            LiveRoomTypeEnum.user_pk,
+            LiveRoomTypeEnum.user_tencent_css,
+            LiveRoomTypeEnum.user_tencent_css_pk,
+          ].includes(appStore.liveRoomInfo.type!)
+        ) {
           handlePlay(appStore.liveRoomInfo!);
         }
       } else {
@@ -403,7 +414,7 @@ export function usePull(roomId: string) {
 
   function closeRtc() {
     networkStore.rtcMap.forEach((rtc) => {
-      networkStore.removeRtc(rtc.roomId);
+      networkStore.removeRtc(rtc.receiver);
     });
   }
 

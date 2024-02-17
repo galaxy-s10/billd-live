@@ -186,6 +186,7 @@ export const mediaTypeEnumMap = {
   [MediaTypeEnum.time]: '时间',
   [MediaTypeEnum.stopwatch]: '秒表',
   [MediaTypeEnum.pk]: '打pk',
+  [MediaTypeEnum.metting]: '会议',
 };
 
 export const sliderList = [

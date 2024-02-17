@@ -6,6 +6,12 @@
   </n-config-provider>
 </template>
 
+<script lang="ts">
+export default {
+  name: 'MainApp',
+};
+</script>
+
 <script lang="ts" setup>
 import { isMobile } from 'billd-utils';
 import { GlobalThemeOverrides, NConfigProvider } from 'naive-ui';
