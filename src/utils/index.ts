@@ -2,6 +2,31 @@
 import { computeBox, getRangeRandom } from 'billd-utils';
 import sparkMD5 from 'spark-md5';
 
+export function createNullVideo() {
+  const videoEl = document.createElement('video');
+  videoEl.autoplay = true;
+  videoEl.muted = true;
+  videoEl.playsInline = true;
+  videoEl.loop = true;
+  videoEl.setAttribute('webkit-playsinline', 'true');
+  videoEl.setAttribute('x5-video-player-type', 'h5');
+  videoEl.setAttribute('x5-video-player-fullscreen', 'true');
+  videoEl.setAttribute('x5-video-orientation', 'portraint');
+  return videoEl;
+}
+
+export async function handleUserMedia({ video, audio }) {
+  try {
+    const event = await navigator.mediaDevices.getUserMedia({
+      video,
+      audio,
+    });
+    return event;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 export function formatMoney(money?: number) {
   if (!money) {
     return '0.00';

@@ -43,7 +43,7 @@ export function usePull(roomId: string) {
   const {
     isPull,
     mySocketId,
-    initSrsWs,
+    initWs,
     roomLiving,
     anchorInfo,
     liveUserList,
@@ -191,7 +191,7 @@ export function usePull(roomId: string) {
           handleHlsPlay(data.hls_url!);
         }
         break;
-      case LiveRoomTypeEnum.user_wertc:
+      case LiveRoomTypeEnum.user_wertc_live:
         appStore.setLiveLine(LiveLineEnum.rtc);
         break;
     }
@@ -296,7 +296,7 @@ export function usePull(roomId: string) {
   watch(
     () => networkStore.rtcMap,
     (newVal) => {
-      if (appStore.liveRoomInfo?.type === LiveRoomTypeEnum.user_wertc) {
+      if (appStore.liveRoomInfo?.type === LiveRoomTypeEnum.user_wertc_live) {
         newVal.forEach((item) => {
           videoLoading.value = false;
           // if (videoWrapRef.value) {
@@ -330,7 +330,7 @@ export function usePull(roomId: string) {
         console.log('localStream变了');
         console.log('音频轨：', val?.getAudioTracks());
         console.log('视频轨：', val?.getVideoTracks());
-        if (appStore.liveRoomInfo?.type === LiveRoomTypeEnum.user_wertc) {
+        if (appStore.liveRoomInfo?.type === LiveRoomTypeEnum.user_wertc_live) {
           videoElArr.value.forEach((dom) => {
             dom.remove();
           });
@@ -400,7 +400,7 @@ export function usePull(roomId: string) {
     if (autoplayVal.value) {
       videoLoading.value = true;
     }
-    initSrsWs({
+    initWs({
       roomId,
       isAnchor: false,
     });

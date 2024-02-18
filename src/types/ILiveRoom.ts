@@ -18,7 +18,7 @@ export enum LiveRoomTypeEnum {
   /** 主播使用obs/ffmpeg推流 */
   user_obs,
   /** 主播使用webrtc推流，直播 */
-  user_wertc,
+  user_wertc_live,
   /** 主播使用webrtc推流，会议 */
   user_wertc_meeting,
   /** 主播使用msr推流 */

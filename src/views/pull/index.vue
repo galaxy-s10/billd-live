@@ -430,7 +430,12 @@ import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 import { WsDisableSpeakingType, WsMsgTypeEnum } from '@/types/websocket';
-import { formatMoney, formatTimeHour, videoFullBox } from '@/utils';
+import {
+  formatMoney,
+  formatTimeHour,
+  handleUserMedia,
+  videoFullBox,
+} from '@/utils';
 import { NODE_ENV } from 'script/constant';
 
 import RechargeCpt from './recharge/index.vue';
@@ -582,18 +587,6 @@ async function handleHistoryMsg() {
   }
 }
 
-async function handleUserMedia({ video, audio }) {
-  try {
-    const event = await navigator.mediaDevices.getUserMedia({
-      video,
-      audio,
-    });
-    return event;
-  } catch (error) {
-    console.log(error);
-  }
-}
-
 async function handlePk() {
   const stream = await handleUserMedia({ video: true, audio: true });
   const rtc = networkStore.rtcMap.get(`${roomId.value}`)!;
@@ -611,6 +604,10 @@ async function handlePk() {
 watch(
   () => networkStore.rtcMap,
   (newVal) => {
+    if (newVal.size) {
+      roomLiving.value = true;
+      videoLoading.value = false;
+    }
     newVal.forEach((item) => {
       const rect = videoWrapRef.value?.getBoundingClientRect();
       if (rect) {

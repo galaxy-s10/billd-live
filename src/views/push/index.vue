@@ -408,6 +408,7 @@ import {
   formatDownTime,
   generateBase64,
   getRandomEnglishString,
+  handleUserMedia,
   readFile,
   saveFile,
 } from '@/utils';
@@ -547,6 +548,9 @@ watch(
   (newVal) => {
     console.log('rtcMap变了');
     newVal.forEach((item) => {
+      if (appStore.allTrack.find((v) => v.mediaName === item.receiver)) {
+        return;
+      }
       addMediaOk({
         id: getRandomEnglishString(6),
         openEye: true,
@@ -1220,18 +1224,6 @@ function handleMoving({
     });
     cacheStore.setResourceList(appStore.allTrack);
   });
-}
-
-async function handleUserMedia({ video, audio }) {
-  try {
-    const event = await navigator.mediaDevices.getUserMedia({
-      video,
-      audio,
-    });
-    return event;
-  } catch (error) {
-    console.log(error);
-  }
 }
 
 async function handleDisplayMedia({ video, audio }) {

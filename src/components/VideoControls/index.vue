@@ -158,13 +158,13 @@ function changePlay() {
 function changeLiveLine(item) {
   if (
     item === LiveLineEnum.rtc &&
-    appStore.liveRoomInfo?.type !== LiveRoomTypeEnum.user_wertc
+    appStore.liveRoomInfo?.type !== LiveRoomTypeEnum.user_wertc_live
   ) {
     window.$message.info('不支持该线路！');
     return;
   }
   if (
-    appStore.liveRoomInfo?.type === LiveRoomTypeEnum.user_wertc &&
+    appStore.liveRoomInfo?.type === LiveRoomTypeEnum.user_wertc_live &&
     item !== LiveLineEnum.rtc
   ) {
     window.$message.info('不支持该线路！');

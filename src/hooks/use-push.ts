@@ -42,7 +42,7 @@ export function usePush() {
   const {
     roomLiving,
     isPull,
-    initSrsWs,
+    initWs,
     handleStartLive,
     handleSendGetLiveUser,
     mySocketId,
@@ -195,7 +195,7 @@ export function usePush() {
   }
 
   function connectWs() {
-    initSrsWs({
+    initWs({
       isAnchor: true,
       roomId: roomId.value,
       currentMaxBitrate: currentMaxBitrate.value,

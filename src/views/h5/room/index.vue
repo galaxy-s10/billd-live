@@ -345,7 +345,7 @@ async function getLiveRoomInfo() {
     const res = await fetchFindLiveRoom(roomId.value);
     if (res.code === 200) {
       appStore.setLiveRoomInfo(res.data);
-      if (res.data.type === LiveRoomTypeEnum.user_wertc) {
+      if (res.data.type === LiveRoomTypeEnum.user_wertc_live) {
         autoplayVal.value = true;
         showPlayBtn.value = false;
       } else {

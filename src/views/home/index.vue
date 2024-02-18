@@ -310,7 +310,7 @@ function playLive(item: ILive) {
 
 function changeLiveRoom(item: ILive) {
   if (item.id === currentLiveRoom.value?.id) return;
-  if (item.live_room?.type !== LiveRoomTypeEnum.user_wertc) {
+  if (item.live_room?.type !== LiveRoomTypeEnum.user_wertc_live) {
     appStore.setLiveLine(LiveLineEnum.hls);
   }
   appStore.setPlay(true);

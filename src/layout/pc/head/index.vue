@@ -253,7 +253,9 @@
               </a>
               <a
                 class="item"
-                @click.prevent="handleStartLive(LiveRoomTypeEnum.user_wertc)"
+                @click.prevent="
+                  handleStartLive(LiveRoomTypeEnum.user_wertc_live)
+                "
               >
                 <div class="txt">{{ t('layout.webrtcLive') }}</div>
               </a>

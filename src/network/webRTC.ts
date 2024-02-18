@@ -65,7 +65,6 @@ export async function handleMaxFramerate(data: {
 }
 
 export class WebRTCClass {
-  isAnchor = false;
   roomId = '-1';
   sender = '';
   receiver = '';
@@ -86,7 +85,6 @@ export class WebRTCClass {
   isSRS: boolean;
 
   constructor(data: {
-    isAnchor: boolean;
     roomId: string;
     videoEl: HTMLVideoElement;
     maxBitrate?: number;
@@ -97,7 +95,6 @@ export class WebRTCClass {
     receiver: string;
     localStream?: MediaStream;
   }) {
-    this.isAnchor = data.isAnchor;
     this.roomId = data.roomId;
     this.videoEl = data.videoEl;
     // document.body.appendChild(this.videoEl);
@@ -391,7 +388,6 @@ export class WebRTCClass {
       this.prettierLog({ msg: 'pc收到icecandidate', type: 'warn' });
       if (event.candidate) {
         const networkStore = useNetworkStore();
-        console.log('准备发送candidate', event.candidate.candidate);
         networkStore.wsMap.get(this.roomId)?.send<WsCandidateType['data']>({
           requestId: getRandomString(8),
           msgType: this.isSRS

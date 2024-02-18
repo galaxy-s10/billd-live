@@ -203,6 +203,7 @@ export type WsLeavedType = IWsFormat<{
 export type WsHeartbeatType = IWsFormat<{
   socket_id: string;
   live_room_id: number;
+  roomLiving?: boolean;
 }>;
 
 /** msr直播发送blob */
