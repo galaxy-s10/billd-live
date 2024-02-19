@@ -69,6 +69,12 @@
           @click="handlePk"
         >
           <div class="top">
+            <div
+              class="item"
+              v-if="NODE_ENV === 'development'"
+            >
+              {{ liveRoomTypeEnumMap[appStore.liveRoomInfo?.type || ''] }}
+            </div>
             <div class="item">666人看过</div>
             <div class="item">666点赞</div>
             <div class="item">当前在线:{{ liveUserList.length }}人</div>
@@ -128,11 +134,11 @@
           <div
             ref="remoteVideoRef"
             class="media-list"
-            :class="{ item: appStore.allTrack.length > 1 }"
           ></div>
           <VideoControls
             :resolution="videoHeight"
             @refresh="handleRefresh"
+            @full-screen="handleFullScreen"
           ></VideoControls>
         </div>
       </div>
@@ -410,9 +416,14 @@ import {
 } from '@/api/giftRecord';
 import { fetchGoodsList } from '@/api/goods';
 import { fetchGetWsMessageList } from '@/api/wsMessage';
-import { MODULE_CONFIG_SWITCH, QINIU_LIVE } from '@/constant';
+import {
+  MODULE_CONFIG_SWITCH,
+  QINIU_LIVE,
+  liveRoomTypeEnumMap,
+} from '@/constant';
 import { emojiArray } from '@/emoji';
 import { commentAuthTip, loginTip } from '@/hooks/use-login';
+import { useFullScreen } from '@/hooks/use-play';
 import { usePull } from '@/hooks/use-pull';
 import { useUpload } from '@/hooks/use-upload';
 import {
@@ -429,6 +440,7 @@ import router, { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
+import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import { WsDisableSpeakingType, WsMsgTypeEnum } from '@/types/websocket';
 import {
   formatMoney,
@@ -465,7 +477,6 @@ const containerRef = ref<HTMLDivElement>();
 const uploadRef = ref<HTMLInputElement>();
 const danmuIptRef = ref<HTMLTextAreaElement>();
 const {
-  videoWrapRef,
   initPull,
   closeWs,
   closeRtc,
@@ -473,6 +484,8 @@ const {
   sendDanmu,
   handlePlay,
   handleSendGetLiveUser,
+  videoWrapRef,
+  remoteVideo,
   danmuMsgType,
   msgIsFile,
   mySocketId,
@@ -608,21 +621,43 @@ watch(
       roomLiving.value = true;
       videoLoading.value = false;
     }
-    newVal.forEach((item) => {
-      const rect = videoWrapRef.value?.getBoundingClientRect();
-      if (rect) {
-        videoFullBox({
-          wrapSize: {
-            width: rect.width,
-            height: rect.height,
-          },
-          videoEl: item.videoEl,
-          videoResize: ({ w, h }) => {
-            videoHeight.value = `${w}x${h}`;
-          },
-        });
-        remoteVideoRef.value?.appendChild(item.videoEl);
-      }
+    if (
+      appStore.liveRoomInfo?.type === LiveRoomTypeEnum.wertc_meeting_one ||
+      appStore.liveRoomInfo?.type === LiveRoomTypeEnum.wertc_live ||
+      appStore.liveRoomInfo?.type === LiveRoomTypeEnum.pk
+    ) {
+      newVal.forEach((item) => {
+        if (appStore.allTrack.find((v) => v.mediaName === item.receiver)) {
+          return;
+        }
+        const rect = videoWrapRef.value?.getBoundingClientRect();
+        if (rect) {
+          videoFullBox({
+            wrapSize: {
+              width: rect.width,
+              height: rect.height,
+            },
+            videoEl: item.videoEl,
+            videoResize: ({ w, h }) => {
+              videoHeight.value = `${w}x${h}`;
+            },
+          });
+          remoteVideoRef.value?.appendChild(item.videoEl);
+        }
+      });
+    }
+  },
+  {
+    deep: true,
+    immediate: true,
+  }
+);
+
+watch(
+  () => remoteVideo.value,
+  (newval) => {
+    newval.forEach((videoEl) => {
+      remoteVideoRef.value?.appendChild(videoEl);
     });
   },
   {
@@ -784,6 +819,14 @@ async function handlePay(item: IGoods) {
   }
   userStore.updateMyWallet();
   getGiftGroupList();
+}
+
+function handleFullScreen() {
+  const el = remoteVideoRef.value?.childNodes[0];
+  // @ts-ignore
+  if (el?.tagName?.toLowerCase() === 'video') {
+    useFullScreen(el);
+  }
 }
 
 function handleRefresh() {

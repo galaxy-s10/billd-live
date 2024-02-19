@@ -1,6 +1,8 @@
 import { MediaTypeEnum } from '@/interface';
 import { domain } from '@/spec-config';
 
+import { LiveRoomTypeEnum } from './types/ILiveRoom';
+
 export const QQ_CLIENT_ID = `101958191`;
 export const QQ_OAUTH_URL = `https://graph.qq.com/oauth2.0`;
 export const QQ_REDIRECT_URI = `https://live.${domain}/oauth/qq_login`;
@@ -187,6 +189,19 @@ export const mediaTypeEnumMap = {
   [MediaTypeEnum.stopwatch]: '秒表',
   [MediaTypeEnum.pk]: '打pk',
   [MediaTypeEnum.metting]: '会议',
+};
+
+export const liveRoomTypeEnumMap = {
+  [LiveRoomTypeEnum.msr]: 'msr推流',
+  [LiveRoomTypeEnum.obs]: 'obs推流',
+  [LiveRoomTypeEnum.pk]: '打pk',
+  [LiveRoomTypeEnum.srs]: 'srs推流',
+  [LiveRoomTypeEnum.system]: '系统推流',
+  [LiveRoomTypeEnum.tencent_css]: '腾讯云css推流',
+  [LiveRoomTypeEnum.tencent_css_pk]: '腾讯云css打pk',
+  [LiveRoomTypeEnum.wertc_live]: 'webrtc直播',
+  [LiveRoomTypeEnum.wertc_meeting_one]: 'webrtc会议一',
+  [LiveRoomTypeEnum.wertc_meeting_two]: 'webrtc会议二',
 };
 
 export const sliderList = [

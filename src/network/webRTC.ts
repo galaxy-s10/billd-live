@@ -115,12 +115,29 @@ export class WebRTCClass {
     this.createPeerConnection();
   }
 
-  prettierLog = (data: { msg: string; type?: 'log' | 'warn' | 'error' }) => {
+  prettierLog = (data: {
+    msg: string;
+    type?: 'log' | 'warn' | 'error' | 'success';
+  }) => {
     const { msg, type } = data;
-    console[type || 'log'](
-      `【WebRTCClass】${new Date().toLocaleString()},房间id:${this.roomId}`,
-      msg
-    );
+    if (type === 'success') {
+      console.log(
+        `%c ` +
+          `【WebRTCClass】${new Date().toLocaleString()},房间id:${
+            this.roomId
+          }` +
+          ` %c ${msg} ` +
+          `%c`,
+        'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff',
+        'background:#41b883 ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff',
+        'background:transparent'
+      );
+    } else {
+      console[type || 'log'](
+        `【WebRTCClass】${new Date().toLocaleString()},房间id:${this.roomId}`,
+        msg
+      );
+    }
   };
 
   /** 设置分辨率 */
@@ -426,7 +443,7 @@ export class WebRTCClass {
           });
           this.prettierLog({
             msg: 'webrtc连接成功！',
-            type: 'warn',
+            type: 'success',
           });
           console.log('sender', this.sender, 'receiver', this.receiver);
           this.update();

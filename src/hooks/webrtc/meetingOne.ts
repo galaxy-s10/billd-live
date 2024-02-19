@@ -7,7 +7,7 @@ import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { WsAnswerType, WsMsgTypeEnum, WsOfferType } from '@/types/websocket';
 
-export const useWebRtcOneToManyLive = () => {
+export const useWebRtcMeetingOne = () => {
   const appStore = useAppStore();
   const networkStore = useNetworkStore();
 
@@ -16,17 +16,20 @@ export const useWebRtcOneToManyLive = () => {
   const currentMaxFramerate = ref(maxFramerate.value[2].value);
   const currentResolutionRatio = ref(resolutionRatio.value[3].value);
   const roomId = ref('');
-  const canvasVideoStream = ref<MediaStream>();
+  const anchorStream = ref<MediaStream>();
+  const userStream = ref<MediaStream>();
 
-  function updateWebRtcOneToManyLiveConfig(data: {
+  function updateWebRtcMeetingOneConfig(data: {
     roomId;
-    canvasVideoStream;
+    anchorStream;
+    userStream?;
   }) {
     roomId.value = data.roomId;
-    canvasVideoStream.value = data.canvasVideoStream;
+    anchorStream.value = data.anchorStream;
+    userStream.value = data.userStream;
   }
 
-  const webRtcOneToManyLive = {
+  const webRtcMeetingOne = {
     newWebRtc: (data: {
       sender: string;
       receiver: string;
@@ -53,7 +56,7 @@ export const useWebRtcOneToManyLive = () => {
       sender: string;
       receiver: string;
     }) => {
-      console.log('开始webRtcOneToManyLive的sendOffer', {
+      console.log('meetingOne的sendOffer', {
         sender,
         receiver,
       });
@@ -62,19 +65,15 @@ export const useWebRtcOneToManyLive = () => {
         if (!ws) return;
         const rtc = networkStore.rtcMap.get(receiver);
         if (rtc) {
-          canvasVideoStream.value?.getTracks().forEach((track) => {
-            if (canvasVideoStream.value) {
-              console.log(
-                'webRtcOneToManyLive的canvasVideoStream插入track',
-                track.kind,
-                track
-              );
-              rtc.peerConnection?.addTrack(track, canvasVideoStream.value);
+          anchorStream.value?.getTracks().forEach((track) => {
+            if (anchorStream.value) {
+              console.log('meetingOne的sendOffer插入track', track.kind, track);
+              rtc.peerConnection?.addTrack(track, anchorStream.value);
             }
           });
           const offerSdp = await rtc.createOffer();
           if (!offerSdp) {
-            console.error('webRtcOneToManyLive的offerSdp为空');
+            console.error('meetingOne的offerSdp为空');
             return;
           }
           await rtc.setLocalDescription(offerSdp!);
@@ -93,7 +92,7 @@ export const useWebRtcOneToManyLive = () => {
           console.error('rtc不存在');
         }
       } catch (error) {
-        console.error('webRtcOneToManyLive的sendOffer错误');
+        console.error('meetingOne的sendOffer错误');
       }
     },
     /**
@@ -108,7 +107,7 @@ export const useWebRtcOneToManyLive = () => {
       sender: string;
       receiver: string;
     }) => {
-      console.log('开始webRtcOneToManyLive的sendAnswer', {
+      console.log('meetingOne的sendAnswer', {
         sender,
         receiver,
       });
@@ -118,9 +117,15 @@ export const useWebRtcOneToManyLive = () => {
         const rtc = networkStore.rtcMap.get(receiver);
         if (rtc) {
           await rtc.setRemoteDescription(sdp);
+          userStream.value?.getTracks().forEach((track) => {
+            if (userStream.value) {
+              console.log('meetingOne的sendAnswer插入track');
+              rtc.peerConnection?.addTrack(track, userStream.value);
+            }
+          });
           const answerSdp = await rtc.createAnswer();
           if (!answerSdp) {
-            console.error('webRtcOneToManyLive的answerSdp为空');
+            console.error('meetingOne的answerSdp为空');
             return;
           }
           await rtc.setLocalDescription(answerSdp);
@@ -138,10 +143,10 @@ export const useWebRtcOneToManyLive = () => {
           console.error('rtc不存在');
         }
       } catch (error) {
-        console.error('webRtcOneToManyLive的sendAnswer错误');
+        console.error('meetingOne的sendAnswer错误');
       }
     },
   };
 
-  return { updateWebRtcOneToManyLiveConfig, webRtcOneToManyLive };
+  return { updateWebRtcMeetingOneConfig, webRtcMeetingOne };
 };

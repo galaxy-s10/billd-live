@@ -41,7 +41,9 @@ export class WebSocketClass {
     this.url = data.url;
     this.socketIo = io(data.url, {
       transports: ['websocket'],
-      forceBase64: false,
+      // forceBase64: true,
+      // WARN 用了自定义parser之后，msrblob里面的blob文件错误
+      // parser: customParser,
     });
     this.update();
   }
@@ -75,6 +77,7 @@ export class WebSocketClass {
       user_token: userStore.token || undefined,
       data: data || {},
     };
+    // const binary = stringToArrayBuffer(JSON.stringify(sendData));
     this.socketIo?.emit(msgType, sendData);
   };
 

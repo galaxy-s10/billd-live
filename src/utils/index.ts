@@ -2,6 +2,12 @@
 import { computeBox, getRangeRandom } from 'billd-utils';
 import sparkMD5 from 'spark-md5';
 
+export function stringToArrayBuffer(str: string) {
+  const encoder = new TextEncoder(); // 默认是'utf-8'编码
+  const uint8Array = encoder.encode(str);
+  return uint8Array.buffer;
+}
+
 export function createNullVideo() {
   const videoEl = document.createElement('video');
   videoEl.autoplay = true;

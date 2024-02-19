@@ -534,17 +534,6 @@ export enum DanmuMsgTypeEnum {
   reward,
 }
 
-export interface IUpdateJoinInfo {
-  socket_id: string;
-  is_anchor: boolean;
-  user_info?: IUser;
-  data: {
-    live_room_id: number;
-    track?: { audio: number; video: number };
-    rtmp_url?: string;
-  };
-}
-
 export interface ILiveUser {
   // id: string;
   // rooms?: string[];

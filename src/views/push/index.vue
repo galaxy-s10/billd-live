@@ -94,13 +94,19 @@
         </div>
         <div class="other">
           <div class="top">
-            <span class="item">
+            <div class="item">
               <i class="ico"></i>
               <span>
                 正在观看：
                 {{ liveUserList.length }}
               </span>
-            </span>
+            </div>
+            <div
+              class="item"
+              v-if="NODE_ENV === 'development'"
+            >
+              {{ liveRoomTypeEnumMap[appStore.liveRoomInfo?.type || ''] }}
+            </div>
           </div>
           <div class="bottom">
             <n-button
@@ -387,7 +393,7 @@ import {
 } from 'vue';
 import { useRoute } from 'vue-router';
 
-import { QINIU_LIVE, mediaTypeEnumMap } from '@/constant';
+import { QINIU_LIVE, liveRoomTypeEnumMap, mediaTypeEnumMap } from '@/constant';
 import { emojiArray } from '@/emoji';
 import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { usePush } from '@/hooks/use-push';
@@ -489,8 +495,8 @@ const msrMaxDelay = ref(1000 * 5);
 
 watch(
   () => roomLiving.value,
-  () => {
-    if (!roomLiving.value) {
+  (newval) => {
+    if (!newval) {
       handleEndLive();
       showNoLiveTipModalCpt.value = true;
     }
@@ -500,7 +506,7 @@ watch(
 watch(
   () => currentMaxBitrate.value,
   () => {
-    if (liveType === LiveRoomTypeEnum.user_msr) {
+    if (liveType === LiveRoomTypeEnum.msr) {
       const stream = pushCanvasRef.value!.captureStream();
       const audioTrack = webaudioVideo
         // @ts-ignore
@@ -551,6 +557,7 @@ watch(
       if (appStore.allTrack.find((v) => v.mediaName === item.receiver)) {
         return;
       }
+      console.log('addMediaOkaddMediaOk', item.receiver);
       addMediaOk({
         id: getRandomEnglishString(6),
         openEye: true,
@@ -928,7 +935,7 @@ function handleStartLive() {
     msrDelay: msrDelay.value,
     msrMaxDelay: 5000,
   });
-  if (liveType === LiveRoomTypeEnum.user_msr) {
+  if (liveType === LiveRoomTypeEnum.msr) {
     const stream = pushCanvasRef.value!.captureStream();
     // @ts-ignore
     const audioTrack = webaudioVideo.value!.captureStream().getAudioTracks()[0];
@@ -1680,12 +1687,6 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     cacheStore.setResourceList(res);
     console.log('获取摄像头成功');
   } else if (val.type === MediaTypeEnum.pk) {
-    // const event = await handleUserMedia({
-    //   video: {
-    //     deviceId: val.deviceId,
-    //   },
-    //   audio: false,
-    // });
     const event = val.stream;
     if (!event) return;
     const videoTrack: AppRootState['allTrack'][0] = {

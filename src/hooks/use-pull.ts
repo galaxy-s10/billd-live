@@ -75,23 +75,6 @@ export function usePull(roomId: string) {
       stopDrawingArr.value = [];
       stopDrawingArr.value.forEach((cb) => cb());
       if (videoWrapRef.value) {
-        const rect = videoWrapRef.value.getBoundingClientRect();
-        // const { canvas, stopDrawing } = videoToCanvas({
-        //   wrapSize: {
-        //     width: rect.width,
-        //     height: rect.height,
-        //   },
-        //   videoEl: networkStore.getRtcMap(`${mySocketId.value}___${roomId}`)
-        //     ?.videoEl!,
-        //   videoResize: ({ w, h }) => {
-        //     videoHeight.value = `${w}x${h}`;
-        //   },
-        // });
-        // document.body.appendChild(canvas);
-        // stopDrawingArr.value.push(stopDrawing);
-        // remoteVideo.value.push(canvas);
-        // roomLiving.value = true;
-        // videoLoading.value = false;
       }
     }
   );
@@ -142,6 +125,7 @@ export function usePull(roomId: string) {
           videoHeight.value = `${w}x${h}`;
         },
       });
+      console.log(canvas, 2221211223);
       stopDrawingArr.value.push(stopDrawing);
       remoteVideo.value.push(canvas);
       videoLoading.value = false;
@@ -163,21 +147,21 @@ export function usePull(roomId: string) {
     flvurl.value = data.flv_url!;
     hlsurl.value = data.hls_url!;
     switch (data.type) {
-      case LiveRoomTypeEnum.user_srs:
+      case LiveRoomTypeEnum.srs:
         if (appStore.liveLine === LiveLineEnum.flv) {
           handleFlvPlay();
         } else if (appStore.liveLine === LiveLineEnum.hls) {
           handleHlsPlay(data.hls_url!);
         }
         break;
-      case LiveRoomTypeEnum.user_obs:
+      case LiveRoomTypeEnum.obs:
         if (appStore.liveLine === LiveLineEnum.flv) {
           handleFlvPlay();
         } else if (appStore.liveLine === LiveLineEnum.hls) {
           handleHlsPlay(data.hls_url!);
         }
         break;
-      case LiveRoomTypeEnum.user_msr:
+      case LiveRoomTypeEnum.msr:
         if (appStore.liveLine === LiveLineEnum.flv) {
           handleFlvPlay();
         } else if (appStore.liveLine === LiveLineEnum.hls) {
@@ -191,34 +175,44 @@ export function usePull(roomId: string) {
           handleHlsPlay(data.hls_url!);
         }
         break;
-      case LiveRoomTypeEnum.user_wertc_live:
+      case LiveRoomTypeEnum.pk:
+        if (appStore.liveLine === LiveLineEnum.flv) {
+          handleFlvPlay();
+        } else if (appStore.liveLine === LiveLineEnum.hls) {
+          handleHlsPlay(data.hls_url!);
+        }
+        break;
+      case LiveRoomTypeEnum.wertc_live:
         appStore.setLiveLine(LiveLineEnum.rtc);
         break;
     }
   }
 
   watch(
-    () => roomLiving.value,
-    (val) => {
-      if (val) {
+    [() => roomLiving.value, () => appStore.liveRoomInfo],
+    ([val, liveRoomInfo]) => {
+      if (val && liveRoomInfo) {
         if (
-          appStore.liveRoomInfo &&
           [
             LiveRoomTypeEnum.system,
-            LiveRoomTypeEnum.user_msr,
-            LiveRoomTypeEnum.user_srs,
-            LiveRoomTypeEnum.user_obs,
-            LiveRoomTypeEnum.user_pk,
-            LiveRoomTypeEnum.user_tencent_css,
-            LiveRoomTypeEnum.user_tencent_css_pk,
-          ].includes(appStore.liveRoomInfo.type!)
+            LiveRoomTypeEnum.msr,
+            LiveRoomTypeEnum.srs,
+            LiveRoomTypeEnum.obs,
+            LiveRoomTypeEnum.pk,
+            LiveRoomTypeEnum.tencent_css,
+            LiveRoomTypeEnum.tencent_css_pk,
+          ].includes(liveRoomInfo.type!)
         ) {
-          handlePlay(appStore.liveRoomInfo!);
+          handlePlay(liveRoomInfo!);
         }
       } else {
         closeRtc();
         handleStopDrawing();
       }
+    },
+    {
+      deep: true,
+      immediate: true,
     }
   );
 
@@ -241,6 +235,7 @@ export function usePull(roomId: string) {
       }
     }
   );
+
   watch(
     () => cacheStore.muted,
     (newVal) => {
@@ -254,6 +249,7 @@ export function usePull(roomId: string) {
       }
     }
   );
+
   watch(
     () => cacheStore.volume,
     (newVal) => {
@@ -267,6 +263,7 @@ export function usePull(roomId: string) {
       }
     }
   );
+
   watch(
     () => appStore.play,
     (newVal) => {
@@ -296,24 +293,9 @@ export function usePull(roomId: string) {
   watch(
     () => networkStore.rtcMap,
     (newVal) => {
-      if (appStore.liveRoomInfo?.type === LiveRoomTypeEnum.user_wertc_live) {
+      if (appStore.liveRoomInfo?.type === LiveRoomTypeEnum.wertc_live) {
         newVal.forEach((item) => {
           videoLoading.value = false;
-          // if (videoWrapRef.value) {
-          //   const rect = videoWrapRef.value.getBoundingClientRect();
-          //   const { canvas } = videoToCanvas({
-          //     wrapSize: {
-          //       width: rect.width,
-          //       height: rect.height,
-          //     },
-          //     videoEl: item.videoEl,
-          //     videoResize: ({ w, h }) => {
-          //       videoHeight.value = `${w}x${h}`;
-          //     },
-          //   });
-          //   videoElArr.value.push(item.videoEl);
-          //   remoteVideo.value.push(canvas);
-          // }
         });
       }
     },
@@ -330,7 +312,7 @@ export function usePull(roomId: string) {
         console.log('localStream变了');
         console.log('音频轨：', val?.getAudioTracks());
         console.log('视频轨：', val?.getVideoTracks());
-        if (appStore.liveRoomInfo?.type === LiveRoomTypeEnum.user_wertc_live) {
+        if (appStore.liveRoomInfo?.type === LiveRoomTypeEnum.wertc_live) {
           videoElArr.value.forEach((dom) => {
             dom.remove();
           });

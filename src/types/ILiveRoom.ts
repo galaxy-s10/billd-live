@@ -14,21 +14,23 @@ export enum LiveRoomTypeEnum {
   /** 系统推流 */
   system,
   /** 主播使用srs推流 */
-  user_srs,
+  srs,
   /** 主播使用obs/ffmpeg推流 */
-  user_obs,
+  obs,
   /** 主播使用webrtc推流，直播 */
-  user_wertc_live,
-  /** 主播使用webrtc推流，会议 */
-  user_wertc_meeting,
+  wertc_live,
+  /** 主播使用webrtc推流，会议，实现一 */
+  wertc_meeting_one,
+  /** 主播使用webrtc推流，会议，实现二 */
+  wertc_meeting_two,
   /** 主播使用msr推流 */
-  user_msr,
+  msr,
   /** 主播打pk */
-  user_pk,
+  pk,
   /** 主播使用腾讯云css推流 */
-  user_tencent_css,
+  tencent_css,
   /** 主播使用腾讯云css推流打pk */
-  user_tencent_css_pk,
+  tencent_css_pk,
 }
 
 /** 拉流是否需要鉴权 */

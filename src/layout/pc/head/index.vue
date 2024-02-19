@@ -247,35 +247,33 @@
             <div class="list">
               <a
                 class="item"
-                @click.prevent="handleStartLive(LiveRoomTypeEnum.user_srs)"
+                @click.prevent="handleStartLive(LiveRoomTypeEnum.srs)"
               >
                 <div class="txt">{{ t('layout.srsLive') }}</div>
               </a>
               <a
                 class="item"
-                @click.prevent="
-                  handleStartLive(LiveRoomTypeEnum.user_wertc_live)
-                "
+                @click.prevent="handleStartLive(LiveRoomTypeEnum.wertc_live)"
               >
                 <div class="txt">{{ t('layout.webrtcLive') }}</div>
               </a>
               <a
                 class="item"
                 @click.prevent="
-                  handleStartLive(LiveRoomTypeEnum.user_wertc_meeting)
+                  handleStartLive(LiveRoomTypeEnum.wertc_meeting_one)
                 "
               >
                 <div class="txt">{{ t('layout.webrtcMeeting') }}</div>
               </a>
               <a
                 class="item"
-                @click.prevent="handleStartLive(LiveRoomTypeEnum.user_msr)"
+                @click.prevent="handleStartLive(LiveRoomTypeEnum.msr)"
               >
                 <div class="txt">{{ t('layout.msrLive') }}</div>
               </a>
               <a
                 class="item"
-                @click.prevent="handleStartLive(LiveRoomTypeEnum.user_pk)"
+                @click.prevent="handleStartLive(LiveRoomTypeEnum.pk)"
               >
                 <div class="txt">{{ t('layout.pkLive') }}</div>
               </a>

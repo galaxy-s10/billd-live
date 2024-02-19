@@ -118,13 +118,13 @@ function openLiveRoom() {
   }
   const url = router.resolve({
     name: routerName.push,
-    query: { liveType: LiveRoomTypeEnum.user_srs },
+    query: { liveType: LiveRoomTypeEnum.srs },
   });
   openToTarget(url.href);
 }
 
 function handleUrl(data: { url: string; token: string }) {
-  return `${data.url}?${SRS_CB_URL_PARAMS.publishKey}=${data.token}&${SRS_CB_URL_PARAMS.publishType}=${LiveRoomTypeEnum.user_obs}`;
+  return `${data.url}?${SRS_CB_URL_PARAMS.publishKey}=${data.token}&${SRS_CB_URL_PARAMS.publishType}=${LiveRoomTypeEnum.obs}`;
 }
 
 async function handleUpdateKey() {
