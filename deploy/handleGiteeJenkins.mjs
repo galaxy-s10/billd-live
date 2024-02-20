@@ -72,11 +72,11 @@ async function clearOld() {
 }
 
 clearOld().then(() => {
+  findFile(dir);
+  putFile();
   const gitignoreTxt =
     'node_modules\ndist\ncomponents.d.ts\n.eslintcache\n.DS_Store\n';
   fs.writeFileSync(path.resolve(giteeDir, './.gitignore'), gitignoreTxt);
-  findFile(dir);
-  putFile();
   execSync(`pnpm i`, { cwd: giteeDir });
   execSync(`git add .`, { cwd: giteeDir });
   execSync(`git commit -m 'feat: ${new Date().toLocaleString()}'`, {
