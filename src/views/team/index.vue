@@ -121,7 +121,7 @@ import {
 import { openToTarget } from 'billd-utils';
 import { ref } from 'vue';
 
-import { domain } from '@/spec-config';
+import { prodDomain } from '@/spec-config';
 
 const list = ref([
   {
@@ -145,7 +145,7 @@ const list = ref([
       },
     ],
     social: [{ github: 'https://www.github.com/galaxy-s10' }],
-    website: `https://www.${domain}`,
+    website: `https://www.${prodDomain}`,
   },
 ]);
 </script>

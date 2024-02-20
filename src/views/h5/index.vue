@@ -79,9 +79,9 @@ import { onMounted, onUnmounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { fetchAreaLiveRoomList } from '@/api/area';
+import { QINIU_RESOURCE } from '@/constant';
 import { IArea, IAreaLiveRoom } from '@/interface';
 import router, { mobileRouterName, routerName } from '@/router';
-import { domain } from '@/spec-config';
 import { useAppStore } from '@/store/app';
 import {
   LiveRoomIsShowEnum,
@@ -97,19 +97,19 @@ const swiperList = ref([
   {
     id: 1,
     txt: '广告位1',
-    bgi: `https://resource.${domain}/billd-live/image/ecdece08eb3eda2f37433cb7c748766f.webp`,
+    bgi: `${QINIU_RESOURCE.url}/billd-live/image/ecdece08eb3eda2f37433cb7c748766f.webp`,
     url: '',
   },
   {
     id: 2,
     txt: '广告位2',
-    bgi: `https://resource.${domain}/billd-live/image/b2e3459e7d4a70463cd201ee468491a1.webp`,
+    bgi: `${QINIU_RESOURCE.url}/billd-live/image/b2e3459e7d4a70463cd201ee468491a1.webp`,
     url: '',
   },
   {
     id: 3,
     txt: '广告位3',
-    bgi: `https://resource.${domain}/billd-live/image/71d01ff0bd34c57586500e425e21938f.webp`,
+    bgi: `${QINIU_RESOURCE.url}/billd-live/image/71d01ff0bd34c57586500e425e21938f.webp`,
     url: '',
   },
 ]);

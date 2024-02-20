@@ -1,1 +1,1 @@
-export const domain = 'hsslive.cn';
+export const prodDomain = 'hsslive.cn';

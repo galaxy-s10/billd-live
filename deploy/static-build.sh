@@ -6,7 +6,7 @@
 # Email: 2274751790@qq.com
 # FilePath: /billd-live/deploy/static-build.sh
 # Github: https://github.com/galaxy-s10
-# LastEditTime: 2024-01-25 10:39:21
+# LastEditTime: 2024-02-20 11:51:28
 # LastEditors: shuisheng
 ###
 
@@ -73,4 +73,4 @@ else
   echo 开始构建$ENV环境:
 fi
 
-npx cross-env VUE_APP_RELEASE_PROJECT_NAME=$JOBNAME VUE_APP_RELEASE_PROJECT_ENV=$ENV webpack --config ./script/config/webpack.common.ts --env production
+npx cross-env VUE_APP_RELEASE_PROJECT_NAME=$JOBNAME VUE_APP_RELEASE_PROJECT_ENV=$ENV npm run deploy:prod

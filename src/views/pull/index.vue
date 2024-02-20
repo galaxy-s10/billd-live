@@ -418,7 +418,7 @@ import { fetchGoodsList } from '@/api/goods';
 import { fetchGetWsMessageList } from '@/api/wsMessage';
 import {
   MODULE_CONFIG_SWITCH,
-  QINIU_LIVE,
+  QINIU_RESOURCE,
   liveRoomTypeEnumMap,
 } from '@/constant';
 import { emojiArray } from '@/emoji';
@@ -785,7 +785,7 @@ async function uploadChange() {
       msgLoading.value = true;
       msgIsFile.value = WsMessageMsgIsFileEnum.yes;
       const res = await useUpload({
-        prefix: QINIU_LIVE.prefix['billd-live/msg-image/'],
+        prefix: QINIU_RESOURCE.prefix['billd-live/msg-image/'],
         file: fileList[0],
       });
       if (res?.resultUrl) {

@@ -393,7 +393,11 @@ import {
 } from 'vue';
 import { useRoute } from 'vue-router';
 
-import { QINIU_LIVE, liveRoomTypeEnumMap, mediaTypeEnumMap } from '@/constant';
+import {
+  QINIU_RESOURCE,
+  liveRoomTypeEnumMap,
+  mediaTypeEnumMap,
+} from '@/constant';
 import { emojiArray } from '@/emoji';
 import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { usePush } from '@/hooks/use-push';
@@ -640,7 +644,7 @@ async function uploadChange() {
       msgLoading.value = true;
       msgIsFile.value = WsMessageMsgIsFileEnum.yes;
       const res = await useUpload({
-        prefix: QINIU_LIVE.prefix['billd-live/msg-image/'],
+        prefix: QINIU_RESOURCE.prefix['billd-live/msg-image/'],
         file: fileList[0],
       });
       if (res?.resultUrl) {
