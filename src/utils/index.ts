@@ -93,11 +93,16 @@ export const getLiveRoomPageUrl = (liveRoomId: number) => {
   return `${getHostnameUrl()}/pull/${liveRoomId}`;
 };
 
+/**
+ * 例子：当前地址栏：https://live.hsslive.cn，结果：https://live.hsslive.cn
+ * 例子：当前地址栏：https://live.hsslive.cn/push?liveType=1&roomId=101，结果：https://live.hsslive.cn
+ */
 export const getHostnameUrl = () => {
   // window.location.host，包含了域名的一个DOMString，可能在该串最后带有一个":"并跟上 URL 的端口号。
   // window.location.hostname，包含了域名的一个DOMString
   const { protocol, host } = window.location;
-  return `${protocol}//${host}`;
+  const res = `${protocol}//${host}`;
+  return res;
 };
 
 /**

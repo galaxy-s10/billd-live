@@ -22,6 +22,7 @@ import { useCheckUpdate } from '@/hooks/use-common';
 import { loginMessage } from '@/hooks/use-login';
 import { usePiniaCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
+import { getHostnameUrl } from '@/utils';
 import { getLastBuildDate, setLastBuildDate } from '@/utils/localStorage/app';
 import { getToken } from '@/utils/localStorage/user';
 
@@ -38,7 +39,7 @@ const themeOverrides: GlobalThemeOverrides = {
 
 onMounted(() => {
   checkUpdate({
-    htmlUrl: 'http://localhost:8000',
+    htmlUrl: getHostnameUrl(),
   });
   handleUpdate();
   loginMessage();
