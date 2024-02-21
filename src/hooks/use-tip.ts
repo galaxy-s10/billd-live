@@ -1,6 +1,6 @@
 import { ComponentPublicInstance, VNode, createApp } from 'vue';
 
-import ModalCpt from './modal/index.vue';
+import ModalCpt from '@/hooks/tipModal/index.vue';
 
 const app = createApp(ModalCpt);
 const container = document.createElement('div');

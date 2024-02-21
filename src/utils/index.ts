@@ -216,9 +216,9 @@ export function saveFile(data: { file: File; fileName: string }) {
       resolve({ code: 2 });
       return;
     }
-    function onError(err) {
+    function onError(error) {
       console.error('saveFile错误', data.fileName);
-      console.log(err);
+      console.log(error);
       resolve({ code: 2 });
     }
     function onFs(fs) {
@@ -266,9 +266,9 @@ export function readFile(fileName: string) {
       resolve({ code: 2 });
       return;
     }
-    function onError(err) {
+    function onError(error) {
       console.error('readFile错误', fileName);
-      console.log(err);
+      console.log(error);
       resolve({ code: 2 });
     }
     function onFs(fs) {

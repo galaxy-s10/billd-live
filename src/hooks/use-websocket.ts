@@ -15,8 +15,6 @@ import {
   ILiveUser,
   WsMessageMsgIsFileEnum,
 } from '@/interface';
-import { WebRTCClass } from '@/network/webRTC';
-import { WebSocketClass, prettierReceiveWsMsg } from '@/network/webSocket';
 import router, { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
@@ -44,6 +42,10 @@ import {
   WsUpdateJoinInfoType,
 } from '@/types/websocket';
 import { createNullVideo, handleUserMedia } from '@/utils';
+import {
+  WebSocketClass,
+  prettierReceiveWsMsg,
+} from '@/utils/network/webSocket';
 
 import { useWebRtcMeetingPk } from './webrtc/meetingPk';
 
@@ -65,10 +67,8 @@ export const useWebsocket = () => {
   const loopGetLiveUserTimer = ref();
   const liveUserList = ref<ILiveUser[]>([]);
   const roomId = ref('');
-  const isPull = ref(false);
   const roomLiving = ref(false);
   const isAnchor = ref(false);
-  const isSRS = ref(false);
   const anchorInfo = ref<IUser>();
   const anchorSocketId = ref('');
   const canvasVideoStream = ref<MediaStream>();
@@ -151,6 +151,9 @@ export const useWebsocket = () => {
     msrDelay: number;
     msrMaxDelay: number;
   }) {
+    if (appStore.liveRoomInfo) {
+      appStore.liveRoomInfo.type = type;
+    }
     networkStore.wsMap.get(roomId.value)?.send<WsStartLiveType['data']>({
       requestId: getRandomString(8),
       msgType: WsMsgTypeEnum.startLive,
@@ -268,57 +271,13 @@ export const useWebsocket = () => {
     });
 
     // 收到srsOffer
-    ws.socketIo.on(
-      WsMsgTypeEnum.srsOffer,
-      async (data: WsOfferType['data']) => {
-        console.log('收到srsOffer', data);
-        if (data.receiver === mySocketId.value) {
-          console.warn('是发给我的srsOffer');
-          const videoEl = createNullVideo();
-          const rtc = new WebRTCClass({
-            maxBitrate: currentMaxBitrate.value,
-            maxFramerate: currentMaxFramerate.value,
-            resolutionRatio: currentResolutionRatio.value,
-            roomId: roomId.value,
-            videoEl,
-            isSRS: true,
-            sender: data.sender,
-            receiver: data.receiver,
-          });
-          isSRS.value = true;
-          await rtc.setRemoteDescription(data.sdp);
-          const answerSdp = await rtc.createAnswer();
-          if (answerSdp) {
-            await rtc.setLocalDescription(answerSdp);
-            ws.send<WsAnswerType['data']>({
-              requestId: getRandomString(8),
-              msgType: WsMsgTypeEnum.srsAnswer,
-              data: {
-                live_room_id: Number(roomId.value),
-                sdp: answerSdp,
-                receiver: data.sender,
-                sender: mySocketId.value,
-              },
-            });
-          } else {
-            console.error('srsOffer的answerSdp为空');
-          }
-        } else {
-          console.error('不是发给我的srsOffer');
-        }
-      }
-    );
+    ws.socketIo.on(WsMsgTypeEnum.srsOffer, (data: WsOfferType['data']) => {
+      console.log('收到srsOffer', data);
+    });
 
     // 收到srsAnswer
     ws.socketIo.on(WsMsgTypeEnum.srsAnswer, (data: WsAnswerType['data']) => {
       console.log('收到srsAnswer', data);
-      if (data.receiver === mySocketId.value) {
-        console.warn('是发给我的srsAnswer');
-        const rtc = networkStore.rtcMap.get(data.sender);
-        rtc?.setRemoteDescription(data.sdp);
-      } else {
-        console.error('不是发给我的srsAnswer');
-      }
     });
 
     // 收到srsCandidate
@@ -379,7 +338,11 @@ export const useWebsocket = () => {
                 sdp: data.sdp,
               });
             } else {
-              window.$message.error('验证pkKey错误！');
+              await useTip({
+                content: '加入PK失败，验证pkKey错误！',
+                hiddenCancel: true,
+                hiddenClose: true,
+              });
             }
           } else {
             console.error('不是发给我的nativeWebRtcOffer');
@@ -748,7 +711,6 @@ export const useWebsocket = () => {
   }
 
   return {
-    isPull,
     initWs,
     handleStartLive,
     handleSendGetLiveUser,

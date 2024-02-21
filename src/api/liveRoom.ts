@@ -13,6 +13,7 @@ export function fetchVerifyPkKey(data: { liveRoomId: number; key }) {
     params: { key: data.key },
   });
 }
+
 export function fetchUpdateLiveRoomKey() {
   return request.instance({
     url: '/live_room/update_key',

@@ -12,11 +12,11 @@ dependencies:
     specifier: ^1.2.1
     version: 1.3.4
   billd-deploy:
-    specifier: ^1.0.21
-    version: 1.0.21(@swc/core@1.3.84)(@types/node@18.15.3)(esbuild@0.15.18)(sass@1.59.3)(terser@5.16.6)(webpack-cli@4.10.0)
+    specifier: ^1.0.23
+    version: 1.0.23(@swc/core@1.3.84)(@types/node@18.15.3)(esbuild@0.15.18)(sass@1.59.3)(terser@5.16.6)(webpack-cli@4.10.0)
   billd-html-webpack-plugin:
-    specifier: ^1.0.5
-    version: 1.0.5(@swc/core@1.3.84)(@types/node@18.15.3)(esbuild@0.15.18)(sass@1.59.3)(terser@5.16.6)(webpack-cli@4.10.0)
+    specifier: ^1.0.6
+    version: 1.0.6(@swc/core@1.3.84)(@types/node@18.15.3)(esbuild@0.15.18)(sass@1.59.3)(terser@5.16.6)(webpack-cli@4.10.0)
   billd-scss:
     specifier: ^0.0.8
     version: 0.0.8
@@ -3846,12 +3846,12 @@ packages:
     resolution: {integrity: sha512-vyL2OymJxmarO8gxMr0mhChsO9QGwhynfuu4+MHTAW6czfq9humCB7rKpUjDd9YUiDPU4mzpyupFSvOClAwbmQ==}
     dev: true
 
-  /billd-deploy@1.0.21(@swc/core@1.3.84)(@types/node@18.15.3)(esbuild@0.15.18)(sass@1.59.3)(terser@5.16.6)(webpack-cli@4.10.0):
-    resolution: {integrity: sha512-xFcfHnOJPlJxj+wDhMpHqHFBM79cxiXC5i4vqrfztT6kz1QBJpK/Rh8bY7PCq8Kngk+5oSjNSew19SSbONnxgg==}
+  /billd-deploy@1.0.23(@swc/core@1.3.84)(@types/node@18.15.3)(esbuild@0.15.18)(sass@1.59.3)(terser@5.16.6)(webpack-cli@4.10.0):
+    resolution: {integrity: sha512-Ouih/nYp3lY1qt6GHUtQbMm3w3yPjxD+4ShpwWU+5iJfIqdC3KY7AoC5lu2QCa4KD7NG9qHpn6aYEiyWJmB1vQ==}
     requiresBuild: true
     dependencies:
       ali-oss: 6.20.0
-      billd-html-webpack-plugin: 1.0.5(@swc/core@1.3.84)(@types/node@18.15.3)(esbuild@0.15.18)(sass@1.59.3)(terser@5.16.6)(webpack-cli@4.10.0)
+      billd-html-webpack-plugin: 1.0.6(@swc/core@1.3.84)(@types/node@18.15.3)(esbuild@0.15.18)(sass@1.59.3)(terser@5.16.6)(webpack-cli@4.10.0)
       cos-nodejs-sdk-v5: 2.13.1
       esdk-obs-nodejs: 3.23.11
       inquirer: 8.2.5
@@ -3873,8 +3873,8 @@ packages:
       - webpack-cli
     dev: false
 
-  /billd-html-webpack-plugin@1.0.5(@swc/core@1.3.84)(@types/node@18.15.3)(esbuild@0.15.18)(sass@1.59.3)(terser@5.16.6)(webpack-cli@4.10.0):
-    resolution: {integrity: sha512-SYT/tR7+LcnCc3kADU7Lt56HDPKCBOo0R1QNj4ky78aGqH4BqOUMqbe66uIjqa4MqFHsWYjkOarO7JY4M/KpYw==}
+  /billd-html-webpack-plugin@1.0.6(@swc/core@1.3.84)(@types/node@18.15.3)(esbuild@0.15.18)(sass@1.59.3)(terser@5.16.6)(webpack-cli@4.10.0):
+    resolution: {integrity: sha512-zM294oAMqRD1rlqoyC1E9QbFsBgMPYStODmQKwUjI+xd02Rwo+3iZhmlQ8q0EuF2KnyhwDwhxyZfDGSo6Ow8Tw==}
     requiresBuild: true
     dependencies:
       vite: 4.2.0(@types/node@18.15.3)(sass@1.59.3)(terser@5.16.6)

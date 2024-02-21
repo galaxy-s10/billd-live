@@ -9,3 +9,11 @@ export const useCheckUpdate = () => {
   );
   return { appInfo };
 };
+
+export const useBuildInfo = () => {
+  const info = ref<BilldHtmlWebpackPluginLog>(
+    // @ts-ignore
+    process.env.BilldHtmlWebpackPlugin as BilldHtmlWebpackPluginLog
+  );
+  return { info };
+};

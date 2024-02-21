@@ -252,6 +252,8 @@ const silverList = ref([
   }
   .aside {
     padding-left: 90px;
+    width: 150px;
+
     .title {
       margin-bottom: 8px;
       color: rgb(33, 53, 71);

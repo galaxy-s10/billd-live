@@ -283,7 +283,14 @@
               <a class="item">
                 <div class="txt">{{ t('layout.tencentCssPkLive') }}</div>
               </a>
-              <div class="tip"><div class="tip-txt">有什么区别？</div></div>
+              <div class="tip">
+                <div
+                  class="tip-txt"
+                  @click="handleWebsiteJump"
+                >
+                  有什么区别？
+                </div>
+              </div>
             </div>
           </template>
         </Dropdown>
@@ -513,6 +520,13 @@ function handleStartLive(key: LiveRoomTypeEnum) {
   const url = router.resolve({
     name: routerName.push,
     query: { liveType: key },
+  });
+  openToTarget(url.href);
+}
+
+function handleWebsiteJump() {
+  const url = router.resolve({
+    name: routerName.pushStreamDifferent,
   });
   openToTarget(url.href);
 }

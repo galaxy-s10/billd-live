@@ -5,6 +5,7 @@ import request from '@/utils/request';
 export function fetchAreaList() {
   return request.get('/area/list');
 }
+
 export function fetchAreaLiveRoomList(params) {
   return request.get('/area/area_live_room_list', {
     params,

@@ -1,5 +1,6 @@
 import { getRandomString } from 'billd-utils';
 import { onUnmounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
 import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { useFlvPlay, useHlsPlay } from '@/hooks/use-play';
@@ -12,13 +13,12 @@ import {
 import { useAppStore } from '@/store/app';
 import { usePiniaCacheStore } from '@/store/cache';
 import { useNetworkStore } from '@/store/network';
-import { useUserStore } from '@/store/user';
 import { ILiveRoom, LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import { WsMessageType, WsMsgTypeEnum } from '@/types/websocket';
 import { createVideo, videoToCanvas } from '@/utils';
 
 export function usePull(roomId: string) {
-  const userStore = useUserStore();
+  const route = useRoute();
   const networkStore = useNetworkStore();
   const cacheStore = usePiniaCacheStore();
   const appStore = useAppStore();
@@ -33,15 +33,9 @@ export function usePull(roomId: string) {
   const hlsurl = ref('');
   const videoWrapRef = ref<HTMLDivElement>();
   const videoHeight = ref();
-  const sidebarList = ref<
-    {
-      socketId: string;
-    }[]
-  >([]);
   const videoElArr = ref<HTMLVideoElement[]>([]);
   const remoteVideo = ref<HTMLElement[]>([]);
   const {
-    isPull,
     mySocketId,
     initWs,
     roomLiving,
@@ -50,7 +44,6 @@ export function usePull(roomId: string) {
     damuList,
     handleSendGetLiveUser,
   } = useWebsocket();
-  isPull.value = true;
   const { flvVideoEl, flvIsPlaying, startFlvPlay, destroyFlv } = useFlvPlay();
   const { hlsVideoEl, hlsIsPlaying, startHlsPlay, destroyHls } = useHlsPlay();
   const stopDrawingArr = ref<any[]>([]);
@@ -67,17 +60,6 @@ export function usePull(roomId: string) {
     remoteVideo.value.forEach((el) => el.remove());
     remoteVideo.value = [];
   }
-
-  watch(
-    () => appStore.pkStream,
-    (newval) => {
-      console.log('pkStream变了', newval);
-      stopDrawingArr.value = [];
-      stopDrawingArr.value.forEach((cb) => cb());
-      if (videoWrapRef.value) {
-      }
-    }
-  );
 
   watch(hlsVideoEl, () => {
     stopDrawingArr.value = [];
@@ -125,7 +107,6 @@ export function usePull(roomId: string) {
           videoHeight.value = `${w}x${h}`;
         },
       });
-      console.log(canvas, 2221211223);
       stopDrawingArr.value.push(stopDrawing);
       remoteVideo.value.push(canvas);
       videoLoading.value = false;
@@ -198,12 +179,15 @@ export function usePull(roomId: string) {
             LiveRoomTypeEnum.msr,
             LiveRoomTypeEnum.srs,
             LiveRoomTypeEnum.obs,
-            LiveRoomTypeEnum.pk,
             LiveRoomTypeEnum.tencent_css,
             LiveRoomTypeEnum.tencent_css_pk,
           ].includes(liveRoomInfo.type!)
         ) {
           handlePlay(liveRoomInfo!);
+        } else if (LiveRoomTypeEnum.pk === liveRoomInfo.type!) {
+          if (!route.query.pkKey) {
+            handlePlay(liveRoomInfo!);
+          }
         }
       } else {
         closeRtc();
@@ -283,25 +267,11 @@ export function usePull(roomId: string) {
       isPlaying.value = newVal;
     }
   );
+
   watch(
     () => flvIsPlaying.value,
     (newVal) => {
       isPlaying.value = newVal;
-    }
-  );
-
-  watch(
-    () => networkStore.rtcMap,
-    (newVal) => {
-      if (appStore.liveRoomInfo?.type === LiveRoomTypeEnum.wertc_live) {
-        newVal.forEach((item) => {
-          videoLoading.value = false;
-        });
-      }
-    },
-    {
-      deep: true,
-      immediate: true,
     }
   );
 
@@ -364,19 +334,6 @@ export function usePull(roomId: string) {
     { deep: true }
   );
 
-  watch(
-    [
-      () => userStore.userInfo,
-      () => networkStore.wsMap.get(roomId)?.socketIo?.connected,
-    ],
-    ([userInfo, connected]) => {
-      if (userInfo && connected) {
-        const instance = networkStore.wsMap.get(roomId);
-        if (!instance) return;
-      }
-    }
-  );
-
   function initPull(autolay = true) {
     autoplayVal.value = autolay;
     if (autoplayVal.value) {
@@ -398,10 +355,6 @@ export function usePull(roomId: string) {
     networkStore.rtcMap.forEach((rtc) => {
       networkStore.removeRtc(rtc.receiver);
     });
-  }
-
-  function addVideo() {
-    sidebarList.value.push({ socketId: mySocketId.value });
   }
 
   function keydownDanmu(event: KeyboardEvent) {
@@ -453,7 +406,6 @@ export function usePull(roomId: string) {
     closeRtc,
     keydownDanmu,
     sendDanmu,
-    addVideo,
     handleSendGetLiveUser,
     danmuMsgType,
     isPlaying,
@@ -466,7 +418,6 @@ export function usePull(roomId: string) {
     videoLoading,
     damuList,
     liveUserList,
-    sidebarList,
     danmuStr,
     anchorInfo,
   };

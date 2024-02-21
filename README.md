@@ -187,7 +187,7 @@ pnpm i
 > 更新 billd 相关依赖：
 
 ```bash
-pnpm i billd-utils@latest billd-scss@latest billd-html-webpack-plugin@latest
+pnpm i billd-utils@latest billd-scss@latest billd-deploy@latest billd-html-webpack-plugin@latest
 ```
 
 - 运行

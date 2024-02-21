@@ -175,9 +175,9 @@ export function useFlvPlay() {
           try {
             console.log(`开始播放flv，muted:${cacheStore.muted}`);
             flvPlayer.value.play();
-          } catch (err) {
+          } catch (error) {
             console.error('flv播放失败');
-            console.log(err);
+            console.log(error);
           }
         } else {
           console.error('不支持flv');
@@ -286,9 +286,9 @@ export function useHlsPlay() {
             try {
               // console.log(`开始播放hls，muted:${cacheStore.muted}`);
               hlsPlayer.value?.play();
-            } catch (err) {
+            } catch (error) {
               console.error('hls播放失败');
-              console.log(err);
+              console.log(error);
             }
           }
         );

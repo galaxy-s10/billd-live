@@ -13,7 +13,7 @@ export const htmlWebpackPluginTitle = 'billd-live'; // htmlWebpackPlugin的标�
 
 export const outputStaticUrl = (isProduction: boolean) => {
   if (isProduction) {
-    return 'https://resource.hsslive.cn/billd-live/client/';
+    return 'https://resource.hsslive.cn/billd-live/client/dist/';
   }
   return '/';
 };

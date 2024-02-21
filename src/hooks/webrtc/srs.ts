@@ -4,15 +4,13 @@ import { ref } from 'vue';
 import { fetchRtcV1Publish } from '@/api/srs';
 import { SRS_CB_URL_PARAMS } from '@/constant';
 import { useRTCParams } from '@/hooks/use-rtcParams';
-import { WebRTCClass } from '@/network/webRTC';
-import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
+import { WebRTCClass } from '@/utils/network/webRTC';
 
 export const useWebRtcSrs = () => {
   const userStore = useUserStore();
-  const appStore = useAppStore();
   const networkStore = useNetworkStore();
 
   const { maxBitrate, maxFramerate, resolutionRatio } = useRTCParams();

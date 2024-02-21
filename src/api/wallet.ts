@@ -6,6 +6,7 @@ export function fetchWalletList(params) {
     params,
   });
 }
+
 export function fetchMyWallet() {
   return request.get<IWallet>('/wallet/my_wallet');
 }

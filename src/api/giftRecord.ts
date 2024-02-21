@@ -11,6 +11,7 @@ export function fetchGiftGroupList(params: IList<IGiftRecord>) {
     },
   });
 }
+
 export function fetchGiftRecordList(params: IList<IGiftRecord>) {
   return request.get<IPaging<IGiftRecord>>('/gift_record/list', {
     params: {

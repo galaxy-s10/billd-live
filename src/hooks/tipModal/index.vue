@@ -6,6 +6,7 @@
     <Modal
       :title="title"
       :mask-closable="maskClosable"
+      :hidden-close="hiddenClose"
       @close="handleCancel()"
       :width="width"
     >
@@ -36,7 +37,7 @@
 import { VNode, defineComponent, ref, render, watch } from 'vue';
 
 export default defineComponent({
-  name: 'modal',
+  name: 'tipModal',
   emits: ['ok', 'cancel'],
   setup() {
     const title = ref('');

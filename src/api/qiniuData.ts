@@ -12,6 +12,7 @@ export function fetchQiniuDataList(params) {
     params,
   });
 }
+
 export function fetchDiff(params) {
   return request.get('/qiniu_data/diff', {
     params,

@@ -608,7 +608,6 @@ async function handlePk() {
       console.log('onnegotiationneeded', event);
     };
     stream?.getTracks().forEach((track) => {
-      console.log(rtc, stream, track);
       rtc.peerConnection?.addTrack(track, stream);
     });
   }

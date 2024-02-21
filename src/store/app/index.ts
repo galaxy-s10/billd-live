@@ -41,7 +41,6 @@ export type AppRootState = {
   liveRoomInfo?: ILiveRoom;
   showLoginModal: boolean;
   disableSpeaking: Map<number, { exp: number; label: string }>;
-  pkStream?: MediaStream;
   showSigninRedDot: boolean;
 };
 

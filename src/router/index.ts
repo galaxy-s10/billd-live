@@ -38,6 +38,7 @@ export const routerName = {
   team: 'team',
   oauth: 'oauth',
   release: 'release',
+  pushStreamDifferent: 'pushStreamDifferent',
   notFound: 'notFound',
   group: 'group',
   profile: 'profile',
@@ -71,22 +72,28 @@ export const defaultRoutes: RouteRecordRaw[] = [
           {
             name: routerName.group,
             path: 'group',
-            component: () => import('@/views/group/index.vue'),
+            component: () => import('@/views/about/group/index.vue'),
           },
           {
             name: routerName.faq,
             path: 'faq',
-            component: () => import('@/views/faq/index.vue'),
+            component: () => import('@/views/about/faq/index.vue'),
           },
           {
             name: routerName.team,
             path: 'team',
-            component: () => import('@/views/team/index.vue'),
+            component: () => import('@/views/about/team/index.vue'),
           },
           {
             name: routerName.release,
             path: 'release',
-            component: () => import('@/views/release/index.vue'),
+            component: () => import('@/views/about/release/index.vue'),
+          },
+          {
+            name: routerName.pushStreamDifferent,
+            path: 'pushStreamDifferent',
+            component: () =>
+              import('@/views/about/pushStreamDifferent/index.vue'),
           },
         ],
       },

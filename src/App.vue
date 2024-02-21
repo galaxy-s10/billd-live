@@ -18,14 +18,14 @@ import { GlobalThemeOverrides, NConfigProvider } from 'naive-ui';
 import { onMounted } from 'vue';
 
 import { THEME_COLOR } from '@/constant';
-import { useCheckUpdate } from '@/hooks/use-checkUpdate';
+import { useBuildInfo } from '@/hooks/use-common';
 import { loginMessage } from '@/hooks/use-login';
 import { usePiniaCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
 import { getLastBuildDate, setLastBuildDate } from '@/utils/localStorage/app';
 import { getToken } from '@/utils/localStorage/user';
 
-const { appInfo } = useCheckUpdate();
+const { info } = useBuildInfo();
 const cacheStore = usePiniaCacheStore();
 const userStore = useUserStore();
 
@@ -64,10 +64,10 @@ onMounted(() => {
 
 function handleUpdate() {
   const old = getLastBuildDate();
-  if (appInfo.value.lastBuildDate !== old) {
+  if (info.value.lastBuildDate !== old) {
     localStorage.clear();
   }
-  setLastBuildDate(appInfo.value.lastBuildDate);
+  setLastBuildDate(info.value.lastBuildDate);
 }
 </script>
 

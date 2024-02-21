@@ -2,10 +2,10 @@ import { getRandomString } from 'billd-utils';
 import { ref } from 'vue';
 
 import { useRTCParams } from '@/hooks/use-rtcParams';
-import { WebRTCClass } from '@/network/webRTC';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { WsAnswerType, WsMsgTypeEnum, WsOfferType } from '@/types/websocket';
+import { WebRTCClass } from '@/utils/network/webRTC';
 
 export const useWebRtcMeetingOne = () => {
   const appStore = useAppStore();

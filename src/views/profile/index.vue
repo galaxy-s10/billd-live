@@ -40,7 +40,7 @@ import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchFindUser } from '@/api/user';
-import { IUser } from '@/interface';
+import { IUser } from '@/types/IUser';
 import { getLiveRoomPageUrl } from '@/utils';
 
 const loading = ref(false);

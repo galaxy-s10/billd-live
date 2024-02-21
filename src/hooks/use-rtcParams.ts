@@ -31,6 +31,7 @@ export const useRTCParams = () => {
     {
       label: '5000',
       value: 5000,
+      disabled: true,
     },
     {
       label: '6000',
@@ -132,10 +133,6 @@ export const useRTCParams = () => {
       [MediaTypeEnum.stopwatch]: {
         type: MediaTypeEnum.stopwatch,
         txt: '秒表',
-      },
-      [MediaTypeEnum.metting]: {
-        type: MediaTypeEnum.metting,
-        txt: '会议',
       },
     };
 

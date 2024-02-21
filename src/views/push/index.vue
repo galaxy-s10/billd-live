@@ -530,38 +530,12 @@ watch(
 );
 
 watch(
-  () => appStore.pkStream,
-  (newval) => {
-    console.log('pkStream', newval);
-    if (newval) {
-      addMediaOk({
-        id: getRandomEnglishString(6),
-        openEye: true,
-        audio: 2,
-        video: 1,
-        mediaName: 'pkStream',
-        type: MediaTypeEnum.pk,
-        track: newval.getVideoTracks()[0],
-        trackid: newval.getVideoTracks()[0].id,
-        stream: newval,
-        streamid: newval.id,
-        hidden: false,
-        muted: false,
-        scaleInfo: {},
-      });
-    }
-  }
-);
-
-watch(
   () => networkStore.rtcMap,
   (newVal) => {
-    console.log('rtcMap变了');
     newVal.forEach((item) => {
       if (appStore.allTrack.find((v) => v.mediaName === item.receiver)) {
         return;
       }
-      console.log('addMediaOkaddMediaOk', item.receiver);
       addMediaOk({
         id: getRandomEnglishString(6),
         openEye: true,
@@ -663,7 +637,7 @@ async function uploadChange() {
   }
 }
 
-function handleAllType() {
+function handleMediaRecorderAllType() {
   const types = [
     'video/webm',
     'audio/webm',
@@ -746,6 +720,7 @@ onMounted(() => {
   setTimeout(() => {
     scrollTo(0, 0);
   }, 100);
+  handleMediaRecorderAllType();
   initUserMedia();
   initCanvas();
   handleCache();
@@ -2082,12 +2057,10 @@ function editMediaOk(val: AppRootState['allTrack'][0]) {
         }
       }
       if (val.openEye) {
-        console.log('显示的');
         if (item.canvasDom) {
           item.canvasDom.opacity = 1;
         }
       } else {
-        console.log('bu显示的');
         if (item.canvasDom) {
           item.canvasDom.opacity = 0;
         }

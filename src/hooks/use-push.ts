@@ -7,7 +7,6 @@ import {
   fetchUserHasLiveRoom,
 } from '@/api/userLiveRoom';
 import { DanmuMsgTypeEnum, WsMessageMsgIsFileEnum } from '@/interface';
-import { handleMaxFramerate } from '@/network/webRTC';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
@@ -19,6 +18,7 @@ import {
   WsRoomNoLiveType,
 } from '@/types/websocket';
 import { createVideo, generateBase64 } from '@/utils';
+import { handleMaxFramerate } from '@/utils/network/webRTC';
 
 import { commentAuthTip, loginTip } from './use-login';
 import { useTip } from './use-tip';
@@ -41,7 +41,6 @@ export function usePush() {
 
   const {
     roomLiving,
-    isPull,
     initWs,
     handleStartLive,
     handleSendGetLiveUser,
@@ -54,8 +53,6 @@ export function usePush() {
     currentMaxBitrate,
     currentResolutionRatio,
   } = useWebsocket();
-
-  isPull.value = false;
 
   onMounted(() => {
     if (!loginTip()) return;
@@ -90,7 +87,6 @@ export function usePush() {
       });
       console.log('新的allTrack音频轨', mixedStream.getAudioTracks());
       console.log('新的allTrack视频轨', mixedStream.getVideoTracks());
-      // localStream.value = mixedStream;
     },
     { deep: true }
   );

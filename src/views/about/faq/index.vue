@@ -159,6 +159,8 @@ import { AUTHOR_GITHUB, COMMON_URL } from '@/constant';
   }
   .aside {
     padding-left: 90px;
+    width: 150px;
+
     .title {
       color: rgb(33, 53, 71);
       font-weight: 700;

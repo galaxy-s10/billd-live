@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 
-import { WebRTCClass } from '@/network/webRTC';
-import { WebSocketClass } from '@/network/webSocket';
+import { WebRTCClass } from '@/utils/network/webRTC';
+import { WebSocketClass } from '@/utils/network/webSocket';
 
 type NetworkRootState = {
   wsMap: Map<string, WebSocketClass>;
