@@ -6,7 +6,7 @@ import { mobileRouterName } from '@/router';
 import { ILiveRoom } from '@/types/ILiveRoom';
 
 export type AppRootState = {
-  play: boolean;
+  playing: boolean;
   videoRatio: number;
   normalVolume: number;
   navList: { routeName: string; name: string }[];
@@ -47,7 +47,7 @@ export type AppRootState = {
 export const useAppStore = defineStore('app', {
   state: (): AppRootState => {
     return {
-      play: true,
+      playing: true,
       videoRatio: 16 / 9,
       normalVolume: 70,
       navList: [
@@ -69,9 +69,6 @@ export const useAppStore = defineStore('app', {
     },
     setLiveLine(res: AppRootState['liveLine']) {
       this.liveLine = res;
-    },
-    setPlay(res: AppRootState['play']) {
-      this.play = res;
     },
     setAllTrack(res: AppRootState['allTrack']) {
       this.allTrack = res;

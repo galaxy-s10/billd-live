@@ -6,7 +6,7 @@
         @click="changePlay"
       >
         <n-icon size="25">
-          <Pause v-if="appStore.play"></Pause>
+          <Pause v-if="appStore.playing"></Pause>
           <Play v-else></Play>
         </n-icon>
       </div>
@@ -152,19 +152,16 @@ function changeVolume(v) {
   cacheStore.setVolume(v);
 }
 function changePlay() {
-  appStore.setPlay(!appStore.play);
+  appStore.playing = !appStore.playing;
 }
 
-function changeLiveLine(item) {
+function changeLiveLine(item: LiveLineEnum) {
   if (
-    item === LiveLineEnum.rtc &&
-    appStore.liveRoomInfo?.type !== LiveRoomTypeEnum.wertc_live
-  ) {
-    window.$message.info('不支持该线路！');
-    return;
-  }
-  if (
-    appStore.liveRoomInfo?.type === LiveRoomTypeEnum.wertc_live &&
+    [
+      LiveRoomTypeEnum.wertc_live,
+      LiveRoomTypeEnum.wertc_meeting_one,
+      LiveRoomTypeEnum.wertc_meeting_two,
+    ].includes(appStore.liveRoomInfo?.type!) &&
     item !== LiveLineEnum.rtc
   ) {
     window.$message.info('不支持该线路！');

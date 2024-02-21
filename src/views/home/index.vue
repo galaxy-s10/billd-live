@@ -45,7 +45,13 @@
           @click="showJoinBtn = !showJoinBtn"
         >
           <div
-            v-if="currentLiveRoom?.live_room?.cdn === LiveRoomUseCDNEnum.yes"
+            v-if="
+              currentLiveRoom?.live_room?.cdn === LiveRoomUseCDNEnum.yes ||
+              [
+                LiveRoomTypeEnum.tencent_css,
+                LiveRoomTypeEnum.tencent_css_pk,
+              ].includes(currentLiveRoom?.live_room?.type!)
+            "
             class="cdn-ico"
           >
             <div class="txt">CDN</div>
@@ -112,7 +118,13 @@
               <div class="hidden">
                 <div
                   class="cdn-ico"
-                  v-if="item?.live_room?.cdn === LiveRoomUseCDNEnum.yes"
+                  v-if="
+                    item?.live_room?.cdn === LiveRoomUseCDNEnum.yes ||
+                    [
+                      LiveRoomTypeEnum.tencent_css,
+                      LiveRoomTypeEnum.tencent_css_pk,
+                    ].includes(item.live_room?.type!)
+                  "
                 >
                   <div class="txt">CDN</div>
                 </div>
@@ -169,7 +181,13 @@
                 "
               ></PullAuthTip>
               <div
-                v-if="iten?.live_room?.cdn === LiveRoomUseCDNEnum.yes"
+                v-if="
+                  iten?.live_room?.cdn === LiveRoomUseCDNEnum.yes ||
+                  [
+                    LiveRoomTypeEnum.tencent_css,
+                    LiveRoomTypeEnum.tencent_css_pk,
+                  ].includes(iten.live_room?.type!)
+                "
                 class="cdn-ico"
               >
                 <div class="txt">CDN</div>
@@ -310,10 +328,16 @@ function playLive(item: ILive) {
 
 function changeLiveRoom(item: ILive) {
   if (item.id === currentLiveRoom.value?.id) return;
-  if (item.live_room?.type !== LiveRoomTypeEnum.wertc_live) {
+  if (
+    ![
+      LiveRoomTypeEnum.wertc_live,
+      LiveRoomTypeEnum.wertc_meeting_one,
+      LiveRoomTypeEnum.wertc_meeting_two,
+    ].includes(item.live_room?.type!)
+  ) {
     appStore.setLiveLine(LiveLineEnum.hls);
   }
-  appStore.setPlay(true);
+  appStore.playing = true;
   playLive(item);
 }
 

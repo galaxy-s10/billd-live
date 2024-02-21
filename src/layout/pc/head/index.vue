@@ -277,10 +277,18 @@
               >
                 <div class="txt">{{ t('layout.pkLive') }}</div>
               </a>
-              <a class="item">
+              <a
+                class="item"
+                @click.prevent="handleStartLive(LiveRoomTypeEnum.tencent_css)"
+              >
                 <div class="txt">{{ t('layout.tencentCssLive') }}</div>
               </a>
-              <a class="item">
+              <a
+                class="item"
+                @click.prevent="
+                  handleStartLive(LiveRoomTypeEnum.tencent_css_pk)
+                "
+              >
                 <div class="txt">{{ t('layout.tencentCssPkLive') }}</div>
               </a>
               <div class="tip">

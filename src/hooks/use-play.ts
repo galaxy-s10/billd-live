@@ -111,14 +111,16 @@ export function useFlvPlay() {
       setMuted(newVal);
     }
   );
+
   watch(
     () => cacheStore.volume,
     (newVal) => {
       setVolume(newVal);
     }
   );
+
   watch(
-    () => appStore.play,
+    () => appStore.playing,
     (newVal) => {
       setPlay(newVal);
     }
@@ -250,14 +252,16 @@ export function useHlsPlay() {
       setMuted(newVal);
     }
   );
+
   watch(
     () => cacheStore.volume,
     (newVal) => {
       setVolume(newVal);
     }
   );
+
   watch(
-    () => appStore.play,
+    () => appStore.playing,
     (newVal) => {
       setPlay(newVal);
     }

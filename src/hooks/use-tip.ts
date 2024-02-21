@@ -16,6 +16,8 @@ export function useTip(data: {
   content: string | VNode;
   hiddenCancel?: boolean;
   hiddenClose?: boolean;
+  confirmButtonText?: string;
+  cancelButtonText?: string;
 }) {
   instance.show = true;
   instance.title = data.title || '提示';
@@ -23,6 +25,8 @@ export function useTip(data: {
   instance.content = data.content;
   instance.hiddenCancel = !!data.hiddenCancel;
   instance.hiddenClose = !!data.hiddenClose;
+  instance.confirmButtonText = data.confirmButtonText || '确认';
+  instance.cancelButtonText = data.cancelButtonText || '取消';
   return new Promise((resolve, reject) => {
     instance.handleOk = () => {
       instance.show = false;

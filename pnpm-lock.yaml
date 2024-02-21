@@ -8,6 +8,9 @@ dependencies:
   '@vicons/ionicons5':
     specifier: ^0.12.0
     version: 0.12.0
+  '@webav/av-recorder':
+    specifier: ^0.3.3
+    version: 0.3.3
   axios:
     specifier: ^1.2.1
     version: 1.3.4
@@ -32,6 +35,9 @@ dependencies:
   js-cookie:
     specifier: ^3.0.5
     version: 3.0.5
+  mp4box:
+    specifier: ^0.5.2
+    version: 0.5.2
   mpegts.js:
     specifier: ^1.7.3
     version: 1.7.3
@@ -2701,6 +2707,16 @@ packages:
     dependencies:
       '@types/node': 18.15.3
 
+  /@types/dom-mediacapture-transform@0.1.9:
+    resolution: {integrity: sha512-/K96dASG23bqF+VAftybbI5SUj9qSsdsSKZglm7Bq/sIaEve5z8I+GdClARcSQMAAVkH7bc83UI1jiH/qc5LMw==}
+    dependencies:
+      '@types/dom-webcodecs': 0.1.11
+    dev: false
+
+  /@types/dom-webcodecs@0.1.11:
+    resolution: {integrity: sha512-yPEZ3z7EohrmOxbk/QTAa0yonMFkNkjnVXqbGb7D4rMr+F1dGQ8ZUFxXkyLLJuiICPejZ0AZE9Rrk9wUCczx4A==}
+    dev: false
+
   /@types/eslint-scope@3.7.4:
     resolution: {integrity: sha512-9K4zoImiZc3HlIp6AVUDE4CWYx22a+lhSZMYNpbjW04+YF0KWj4pJXnEMjdnFTiQibFFmElcsasJXDbdI/EPhA==}
     dependencies:
@@ -2834,6 +2850,10 @@ packages:
   /@types/video.js@7.3.52:
     resolution: {integrity: sha512-WFj/HkNVCfkchXDeDU0QbimC356FB5vva3g5mgsjk8n3UMKqP9S522rQAmu9LGPiCmShZRPuAlkXmbp5WId6ow==}
     dev: true
+
+  /@types/wicg-file-system-access@2020.9.8:
+    resolution: {integrity: sha512-ggMz8nOygG7d/stpH40WVaNvBwuyYLnrg5Mbyf6bmsj/8+gb6Ei4ZZ9/4PNpcPNTT8th9Q8sM8wYmWGjMWLX/A==}
+    dev: false
 
   /@types/ws@8.5.4:
     resolution: {integrity: sha512-zdQDHKUgcX/zBc4GrwsE/7dVdAD8JR4EuiAXiiUhhfyIJXXb2+PrGshFyeXWQPMmmZ2XxgaqclgpIC7eTXc1mg==}
@@ -3229,6 +3249,30 @@ packages:
     dependencies:
       '@webassemblyjs/ast': 1.11.1
       '@xtuc/long': 4.2.2
+
+  /@webav/av-cliper@0.3.3:
+    resolution: {integrity: sha512-VUIaxlfZHsJLc875eL+rGaWTavVLRqkgaVa6R8XIpdjmWJxnD7Le55mViL1SxRILKtsi0KnqWfWDL2JzNAcwOw==}
+    dependencies:
+      '@types/dom-webcodecs': 0.1.11
+      '@webav/mp4box.js': 0.5.3-fenghen
+      opfs-tools: 0.1.1
+      wave-resampler: 1.0.0
+    dev: false
+
+  /@webav/av-recorder@0.3.3:
+    resolution: {integrity: sha512-nMA6MT8hqEYq9yjIQeTo+Ee5CNw/9zXzvbksFCsWH8+VPTKoKFlDIqbgSLMpYjOgkkT7a9RY5IpCxU9Aq7Wdkw==}
+    dependencies:
+      '@types/dom-mediacapture-transform': 0.1.9
+      '@types/dom-webcodecs': 0.1.11
+      '@types/wicg-file-system-access': 2020.9.8
+      '@webav/av-cliper': 0.3.3
+      '@webav/mp4box.js': 0.5.3-fenghen
+      fix-webm-duration: 1.0.5
+    dev: false
+
+  /@webav/mp4box.js@0.5.3-fenghen:
+    resolution: {integrity: sha512-jAN15I3Po1Z6Ns02iknb6KGbird9rd1h9TGldzbwsar+88ZlHd+oVjOQnFavBdNDc5vmULUnldcWGDdKc02npw==}
+    dev: false
 
   /@webpack-cli/configtest@1.2.0(webpack-cli@4.10.0)(webpack@5.76.2):
     resolution: {integrity: sha512-4FB8Tj6xyVkyqjj1OaTqCjXYULB9FMkqQ8yGrZjRDrYh0nOE+7Lhs45WioWQQMV+ceFlE368Ukhe6xdvJM9Egg==}
@@ -6475,6 +6519,10 @@ packages:
       resolve-dir: 1.0.1
     dev: true
 
+  /fix-webm-duration@1.0.5:
+    resolution: {integrity: sha512-b6oula3OfSknx0aWoLsxvp4DVIYbwsf+UAkr6EDAK3iuMYk/OSNKzmeSI61GXK0MmFTEuzle19BPvTxMIKjkZg==}
+    dev: false
+
   /flat-cache@3.0.4:
     resolution: {integrity: sha512-dm9s5Pw7Jc0GvMYbshN6zchCA9RgQlzzEZX3vylR9IqFfS8XciblUXOKfW6SiuJ0e13eDYZoZV5wdrev7P3Nwg==}
     engines: {node: ^10.12.0 || >=12.0.0}
@@ -8353,6 +8401,10 @@ packages:
       path-exists: 5.0.0
     dev: true
 
+  /mp4box@0.5.2:
+    resolution: {integrity: sha512-zRmGlvxy+YdW3Dmt+TR4xPHynbxwXtAQDTN/Fo9N3LMxaUlB2C5KmZpzYyGKy4c7k4Jf3RCR0A2pm9SZELOLXw==}
+    dev: false
+
   /mpd-parser@1.1.1:
     resolution: {integrity: sha512-uZ/db5wQdlQn1L+OD49YXBhPI9UGeK1SeQE4D5EoaJIhf0WM9X3HDj8d+9PjoG06CgCvGZw3YW/wsHku+CH3yA==}
     hasBin: true
@@ -8731,6 +8783,10 @@ packages:
   /opener@1.5.2:
     resolution: {integrity: sha512-ur5UIdyw5Y7yEj9wLzhqXiy6GZ3Mwx0yGI+5sMn2r0N0v3cKJvUmFH5yPP+WXh9e0xfyzyJX95D8l088DNFj7A==}
     hasBin: true
+
+  /opfs-tools@0.1.1:
+    resolution: {integrity: sha512-F+UroKcPfU2/ZzT/4/hONIEbdFHkD/oWwpzH3rkaz+EiDm0W6b2vqNAp1LrWClGrERZ19X3ceRixYL0ZdXcpjA==}
+    dev: false
 
   /optionator@0.9.1:
     resolution: {integrity: sha512-74RlY5FCnhq4jRxVUPKDaRwrVNXMqsGsiW6AJw4XK8hmtm10wC0ypZBLw5IIp85NZMr91+qd1RvvENwg7jjRFw==}
@@ -11892,6 +11948,11 @@ packages:
     dependencies:
       glob-to-regexp: 0.4.1
       graceful-fs: 4.2.11
+
+  /wave-resampler@1.0.0:
+    resolution: {integrity: sha512-bE3rbpZXuKAV52Cd8/BeJvy82ZqEHK8pPWHrZ9JioaVVTBlmWbDC+u4p9blhFcf0Skepb4hlOAHc25XfqLC48g==}
+    engines: {node: '>=8'}
+    dev: false
 
   /wbuf@1.7.3:
     resolution: {integrity: sha512-O84QOnr0icsbFGLS0O3bI5FswxzRr8/gHwWkDlQFskhSPryQXvrTMxjxGP4+iWYoauLoBvfDpkrOauZ+0iZpDA==}

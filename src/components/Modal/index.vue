@@ -86,7 +86,7 @@ const emits = defineEmits(['close']);
       @include cross(#ccc, 3px);
     }
     .content {
-      margin: 20px 0;
+      margin: 15px 0;
     }
     .footer {
       .btn {

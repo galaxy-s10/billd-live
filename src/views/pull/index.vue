@@ -109,8 +109,8 @@
         </div>
       </div>
       <div
-        ref="containerRef"
-        class="container"
+        class="video-wrap"
+        v-loading="videoLoading"
       >
         <div
           class="no-live"
@@ -119,28 +119,22 @@
           主播还没开播~
         </div>
         <div
-          v-else
-          v-loading="videoLoading"
-          class="video-wrap"
-        >
-          <div
-            class="cover"
-            :style="{
-              backgroundImage: `url(${
-                appStore.liveRoomInfo?.cover_img || anchorInfo?.avatar
-              })`,
-            }"
-          ></div>
-          <div
-            ref="remoteVideoRef"
-            class="media-list"
-          ></div>
-          <VideoControls
-            :resolution="videoHeight"
-            @refresh="handleRefresh"
-            @full-screen="handleFullScreen"
-          ></VideoControls>
-        </div>
+          class="cover"
+          :style="{
+            backgroundImage: `url(${
+              appStore.liveRoomInfo?.cover_img || anchorInfo?.avatar
+            })`,
+          }"
+        ></div>
+        <div
+          class="video-list"
+          ref="remoteVideoRef"
+        ></div>
+        <VideoControls
+          :resolution="videoHeight"
+          @refresh="handleRefresh"
+          @full-screen="handleFullScreen"
+        ></VideoControls>
       </div>
 
       <div
@@ -440,14 +434,8 @@ import router, { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
-import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import { WsDisableSpeakingType, WsMsgTypeEnum } from '@/types/websocket';
-import {
-  formatMoney,
-  formatTimeHour,
-  handleUserMedia,
-  videoFullBox,
-} from '@/utils';
+import { formatMoney, formatTimeHour, handleUserMedia } from '@/utils';
 import { NODE_ENV } from 'script/constant';
 
 import RechargeCpt from './recharge/index.vue';
@@ -473,7 +461,6 @@ const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
 const danmuListRef = ref<HTMLDivElement>();
 const remoteVideoRef = ref<HTMLDivElement>();
-const containerRef = ref<HTMLDivElement>();
 const uploadRef = ref<HTMLInputElement>();
 const danmuIptRef = ref<HTMLTextAreaElement>();
 const {
@@ -499,14 +486,14 @@ const {
 } = usePull(roomId.value);
 
 onMounted(() => {
-  videoWrapRef.value = containerRef.value;
+  videoWrapRef.value = remoteVideoRef.value;
   setTimeout(() => {
     scrollTo(0, 0);
   }, 100);
   handleHistoryMsg();
-  appStore.setPlay(true);
+  appStore.playing = true;
   getGoodsList();
-  if (topRef.value && bottomRef.value && containerRef.value) {
+  if (topRef.value && bottomRef.value && remoteVideoRef.value) {
     const res =
       bottomRef.value.getBoundingClientRect().top -
       (topRef.value.getBoundingClientRect().top +
@@ -612,58 +599,6 @@ async function handlePk() {
     });
   }
 }
-
-watch(
-  () => networkStore.rtcMap,
-  (newVal) => {
-    if (newVal.size) {
-      roomLiving.value = true;
-      videoLoading.value = false;
-    }
-    if (
-      appStore.liveRoomInfo?.type === LiveRoomTypeEnum.wertc_meeting_one ||
-      appStore.liveRoomInfo?.type === LiveRoomTypeEnum.wertc_live ||
-      appStore.liveRoomInfo?.type === LiveRoomTypeEnum.pk
-    ) {
-      newVal.forEach((item) => {
-        if (appStore.allTrack.find((v) => v.mediaName === item.receiver)) {
-          return;
-        }
-        const rect = videoWrapRef.value?.getBoundingClientRect();
-        if (rect) {
-          videoFullBox({
-            wrapSize: {
-              width: rect.width,
-              height: rect.height,
-            },
-            videoEl: item.videoEl,
-            videoResize: ({ w, h }) => {
-              videoHeight.value = `${w}x${h}`;
-            },
-          });
-          remoteVideoRef.value?.appendChild(item.videoEl);
-        }
-      });
-    }
-  },
-  {
-    deep: true,
-    immediate: true,
-  }
-);
-
-watch(
-  () => remoteVideo.value,
-  (newval) => {
-    newval.forEach((videoEl) => {
-      remoteVideoRef.value?.appendChild(videoEl);
-    });
-  },
-  {
-    deep: true,
-    immediate: true,
-  }
-);
 
 watch(
   () => damuList.value.length,
@@ -1035,13 +970,53 @@ function handleScrollTop() {
         }
       }
     }
-    .container {
+    .video-wrap {
+      position: relative;
       display: flex;
+      overflow: hidden;
       align-items: center;
+      flex: 1;
       justify-content: space-between;
       height: 562px;
       background-color: rgba($color: #000000, $alpha: 0.5);
+      .video-list {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        :deep(video) {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          display: block;
+          margin: 0 auto;
+          // min-width: 100%;
+          // min-height: 100%;
+          max-width: $w-1000;
+          max-height: 562px;
+          transform: translate(-50%, -50%);
+        }
+        :deep(canvas) {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          display: block;
+          margin: 0 auto;
+          // min-width: 100%;
+          // min-height: 100%;
+          max-width: $w-1000;
+          max-height: 562px;
+          transform: translate(-50%, -50%);
+        }
+      }
 
+      .cover {
+        position: absolute;
+        background-position: center center;
+        background-size: cover;
+        filter: blur(10px);
+
+        inset: 0;
+      }
       .no-live {
         position: absolute;
         top: 50%;
@@ -1050,85 +1025,6 @@ function handleScrollTop() {
         color: white;
         font-size: 28px;
         transform: translate(-50%, -50%);
-      }
-      .video-wrap {
-        position: relative;
-        overflow: hidden;
-        flex: 1;
-        height: 100%;
-
-        .cover {
-          position: absolute;
-          background-position: center center;
-          background-size: cover;
-          filter: blur(10px);
-
-          inset: 0;
-        }
-        .videoControls {
-          position: relative;
-          z-index: 20;
-        }
-        .media-list {
-          position: relative;
-          height: 562px;
-          :deep(video) {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            display: block;
-            margin: 0 auto;
-            // min-width: 100%;
-            // min-height: 100%;
-            max-width: $w-1000;
-            max-height: 562px;
-            transform: translate(-50%, -50%);
-          }
-          :deep(canvas) {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            display: block;
-            margin: 0 auto;
-            // min-width: 100%;
-            // min-height: 100%;
-            max-width: $w-1000;
-            max-height: 562px;
-            transform: translate(-50%, -50%);
-          }
-          // &.item {
-          //   :deep(video) {
-          //     width: 50%;
-          //     height: initial !important;
-          //   }
-          //   :deep(canvas) {
-          //     width: 50%;
-          //     height: initial !important;
-          //   }
-          // }
-        }
-
-        .controls {
-          display: none;
-        }
-        .tip-btn {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          z-index: 1;
-          align-items: center;
-          padding: 12px 26px;
-          border: 2px solid rgba($color: $theme-color-gold, $alpha: 0.5);
-          border-radius: 6px;
-          background-color: rgba(0, 0, 0, 0.3);
-          color: $theme-color-gold;
-          cursor: pointer;
-          transform: translate(-50%, -50%);
-          &:hover {
-            background-color: rgba($color: $theme-color-gold, $alpha: 0.5);
-            color: white;
-          }
-        }
       }
     }
 
@@ -1157,9 +1053,9 @@ function handleScrollTop() {
 
         .ico {
           position: relative;
+          margin-top: 12px;
           width: 40px;
           height: 40px;
-          margin-top: 12px;
           background-position: center center;
           background-size: cover;
           background-repeat: no-repeat;

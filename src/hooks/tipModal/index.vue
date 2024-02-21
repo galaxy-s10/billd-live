@@ -19,13 +19,13 @@
             class="btn return"
             @click="handleCancel()"
           >
-            取消
+            {{ cancelButtonText }}
           </div>
           <div
             :class="{ btn: 1, next: 1, hiddenCancel }"
             @click="handleOk()"
           >
-            确认
+            {{ confirmButtonText }}
           </div>
         </div>
       </template>
@@ -40,7 +40,9 @@ export default defineComponent({
   name: 'tipModal',
   emits: ['ok', 'cancel'],
   setup() {
-    const title = ref('');
+    const title = ref('提示');
+    const cancelButtonText = ref('取消');
+    const confirmButtonText = ref('确认');
     const width = ref('320px');
     const content = ref<string | VNode>('');
     const show = ref(false);
@@ -71,6 +73,8 @@ export default defineComponent({
       domRef,
       handleCancel,
       handleOk,
+      confirmButtonText,
+      cancelButtonText,
     };
   },
 });

@@ -1,19 +1,59 @@
-import { ref } from 'vue';
+import { getLastBuildDate } from '@/utils/localStorage/app';
+import { windowReload } from 'billd-utils';
 
-import { BilldHtmlWebpackPluginLog } from '@/interface';
+import { useTip } from './use-tip';
 
 export const useCheckUpdate = () => {
-  const appInfo = ref<BilldHtmlWebpackPluginLog>(
-    // @ts-ignore
-    process.env.BilldHtmlWebpackPlugin as BilldHtmlWebpackPluginLog
-  );
-  return { appInfo };
-};
+  function handleHtmlCheckUpdate(data: {
+    htmlUrl: string;
+    lastBuildDate: string;
+  }) {
+    return new Promise<{ shouldTip: boolean }>((resolve) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', data.htmlUrl, true);
+      xhr.onreadystatechange = function () {
+        try {
+          if (this.readyState !== 4) return;
+          if (this.status !== 200) return; // or whatever error handling you want
+          const reg = /\('最后构建日期:', "(.+)"\)/;
+          const res = reg.exec(this.responseText);
+          if (res?.[1] !== data.lastBuildDate) {
+            resolve({ shouldTip: true });
+            console.log('提示更新');
+            useTip({
+              content: '发现新内容可用，是否刷新页面？',
+              confirmButtonText: '刷新',
+            })
+              .then(() => {
+                windowReload();
+              })
+              .catch(() => {});
+          } else {
+            resolve({ shouldTip: false });
+            console.log('不提示更新');
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      };
+      xhr.send();
+    });
+  }
 
-export const useBuildInfo = () => {
-  const info = ref<BilldHtmlWebpackPluginLog>(
-    // @ts-ignore
-    process.env.BilldHtmlWebpackPlugin as BilldHtmlWebpackPluginLog
-  );
-  return { info };
+  function checkUpdate(data: { htmlUrl: string }) {
+    setInterval(
+      async () => {
+        const lastBuildDate = getLastBuildDate();
+        if (lastBuildDate) {
+          const res = await handleHtmlCheckUpdate({
+            htmlUrl: data.htmlUrl,
+            lastBuildDate,
+          });
+          return res;
+        }
+      },
+      1000 * 60 * 5
+    );
+  }
+  return { checkUpdate };
 };

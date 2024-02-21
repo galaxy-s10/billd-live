@@ -8,6 +8,34 @@
         ref="containerRef"
         class="container"
       >
+        <div
+          class="recording"
+          v-if="recording"
+        >
+          <span class="dot"></span>
+          <span>REC {{ recordVideoTime }}</span>
+        </div>
+        <div
+          class="record-ico"
+          @click="handleRecordVideo"
+        >
+          <n-popover
+            placement="top"
+            trigger="hover"
+            :flip="false"
+          >
+            <template #trigger>
+              <n-icon
+                size="26"
+                :color="recording ? 'red' : '#3f7ee8'"
+              >
+                <Videocam v-if="!recording"></Videocam>
+                <VideocamOffSharp v-else></VideocamOffSharp>
+              </n-icon>
+            </template>
+            <div class="slider">{{ !recording ? '开始录制' : '结束录制' }}</div>
+          </n-popover>
+        </div>
         <canvas
           id="pushCanvasRef"
           ref="pushCanvasRef"
@@ -378,9 +406,12 @@ import {
   CreateOutline,
   EyeOffOutline,
   EyeOutline,
+  Videocam,
+  VideocamOffSharp,
   VolumeHighOutline,
   VolumeMuteOutline,
 } from '@vicons/ionicons5';
+import { AVRecorder } from '@webav/av-recorder';
 import { fabric } from 'fabric';
 import {
   Raw,
@@ -462,6 +493,7 @@ const {
 
 const currentMediaType = ref(MediaTypeEnum.camera);
 const currentMediaData = ref<AppRootState['allTrack'][0]>();
+const recording = ref(false);
 const showOpenMicophoneTipCpt = ref(false);
 const showSelectMediaModalCpt = ref(false);
 const showMediaModalCpt = ref(false);
@@ -475,7 +507,6 @@ const pushCanvasRef = ref<HTMLCanvasElement>();
 const webaudioVideo = ref<HTMLVideoElement>();
 const fabricCanvas = ref<fabric.Canvas>();
 const startTime = ref(+new Date());
-// const startTime = ref(1692807352565); // 1693027352565
 const msgLoading = ref(false);
 const uploadRef = ref<HTMLInputElement>();
 const nullAudioStream = ref<MediaStream>();
@@ -483,7 +514,6 @@ const showEmoji = ref(false);
 const worker = ref<Worker>();
 const workerTimerId = ref();
 const workerMsrTimerId = ref();
-
 const timeCanvasDom = ref<Raw<fabric.Text>[]>([]);
 const stopwatchCanvasDom = ref<Raw<fabric.Text>[]>([]);
 const wrapSize = reactive({
@@ -496,6 +526,10 @@ const recorder = ref<MediaRecorder>();
 const bolbId = ref(0);
 const msrDelay = ref(1000 * 1);
 const msrMaxDelay = ref(1000 * 5);
+const suggestedName = ref('');
+const recordVideoTimer = ref();
+const recordVideoTime = ref('');
+let avRecorder: AVRecorder | null = null;
 
 watch(
   () => roomLiving.value,
@@ -539,7 +573,7 @@ watch(
       addMediaOk({
         id: getRandomEnglishString(6),
         openEye: true,
-        audio: 2,
+        audio: 1,
         video: 1,
         mediaName: item.receiver,
         type: MediaTypeEnum.metting,
@@ -638,23 +672,23 @@ async function uploadChange() {
 }
 
 function handleMediaRecorderAllType() {
-  const types = [
-    'video/webm',
-    'audio/webm',
-    'video/mpeg',
-    'video/webm;codecs=vp8',
-    'video/webm;codecs=vp9',
-    'video/webm;codecs=daala',
-    'video/webm;codecs=h264',
-    'audio/webm;codecs=opus',
-    'audio/webm;codecs=aac',
-    'audio/webm;codecs=h264,opus',
-    'video/webm;codecs=avc1.64001f,opus',
-    'video/webm;codecs=avc1.4d002a,opus',
-  ];
-  Object.keys(types).forEach((item) => {
-    console.log(types[item], MediaRecorder.isTypeSupported(types[item]));
-  });
+  // const types = [
+  //   'video/webm',
+  //   'audio/webm',
+  //   'video/mpeg',
+  //   'video/webm;codecs=vp8',
+  //   'video/webm;codecs=vp9',
+  //   'video/webm;codecs=daala',
+  //   'video/webm;codecs=h264',
+  //   'audio/webm;codecs=opus',
+  //   'audio/webm;codecs=aac',
+  //   'audio/webm;codecs=h264,opus',
+  //   'video/webm;codecs=avc1.64001f,opus',
+  //   'video/webm;codecs=avc1.4d002a,opus',
+  // ];
+  // Object.keys(types).forEach((item) => {
+  //   console.log(types[item], MediaRecorder.isTypeSupported(types[item]));
+  // });
 }
 
 function handleMsr(stream: MediaStream) {
@@ -727,6 +761,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  clearInterval(recordVideoTimer.value);
   recorder.value?.stop();
   bodyAppendChildElArr.value.forEach((el) => {
     el.remove();
@@ -901,6 +936,37 @@ function handleEndLive() {
   endLive();
 }
 
+async function handleRecordVideo() {
+  if (!window.VideoDecoder || !window.AudioEncoder) {
+    window.$message.warning(`当前环境不支持录制视频`);
+    return;
+  }
+  recording.value = !recording.value;
+  if (recording.value) {
+    const startTime = +new Date();
+    recordVideoTimer.value = setInterval(() => {
+      recordVideoTime.value = formatDownTime({
+        endTime: +new Date(),
+        startTime,
+      });
+    }, 1000);
+
+    avRecorder = new AVRecorder(canvasVideoStream.value!, {});
+    await avRecorder.start();
+    suggestedName.value = `billd直播录制-${+new Date()}.mp4`;
+    const fileHandle = await window.showSaveFilePicker({
+      suggestedName: suggestedName.value,
+    });
+    const writer = await fileHandle.createWritable();
+    avRecorder.outputStream?.pipeTo(writer).catch(console.error);
+  } else {
+    clearInterval(recordVideoTimer.value);
+    recordVideoTime.value = '';
+    await avRecorder?.stop();
+    window.$message.success(`录制文件: ${suggestedName.value} 已保存到本地`);
+  }
+}
+
 function handleStartLive() {
   if (!appStore.allTrack.length) {
     window.$message.warning('至少选择一个素材');
@@ -973,16 +1039,26 @@ function autoCreateVideo({
         videoEl.width = width;
         videoEl.height = height;
         if (canvasDom) {
+          const old = appStore.allTrack.find((item) => item.id === id);
           fabricCanvas.value?.remove(canvasDom);
+          canvasDom = markRaw(
+            new fabric.Image(videoEl, {
+              top: (old?.rect?.top || 0) / window.devicePixelRatio,
+              left: (old?.rect?.left || 0) / window.devicePixelRatio,
+              width,
+              height,
+            })
+          );
+        } else {
+          canvasDom = markRaw(
+            new fabric.Image(videoEl, {
+              top: rect?.top || 0,
+              left: rect?.left || 0,
+              width,
+              height,
+            })
+          );
         }
-        canvasDom = markRaw(
-          new fabric.Image(videoEl, {
-            top: rect?.top || 0,
-            left: rect?.left || 0,
-            width,
-            height,
-          })
-        );
         appStore.allTrack.forEach((item) => {
           if (item.id === id) {
             if (item.canvasDom) {
@@ -1700,22 +1776,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
   } else if (val.type === MediaTypeEnum.metting) {
     const event = val.stream;
     if (!event) return;
-    const videoTrack: AppRootState['allTrack'][0] = {
-      id: getRandomEnglishString(6),
-      openEye: true,
-      deviceId: val.deviceId,
-      audio: 2,
-      video: 1,
-      mediaName: val.mediaName,
-      type: MediaTypeEnum.metting,
-      track: event.getVideoTracks()[0],
-      trackid: event.getVideoTracks()[0].id,
-      stream: event,
-      streamid: event.id,
-      hidden: false,
-      muted: false,
-      scaleInfo: {},
-    };
+    const videoTrack = val;
     const { canvasDom, videoEl, scale } = await autoCreateVideo({
       stream: event,
       id: videoTrack.id,
@@ -2168,7 +2229,6 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
   .left {
     position: relative;
     display: inline-block;
-    overflow: hidden;
     box-sizing: border-box;
     width: $w-960;
     height: 100%;
@@ -2179,10 +2239,35 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
 
     .container {
       position: relative;
-      overflow: hidden;
       height: 100%;
       background-color: rgba($color: #000000, $alpha: 0.5);
       line-height: 0;
+      .recording {
+        position: absolute;
+        top: 4px;
+        left: 0;
+        font-size: 12px;
+        color: red;
+        display: flex;
+        align-items: center;
+        z-index: 100;
+        font-weight: bold;
+        line-height: normal;
+        .dot {
+          width: 6px;
+          height: 6px;
+          background-color: red;
+          border-radius: 50%;
+          margin: 0 6px;
+        }
+      }
+      .record-ico {
+        position: absolute;
+        top: 0;
+        left: -10px;
+        transform: translateX(-100%);
+        cursor: pointer;
+      }
 
       .add-wrap {
         position: absolute;

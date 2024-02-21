@@ -6,24 +6,24 @@
       @close="emits('close')"
       :width="'350px'"
     >
-      <n-space justify="center">
-        <n-button
+      <div class="btn-wrap">
+        <div
+          class="btn"
           v-for="(item, index) in allMediaTypeList"
           :key="index"
-          class="item"
-          @click="emits('ok', item.type)"
         >
-          {{ item.txt }}
-        </n-button>
-      </n-space>
+          <n-button @click="emits('ok', item.type)">
+            {{ item.txt }}
+          </n-button>
+        </div>
+      </div>
+
       <template #footer></template>
     </Modal>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted } from 'vue';
-
 import { MediaTypeEnum } from '@/interface';
 
 withDefaults(
@@ -38,16 +38,18 @@ withDefaults(
   {}
 );
 const emits = defineEmits(['close', 'ok']);
-
-onMounted(() => {});
 </script>
 
 <style lang="scss" scoped>
 .select-media-wrap {
-  text-align: initial;
+  .btn-wrap {
+    display: flex;
+    flex-wrap: wrap;
 
-  .container {
-    padding-top: 10px;
+    .btn {
+      margin-right: 12px;
+      margin-bottom: 12px;
+    }
   }
 }
 </style>

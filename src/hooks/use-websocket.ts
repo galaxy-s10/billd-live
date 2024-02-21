@@ -9,7 +9,9 @@ import { useRTCParams } from '@/hooks/use-rtcParams';
 import { useTip } from '@/hooks/use-tip';
 import { useWebRtcLive } from '@/hooks/webrtc/live';
 import { useWebRtcMeetingOne } from '@/hooks/webrtc/meetingOne';
+import { useWebRtcMeetingPk } from '@/hooks/webrtc/meetingPk';
 import { useWebRtcSrs } from '@/hooks/webrtc/srs';
+import { useWebRtcTencentcloudCss } from '@/hooks/webrtc/tencentcloudCss';
 import {
   DanmuMsgTypeEnum,
   ILiveUser,
@@ -47,8 +49,6 @@ import {
   prettierReceiveWsMsg,
 } from '@/utils/network/webSocket';
 
-import { useWebRtcMeetingPk } from './webrtc/meetingPk';
-
 export const useWebsocket = () => {
   const route = useRoute();
   const appStore = useAppStore();
@@ -58,6 +58,8 @@ export const useWebsocket = () => {
   const { maxBitrate, maxFramerate, resolutionRatio } = useRTCParams();
   const { updateWebRtcMeetingPkConfig, webRtcMeetingPk } = useWebRtcMeetingPk();
   const { updateWebRtcSrsConfig, webRtcSrs } = useWebRtcSrs();
+  const { updateWebRtcTencentcloudCssConfig, webRtcTencentcloudCss } =
+    useWebRtcTencentcloudCss();
   const { updateWebRtcLiveConfig, webRtcLive } = useWebRtcLive();
   const { updateWebRtcMeetingOneConfig, webRtcMeetingOne } =
     useWebRtcMeetingOne();
@@ -180,6 +182,21 @@ export const useWebsocket = () => {
         sender: mySocketId.value,
         receiver: 'srs',
       });
+    } else if (type === LiveRoomTypeEnum.tencent_css) {
+      updateWebRtcTencentcloudCssConfig({
+        isPk: false,
+        roomId: roomId.value,
+        canvasVideoStream: canvasVideoStream.value,
+      });
+      webRtcTencentcloudCss.newWebRtc({
+        sender: mySocketId.value,
+        receiver: 'tencentcloud_css',
+        videoEl: createNullVideo(),
+      });
+      webRtcTencentcloudCss.sendOffer({
+        sender: mySocketId.value,
+        receiver: 'tencentcloud_css',
+      });
     } else if (type === LiveRoomTypeEnum.pk) {
       updateWebRtcSrsConfig({
         isPk: true,
@@ -194,6 +211,21 @@ export const useWebsocket = () => {
       webRtcSrs.sendOffer({
         sender: mySocketId.value,
         receiver: 'srs',
+      });
+    } else if (type === LiveRoomTypeEnum.tencent_css_pk) {
+      updateWebRtcTencentcloudCssConfig({
+        isPk: true,
+        roomId: roomId.value,
+        canvasVideoStream: canvasVideoStream.value,
+      });
+      webRtcTencentcloudCss.newWebRtc({
+        sender: mySocketId.value,
+        receiver: 'tencentcloud_css',
+        videoEl: createNullVideo(),
+      });
+      webRtcTencentcloudCss.sendOffer({
+        sender: mySocketId.value,
+        receiver: 'tencentcloud_css',
       });
     }
   }
@@ -300,7 +332,10 @@ export const useWebsocket = () => {
       WsMsgTypeEnum.nativeWebRtcOffer,
       async (data: WsOfferType['data']) => {
         console.log('收到nativeWebRtcOffer', data);
-        if (data.live_room.type === LiveRoomTypeEnum.pk) {
+        if (
+          data.live_room.type === LiveRoomTypeEnum.pk ||
+          data.live_room.type === LiveRoomTypeEnum.tencent_css_pk
+        ) {
           if (!route.query.pkKey) {
             return;
           }
@@ -634,6 +669,27 @@ export const useWebsocket = () => {
             }
           });
         } else if (data.live_room.type === LiveRoomTypeEnum.pk) {
+          updateWebRtcMeetingPkConfig({
+            roomId: roomId.value,
+            anchorStream: canvasVideoStream.value,
+          });
+          data.socket_list?.forEach((item) => {
+            if (item !== mySocketId.value) {
+              if (networkStore.rtcMap.get(item)) {
+                return;
+              }
+              webRtcMeetingPk.newWebRtc({
+                sender: mySocketId.value,
+                receiver: item,
+                videoEl: createNullVideo(),
+              });
+              webRtcMeetingPk.sendOffer({
+                sender: mySocketId.value,
+                receiver: item,
+              });
+            }
+          });
+        } else if (data.live_room.type === LiveRoomTypeEnum.tencent_css_pk) {
           updateWebRtcMeetingPkConfig({
             roomId: roomId.value,
             anchorStream: canvasVideoStream.value,

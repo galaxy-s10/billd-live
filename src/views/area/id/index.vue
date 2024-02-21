@@ -31,7 +31,13 @@
               直播中
             </div>
             <div
-              v-if="iten?.cdn === LiveRoomUseCDNEnum.yes"
+              v-if="
+                iten?.cdn === LiveRoomUseCDNEnum.yes ||
+                [
+                  LiveRoomTypeEnum.tencent_css,
+                  LiveRoomTypeEnum.tencent_css_pk,
+                ].includes(iten.type!)
+              "
               class="cdn-ico"
             >
               <div class="txt">CDN</div>
@@ -76,6 +82,7 @@ import {
   ILiveRoom,
   LiveRoomIsShowEnum,
   LiveRoomPullIsShouldAuthEnum,
+  LiveRoomTypeEnum,
   LiveRoomUseCDNEnum,
 } from '@/types/ILiveRoom';
 

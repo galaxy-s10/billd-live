@@ -16,6 +16,10 @@ export const QRCODE_LOGIN_URI = `https://live.${prodDomain}/qrcodeLogin`;
 
 export const AUTHOR_GITHUB = `https://github.com/galaxy-s10`;
 
+export const appBuildInfo =
+  // @ts-ignore
+  process.env.BilldHtmlWebpackPlugin as BilldHtmlWebpackPluginLog;
+
 export const WEBSOCKET_URL =
   process.env.NODE_ENV === 'development'
     ? `ws://localhost:4300`

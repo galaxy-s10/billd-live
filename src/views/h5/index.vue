@@ -53,7 +53,13 @@
                 直播中
               </div>
               <div
-                v-if="iten.live_room?.cdn === LiveRoomUseCDNEnum.yes"
+                v-if="
+                  iten.live_room?.cdn === LiveRoomUseCDNEnum.yes ||
+                  [
+                    LiveRoomTypeEnum.tencent_css,
+                    LiveRoomTypeEnum.tencent_css_pk,
+                  ].includes(iten.live_room?.type!)
+                "
                 class="cdn-ico"
               >
                 <div class="txt">CDN</div>
@@ -86,6 +92,7 @@ import { useAppStore } from '@/store/app';
 import {
   LiveRoomIsShowEnum,
   LiveRoomPullIsShouldAuthEnum,
+  LiveRoomTypeEnum,
   LiveRoomUseCDNEnum,
 } from '@/types/ILiveRoom';
 

@@ -18,6 +18,9 @@ export function createNullVideo() {
   videoEl.setAttribute('x5-video-player-type', 'h5');
   videoEl.setAttribute('x5-video-player-fullscreen', 'true');
   videoEl.setAttribute('x5-video-orientation', 'portraint');
+  videoEl.oncontextmenu = (e) => {
+    e.preventDefault();
+  };
   return videoEl;
 }
 

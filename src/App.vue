@@ -17,15 +17,15 @@ import { isMobile } from 'billd-utils';
 import { GlobalThemeOverrides, NConfigProvider } from 'naive-ui';
 import { onMounted } from 'vue';
 
-import { THEME_COLOR } from '@/constant';
-import { useBuildInfo } from '@/hooks/use-common';
+import { THEME_COLOR, appBuildInfo } from '@/constant';
+import { useCheckUpdate } from '@/hooks/use-common';
 import { loginMessage } from '@/hooks/use-login';
 import { usePiniaCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
 import { getLastBuildDate, setLastBuildDate } from '@/utils/localStorage/app';
 import { getToken } from '@/utils/localStorage/user';
 
-const { info } = useBuildInfo();
+const { checkUpdate } = useCheckUpdate();
 const cacheStore = usePiniaCacheStore();
 const userStore = useUserStore();
 
@@ -37,6 +37,9 @@ const themeOverrides: GlobalThemeOverrides = {
 };
 
 onMounted(() => {
+  checkUpdate({
+    htmlUrl: 'http://localhost:8000',
+  });
   handleUpdate();
   loginMessage();
   cacheStore.setMuted(true);
@@ -64,10 +67,10 @@ onMounted(() => {
 
 function handleUpdate() {
   const old = getLastBuildDate();
-  if (info.value.lastBuildDate !== old) {
+  if (appBuildInfo.lastBuildDate !== old) {
     localStorage.clear();
   }
-  setLastBuildDate(info.value.lastBuildDate);
+  setLastBuildDate(appBuildInfo.lastBuildDate);
 }
 </script>
 

@@ -15,14 +15,13 @@ import { usePiniaCacheStore } from '@/store/cache';
 import { useNetworkStore } from '@/store/network';
 import { ILiveRoom, LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import { WsMessageType, WsMsgTypeEnum } from '@/types/websocket';
-import { createVideo, videoToCanvas } from '@/utils';
+import { videoFullBox, videoToCanvas } from '@/utils';
 
 export function usePull(roomId: string) {
   const route = useRoute();
   const networkStore = useNetworkStore();
   const cacheStore = usePiniaCacheStore();
   const appStore = useAppStore();
-  const localStream = ref<MediaStream>();
   const danmuStr = ref('');
   const msgIsFile = ref(WsMessageMsgIsFileEnum.no);
   const danmuMsgType = ref<DanmuMsgTypeEnum>(DanmuMsgTypeEnum.danmu);
@@ -61,23 +60,24 @@ export function usePull(roomId: string) {
     remoteVideo.value = [];
   }
 
-  watch(hlsVideoEl, () => {
+  watch(hlsVideoEl, (newval) => {
     stopDrawingArr.value = [];
     stopDrawingArr.value.forEach((cb) => cb());
-    if (videoWrapRef.value) {
+    if (newval && videoWrapRef.value) {
       const rect = videoWrapRef.value.getBoundingClientRect();
       const { canvas, stopDrawing } = videoToCanvas({
         wrapSize: {
           width: rect.width,
           height: rect.height,
         },
-        videoEl: hlsVideoEl.value!,
+        videoEl: newval,
         videoResize: ({ w, h }) => {
           videoHeight.value = `${w}x${h}`;
         },
       });
       stopDrawingArr.value.push(stopDrawing);
       remoteVideo.value.push(canvas);
+      videoElArr.value.push(newval);
       videoLoading.value = false;
     }
   });
@@ -92,26 +92,81 @@ export function usePull(roomId: string) {
     });
   }
 
-  watch(flvVideoEl, () => {
+  watch(flvVideoEl, (newval) => {
     stopDrawingArr.value = [];
     stopDrawingArr.value.forEach((cb) => cb());
-    if (videoWrapRef.value) {
+    if (newval && videoWrapRef.value) {
       const rect = videoWrapRef.value.getBoundingClientRect();
       const { canvas, stopDrawing } = videoToCanvas({
         wrapSize: {
           width: rect.width,
           height: rect.height,
         },
-        videoEl: flvVideoEl.value!,
+        videoEl: newval,
         videoResize: ({ w, h }) => {
           videoHeight.value = `${w}x${h}`;
         },
       });
       stopDrawingArr.value.push(stopDrawing);
       remoteVideo.value.push(canvas);
+      videoElArr.value.push(newval);
       videoLoading.value = false;
     }
   });
+
+  watch(
+    () => networkStore.rtcMap,
+    (newVal) => {
+      if (newVal.size) {
+        roomLiving.value = true;
+        videoLoading.value = false;
+      }
+      if (
+        appStore.liveRoomInfo?.type === LiveRoomTypeEnum.wertc_meeting_one ||
+        appStore.liveRoomInfo?.type === LiveRoomTypeEnum.wertc_live ||
+        appStore.liveRoomInfo?.type === LiveRoomTypeEnum.pk ||
+        appStore.liveRoomInfo?.type === LiveRoomTypeEnum.tencent_css_pk
+      ) {
+        newVal.forEach((item) => {
+          if (appStore.allTrack.find((v) => v.mediaName === item.receiver)) {
+            return;
+          }
+          const rect = videoWrapRef.value?.getBoundingClientRect();
+          if (rect) {
+            videoFullBox({
+              wrapSize: {
+                width: rect.width,
+                height: rect.height,
+              },
+              videoEl: item.videoEl,
+              videoResize: ({ w, h }) => {
+                videoHeight.value = `${w}x${h}`;
+              },
+            });
+            remoteVideo.value.push(item.videoEl);
+            videoElArr.value.push(item.videoEl);
+          }
+        });
+      }
+    },
+    {
+      deep: true,
+      immediate: true,
+    }
+  );
+
+  watch(
+    () => remoteVideo.value,
+    (newval) => {
+      newval.forEach((videoEl) => {
+        videoWrapRef.value?.appendChild(videoEl);
+      });
+    },
+    {
+      deep: true,
+      immediate: true,
+    }
+  );
 
   function handleFlvPlay() {
     console.log('handleFlvPlay');
@@ -249,7 +304,7 @@ export function usePull(roomId: string) {
   );
 
   watch(
-    () => appStore.play,
+    () => appStore.playing,
     (newVal) => {
       videoElArr.value.forEach((el) => {
         if (newVal) {
@@ -273,65 +328,6 @@ export function usePull(roomId: string) {
     (newVal) => {
       isPlaying.value = newVal;
     }
-  );
-
-  watch(
-    () => localStream.value,
-    (val) => {
-      if (val) {
-        console.log('localStream变了');
-        console.log('音频轨：', val?.getAudioTracks());
-        console.log('视频轨：', val?.getVideoTracks());
-        if (appStore.liveRoomInfo?.type === LiveRoomTypeEnum.wertc_live) {
-          videoElArr.value.forEach((dom) => {
-            dom.remove();
-          });
-          val?.getVideoTracks().forEach((track) => {
-            console.log('视频轨enabled：', track.id, track.enabled);
-            const video = createVideo({});
-            video.setAttribute('track-id', track.id);
-            video.srcObject = new MediaStream([track]);
-            remoteVideo.value.push(video);
-            videoElArr.value.push(video);
-          });
-          val?.getAudioTracks().forEach((track) => {
-            console.log('音频轨enabled：', track.id, track.enabled);
-            const video = createVideo({});
-            video.setAttribute('track-id', track.id);
-            video.srcObject = new MediaStream([track]);
-            remoteVideo.value.push(video);
-            videoElArr.value.push(video);
-          });
-          videoLoading.value = false;
-        } else {
-          videoElArr.value.forEach((dom) => {
-            dom.remove();
-          });
-          val?.getVideoTracks().forEach((track) => {
-            console.log('视频轨enabled：', track.id, track.enabled);
-            const video = createVideo({});
-            video.setAttribute('track-id', track.id);
-            video.srcObject = new MediaStream([track]);
-            remoteVideo.value.push(video);
-            videoElArr.value.push(video);
-          });
-          val?.getAudioTracks().forEach((track) => {
-            console.log('音频轨enabled：', track.id, track.enabled);
-            const video = createVideo({});
-            video.setAttribute('track-id', track.id);
-            video.srcObject = new MediaStream([track]);
-            remoteVideo.value.push(video);
-            videoElArr.value.push(video);
-          });
-          videoLoading.value = false;
-        }
-      } else {
-        videoElArr.value?.forEach((item) => {
-          item.remove();
-        });
-      }
-    },
-    { deep: true }
   );
 
   function initPull(autolay = true) {
