@@ -7,7 +7,6 @@
       ></div>
       <div class="top-right">
         <a
-          v-if="MODULE_CONFIG_SWITCH.github"
           class="github"
           target="_blank"
           href="https://github.com/galaxy-s10/billd-live"
@@ -64,7 +63,6 @@
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
-import { MODULE_CONFIG_SWITCH } from '@/constant';
 import router, { mobileRouterName } from '@/router';
 import { AppRootState, useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';

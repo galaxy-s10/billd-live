@@ -23,7 +23,7 @@ withDefaults(
   defineProps<{
     avatar: string;
     size: number;
-    living: boolean;
+    living?: boolean;
   }>(),
   {
     avatar: '',

@@ -87,7 +87,7 @@
                   <span class="name">
                     <span v-if="item.userInfo">
                       <span>{{ item.userInfo.username }}</span>
-                      <span v-if="MODULE_CONFIG_SWITCH.pullShowAuth">
+                      <span>
                         [{{
                           item.userInfo.roles?.map((v) => v.role_name).join()
                         }}]
@@ -95,9 +95,7 @@
                     </span>
                     <span v-else>
                       <span>{{ item.socket_id }}</span>
-                      <span v-if="MODULE_CONFIG_SWITCH.pullShowAuth">
-                        [游客]
-                      </span>
+                      <span> [游客] </span>
                     </span>
                     <span>：</span>
                   </span>
@@ -221,7 +219,7 @@ import { useRoute } from 'vue-router';
 
 import { fetchFindLiveConfigByKey } from '@/api/liveConfig';
 import { fetchFindLiveRoom } from '@/api/liveRoom';
-import { MODULE_CONFIG_SWITCH, THEME_COLOR } from '@/constant';
+import { THEME_COLOR } from '@/constant';
 import { emojiArray } from '@/emoji';
 import { usePull } from '@/hooks/use-pull';
 import { DanmuMsgTypeEnum, WsMessageMsgIsFileEnum } from '@/interface';

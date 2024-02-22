@@ -1,8 +1,5 @@
 <template>
-  <div
-    v-loading="loading"
-    class="profile-wrap"
-  >
+  <div class="profile-wrap">
     <div class="uid">用户id：{{ userInfo?.id }}</div>
     <div class="avatar">
       <span class="txt">用户头像：</span>
@@ -11,64 +8,174 @@
         :size="30"
       ></Avatar>
     </div>
-    <div>用户昵称：{{ userInfo?.username }}</div>
+    <div class="username">用户昵称：{{ userInfo?.username }}</div>
     <br />
-    <div>直播间信息：</div>
-    <div v-if="userInfo?.live_rooms?.length">
-      <div>
-        直播间地址：
-        <a
-          :href="getLiveRoomPageUrl(userInfo?.live_rooms?.[0].id!)"
-          class="link"
-          target="_blank"
+    <div class="pull-url">
+      <span
+        v-if="!userInfo?.live_rooms?.length"
+        class="link"
+        @click="openLiveRoom"
+      >
+        未开通
+      </span>
+      <div v-else>
+        <div>
+          直播间地址：
+          <a
+            :href="getLiveRoomPageUrl(userInfo?.live_rooms?.[0].id!)"
+            class="link"
+            target="_blank"
+          >
+            {{ getLiveRoomPageUrl(userInfo?.live_rooms?.[0].id!) }}
+          </a>
+        </div>
+        <div>直播间名称：{{ userInfo?.live_rooms?.[0].name }}</div>
+        <div>直播间简介：{{ userInfo?.live_rooms?.[0].desc }}</div>
+        <div>
+          直播间分区：{{ userInfo.live_rooms[0].areas?.[0].name || '暂无分区' }}
+        </div>
+        <div
+          v-if="
+            userStore.userInfo?.id === userInfo.id &&
+            userStore.auths?.find(
+              (v) => v.auth_value === DEFAULT_AUTH_INFO.LIVE_PUSH.auth_value
+            )
+          "
+          class="rtmp-url-wrap"
+          v-loading="keyLoading"
         >
-          {{ getLiveRoomPageUrl(userInfo?.live_rooms?.[0].id!) }}
-        </a>
-      </div>
-      <div>直播间名称：{{ userInfo.live_rooms[0].name }}</div>
-      <div>直播间简介：{{ userInfo.live_rooms[0].desc }}</div>
-      <div>
-        直播间分区：{{ userInfo.live_rooms[0].areas?.[0].name || '暂无分区' }}
+          <div>
+            <span>rtmp推流地址：{{ pushRes?.push_rtmp_url! }}， </span>
+            <span
+              class="link"
+              @click="handleCopy"
+            >
+              复制
+            </span>
+            <span>，</span>
+            <span
+              class="link"
+              @click="handleUpdateKey"
+            >
+              更新
+            </span>
+          </div>
+          <div>
+            <span> OBS服务器：{{ pushRes?.push_obs_server! }}， </span>
+            <span
+              class="link"
+              @click="handleCopy"
+            >
+              复制
+            </span>
+          </div>
+          <div>
+            <span> OBS推流码：{{ pushRes?.push_obs_stream_key! }}， </span>
+            <span
+              class="link"
+              @click="handleCopy"
+            >
+              复制
+            </span>
+          </div>
+        </div>
       </div>
     </div>
-    <span v-else>未开通</span>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { copyToClipBoard, openToTarget } from 'billd-utils';
+import { onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
+import { fetchUpdateLiveRoomKey } from '@/api/liveRoom';
 import { fetchFindUser } from '@/api/user';
+import { DEFAULT_AUTH_INFO, SRS_CB_URL_PARAMS } from '@/constant';
+import { loginTip } from '@/hooks/use-login';
+import { routerName } from '@/router';
+import { useUserStore } from '@/store/user';
+import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import { IUser } from '@/types/IUser';
 import { getLiveRoomPageUrl } from '@/utils';
 
-const loading = ref(false);
+const newRtmpUrl = ref();
+const keyLoading = ref(false);
+const pushRes = ref();
 const route = useRoute();
+const router = useRouter();
+const userStore = useUserStore();
+
 const userInfo = ref<IUser>();
 
-async function handleUserInfo() {
-  try {
-    loading.value = true;
-    const res = await fetchFindUser(Number(route.params.userId as string));
-    if (res.code === 200) {
-      userInfo.value = res.data;
+watch(
+  () => route.params.userId,
+  (newval) => {
+    if (newval) {
+      handleUserInfo();
     }
-  } catch (error) {
-    console.log(error);
-  } finally {
-    loading.value = false;
   }
-}
+);
 
 onMounted(() => {
   handleUserInfo();
 });
+
+async function handleUserInfo() {
+  const userId = Number(route.params.userId as string);
+  const res = await fetchFindUser(userId);
+  if (res.code === 200) {
+    userInfo.value = res.data;
+  }
+  if (userStore.userInfo) {
+    const liveRoom = userStore.userInfo.live_rooms?.[0];
+    pushRes.value = liveRoom;
+  }
+}
+
+function handleCopy() {
+  copyToClipBoard(
+    newRtmpUrl.value ||
+      handleUrl({
+        url: userInfo.value?.live_rooms?.[0].rtmp_url!,
+        token: userInfo.value?.live_rooms?.[0].key!,
+      })
+  );
+  window.$message.success('复制成功！');
+}
+
+function openLiveRoom() {
+  if (!loginTip()) {
+    return;
+  }
+  const url = router.resolve({
+    name: routerName.push,
+    query: { liveType: LiveRoomTypeEnum.srs },
+  });
+  openToTarget(url.href);
+}
+
+function handleUrl(data: { url: string; token: string }) {
+  return `${data.url}?${SRS_CB_URL_PARAMS.publishKey}=${data.token}&${SRS_CB_URL_PARAMS.publishType}=${LiveRoomTypeEnum.obs}`;
+}
+
+async function handleUpdateKey() {
+  try {
+    keyLoading.value = true;
+    const res = await fetchUpdateLiveRoomKey();
+    if (res.code === 200) {
+      pushRes.value = res.data;
+    }
+  } catch (error) {
+    console.log(error);
+  } finally {
+    keyLoading.value = false;
+  }
+}
 </script>
 
 <style lang="scss" scoped>
 .profile-wrap {
-  position: relative;
   padding: 10px;
   .link {
     color: $theme-color-gold;
@@ -81,6 +188,9 @@ onMounted(() => {
     .txt {
       margin-right: 10px;
     }
+  }
+  .rtmp-url-wrap {
+    position: relative;
   }
 }
 </style>

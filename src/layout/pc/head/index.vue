@@ -324,7 +324,14 @@
             <div class="list">
               <a
                 class="item"
-                @click.prevent="router.push({ name: routerName.account })"
+                @click.prevent="
+                  router.push({
+                    name: routerName.profile,
+                    params: {
+                      userId: userStore.userInfo.id,
+                    },
+                  })
+                "
               >
                 <div class="txt">{{ t('layout.profile') }}</div>
               </a>

@@ -228,6 +228,12 @@ export interface ILiveRoom {
   rtmp_url?: string;
   flv_url?: string;
   hls_url?: string;
+  webrtc_url?: string;
+  push_rtmp_url?: string;
+  push_obs_server?: string;
+  push_obs_stream_key?: string;
+  push_webrtc_url?: string;
+  push_srt_url?: string;
   /** 直播间备注 */
   remark?: string;
 

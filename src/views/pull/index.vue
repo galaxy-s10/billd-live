@@ -164,7 +164,6 @@
           <div class="price">￥{{ formatMoney(item.price) }}</div>
         </div>
         <div
-          v-if="MODULE_CONFIG_SWITCH.pullGiftList"
           class="item"
           @click="handleRecharge"
         >
@@ -240,7 +239,7 @@
                 "
               >
                 <span>{{ item.userInfo.username }}</span>
-                <span v-if="MODULE_CONFIG_SWITCH.pullShowAuth">
+                <span>
                   [{{ item.userInfo.roles?.map((v) => v.role_name).join() }}]
                 </span>
               </span>
@@ -251,7 +250,7 @@
               >
                 <template #btn>
                   <span>{{ item.userInfo.username }}</span>
-                  <span v-if="MODULE_CONFIG_SWITCH.pullShowAuth">
+                  <span>
                     [{{ item.userInfo.roles?.map((v) => v.role_name).join() }}]
                   </span>
                 </template>
@@ -291,7 +290,7 @@
               </Dropdown>
               <span v-else>
                 <span>{{ item.socket_id }}</span>
-                <span v-if="MODULE_CONFIG_SWITCH.pullShowAuth">[游客]</span>
+                <span>[游客]</span>
               </span>
             </span>
             <span>：</span>
@@ -410,11 +409,7 @@ import {
 } from '@/api/giftRecord';
 import { fetchGoodsList } from '@/api/goods';
 import { fetchGetWsMessageList } from '@/api/wsMessage';
-import {
-  MODULE_CONFIG_SWITCH,
-  QINIU_RESOURCE,
-  liveRoomTypeEnumMap,
-} from '@/constant';
+import { QINIU_RESOURCE, liveRoomTypeEnumMap } from '@/constant';
 import { emojiArray } from '@/emoji';
 import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { useFullScreen } from '@/hooks/use-play';

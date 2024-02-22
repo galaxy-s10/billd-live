@@ -14,10 +14,7 @@
         autoplay
         loop
       ></video>
-      <div
-        v-if="MODULE_CONFIG_SWITCH.slider"
-        class="slider-wrap"
-      >
+      <div class="slider-wrap">
         <div
           v-for="(item, index) in interactionList"
           :key="index"
@@ -32,10 +29,6 @@
           ></Slider>
         </div>
       </div>
-      <div
-        v-else
-        class="slider-wrap"
-      ></div>
 
       <div class="container">
         <div
@@ -206,12 +199,7 @@
       </div>
     </div>
 
-    <div
-      class="foot"
-      v-if="MODULE_CONFIG_SWITCH.copyrightNotice"
-    >
-      *{{ t('home.copyrightTip') }}~
-    </div>
+    <div class="foot">*{{ t('home.copyrightTip') }}~</div>
   </div>
 </template>
 
@@ -222,7 +210,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { fetchLiveList } from '@/api/live';
 import { fetchFindLiveConfigByKey } from '@/api/liveConfig';
-import { MODULE_CONFIG_SWITCH, sliderList } from '@/constant';
+import { sliderList } from '@/constant';
 import { usePull } from '@/hooks/use-pull';
 import { ILive, LiveLineEnum } from '@/interface';
 import { routerName } from '@/router';

@@ -1,6 +1,7 @@
 import { isIPad, isMobile } from 'billd-utils';
 import { createRouter, createWebHistory } from 'vue-router';
 
+import { GoodsTypeEnum } from '@/interface';
 import MobileLayout from '@/layout/mobile/index.vue';
 import PcLayout from '@/layout/pc/index.vue';
 
@@ -24,7 +25,6 @@ export const routerName = {
   about: 'about',
   area: 'area',
   areaDetail: 'areaDetail',
-  account: 'account',
   rank: 'rank',
   sponsors: 'sponsors',
   privatizationDeployment: 'privatizationDeployment',
@@ -125,24 +125,20 @@ export const defaultRoutes: RouteRecordRaw[] = [
         component: () => import('@/views/profile/index.vue'),
       },
       {
-        name: routerName.account,
-        path: '/account',
-        component: () => import('@/views/account/index.vue'),
-      },
-      {
         name: routerName.sponsors,
         path: '/sponsors',
-        component: () => import('@/views/sponsors/index.vue'),
+        component: () => import('@/views/doc/sponsors/index.vue'),
       },
       {
         name: routerName.privatizationDeployment,
         path: '/privatizationDeployment',
-        component: () => import('@/views/privatizationDeployment/index.vue'),
+        component: () =>
+          import('@/views/doc/privatizationDeployment/index.vue'),
       },
       {
         name: routerName.support,
         path: '/support',
-        component: () => import('@/views/support/index.vue'),
+        redirect: `/shop?goodsType=${GoodsTypeEnum.support}`,
       },
       {
         name: routerName.order,
@@ -157,7 +153,7 @@ export const defaultRoutes: RouteRecordRaw[] = [
       {
         name: routerName.ad,
         path: '/ad',
-        component: () => import('@/views/ad/index.vue'),
+        component: () => import('@/views/doc/ad/index.vue'),
       },
 
       {
@@ -203,11 +199,6 @@ export const defaultRoutes: RouteRecordRaw[] = [
     name: mobileRouterName.h5Room,
     path: '/h5/:roomId',
     component: () => import('@/views/h5/room/index.vue'),
-  },
-  {
-    name: commonRouterName.qrcodeLogin,
-    path: '/qrcodeLogin',
-    component: () => import('@/views/qrcodeLogin/index.vue'),
   },
 ];
 

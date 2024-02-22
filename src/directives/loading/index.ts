@@ -1,12 +1,12 @@
 import { App, ComponentPublicInstance, Directive, createApp } from 'vue';
 
-import main from '@/components/FullLoading/main.vue';
+import fullLoading from '@/components/FullLoading/main.vue';
 
 const map = new Map<
   HTMLElement,
   {
     app: App<Element>;
-    instance: ComponentPublicInstance<InstanceType<typeof main>>;
+    instance: ComponentPublicInstance<InstanceType<typeof fullLoading>>;
   }
 >();
 
@@ -20,10 +20,10 @@ export const directiveLoading: Directive = {
   // 及他自己的所有子节点都挂载完成后调用
   mounted(el, binding) {
     const { value } = binding;
-    const app = createApp(main);
+    const app = createApp(fullLoading);
     const container = document.createElement('div');
     // @ts-ignore
-    const instance: ComponentPublicInstance<InstanceType<typeof main>> =
+    const instance: ComponentPublicInstance<InstanceType<typeof fullLoading>> =
       app.mount(container);
     el.appendChild(container);
     instance.loading = value;

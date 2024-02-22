@@ -5,13 +5,12 @@
     <router-view v-slot="{ Component }">
       <component :is="Component"></component>
     </router-view>
-    <SidebarCpt v-if="MODULE_CONFIG_SWITCH.sidebar"></SidebarCpt>
+    <SidebarCpt></SidebarCpt>
     <LoginModal v-if="appStore.showLoginModal"></LoginModal>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { MODULE_CONFIG_SWITCH } from '@/constant';
 import { useAppStore } from '@/store/app';
 
 import HeadCpt from './head/index.vue';
