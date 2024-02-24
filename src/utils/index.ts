@@ -208,6 +208,64 @@ export function formatDownTime(data: {
     return `${m}分${s}秒${msRes}`;
   }
 }
+/**
+ * 格式化倒计时
+ * @param endTime
+ * @param startTime
+ */
+export function formatDownTime2(data: {
+  endTime: number;
+  startTime: number;
+  day?: string;
+  hour?: string;
+  minute?: string;
+  second?: string;
+  millisecond?: string;
+  showMillisecond?: boolean;
+  addZero?: boolean;
+}) {
+  const times = (data.endTime - data.startTime) / 1000;
+  // js获取剩余天数
+  const d = parseInt(String(times / 60 / 60 / 24));
+  // js获取剩余小时
+  let h = parseInt(String((times / 60 / 60) % 24));
+  // js获取剩余分钟
+  let m = parseInt(String((times / 60) % 60));
+  // js获取剩余秒
+  let s = parseInt(String(times % 60));
+  let ms = new Date(data.endTime).getMilliseconds();
+
+  function addZero(num: number, flag: boolean) {
+    if (flag) {
+      return num < 10 ? `0${num}` : `${num}`;
+    } else {
+      return `${num}`;
+    }
+  }
+
+  // @ts-ignore
+  h = addZero(h, data.addZero);
+  // @ts-ignore
+  m = addZero(m, data.addZero);
+  // @ts-ignore
+  s = addZero(s, data.addZero);
+  if (Number(ms) < 100) {
+    if (ms < 10) {
+      // @ts-ignore
+      ms = `00${ms}`;
+    } else {
+      // @ts-ignore
+      ms = `0${ms}`;
+    }
+  }
+  return {
+    d,
+    h,
+    m,
+    s,
+    ms,
+  };
+}
 
 /**
  * requestFileSystem保存文件，成功返回code:1，失败返回code:2

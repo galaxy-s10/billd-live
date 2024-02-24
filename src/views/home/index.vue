@@ -65,7 +65,7 @@
           <template v-if="currentLiveRoom">
             <VideoControls
               @click.stop
-              :resolution="videoHeight"
+              :resolution="videoResolution"
               @refresh="handleRefresh"
             ></VideoControls>
             <div
@@ -204,7 +204,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -245,9 +245,8 @@ const { t } = useI18n();
 const {
   videoWrapRef,
   videoLoading,
-  remoteVideo,
   roomLiving,
-  videoHeight,
+  videoResolution,
   handleStopDrawing,
   handlePlay,
 } = usePull(route.params.roomId as string);
@@ -258,18 +257,6 @@ onMounted(() => {
   getBg();
   videoWrapRef.value = videoWrapTmpRef.value;
 });
-
-watch(
-  () => remoteVideo.value,
-  (newVal) => {
-    newVal.forEach((item) => {
-      remoteVideoRef.value?.appendChild(item);
-    });
-  },
-  {
-    deep: true,
-  }
-);
 
 function handleSlideList() {
   const row = 2;

@@ -52,6 +52,18 @@
     <div class="right">
       <div
         class="resolution"
+        v-if="appStore.videoFps"
+      >
+        {{ appStore.videoFps }}帧
+      </div>
+      <div
+        class="resolution"
+        v-if="appStore.videoKBs"
+      >
+        {{ appStore.videoKBs }}KB/s
+      </div>
+      <div
+        class="resolution"
         v-if="resolution"
       >
         {{ resolution }}

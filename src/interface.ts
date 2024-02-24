@@ -5,6 +5,18 @@ import {
 } from './types/ILiveRoom';
 import { IUser } from './types/IUser';
 
+export interface IFlvStatistics {
+  url: string;
+  hasRedirect: boolean;
+  speed: number;
+  loaderType: string;
+  currentSegmentIndex: number;
+  totalSegmentCount: number;
+  playerType: string;
+  decodedFrames: number;
+  droppedFrames: number;
+}
+
 export interface IQiniuData {
   id?: number;
   user_id?: number;

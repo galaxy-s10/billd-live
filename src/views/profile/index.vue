@@ -1,5 +1,8 @@
 <template>
-  <div class="profile-wrap">
+  <div
+    class="profile-wrap"
+    v-loading="getUserLoading"
+  >
     <div class="uid">用户id：{{ userInfo?.id }}</div>
     <div class="avatar">
       <span class="txt">用户头像：</span>
@@ -42,13 +45,13 @@
             )
           "
           class="rtmp-url-wrap"
-          v-loading="keyLoading"
+          v-loading="updateKeyLoading"
         >
           <div>
-            <span>rtmp推流地址：{{ pushRes?.push_rtmp_url! }}， </span>
+            <span>RTMP推流地址：{{ pushRes?.push_rtmp_url! }}，</span>
             <span
               class="link"
-              @click="handleCopy"
+              @click="handleCopy(pushRes?.push_rtmp_url!)"
             >
               复制
             </span>
@@ -61,19 +64,19 @@
             </span>
           </div>
           <div>
-            <span> OBS服务器：{{ pushRes?.push_obs_server! }}， </span>
+            <span>OBS服务器：{{ pushRes?.push_obs_server! }}，</span>
             <span
               class="link"
-              @click="handleCopy"
+              @click="handleCopy(pushRes?.push_obs_server!)"
             >
               复制
             </span>
           </div>
           <div>
-            <span> OBS推流码：{{ pushRes?.push_obs_stream_key! }}， </span>
+            <span>OBS推流码：{{ pushRes?.push_obs_stream_key! }}，</span>
             <span
               class="link"
-              @click="handleCopy"
+              @click="handleCopy(pushRes?.push_obs_stream_key!)"
             >
               复制
             </span>
@@ -86,12 +89,12 @@
 
 <script lang="ts" setup>
 import { copyToClipBoard, openToTarget } from 'billd-utils';
-import { onMounted, ref, watch } from 'vue';
+import { ref, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { fetchUpdateLiveRoomKey } from '@/api/liveRoom';
 import { fetchFindUser } from '@/api/user';
-import { DEFAULT_AUTH_INFO, SRS_CB_URL_PARAMS } from '@/constant';
+import { DEFAULT_AUTH_INFO } from '@/constant';
 import { loginTip } from '@/hooks/use-login';
 import { routerName } from '@/router';
 import { useUserStore } from '@/store/user';
@@ -99,48 +102,43 @@ import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import { IUser } from '@/types/IUser';
 import { getLiveRoomPageUrl } from '@/utils';
 
-const newRtmpUrl = ref();
-const keyLoading = ref(false);
-const pushRes = ref();
+const userStore = useUserStore();
 const route = useRoute();
 const router = useRouter();
-const userStore = useUserStore();
 
+const pushRes = ref();
+const userId = ref(-1);
 const userInfo = ref<IUser>();
+const getUserLoading = ref(false);
+const updateKeyLoading = ref(false);
 
-watch(
-  () => route.params.userId,
-  (newval) => {
-    if (newval) {
-      handleUserInfo();
-    }
+watchEffect(() => {
+  if (route.params.userId) {
+    userId.value = Number(route.params.userId as string);
+    handleUserInfo();
   }
-);
-
-onMounted(() => {
-  handleUserInfo();
 });
 
 async function handleUserInfo() {
-  const userId = Number(route.params.userId as string);
-  const res = await fetchFindUser(userId);
-  if (res.code === 200) {
-    userInfo.value = res.data;
-  }
-  if (userStore.userInfo) {
-    const liveRoom = userStore.userInfo.live_rooms?.[0];
-    pushRes.value = liveRoom;
+  try {
+    getUserLoading.value = true;
+    const res = await fetchFindUser(userId.value);
+    if (res.code === 200) {
+      userInfo.value = res.data;
+    }
+    if (userStore.userInfo) {
+      const liveRoom = userStore.userInfo.live_rooms?.[0];
+      pushRes.value = liveRoom;
+    }
+  } catch (error) {
+    console.error(error);
+  } finally {
+    getUserLoading.value = false;
   }
 }
 
-function handleCopy() {
-  copyToClipBoard(
-    newRtmpUrl.value ||
-      handleUrl({
-        url: userInfo.value?.live_rooms?.[0].rtmp_url!,
-        token: userInfo.value?.live_rooms?.[0].key!,
-      })
-  );
+function handleCopy(url: string) {
+  copyToClipBoard(url);
   window.$message.success('复制成功！');
 }
 
@@ -155,27 +153,24 @@ function openLiveRoom() {
   openToTarget(url.href);
 }
 
-function handleUrl(data: { url: string; token: string }) {
-  return `${data.url}?${SRS_CB_URL_PARAMS.publishKey}=${data.token}&${SRS_CB_URL_PARAMS.publishType}=${LiveRoomTypeEnum.obs}`;
-}
-
 async function handleUpdateKey() {
   try {
-    keyLoading.value = true;
+    updateKeyLoading.value = true;
     const res = await fetchUpdateLiveRoomKey();
     if (res.code === 200) {
       pushRes.value = res.data;
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
   } finally {
-    keyLoading.value = false;
+    updateKeyLoading.value = false;
   }
 }
 </script>
 
 <style lang="scss" scoped>
 .profile-wrap {
+  position: relative;
   padding: 10px;
   .link {
     color: $theme-color-gold;

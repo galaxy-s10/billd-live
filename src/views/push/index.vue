@@ -12,8 +12,7 @@
           class="recording"
           v-if="recording"
         >
-          <span class="dot"></span>
-          <span>REC {{ recordVideoTime }}</span>
+          ● REC {{ recordVideoTime }}
         </div>
         <div
           class="record-ico"
@@ -170,11 +169,31 @@
             class="item"
             @click="handleActiveObject(item)"
           >
-            <div class="name">
-              {{ NODE_ENV === 'development' ? item.id : '' }}({{
-                mediaTypeEnumMap[item.type]
-              }}){{ item.mediaName }}
+            <div class="item-left">
+              <div
+                class="control-item"
+                @click="handleEye(item)"
+              >
+                <n-icon
+                  size="16"
+                  v-if="item.openEye && item.type !== MediaTypeEnum.microphone"
+                >
+                  <EyeOutline></EyeOutline>
+                </n-icon>
+                <n-icon
+                  size="16"
+                  v-else
+                >
+                  <EyeOffOutline></EyeOffOutline>
+                </n-icon>
+              </div>
+              <div class="name">
+                {{ NODE_ENV === 'development' ? item.id : '' }}({{
+                  mediaTypeEnumMap[item.type]
+                }}){{ item.mediaName }}
+              </div>
             </div>
+
             <div class="control">
               <div
                 v-if="item.audio === 1"
@@ -200,23 +219,6 @@
                     />
                   </div>
                 </n-popover>
-              </div>
-              <div
-                class="control-item"
-                @click="handleEye(item)"
-              >
-                <n-icon
-                  size="16"
-                  v-if="item.openEye"
-                >
-                  <EyeOutline></EyeOutline>
-                </n-icon>
-                <n-icon
-                  size="16"
-                  v-else
-                >
-                  <EyeOffOutline></EyeOffOutline>
-                </n-icon>
               </div>
               <div
                 class="control-item"
@@ -424,6 +426,7 @@ import {
 } from 'vue';
 import { useRoute } from 'vue-router';
 
+import { fetchGetWsMessageList } from '@/api/wsMessage';
 import {
   QINIU_RESOURCE,
   liveRoomTypeEnumMap,
@@ -438,6 +441,8 @@ import {
   DanmuMsgTypeEnum,
   MediaTypeEnum,
   WsMessageMsgIsFileEnum,
+  WsMessageMsgIsShowEnum,
+  WsMessageMsgIsVerifyEnum,
 } from '@/interface';
 import { AppRootState, useAppStore } from '@/store/app';
 import { usePiniaCacheStore } from '@/store/cache';
@@ -446,7 +451,7 @@ import { useUserStore } from '@/store/user';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import {
   createVideo,
-  formatDownTime,
+  formatDownTime2,
   generateBase64,
   getRandomEnglishString,
   handleUserMedia,
@@ -507,6 +512,7 @@ const pushCanvasRef = ref<HTMLCanvasElement>();
 const webaudioVideo = ref<HTMLVideoElement>();
 const fabricCanvas = ref<fabric.Canvas>();
 const startTime = ref(+new Date());
+const initAudioFlag = ref(false);
 const msgLoading = ref(false);
 const uploadRef = ref<HTMLInputElement>();
 const nullAudioStream = ref<MediaStream>();
@@ -528,7 +534,7 @@ const msrDelay = ref(1000 * 1);
 const msrMaxDelay = ref(1000 * 5);
 const suggestedName = ref('');
 const recordVideoTimer = ref();
-const recordVideoTime = ref('');
+const recordVideoTime = ref('00:00:00');
 let avRecorder: AVRecorder | null = null;
 
 watch(
@@ -745,6 +751,7 @@ watch(
   (newval) => {
     if (newval) {
       handleSendGetLiveUser(Number(newval));
+      handleHistoryMsg();
     }
   }
 );
@@ -785,11 +792,13 @@ function renderAll() {
     item.text = new Date().toLocaleString();
   });
   stopwatchCanvasDom.value.forEach((item) => {
-    item.text = formatDownTime({
+    const res = formatDownTime2({
       endTime: +new Date(),
       startTime: startTime.value,
-      showMs: true,
+      showMillisecond: true,
+      addZero: true,
     });
+    item.text = `${res.d}天${res.h}时${res.m}分${res.s}秒${res.ms}毫秒`;
   });
   fabricCanvas.value?.renderAll();
 }
@@ -893,7 +902,7 @@ function handleMixedAudio() {
     if (!audioCtx || !item.stream) return;
     const source = audioCtx.createMediaStreamSource(item.stream);
     const gainNode = audioCtx.createGain();
-    gainNode.gain.value = (item.volume || 100) / 100;
+    gainNode.gain.value = (item.volume || 0) / 100;
     source.connect(gainNode);
     res.push({ source, gainNode });
     // console.log('混流', item.stream?.id, item.stream);
@@ -907,7 +916,8 @@ function handleMixedAudio() {
     webaudioVideo.value.remove();
   }
   webaudioVideo.value = createVideo({
-    appendChild: true,
+    appendChild: false,
+    muted: true,
   });
   bodyAppendChildElArr.value.push(webaudioVideo.value);
   webaudioVideo.value.className = 'web-audio-video';
@@ -936,35 +946,101 @@ function handleEndLive() {
   endLive();
 }
 
+async function handleHistoryMsg() {
+  try {
+    const res = await fetchGetWsMessageList({
+      nowPage: 1,
+      pageSize: appStore.liveRoomInfo?.history_msg_total || 10,
+      orderName: 'created_at',
+      orderBy: 'desc',
+      live_room_id: Number(roomId.value),
+      is_show: WsMessageMsgIsShowEnum.yes,
+      is_verify: WsMessageMsgIsVerifyEnum.yes,
+    });
+    if (res.code === 200) {
+      res.data.rows.forEach((v) => {
+        damuList.value.unshift({
+          ...v,
+          live_room_id: v.live_room_id!,
+          msg_id: v.id!,
+          socket_id: '',
+          msgType: v.msg_type!,
+          msgIsFile: v.msg_is_file!,
+          userInfo: v.user,
+          msg: v.content!,
+          username: v.username!,
+          send_msg_time: Number(v.send_msg_time),
+          redbag_send_id: v.redbag_send_id,
+        });
+      });
+      if (
+        appStore.liveRoomInfo?.system_msg &&
+        appStore.liveRoomInfo?.system_msg !== ''
+      ) {
+        damuList.value.push({
+          live_room_id: Number(roomId.value),
+          socket_id: '',
+          msgType: DanmuMsgTypeEnum.system,
+          msgIsFile: WsMessageMsgIsFileEnum.no,
+          msg: appStore.liveRoomInfo.system_msg,
+          send_msg_time: Number(+new Date()),
+        });
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 async function handleRecordVideo() {
   if (!window.VideoDecoder || !window.AudioEncoder) {
     window.$message.warning(`当前环境不支持录制视频`);
     return;
   }
-  recording.value = !recording.value;
-  if (recording.value) {
-    const startTime = +new Date();
-    recordVideoTimer.value = setInterval(() => {
-      recordVideoTime.value = formatDownTime({
-        endTime: +new Date(),
-        startTime,
+  initAudio();
+  try {
+    if (!recording.value) {
+      suggestedName.value = `billd直播录制-${+new Date()}.mp4`;
+      const fileHandle = await window.showSaveFilePicker({
+        suggestedName: suggestedName.value,
       });
-    }, 1000);
-
-    avRecorder = new AVRecorder(canvasVideoStream.value!, {});
-    await avRecorder.start();
-    suggestedName.value = `billd直播录制-${+new Date()}.mp4`;
-    const fileHandle = await window.showSaveFilePicker({
-      suggestedName: suggestedName.value,
-    });
-    const writer = await fileHandle.createWritable();
-    avRecorder.outputStream?.pipeTo(writer).catch(console.error);
-  } else {
-    clearInterval(recordVideoTimer.value);
-    recordVideoTime.value = '';
-    await avRecorder?.stop();
-    window.$message.success(`录制文件: ${suggestedName.value} 已保存到本地`);
+      const writer = await fileHandle.createWritable();
+      avRecorder = new AVRecorder(canvasVideoStream.value!.clone(), {});
+      await avRecorder.start();
+      const startTime = +new Date();
+      recordVideoTimer.value = setInterval(() => {
+        const res = formatDownTime2({
+          endTime: +new Date(),
+          startTime,
+          showMillisecond: true,
+          addZero: true,
+        });
+        if (res.d) {
+          recordVideoTime.value = `${res.d}天${res.h}:${res.m}:${res.s}`;
+        } else {
+          recordVideoTime.value = `${res.h}:${res.m}:${res.s}`;
+        }
+      }, 1000);
+      avRecorder.outputStream?.pipeTo(writer).catch(console.error);
+    } else {
+      clearInterval(recordVideoTimer.value);
+      recordVideoTime.value = '00:00:00';
+      await avRecorder?.stop();
+      window.$message.success(`录制文件: ${suggestedName.value} 已保存到本地`);
+      avRecorder = null;
+    }
+    recording.value = !recording.value;
+  } catch (error) {
+    console.log(error);
+    recording.value = false;
   }
+}
+
+function initAudio() {
+  if (initAudioFlag.value) return;
+  initAudioFlag.value = true;
+  handleNullAudio();
+  handleMixedAudio();
 }
 
 function handleStartLive() {
@@ -972,8 +1048,7 @@ function handleStartLive() {
     window.$message.warning('至少选择一个素材');
     return;
   }
-  handleNullAudio();
-  handleMixedAudio();
+  initAudio();
   lastCoverImg.value = generateBase64(pushCanvasRef.value!);
   startLive({
     type: liveType,
@@ -1472,7 +1547,7 @@ async function handleCache() {
         audio: { deviceId: obj.deviceId },
       });
       if (!event) return;
-      const videoEl = createVideo({ appendChild: true, muted: false });
+      const videoEl = createVideo({ appendChild: true, muted: true });
       bodyAppendChildElArr.value.push(videoEl);
       videoEl.setAttribute('videoid', obj.id);
       videoEl.srcObject = event;
@@ -1813,7 +1888,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
       volume: 60,
       scaleInfo: {},
     };
-    const videoEl = createVideo({ appendChild: true, muted: false });
+    const videoEl = createVideo({ appendChild: true, muted: true });
     bodyAppendChildElArr.value.push(videoEl);
     videoEl.setAttribute('videoid', microphoneVideoTrack.id);
     videoEl.srcObject = event;
@@ -2135,11 +2210,13 @@ function editMediaOk(val: AppRootState['allTrack'][0]) {
 
 function handleChangeMuted(item: AppRootState['allTrack'][0]) {
   if (item.videoEl) {
-    const res = !item.videoEl.muted;
-    item.videoEl.muted = res;
-    item.videoEl.volume = res ? 0 : appStore.normalVolume / 100;
+    const res = !item.muted;
     item.volume = res ? 0 : appStore.normalVolume;
     item.muted = res;
+    if (item.type) {
+      item.videoEl.muted = res;
+      item.videoEl.volume = res ? 0 : appStore.normalVolume / 100;
+    }
     cacheStore.setResourceList(appStore.allTrack);
     handleMixedAudio();
   }
@@ -2151,7 +2228,7 @@ function handleChangeVolume(item: AppRootState['allTrack'][0], v) {
       if (item.volume !== undefined) {
         iten.volume = v;
         iten.muted = v === 0;
-        if (iten.videoEl) {
+        if (iten.videoEl && item.type) {
           iten.videoEl.volume = v / 100;
           iten.videoEl.muted = v === 0;
         }
@@ -2244,29 +2321,19 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
       line-height: 0;
       .recording {
         position: absolute;
-        top: 4px;
-        left: 0;
-        font-size: 12px;
-        color: red;
-        display: flex;
-        align-items: center;
+        top: 5px;
+        left: 5px;
         z-index: 100;
-        font-weight: bold;
-        line-height: normal;
-        .dot {
-          width: 6px;
-          height: 6px;
-          background-color: red;
-          border-radius: 50%;
-          margin: 0 6px;
-        }
+        color: red;
+        font-size: 12px;
+        line-height: 1;
       }
       .record-ico {
         position: absolute;
         top: 0;
         left: -10px;
-        transform: translateX(-100%);
         cursor: pointer;
+        transform: translateX(-100%);
       }
 
       .add-wrap {
@@ -2375,8 +2442,8 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
       }
       .list {
         overflow: scroll;
-        height: 218px;
         width: calc(100% + 5px);
+        height: 218px;
 
         @extend %customScrollbar;
 
@@ -2387,11 +2454,26 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
           margin: 5px 0;
           font-size: 14px;
           cursor: pointer;
+
           user-select: none;
+          .item-left {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            .control-item {
+              height: 100%;
+              line-height: 0;
+              cursor: pointer;
+              &:not(:last-child) {
+                margin-right: 6px;
+              }
+            }
+          }
           .control {
             display: flex;
             align-items: center;
             .control-item {
+              line-height: 0;
               cursor: pointer;
               &:not(:last-child) {
                 margin-right: 6px;

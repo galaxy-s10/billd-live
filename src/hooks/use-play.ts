@@ -131,7 +131,12 @@ export function useFlvPlay() {
     return new Promise((resolve) => {
       function main() {
         destroyFlv();
-        if (mpegts.getFeatureList().mseLivePlayback && mpegts.isSupported()) {
+        // mseLivePlayback，指示 HTTP MPEG2-TS/FLV 直播流是否可以在您的浏览器上运行。
+        // msePlayback，与 相同mpegts.isSupported()，表示基本播放是否可以在您的浏览器上运行。
+        if (
+          mpegts.getFeatureList().mseLivePlayback &&
+          mpegts.getFeatureList().msePlayback
+        ) {
           flvPlayer.value = mpegts.createPlayer({
             type: 'flv', // could also be mpegts, m2ts, flv
             isLive: true,
@@ -171,8 +176,12 @@ export function useFlvPlay() {
               }, 1000);
             }
           });
-          flvPlayer.value.on(mpegts.Events.MEDIA_INFO, () => {
-            console.log('mpegts消息：mpegts.Events.MEDIA_INFO');
+          flvPlayer.value.on(mpegts.Events.MEDIA_INFO, (data) => {
+            console.log('mpegts.Events.MEDIA_INFO', data);
+            // appStore.videoFps = data?.fps?.toFixed(2);
+          });
+          flvPlayer.value.on(mpegts.Events.STATISTICS_INFO, (data) => {
+            appStore.videoKBs = data?.speed?.toFixed(2);
           });
           try {
             console.log(`开始播放flv，muted:${cacheStore.muted}`);

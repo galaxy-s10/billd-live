@@ -22,7 +22,7 @@ export default nameSpaceWrap('layout', {
   siteOrder: '全站充值',
   myWallet: '我的收支',
 
-  guide: '快速上升',
+  guide: '快速上手',
   apiDoc: '接口文档',
   bilibiliTutorial: 'b站教程',
   vipCourses: 'billd-live付费课',

@@ -498,15 +498,15 @@ export class WebRTCClass {
             type: 'warn',
           });
           appStore.setLiveLine(LiveLineEnum.rtc);
-          // if (this.maxBitrate !== -1) {
-          //   this.setMaxBitrate(this.maxBitrate);
-          // }
-          // if (this.maxFramerate !== -1) {
-          //   this.setMaxFramerate(this.maxFramerate);
-          // }
-          // if (this.resolutionRatio !== -1) {
-          //   this.setResolutionRatio(this.resolutionRatio);
-          // }
+          if (this.maxBitrate !== -1) {
+            this.setMaxBitrate(this.maxBitrate);
+          }
+          if (this.maxFramerate !== -1) {
+            this.setMaxFramerate(this.maxFramerate);
+          }
+          if (this.resolutionRatio !== -1) {
+            this.setResolutionRatio(this.resolutionRatio);
+          }
         }
         if (connectionState === 'disconnected') {
           // 表示至少有一个 ICE 连接处于 disconnected 状态，并且没有连接处于 failed、connecting 或 checking 状态。

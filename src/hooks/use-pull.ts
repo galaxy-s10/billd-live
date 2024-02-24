@@ -28,10 +28,11 @@ export function usePull(roomId: string) {
   const autoplayVal = ref(false);
   const videoLoading = ref(false);
   const isPlaying = ref(false);
+  const showPlayBtn = ref(false);
   const flvurl = ref('');
   const hlsurl = ref('');
   const videoWrapRef = ref<HTMLDivElement>();
-  const videoHeight = ref();
+  const videoResolution = ref();
   const videoElArr = ref<HTMLVideoElement[]>([]);
   const remoteVideo = ref<HTMLElement[]>([]);
   const {
@@ -72,7 +73,7 @@ export function usePull(roomId: string) {
         },
         videoEl: newval,
         videoResize: ({ w, h }) => {
-          videoHeight.value = `${w}x${h}`;
+          videoResolution.value = `${w}x${h}`;
         },
       });
       stopDrawingArr.value.push(stopDrawing);
@@ -81,16 +82,6 @@ export function usePull(roomId: string) {
       videoLoading.value = false;
     }
   });
-
-  function handleHlsPlay(url: string) {
-    console.log('handleHlsPlay', url);
-    handleStopDrawing();
-    videoLoading.value = true;
-    appStore.setLiveLine(LiveLineEnum.hls);
-    startHlsPlay({
-      hlsurl: url,
-    });
-  }
 
   watch(flvVideoEl, (newval) => {
     stopDrawingArr.value = [];
@@ -104,7 +95,7 @@ export function usePull(roomId: string) {
         },
         videoEl: newval,
         videoResize: ({ w, h }) => {
-          videoHeight.value = `${w}x${h}`;
+          videoResolution.value = `${w}x${h}`;
         },
       });
       stopDrawingArr.value.push(stopDrawing);
@@ -140,7 +131,7 @@ export function usePull(roomId: string) {
               },
               videoEl: item.videoEl,
               videoResize: ({ w, h }) => {
-                videoHeight.value = `${w}x${h}`;
+                videoResolution.value = `${w}x${h}`;
               },
             });
             remoteVideo.value.push(item.videoEl);
@@ -168,6 +159,16 @@ export function usePull(roomId: string) {
     }
   );
 
+  function handleHlsPlay(url: string) {
+    console.log('handleHlsPlay', url);
+    handleStopDrawing();
+    videoLoading.value = true;
+    appStore.setLiveLine(LiveLineEnum.hls);
+    startHlsPlay({
+      hlsurl: url,
+    });
+  }
+
   function handleFlvPlay() {
     console.log('handleFlvPlay');
     handleStopDrawing();
@@ -182,45 +183,33 @@ export function usePull(roomId: string) {
     roomLiving.value = true;
     flvurl.value = data.flv_url!;
     hlsurl.value = data.hls_url!;
-    switch (data.type) {
-      case LiveRoomTypeEnum.srs:
-        if (appStore.liveLine === LiveLineEnum.flv) {
-          handleFlvPlay();
-        } else if (appStore.liveLine === LiveLineEnum.hls) {
-          handleHlsPlay(data.hls_url!);
-        }
-        break;
-      case LiveRoomTypeEnum.obs:
-        if (appStore.liveLine === LiveLineEnum.flv) {
-          handleFlvPlay();
-        } else if (appStore.liveLine === LiveLineEnum.hls) {
-          handleHlsPlay(data.hls_url!);
-        }
-        break;
-      case LiveRoomTypeEnum.msr:
-        if (appStore.liveLine === LiveLineEnum.flv) {
-          handleFlvPlay();
-        } else if (appStore.liveLine === LiveLineEnum.hls) {
-          handleHlsPlay(data.hls_url!);
-        }
-        break;
-      case LiveRoomTypeEnum.system:
-        if (appStore.liveLine === LiveLineEnum.flv) {
-          handleFlvPlay();
-        } else if (appStore.liveLine === LiveLineEnum.hls) {
-          handleHlsPlay(data.hls_url!);
-        }
-        break;
-      case LiveRoomTypeEnum.pk:
-        if (appStore.liveLine === LiveLineEnum.flv) {
-          handleFlvPlay();
-        } else if (appStore.liveLine === LiveLineEnum.hls) {
-          handleHlsPlay(data.hls_url!);
-        }
-        break;
-      case LiveRoomTypeEnum.wertc_live:
-        appStore.setLiveLine(LiveLineEnum.rtc);
-        break;
+    function play() {
+      if (appStore.liveLine === LiveLineEnum.flv) {
+        handleFlvPlay();
+      } else if (appStore.liveLine === LiveLineEnum.hls) {
+        handleHlsPlay(data.hls_url!);
+      }
+    }
+    if (LiveRoomTypeEnum.pk === data.type && !route.query.pkKey) {
+      play();
+    } else if (
+      [
+        LiveRoomTypeEnum.system,
+        LiveRoomTypeEnum.srs,
+        LiveRoomTypeEnum.obs,
+        LiveRoomTypeEnum.msr,
+        LiveRoomTypeEnum.pk,
+      ].includes(data.type!)
+    ) {
+      play();
+    } else if (
+      [
+        LiveRoomTypeEnum.wertc_live,
+        LiveRoomTypeEnum.wertc_meeting_one,
+        LiveRoomTypeEnum.wertc_meeting_two,
+      ].includes(data.type!)
+    ) {
+      appStore.setLiveLine(LiveLineEnum.rtc);
     }
   }
 
@@ -228,6 +217,7 @@ export function usePull(roomId: string) {
     [() => roomLiving.value, () => appStore.liveRoomInfo],
     ([val, liveRoomInfo]) => {
       if (val && liveRoomInfo) {
+        showPlayBtn.value = false;
         if (
           [
             LiveRoomTypeEnum.system,
@@ -403,11 +393,12 @@ export function usePull(roomId: string) {
     keydownDanmu,
     sendDanmu,
     handleSendGetLiveUser,
+    showPlayBtn,
     danmuMsgType,
     isPlaying,
     msgIsFile,
     mySocketId,
-    videoHeight,
+    videoResolution,
     remoteVideo,
     roomLiving,
     autoplayVal,

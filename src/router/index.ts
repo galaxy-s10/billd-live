@@ -229,6 +229,7 @@ router.beforeEach((to, from, next) => {
         return next({
           name: mobileRouterName.h5Room,
           params: { roomId: to.params.roomId },
+          query: { ...to.query },
         });
       } else {
         return next({

@@ -43,9 +43,8 @@
         主播还没开播~
       </div>
       <div
-        class="media-list"
+        class="remote-video"
         ref="remoteVideoRef"
-        :class="{ item: appStore.allTrack.length > 1 }"
       ></div>
       <div
         v-if="showPlayBtn && roomLiving && appStore.liveRoomInfo"
@@ -55,8 +54,8 @@
         点击播放
       </div>
       <VideoControls
-        v-else
-        :resolution="videoHeight"
+        v-if="roomLiving"
+        :resolution="videoResolution"
         @refresh="handleRefresh"
       ></VideoControls>
     </div>
@@ -95,7 +94,7 @@
                     </span>
                     <span v-else>
                       <span>{{ item.socket_id }}</span>
-                      <span> [游客] </span>
+                      <span>[游客]</span>
                     </span>
                     <span>：</span>
                   </span>
@@ -236,7 +235,6 @@ const appStore = useAppStore();
 const videoWrapTmpRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
 const danmuListRef = ref<HTMLDivElement>();
-const showPlayBtn = ref(false);
 const showEmoji = ref(false);
 
 const containerHeight = ref(0);
@@ -253,7 +251,7 @@ const {
   closeRtc,
   closeWs,
   handleSendGetLiveUser,
-  isPlaying,
+  showPlayBtn,
   autoplayVal,
   videoLoading,
   damuList,
@@ -261,7 +259,7 @@ const {
   roomLiving,
   anchorInfo,
   remoteVideo,
-  videoHeight,
+  videoResolution,
 } = usePull(roomId.value);
 
 onUnmounted(() => {
@@ -271,6 +269,7 @@ onUnmounted(() => {
 });
 
 onMounted(() => {
+  showPlayBtn.value = true;
   videoWrapRef.value = videoWrapTmpRef.value;
   getWechatQrcode();
   setTimeout(() => {
@@ -295,27 +294,6 @@ function handlePushStr(str) {
   showEmoji.value = false;
 }
 
-watch(
-  () => remoteVideo.value,
-  (newVal) => {
-    newVal.forEach((item) => {
-      remoteVideoRef.value?.appendChild(item);
-    });
-  },
-  {
-    deep: true,
-    immediate: true,
-  }
-);
-
-watch(
-  () => isPlaying.value,
-  (newVal) => {
-    if (newVal) {
-      showPlayBtn.value = false;
-    }
-  }
-);
 watch(
   () => damuList.value.length,
   () => {
@@ -431,23 +409,29 @@ async function getWechatQrcode() {
       font-size: 28px;
       transform: translate(-50%, -50%);
     }
-    .media-list {
+    .remote-video {
       position: relative;
+      width: 100%;
+      height: 100%;
       :deep(video) {
         position: absolute;
         left: 50%;
+        left: 50%;
         display: block;
+        margin: 0 auto;
         max-width: 100vw;
         max-height: var(--max-height);
-        transform: translateX(-50%);
+        transform: translate(-50%, -50%);
       }
       :deep(canvas) {
         position: absolute;
         left: 50%;
+        left: 50%;
         display: block;
+        margin: 0 auto;
         max-width: 100vw;
         max-height: var(--max-height);
-        transform: translateX(-50%);
+        transform: translate(-50%, -50%);
       }
     }
     .tip-btn {

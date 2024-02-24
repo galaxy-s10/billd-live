@@ -127,11 +127,11 @@
           }"
         ></div>
         <div
-          class="video-list"
+          class="remote-video"
           ref="remoteVideoRef"
         ></div>
         <VideoControls
-          :resolution="videoHeight"
+          :resolution="videoResolution"
           @refresh="handleRefresh"
           @full-screen="handleFullScreen"
         ></VideoControls>
@@ -467,11 +467,10 @@ const {
   handlePlay,
   handleSendGetLiveUser,
   videoWrapRef,
-  remoteVideo,
   danmuMsgType,
   msgIsFile,
   mySocketId,
-  videoHeight,
+  videoResolution,
   videoLoading,
   roomLiving,
   damuList,
@@ -974,7 +973,7 @@ function handleScrollTop() {
       justify-content: space-between;
       height: 562px;
       background-color: rgba($color: #000000, $alpha: 0.5);
-      .video-list {
+      .remote-video {
         position: relative;
         width: 100%;
         height: 100%;

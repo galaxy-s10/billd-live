@@ -7,6 +7,8 @@ import { ILiveRoom } from '@/types/ILiveRoom';
 
 export type AppRootState = {
   playing: boolean;
+  videoKBs?: string;
+  videoFps?: number;
   videoRatio: number;
   normalVolume: number;
   navList: { routeName: string; name: string }[];
@@ -48,6 +50,8 @@ export const useAppStore = defineStore('app', {
   state: (): AppRootState => {
     return {
       playing: true,
+      videoKBs: undefined,
+      videoFps: undefined,
       videoRatio: 16 / 9,
       normalVolume: 70,
       navList: [
