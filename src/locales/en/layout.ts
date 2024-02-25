@@ -12,6 +12,7 @@ export default nameSpaceWrap('layout', {
   sponsor: 'Sponsor',
   signin: 'Signin',
   deploy: 'Private Deploy',
+  wasm: 'Video Tool',
   startLive: 'Start Live',
   login: 'Login',
   logout: 'Logout',

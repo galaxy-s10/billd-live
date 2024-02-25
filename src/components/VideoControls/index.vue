@@ -3,7 +3,7 @@
     <div class="left">
       <div
         class="play"
-        @click="changePlay"
+        @click="appStore.playing = !appStore.playing"
       >
         <n-icon size="25">
           <Pause v-if="appStore.playing"></Pause>
@@ -20,7 +20,7 @@
       </div>
       <div
         class="muted"
-        @click="changeMuted"
+        @click="cacheStore.setMuted(!cacheStore.muted)"
       >
         <n-popover
           placement="top"
@@ -42,7 +42,7 @@
               :step="1"
               vertical
               :tooltip="false"
-              @update-value="changeVolume"
+              @update-value="(v) => cacheStore.setVolume(v)"
             />
           </div>
         </n-popover>
@@ -51,64 +51,131 @@
 
     <div class="right">
       <div
-        class="resolution"
-        v-if="appStore.videoFps"
+        class="item fps"
+        v-if="props.control?.fps && appStore.videoFps"
       >
         {{ appStore.videoFps }}帧
       </div>
       <div
-        class="resolution"
-        v-if="appStore.videoKBs"
+        class="item kbs"
+        v-if="props.control?.kbs && appStore.videoKBs"
       >
         {{ appStore.videoKBs }}KB/s
       </div>
       <div
-        class="resolution"
-        v-if="resolution"
+        class="item resolution"
+        v-if="props.control?.resolution && resolution"
       >
         {{ resolution }}
       </div>
-      <div class="line">
+      <div
+        class="item line"
+        v-if="props.control?.line"
+      >
+        <Dropdown
+          :positon="'center'"
+          :is-top="true"
+        >
+          <template #btn>
+            <div class="btn">线路</div>
+          </template>
+          <template #list>
+            <div class="list">
+              <div
+                class="iten"
+                :class="{ active: appStore.liveLine === item }"
+                v-for="item in LiveLineEnum"
+                :key="item"
+                @click="changeLiveLine(item)"
+              >
+                {{ item }}
+              </div>
+            </div>
+          </template>
+        </Dropdown>
+      </div>
+      <div
+        class="item speed"
+        v-if="props.control?.speed"
+      >
+        <Dropdown
+          :positon="'center'"
+          :is-top="true"
+        >
+          <template #btn>
+            <div class="btn">倍速</div>
+          </template>
+          <template #list>
+            <div
+              class="list"
+              @click="handleTip"
+            >
+              <div class="iten">2.0x</div>
+              <div class="iten">1.5x</div>
+              <div class="iten active">1.0x</div>
+              <div class="iten">0.5x</div>
+            </div>
+          </template>
+        </Dropdown>
+      </div>
+      <div
+        class="item render"
+        v-if="props.control?.renderMode"
+      >
+        <Dropdown
+          :positon="'center'"
+          :is-top="true"
+        >
+          <template #btn>
+            <div class="btn">渲染模式</div>
+          </template>
+          <template #list>
+            <div class="list">
+              <div
+                class="iten"
+                :class="{ active: appStore.videoControls?.renderMode === item }"
+                v-for="item in LiveRenderEnum"
+                :key="item"
+                @click="appStore.videoControls.renderMode = item"
+              >
+                {{ item }}
+              </div>
+            </div>
+          </template>
+        </Dropdown>
+      </div>
+      <div
+        class="item"
+        v-if="props.control?.pipMode"
+      >
         <span
           class="txt"
-          @click="showLine = !showLine"
+          @click="handlePip"
         >
-          线路
+          {{
+            !appStore.videoControlsValue.pipMode ? '开启画中画' : '退出画中画'
+          }}
         </span>
-        <div
-          class="list"
-          :class="{ show: showLine }"
-        >
-          <div
-            class="iten"
-            :class="{ active: appStore.liveLine === item }"
-            v-for="item in LiveLineEnum"
-            :key="item"
-            @click="changeLiveLine(item)"
-          >
-            {{ item }}
-          </div>
-        </div>
       </div>
-      <div class="speed">
+      <div
+        class="item"
+        v-if="props.control?.pageFullMode"
+      >
         <span
           class="txt"
-          @click="showSpeed = !showSpeed"
+          @click="handlePageFull"
         >
-          倍速
+          {{
+            !appStore.videoControlsValue.pageFullMode
+              ? '开启网页全屏'
+              : '退出网页全屏'
+          }}
         </span>
-        <div
-          class="list"
-          :class="{ show: showSpeed }"
-          @click="handleTip"
-        >
-          <div class="iten">2.0x</div>
-          <div class="iten">1.5x</div>
-          <div class="iten active">1.0x</div>
-          <div class="iten">0.5x</div>
-        </div>
       </div>
-      <div class="full">
+      <div
+        class="item"
+        v-if="props.control?.fullMode"
+      >
         <span
           class="txt"
           @click="emits('fullScreen')"
@@ -129,42 +196,62 @@ import {
   VolumeMuteOutline,
 } from '@vicons/ionicons5';
 import { debounce } from 'billd-utils';
-import { ref } from 'vue';
 
-import { LiveLineEnum } from '@/interface';
-import { useAppStore } from '@/store/app';
+import { handleTip } from '@/hooks/use-common';
+import { LiveLineEnum, LiveRenderEnum } from '@/interface';
+import { AppRootState, useAppStore } from '@/store/app';
 import { usePiniaCacheStore } from '@/store/cache';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
+import { onMounted } from 'vue';
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     resolution?: string;
+    control?: AppRootState['videoControls'];
   }>(),
   {}
 );
 
-const emits = defineEmits(['refresh', 'fullScreen']);
+const emits = defineEmits([
+  'refresh',
+  'fullScreen',
+  'pageFullScreen',
+  'pictureInPicture',
+]);
+
+const cacheStore = usePiniaCacheStore();
+const appStore = useAppStore();
 
 const debounceRefresh = debounce(() => {
   emits('refresh');
 }, 500);
-const cacheStore = usePiniaCacheStore();
-const appStore = useAppStore();
-const showLine = ref(false);
-const showSpeed = ref(false);
 
-function handleTip() {
-  window.$message.info('敬请期待！');
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown);
+});
+
+function handleKeydown(e) {
+  if (e.key === 'Escape') {
+    console.log('esc');
+    if (appStore.videoControlsValue.pageFullMode) {
+      window.$message.info('已退出网页全屏');
+      appStore.videoControlsValue.pageFullMode = false;
+    }
+  }
 }
 
-function changeMuted() {
-  cacheStore.setMuted(!cacheStore.muted);
+function handlePip() {
+  emits('pictureInPicture');
+  appStore.videoControlsValue.pipMode = !appStore.videoControlsValue.pipMode;
 }
-function changeVolume(v) {
-  cacheStore.setVolume(v);
-}
-function changePlay() {
-  appStore.playing = !appStore.playing;
+
+function handlePageFull() {
+  emits('pageFullScreen');
+  if (!appStore.videoControlsValue.pageFullMode) {
+    window.$message.info('按esc可快速退出网页全屏');
+  }
+  appStore.videoControlsValue.pageFullMode =
+    !appStore.videoControlsValue.pageFullMode;
 }
 
 function changeLiveLine(item: LiveLineEnum) {
@@ -175,6 +262,16 @@ function changeLiveLine(item: LiveLineEnum) {
       LiveRoomTypeEnum.wertc_meeting_two,
     ].includes(appStore.liveRoomInfo?.type!) &&
     item !== LiveLineEnum.rtc
+  ) {
+    window.$message.info('不支持该线路！');
+    return;
+  } else if (
+    ![
+      LiveRoomTypeEnum.wertc_live,
+      LiveRoomTypeEnum.wertc_meeting_one,
+      LiveRoomTypeEnum.wertc_meeting_two,
+    ].includes(appStore.liveRoomInfo?.type!) &&
+    item === LiveLineEnum.rtc
   ) {
     window.$message.info('不支持该线路！');
     return;
@@ -231,34 +328,34 @@ function changeLiveLine(item: LiveLineEnum) {
   .right {
     display: flex;
     align-items: center;
-    .resolution {
-      cursor: no-drop;
+    .item {
+      position: relative;
+      margin-right: 15px;
+      cursor: pointer;
+      &.fps,
+      &.kbs,
+      &.resolution {
+        cursor: no-drop;
+      }
     }
+
+    .render,
     .resolution,
     .line,
     .speed,
     .full {
-      position: relative;
-      margin-right: 15px;
       &:hover {
         .list {
           display: block;
         }
       }
-      .txt {
-        cursor: pointer;
+      :deep(.wrap) {
+        border-radius: 0px;
+        background-color: rgba($color: #000000, $alpha: 0.5);
+        color: white;
       }
       .list {
-        position: absolute;
-        top: 0;
-        left: 50%;
-        display: none;
-        background-color: rgba($color: #000000, $alpha: 0.5);
         text-align: center;
-        transform: translate(-50%, -100%);
-        &.show {
-          display: block;
-        }
         .iten {
           padding: 6px 10px;
           &.active {
@@ -274,8 +371,9 @@ function changeLiveLine(item: LiveLineEnum) {
         }
       }
     }
-    .full {
-      margin-right: 0;
+
+    & > :last-child {
+      margin-right: 0px;
     }
   }
 }

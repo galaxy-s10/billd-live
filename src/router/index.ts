@@ -28,6 +28,7 @@ export const routerName = {
   rank: 'rank',
   sponsors: 'sponsors',
   privatizationDeployment: 'privatizationDeployment',
+  wasm: 'wasm',
   support: 'support',
   order: 'order',
   wallet: 'wallet',

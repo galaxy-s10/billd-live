@@ -24,7 +24,6 @@
     <div
       v-loading="videoLoading"
       class="video-wrap"
-      ref="videoWrapTmpRef"
       :style="{
         height: videoWrapHeight + 'px',
         '--max-height': videoWrapHeight + 'px',
@@ -57,6 +56,11 @@
         v-if="roomLiving"
         :resolution="videoResolution"
         @refresh="handleRefresh"
+        @full-screen="handleFullScreen"
+        :control="{
+          line: true,
+          fullMode: true,
+        }"
       ></VideoControls>
     </div>
     <div class="n-tab-wrap">
@@ -136,23 +140,6 @@
           </div>
         </n-tab-pane>
         <n-tab-pane
-          name="customerService"
-          tab="客服"
-        >
-          <div
-            class="customerService-wrap"
-            :style="{ height: containerHeight + 'px' }"
-          >
-            <img
-              class="qrcode"
-              v-if="frontendWechatQrcode !== ''"
-              :src="frontendWechatQrcode"
-              alt=""
-            />
-            <div class="tip">打开微信扫一扫添加客服</div>
-          </div>
-        </n-tab-pane>
-        <n-tab-pane
           name="liveRoomInfo"
           tab="直播间信息"
         >
@@ -160,12 +147,10 @@
             class="liveRoomInfo-wrap"
             :style="{ height: containerHeight + 'px' }"
           >
-            <div>直播间名称：{{ appStore.liveRoomInfo?.name }}</div>
-            <div>直播间简介：{{ appStore.liveRoomInfo?.desc }}</div>
+            <div>名称：{{ appStore.liveRoomInfo?.name }}</div>
+            <div>简介：{{ appStore.liveRoomInfo?.desc }}</div>
             <div>
-              直播间分区：{{
-                appStore.liveRoomInfo?.areas?.[0].name || '暂无分区'
-              }}
+              分区：{{ appStore.liveRoomInfo?.areas?.[0].name || '暂无分区' }}
             </div>
           </div>
         </n-tab-pane>
@@ -216,10 +201,10 @@
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
-import { fetchFindLiveConfigByKey } from '@/api/liveConfig';
 import { fetchFindLiveRoom } from '@/api/liveRoom';
 import { THEME_COLOR } from '@/constant';
 import { emojiArray } from '@/emoji';
+import { useFullScreen } from '@/hooks/use-play';
 import { usePull } from '@/hooks/use-pull';
 import { DanmuMsgTypeEnum, WsMessageMsgIsFileEnum } from '@/interface';
 import router, { mobileRouterName } from '@/router';
@@ -232,14 +217,12 @@ const route = useRoute();
 const cacheStore = usePiniaCacheStore();
 const appStore = useAppStore();
 
-const videoWrapTmpRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
 const danmuListRef = ref<HTMLDivElement>();
 const showEmoji = ref(false);
 
 const containerHeight = ref(0);
 const videoWrapHeight = ref(0);
-const frontendWechatQrcode = ref('');
 const remoteVideoRef = ref<HTMLDivElement>();
 const roomId = ref(route.params.roomId as string);
 const {
@@ -258,7 +241,6 @@ const {
   danmuStr,
   roomLiving,
   anchorInfo,
-  remoteVideo,
   videoResolution,
 } = usePull(roomId.value);
 
@@ -270,8 +252,7 @@ onUnmounted(() => {
 
 onMounted(() => {
   showPlayBtn.value = true;
-  videoWrapRef.value = videoWrapTmpRef.value;
-  getWechatQrcode();
+  videoWrapRef.value = remoteVideoRef.value;
   setTimeout(() => {
     scrollTo(0, 0);
   }, 100);
@@ -315,6 +296,13 @@ function handleRefresh() {
   }
 }
 
+function handleFullScreen() {
+  const el = remoteVideoRef.value?.childNodes[0];
+  if (el) {
+    useFullScreen(el);
+  }
+}
+
 async function getLiveRoomInfo() {
   try {
     videoLoading.value = true;
@@ -340,17 +328,6 @@ function startPull() {
   cacheStore.setMuted(false);
   showPlayBtn.value = false;
   handlePlay(appStore.liveRoomInfo!);
-}
-
-async function getWechatQrcode() {
-  try {
-    const res = await fetchFindLiveConfigByKey('frontend_wechat_qrcode');
-    if (res.code === 200) {
-      frontendWechatQrcode.value = res.data.value;
-    }
-  } catch (error) {
-    console.log(error);
-  }
 }
 </script>
 
@@ -415,7 +392,7 @@ async function getWechatQrcode() {
       height: 100%;
       :deep(video) {
         position: absolute;
-        left: 50%;
+        top: 50%;
         left: 50%;
         display: block;
         margin: 0 auto;
@@ -425,7 +402,7 @@ async function getWechatQrcode() {
       }
       :deep(canvas) {
         position: absolute;
-        left: 50%;
+        top: 50%;
         left: 50%;
         display: block;
         margin: 0 auto;

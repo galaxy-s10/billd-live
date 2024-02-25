@@ -23,8 +23,9 @@
           <p>目前核心实现：</p>
           <ol>
             <li>服务器自建SRS直播。</li>
-            <li>服务器自建WebRTC直播。</li>
+            <li>服务器自建WebRTC会议。</li>
             <li>接入第三方腾讯云直播。</li>
+            <li>PK互动。</li>
           </ol>
         </div>
         <div class="hr"></div>

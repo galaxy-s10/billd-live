@@ -1,7 +1,12 @@
-import { getLastBuildDate } from '@/utils/localStorage/app';
 import { windowReload } from 'billd-utils';
 
+import { getLastBuildDate } from '@/utils/localStorage/app';
+
 import { useTip } from './use-tip';
+
+export function handleTip() {
+  window.$message.info('敬请期待！');
+}
 
 export const useCheckUpdate = () => {
   function handleHtmlCheckUpdate(data: {

@@ -25,6 +25,36 @@ function handlePlayUrl(url: string) {
       }=${userInfo.id!}&${SRS_CB_URL_PARAMS.randomId}=${getRandomString(8)}`;
 }
 
+function closePip() {
+  const appStore = useAppStore();
+  appStore.videoControlsValue.pipMode = false;
+}
+
+export async function usePictureInPicture(el, parentEl) {
+  try {
+    if (el?.tagName?.toLowerCase() === 'video') {
+      await el.requestPictureInPicture();
+      el.addEventListener('leavepictureinpicture', closePip);
+    } else {
+      // 打开一个与播放器大小相同的画中画窗口。
+      // @ts-ignore
+      const pipWindow = await documentPictureInPicture.requestWindow({
+        width: el.clientWidth,
+        height: el.clientHeight,
+      });
+      pipWindow.document.body.append(el);
+      // 当画中画窗口关闭时，将播放器移回原位置。
+      pipWindow.addEventListener('pagehide', () => {
+        parentEl?.append(el);
+        closePip();
+      });
+    }
+  } catch (error) {
+    console.error('usePictureInPicture失败');
+    console.log(error);
+  }
+}
+
 export function useFullScreen(video) {
   if (video.requestFullscreen) {
     console.log('requestFullscreen-1');
@@ -75,6 +105,7 @@ export function useFlvPlay() {
       flvPlayer.value = undefined;
     }
     flvVideoEl.value?.remove();
+    flvVideoEl.value = undefined;
     clearInterval(retryTimer.value);
     retryMax.value = initRetryMax;
   }
@@ -149,6 +180,7 @@ export function useFlvPlay() {
           videoEl.addEventListener('playing', () => {
             console.log('flv-playing');
             flvIsPlaying.value = true;
+            appStore.playing = true;
             retry.value = 0;
             setMuted(cacheStore.muted);
             setVolume(cacheStore.volume);
@@ -225,6 +257,7 @@ export function useHlsPlay() {
       hlsPlayer.value = undefined;
     }
     hlsVideoEl.value?.remove();
+    hlsVideoEl.value = undefined;
     clearInterval(retryTimer.value);
     retryMax.value = initRetryMax;
   }
@@ -327,6 +360,7 @@ export function useHlsPlay() {
         hlsPlayer.value?.on('playing', () => {
           console.log('hls-playing');
           hlsIsPlaying.value = true;
+          appStore.playing = true;
           setMuted(cacheStore.muted);
           setVolume(cacheStore.volume);
           retry.value = 0;

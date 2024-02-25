@@ -444,6 +444,8 @@ export function videoFullBox(data: {
   videoResize?: (data: { w: number; h: number }) => void;
 }) {
   const { videoEl } = data;
+  let wrapSize = data.wrapSize;
+
   if (!videoEl) {
     throw new Error('videoEl不能为空！');
   }
@@ -460,10 +462,10 @@ export function videoFullBox(data: {
     const res = computeBox({
       width,
       height,
-      maxHeight: data.wrapSize.height,
-      minHeight: data.wrapSize.height,
-      maxWidth: data.wrapSize.width,
-      minWidth: data.wrapSize.width,
+      maxHeight: wrapSize.height,
+      minHeight: wrapSize.height,
+      maxWidth: wrapSize.width,
+      minWidth: wrapSize.width,
     });
     videoEl.style.width = `${res.width as number}px`;
     videoEl.style.height = `${res.height as number}px`;
@@ -473,6 +475,11 @@ export function videoFullBox(data: {
   setVideoSize({ width: w, height: h });
   data.videoResize?.({ w, h });
   videoEl.addEventListener('resize', handleResize);
+  function changeWrapSize(data: { width; height }) {
+    wrapSize = data;
+    setVideoSize({ width: videoEl.videoWidth, height: videoEl.videoHeight });
+  }
+  return { changeWrapSize };
 }
 
 export function videoToCanvas(data: {
@@ -481,6 +488,7 @@ export function videoToCanvas(data: {
   videoResize?: (data: { w: number; h: number }) => void;
 }) {
   const { videoEl } = data;
+  let wrapSize = data.wrapSize;
   if (!videoEl) {
     throw new Error('videoEl不能为空！');
   }
@@ -500,10 +508,10 @@ export function videoToCanvas(data: {
     const res = computeBox({
       width,
       height,
-      maxHeight: data.wrapSize.height,
-      minHeight: data.wrapSize.height,
-      maxWidth: data.wrapSize.width,
-      minWidth: data.wrapSize.width,
+      maxHeight: wrapSize.height,
+      minHeight: wrapSize.height,
+      maxWidth: wrapSize.width,
+      minWidth: wrapSize.width,
     });
     canvas.style.width = `${res.width as number}px`;
     canvas.style.height = `${res.height as number}px`;
@@ -551,7 +559,12 @@ export function videoToCanvas(data: {
     cancelAnimationFrame(timer);
   }
 
+  function changeWrapSize(data: { width; height }) {
+    wrapSize = data;
+    setVideoSize({ width: videoEl.videoWidth, height: videoEl.videoHeight });
+  }
+
   drawCanvas();
 
-  return { drawCanvas, stopDrawing, canvas };
+  return { drawCanvas, stopDrawing, changeWrapSize, canvas };
 }

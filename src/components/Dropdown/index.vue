@@ -11,9 +11,9 @@
     </div>
     <div
       class="container"
-      :class="{ [props.positon]: 1 }"
+      :class="{ [props.positon]: 1, isTop: props.isTop }"
       :style="{
-        display: show ? 'block' : 'none',
+        // display: show ? 'block' : 'none',
       }"
       @click.stop="handleClick"
     >
@@ -32,11 +32,13 @@ const show = ref(false);
 const props = withDefaults(
   defineProps<{
     trigger?: 'hover' | 'click';
-    positon?: 'left' | 'right';
+    positon?: 'left' | 'right' | 'center';
+    isTop?: boolean;
   }>(),
   {
     trigger: 'hover',
     positon: 'right',
+    isTop: false,
   }
 );
 
@@ -58,8 +60,8 @@ function handleMouseLeave() {
 
 <style lang="scss" scoped>
 .dropdown-wrap {
-  display: inline-block;
   position: relative;
+  display: inline-block;
   cursor: initial;
   &.hover {
     &:hover {
@@ -71,24 +73,34 @@ function handleMouseLeave() {
 
   .btn {
     cursor: pointer;
+
     user-select: none;
   }
   .container {
     position: absolute;
     top: 100%;
-    right: 0;
     z-index: 3;
     display: none;
+
     &.right {
       right: 0;
+      left: auto;
     }
     &.left {
+      right: auto;
       left: 0;
+    }
+    &.center {
+      left: 50%;
+      transform: translate(-50%, 0%);
+    }
+    &.isTop {
+      top: 0%;
+      transform: translate(-50%, -100%);
     }
     .wrap {
       box-sizing: border-box;
       margin-top: 5px;
-      padding: 10px 0;
       border-radius: 5px;
       background-color: #fff;
       box-shadow:

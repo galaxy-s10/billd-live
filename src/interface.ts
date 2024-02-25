@@ -194,6 +194,11 @@ export enum LiveLineEnum {
   flv = 'flv',
 }
 
+export enum LiveRenderEnum {
+  video = 'video',
+  canvas = 'canvas',
+}
+
 export enum PayStatusEnum {
   wait = 'billd_status_wait',
   timeout = 'billd_status_timeout',

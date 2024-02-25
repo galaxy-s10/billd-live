@@ -89,7 +89,7 @@
           </div>
           <div
             class="logo-wrap"
-            @click="handleGithubLogin"
+            @click="handleTip"
           >
             <img
               class="logo"
@@ -106,6 +106,7 @@
 import { LockClosedOutline, PersonOutline } from '@vicons/ionicons5';
 import { onMounted, onUnmounted, ref } from 'vue';
 
+import { handleTip } from '@/hooks/use-common';
 import { useQQLogin } from '@/hooks/use-login';
 import { useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
@@ -131,10 +132,6 @@ onMounted(() => {});
 onUnmounted(() => {
   clearInterval(loopTimer.value);
 });
-
-function handleGithubLogin() {
-  window.$message.warning('敬请期待！');
-}
 
 function handleQQLogin() {
   useQQLogin({ exp: 24 });

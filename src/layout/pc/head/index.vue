@@ -79,7 +79,7 @@
             <div class="list">
               <a
                 class="item"
-                @click="quickStart"
+                @click="handleTip"
               >
                 <div class="txt">{{ t('layout.guide') }}</div>
               </a>
@@ -185,7 +185,7 @@
           </template>
         </Dropdown>
 
-        <a
+        <!-- <a
           class="sponsors"
           :class="{
             active: router.currentRoute.value.name === routerName.sponsors,
@@ -194,14 +194,9 @@
           @click.prevent="router.push({ name: routerName.sponsors })"
         >
           {{ t('layout.sponsor') }}
-        </a>
+        </a> -->
         <a
           class="signin"
-          :class="{
-            active:
-              router.currentRoute.value.name ===
-              routerName.privatizationDeployment,
-          }"
           @click="handleSignin"
         >
           {{ t('layout.signin') }}
@@ -225,6 +220,20 @@
           {{ t('layout.deploy') }}
           <div class="badge">
             <div class="txt">new</div>
+          </div>
+        </a>
+
+        <a
+          class="wasm"
+          :class="{
+            active: router.currentRoute.value.name === routerName.wasm,
+          }"
+          href="/wasm"
+          @click.prevent="handleTip"
+        >
+          {{ t('layout.wasm') }}
+          <div class="badge">
+            <div class="txt">wasm</div>
           </div>
         </a>
 
@@ -381,7 +390,8 @@ import { fetchCreateSignin, fetchTodayIsSignin } from '@/api/signin';
 import Dropdown from '@/components/Dropdown/index.vue';
 import VPIconChevronDown from '@/components/icons/VPIconChevronDown.vue';
 import VPIconExternalLink from '@/components/icons/VPIconExternalLink.vue';
-import { COMMON_URL } from '@/constant';
+import { COMMON_URL, DEFAULT_AUTH_INFO } from '@/constant';
+import { handleTip } from '@/hooks/use-common';
 import { loginTip } from '@/hooks/use-login';
 import { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
@@ -408,6 +418,11 @@ const about = ref([
   {
     label: 'layout.team',
     routerName: routerName.team,
+    url: '',
+  },
+  {
+    label: 'layout.sponsor',
+    routerName: routerName.sponsors,
     url: '',
   },
   {
@@ -455,6 +470,10 @@ const plugins = ref([
   {
     label: 'billd-cli',
     url: 'https://github.com/galaxy-s10/billd-cli',
+  },
+  {
+    label: 'billd-deploy',
+    url: 'https://github.com/galaxy-s10/billd-deploy',
   },
   {
     label: 'billd-utils',
@@ -515,7 +534,7 @@ function handleJump(item) {
   if (item.url) {
     openToTarget(item.url);
   } else {
-    window.$message.info('敬请期待！');
+    handleTip();
   }
 }
 
@@ -524,12 +543,17 @@ onMounted(() => {
     'https://img.shields.io/github/stars/galaxy-s10/billd-live?label=Star&logo=GitHub&labelColor=white&logoColor=black&style=social&cacheSeconds=3600';
 });
 
-function quickStart() {
-  window.$message.info('敬请期待！');
-}
-
 function handleStartLive(key: LiveRoomTypeEnum) {
   if (!loginTip()) {
+    return;
+  }
+  if (
+    key === LiveRoomTypeEnum.msr &&
+    !userStore.userInfo?.auths?.find(
+      (v) => v.auth_value === DEFAULT_AUTH_INFO.LIVE_PULL_SVIP.auth_value
+    )
+  ) {
+    window.$message.info('权限不足，请更换其他开播方式');
     return;
   }
   const url = router.resolve({
@@ -576,7 +600,6 @@ function handleWebsiteJump() {
       color: white;
       line-height: 1;
       .txt {
-        margin-right: 0;
         transform-origin: top !important;
 
         @include minFont(10);
@@ -676,6 +699,8 @@ function handleWebsiteJump() {
 
         .list {
           width: 150px;
+          padding: 10px 0;
+
           .item {
             display: flex;
             align-items: center;
@@ -700,6 +725,8 @@ function handleWebsiteJump() {
       .ecosystem {
         .list {
           width: 225px;
+          padding: 10px 0;
+
           .title {
             margin: 10px 0 5px;
             padding: 0 15px;
@@ -715,6 +742,7 @@ function handleWebsiteJump() {
       .github,
       .sponsors,
       .privatizationDeployment,
+      .wasm,
       .signin {
         display: flex;
         align-items: center;
@@ -725,10 +753,8 @@ function handleWebsiteJump() {
         &:hover {
           color: $theme-color-gold;
         }
-        .txt {
-          margin-right: 5px;
-        }
       }
+      .wasm,
       .privatizationDeployment,
       .signin {
         position: relative;
@@ -747,6 +773,7 @@ function handleWebsiteJump() {
         .list {
           width: 180px;
           position: relative;
+          padding: 10px 0;
 
           .item {
             display: flex;
@@ -795,6 +822,8 @@ function handleWebsiteJump() {
         }
         .list {
           width: 90px;
+          padding: 10px 0;
+
           .item {
             position: relative;
             display: flex;
@@ -819,6 +848,8 @@ function handleWebsiteJump() {
         }
         .list {
           width: 80px;
+          padding: 10px 0;
+
           .item {
             display: flex;
             align-items: center;

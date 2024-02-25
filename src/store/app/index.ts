@@ -1,7 +1,7 @@
 import { UploadFileInfo } from 'naive-ui';
 import { defineStore } from 'pinia';
 
-import { LiveLineEnum, MediaTypeEnum } from '@/interface';
+import { LiveLineEnum, LiveRenderEnum, MediaTypeEnum } from '@/interface';
 import { mobileRouterName } from '@/router';
 import { ILiveRoom } from '@/types/ILiveRoom';
 
@@ -39,6 +39,22 @@ export type AppRootState = {
     rect?: { top: number; left: number };
     scaleInfo: Record<number, { scaleX: number; scaleY: number }>;
   }[];
+  videoControls: {
+    pipMode?: boolean;
+    pageFullMode?: boolean;
+    fullMode?: boolean;
+    renderMode?: LiveRenderEnum;
+    line?: boolean;
+    speed?: boolean;
+    networkSpeed?: boolean;
+    fps?: boolean;
+    kbs?: boolean;
+    resolution?: boolean;
+  };
+  videoControlsValue: {
+    pipMode?: boolean;
+    pageFullMode?: boolean;
+  };
   liveLine: LiveLineEnum;
   liveRoomInfo?: ILiveRoom;
   showLoginModal: boolean;
@@ -49,10 +65,16 @@ export type AppRootState = {
 export const useAppStore = defineStore('app', {
   state: (): AppRootState => {
     return {
-      playing: true,
+      playing: false,
       videoKBs: undefined,
       videoFps: undefined,
       videoRatio: 16 / 9,
+      videoControls: {
+        renderMode: LiveRenderEnum.video,
+      },
+      videoControlsValue: {
+        pipMode: false,
+      },
       normalVolume: 70,
       navList: [
         { routeName: mobileRouterName.h5, name: '频道' },

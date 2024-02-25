@@ -1,5 +1,5 @@
 import { getRandomString } from 'billd-utils';
-import { onUnmounted, ref, watch } from 'vue';
+import { nextTick, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { commentAuthTip, loginTip } from '@/hooks/use-login';
@@ -8,6 +8,7 @@ import { useWebsocket } from '@/hooks/use-websocket';
 import {
   DanmuMsgTypeEnum,
   LiveLineEnum,
+  LiveRenderEnum,
   WsMessageMsgIsFileEnum,
 } from '@/interface';
 import { useAppStore } from '@/store/app';
@@ -47,6 +48,7 @@ export function usePull(roomId: string) {
   const { flvVideoEl, flvIsPlaying, startFlvPlay, destroyFlv } = useFlvPlay();
   const { hlsVideoEl, hlsIsPlaying, startHlsPlay, destroyHls } = useHlsPlay();
   const stopDrawingArr = ref<any[]>([]);
+  let changeWrapSizeFn;
 
   onUnmounted(() => {
     handleStopDrawing();
@@ -55,55 +57,92 @@ export function usePull(roomId: string) {
   function handleStopDrawing() {
     destroyFlv();
     destroyHls();
+    changeWrapSizeFn = undefined;
     stopDrawingArr.value.forEach((cb) => cb());
     stopDrawingArr.value = [];
     remoteVideo.value.forEach((el) => el.remove());
     remoteVideo.value = [];
   }
 
-  watch(hlsVideoEl, (newval) => {
+  function handleVideoWrapResize() {
+    nextTick(() => {
+      if (videoWrapRef.value) {
+        const rect = videoWrapRef.value.getBoundingClientRect();
+        changeWrapSizeFn?.({ width: rect.width, height: rect.height });
+      }
+    });
+  }
+
+  function videoPlay(videoEl: HTMLVideoElement) {
     stopDrawingArr.value = [];
     stopDrawingArr.value.forEach((cb) => cb());
-    if (newval && videoWrapRef.value) {
-      const rect = videoWrapRef.value.getBoundingClientRect();
-      const { canvas, stopDrawing } = videoToCanvas({
-        wrapSize: {
-          width: rect.width,
-          height: rect.height,
-        },
-        videoEl: newval,
-        videoResize: ({ w, h }) => {
-          videoResolution.value = `${w}x${h}`;
-        },
-      });
-      stopDrawingArr.value.push(stopDrawing);
-      remoteVideo.value.push(canvas);
-      videoElArr.value.push(newval);
-      videoLoading.value = false;
+    if (appStore.videoControls.renderMode === LiveRenderEnum.canvas) {
+      if (videoEl && videoWrapRef.value) {
+        const rect = videoWrapRef.value.getBoundingClientRect();
+        const { canvas, stopDrawing, changeWrapSize } = videoToCanvas({
+          wrapSize: {
+            width: rect.width,
+            height: rect.height,
+          },
+          videoEl,
+          videoResize: ({ w, h }) => {
+            videoResolution.value = `${w}x${h}`;
+          },
+        });
+        changeWrapSizeFn = changeWrapSize;
+        stopDrawingArr.value.push(stopDrawing);
+        remoteVideo.value.push(canvas);
+        videoElArr.value.push(videoEl);
+        videoLoading.value = false;
+      }
+    } else if (appStore.videoControls.renderMode === LiveRenderEnum.video) {
+      if (videoEl && videoWrapRef.value) {
+        const rect = videoWrapRef.value.getBoundingClientRect();
+        const { changeWrapSize } = videoFullBox({
+          wrapSize: {
+            width: rect.width,
+            height: rect.height,
+          },
+          videoEl,
+          videoResize: ({ w, h }) => {
+            videoResolution.value = `${w}x${h}`;
+          },
+        });
+        changeWrapSizeFn = changeWrapSize;
+        remoteVideo.value.push(videoEl);
+        videoElArr.value.push(videoEl);
+        videoLoading.value = false;
+      }
+    }
+  }
+
+  watch(hlsVideoEl, (newval) => {
+    if (newval) {
+      videoPlay(newval);
     }
   });
 
   watch(flvVideoEl, (newval) => {
-    stopDrawingArr.value = [];
-    stopDrawingArr.value.forEach((cb) => cb());
-    if (newval && videoWrapRef.value) {
-      const rect = videoWrapRef.value.getBoundingClientRect();
-      const { canvas, stopDrawing } = videoToCanvas({
-        wrapSize: {
-          width: rect.width,
-          height: rect.height,
-        },
-        videoEl: newval,
-        videoResize: ({ w, h }) => {
-          videoResolution.value = `${w}x${h}`;
-        },
-      });
-      stopDrawingArr.value.push(stopDrawing);
-      remoteVideo.value.push(canvas);
-      videoElArr.value.push(newval);
-      videoLoading.value = false;
+    if (newval) {
+      videoPlay(newval);
     }
   });
+
+  watch(
+    () => appStore.videoControlsValue.pageFullMode,
+    () => {
+      handleVideoWrapResize();
+    }
+  );
+
+  watch(
+    () => appStore.videoControls.renderMode,
+    () => {
+      if (appStore.liveRoomInfo) {
+        handlePlay(appStore.liveRoomInfo);
+      }
+    }
+  );
 
   watch(
     () => networkStore.rtcMap,
@@ -181,6 +220,7 @@ export function usePull(roomId: string) {
 
   function handlePlay(data: ILiveRoom) {
     roomLiving.value = true;
+    appStore.playing = false;
     flvurl.value = data.flv_url!;
     hlsurl.value = data.hls_url!;
     function play() {
@@ -347,6 +387,7 @@ export function usePull(roomId: string) {
     const key = event.key.toLowerCase();
     if (key === 'enter') {
       event.preventDefault();
+      danmuMsgType.value = DanmuMsgTypeEnum.danmu;
       sendDanmu();
     }
   }
@@ -365,6 +406,7 @@ export function usePull(roomId: string) {
     const instance = networkStore.wsMap.get(roomId);
     if (!instance) return;
     const requestId = getRandomString(8);
+    console.log(danmuMsgType.value, 2221);
     const messageData: WsMessageType['data'] = {
       socket_id: '',
       msg: danmuStr.value,

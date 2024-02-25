@@ -1,13 +1,11 @@
 <template>
-  <div class="pull-wrap">
+  <div
+    class="pull-wrap"
+    :class="{ isPageFull: appStore.videoControlsValue.pageFullMode }"
+  >
     <div class="bg-img-wrap">
-      <div
-        v-if="configBg !== ''"
-        class="bg-img"
-        :style="{ backgroundImage: `url(${configBg})` }"
-      ></div>
       <video
-        v-if="configVideo !== ''"
+        v-if="configVideo && configVideo !== ''"
         class="bg-video"
         :src="configVideo"
         muted
@@ -15,8 +13,8 @@
         loop
       ></video>
       <div
-        v-else
-        class="bg-img"
+        v-if="configBg && configBg !== ''"
+        :style="{ backgroundImage: `url(${configBg})` }"
       ></div>
     </div>
     <div class="left">
@@ -134,6 +132,8 @@
           :resolution="videoResolution"
           @refresh="handleRefresh"
           @full-screen="handleFullScreen"
+          @picture-in-picture="hanldePictureInPicture"
+          :control="appStore.videoControls"
         ></VideoControls>
       </div>
 
@@ -176,43 +176,46 @@
       </div>
     </div>
     <div class="right">
-      <div class="tab">
-        <span>在线用户</span>
-        <span> | </span>
-        <span>排行榜</span>
-      </div>
-      <div class="user-list">
-        <div
-          v-for="(item, index) in liveUserList"
-          :key="index"
-          class="item"
-        >
+      <div class="rank-wrap">
+        <div class="tab">
+          <span>在线用户</span>
+          <span> | </span>
+          <span>排行榜</span>
+        </div>
+        <div class="user-list">
           <div
-            class="info"
-            v-if="item.value?.userInfo"
-            @click="jumpProfile(item.value.userInfo.id!)"
+            v-for="(item, index) in liveUserList"
+            :key="index"
+            class="item"
           >
             <div
-              class="avatar"
-              :style="{
-                backgroundImage: `url(${item.value.userInfo.avatar})`,
-              }"
-            ></div>
-            <div class="username">
-              {{ item.value.userInfo.username }}
+              class="info"
+              v-if="item.value?.userInfo"
+              @click="jumpProfile(item.value.userInfo.id!)"
+            >
+              <div
+                class="avatar"
+                :style="{
+                  backgroundImage: `url(${item.value.userInfo.avatar})`,
+                }"
+              ></div>
+              <div class="username">
+                {{ item.value.userInfo.username }}
+              </div>
             </div>
-          </div>
-          <div
-            class="info"
-            v-else
-          >
-            <div class="avatar"></div>
-            <div class="username">
-              {{ item.value?.socketId }}
+            <div
+              class="info"
+              v-else
+            >
+              <div class="avatar"></div>
+              <div class="username">
+                {{ item.value?.socketId }}
+              </div>
             </div>
           </div>
         </div>
       </div>
+
       <div
         ref="danmuListRef"
         class="danmu-list"
@@ -383,7 +386,7 @@
         ></textarea>
         <div
           class="btn"
-          @click="sendDanmu"
+          @click="handleSendDanmu"
         >
           发送
         </div>
@@ -412,7 +415,7 @@ import { fetchGetWsMessageList } from '@/api/wsMessage';
 import { QINIU_RESOURCE, liveRoomTypeEnumMap } from '@/constant';
 import { emojiArray } from '@/emoji';
 import { commentAuthTip, loginTip } from '@/hooks/use-login';
-import { useFullScreen } from '@/hooks/use-play';
+import { useFullScreen, usePictureInPicture } from '@/hooks/use-play';
 import { usePull } from '@/hooks/use-pull';
 import { useUpload } from '@/hooks/use-upload';
 import {
@@ -421,6 +424,7 @@ import {
   GoodsTypeEnum,
   IGiftRecord,
   IGoods,
+  LiveRenderEnum,
   WsMessageMsgIsFileEnum,
   WsMessageMsgIsShowEnum,
   WsMessageMsgIsVerifyEnum,
@@ -480,12 +484,22 @@ const {
 } = usePull(roomId.value);
 
 onMounted(() => {
+  appStore.videoControls.fps = true;
+  appStore.videoControls.fullMode = true;
+  appStore.videoControls.kbs = true;
+  appStore.videoControls.line = true;
+  appStore.videoControls.networkSpeed = true;
+  appStore.videoControls.pageFullMode = true;
+  appStore.videoControls.pipMode = true;
+  appStore.videoControls.renderMode = LiveRenderEnum.video;
+  appStore.videoControls.resolution = true;
+  appStore.videoControls.speed = true;
+
   videoWrapRef.value = remoteVideoRef.value;
   setTimeout(() => {
     scrollTo(0, 0);
   }, 100);
   handleHistoryMsg();
-  appStore.playing = true;
   getGoodsList();
   if (topRef.value && bottomRef.value && remoteVideoRef.value) {
     const res =
@@ -505,6 +519,11 @@ onUnmounted(() => {
   closeWs();
   closeRtc();
 });
+
+function handleSendDanmu() {
+  danmuMsgType.value = DanmuMsgTypeEnum.danmu;
+  sendDanmu();
+}
 
 async function getGiftGroupList() {
   const res = await fetchGiftGroupList({
@@ -751,9 +770,19 @@ async function handlePay(item: IGoods) {
 
 function handleFullScreen() {
   const el = remoteVideoRef.value?.childNodes[0];
-  // @ts-ignore
-  if (el?.tagName?.toLowerCase() === 'video') {
+  if (el) {
     useFullScreen(el);
+  }
+}
+
+async function hanldePictureInPicture() {
+  if (appStore.videoControlsValue.pipMode) {
+    document.exitPictureInPicture();
+  } else {
+    const el = remoteVideoRef.value?.childNodes[0];
+    if (el && remoteVideoRef.value) {
+      await usePictureInPicture(el, remoteVideoRef.value);
+    }
   }
 }
 
@@ -826,10 +855,13 @@ function handleScrollTop() {
   }
 }
 .pull-wrap {
+  position: relative;
+  z-index: 1;
   display: flex;
   justify-content: space-around;
   margin: 15px auto 0;
-  width: $w-1275;
+  width: $w-1200;
+
   .bg-img-wrap {
     position: absolute;
     top: $layout-head-h;
@@ -869,7 +901,7 @@ function handleScrollTop() {
     display: inline-block;
     overflow: hidden;
     box-sizing: border-box;
-    width: $w-1000;
+    width: $w-900;
     height: 740px;
     border-radius: 6px;
     background-color: $theme-color-papayawhip;
@@ -969,9 +1001,8 @@ function handleScrollTop() {
       display: flex;
       overflow: hidden;
       align-items: center;
-      flex: 1;
       justify-content: space-between;
-      height: 562px;
+      height: calc(100% - 80px - 100px);
       background-color: rgba($color: #000000, $alpha: 0.5);
       .remote-video {
         position: relative;
@@ -983,10 +1014,7 @@ function handleScrollTop() {
           left: 50%;
           display: block;
           margin: 0 auto;
-          // min-width: 100%;
-          // min-height: 100%;
-          max-width: $w-1000;
-          max-height: 562px;
+          height: calc(100% - 80px - 100px);
           transform: translate(-50%, -50%);
         }
         :deep(canvas) {
@@ -995,10 +1023,7 @@ function handleScrollTop() {
           left: 50%;
           display: block;
           margin: 0 auto;
-          // min-width: 100%;
-          // min-height: 100%;
-          max-width: $w-1000;
-          max-height: 562px;
+          height: calc(100% - 80px - 100px);
           transform: translate(-50%, -50%);
         }
       }
@@ -1023,12 +1048,17 @@ function handleScrollTop() {
     }
 
     .gift-list {
-      position: relative;
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      left: 0;
       display: flex;
       align-items: center;
       justify-content: space-around;
       box-sizing: border-box;
+      box-sizing: border-box;
       padding: 5px 0;
+      height: 100px;
       > :last-child {
         position: absolute;
       }
@@ -1095,49 +1125,52 @@ function handleScrollTop() {
     border-radius: 6px;
     background-color: $theme-color-papayawhip;
     color: #9499a0;
-    .tab {
-      display: flex;
-      align-items: center;
-      justify-content: space-evenly;
-      height: 27px;
-      font-size: 12px;
-    }
-    .user-list {
-      overflow-y: scroll;
-      padding: 0 15px;
-      height: 100px;
-      background-color: $theme-color-papayawhip;
-
-      @extend %customScrollbar;
-      .item {
+    .rank-wrap {
+      .tab {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        margin-bottom: 10px;
+        justify-content: space-evenly;
+        height: 30px;
         font-size: 12px;
-        .info {
+      }
+      .user-list {
+        overflow-y: scroll;
+        box-sizing: border-box;
+        padding: 0 15px;
+        height: 100px;
+
+        @extend %customScrollbar;
+        .item {
           display: flex;
           align-items: center;
-          cursor: pointer;
-          .avatar {
-            margin-right: 5px;
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
+          justify-content: space-between;
+          margin-bottom: 10px;
+          font-size: 12px;
+          .info {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            .avatar {
+              margin-right: 5px;
+              width: 25px;
+              height: 25px;
+              border-radius: 50%;
 
-            @extend %containBg;
-          }
-          .username {
-            color: black;
+              @extend %containBg;
+            }
+            .username {
+              color: black;
+            }
           }
         }
       }
     }
+
     .danmu-list {
       overflow-y: scroll;
       box-sizing: border-box;
       padding-top: 4px;
-      height: 480px;
+      height: calc(100% - 30px - 100px - 135px);
       background-color: #f6f7f8;
       text-align: initial;
 
@@ -1188,10 +1221,13 @@ function handleScrollTop() {
       }
     }
     .send-msg {
-      position: relative;
+      position: absolute;
+      bottom: 0;
+      left: 0;
       box-sizing: border-box;
-      padding: 4px 10px;
+      padding: 2px 10px;
       width: 100%;
+      height: 135px;
       .disableSpeaking {
         cursor: no-drop;
 
@@ -1267,8 +1303,12 @@ function handleScrollTop() {
         outline: none;
         border: 1px solid hsla(0, 0%, 60%, 0.2);
         border-radius: 4px;
-        background-color: #f1f2f3;
+        background-color: #fff;
         font-size: 14px;
+
+        &::placeholder {
+          font-size: 13px;
+        }
       }
       .btn {
         box-sizing: border-box;
@@ -1286,15 +1326,78 @@ function handleScrollTop() {
       }
     }
   }
+  &.isPageFull {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    justify-content: space-between;
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+
+    .left {
+      width: calc(100vw - 300px);
+      height: 100%;
+      border-radius: 0;
+      .head {
+        display: none;
+      }
+      .video-wrap {
+        height: calc(100% - 100px);
+        .remote-video {
+          :deep(video) {
+            max-width: 100%;
+          }
+          :deep(canvas) {
+            max-width: 100%;
+          }
+        }
+      }
+      .gift-list {
+        background-color: #8ec5fc;
+        background-image: linear-gradient(62deg, #8ec5fc 0%, #e0c3fc 100%);
+
+        .item {
+          .name {
+            color: white;
+          }
+          .price {
+            color: black;
+          }
+        }
+      }
+    }
+    .right {
+      width: 300px;
+      height: 100%;
+      border-radius: 0;
+      .rank-wrap {
+        background-color: #8ec5fc;
+        background-image: linear-gradient(62deg, #8ec5fc 0%, #e0c3fc 100%);
+      }
+
+      .send-msg {
+        background-color: #0093e9;
+        background-image: linear-gradient(328deg, #0093e9 0%, #80d0c7 100%);
+      }
+    }
+  }
 }
 
 // 屏幕宽度大于1500的时候
 @media screen and (min-width: $w-1500) {
   .pull-wrap {
-    width: $w-1350;
+    width: $w-1450;
 
     .left {
-      width: $w-1000;
+      width: $w-1100;
+      :deep(video) {
+        max-width: $w-1100;
+      }
+      :deep(canvas) {
+        max-width: $w-1100;
+      }
     }
     .right {
       width: $w-300;

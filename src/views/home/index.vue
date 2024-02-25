@@ -67,6 +67,9 @@
               @click.stop
               :resolution="videoResolution"
               @refresh="handleRefresh"
+              :control="{
+                line: true,
+              }"
             ></VideoControls>
             <div
               class="join-btn"
@@ -312,7 +315,6 @@ function changeLiveRoom(item: ILive) {
   ) {
     appStore.setLiveLine(LiveLineEnum.hls);
   }
-  appStore.playing = true;
   playLive(item);
 }
 

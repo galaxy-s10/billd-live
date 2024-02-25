@@ -351,7 +351,7 @@
           ></textarea>
           <div
             class="btn"
-            @click="sendDanmu"
+            @click="handleSendDanmu"
           >
             发送
           </div>
@@ -607,6 +607,10 @@ watch(
     }, 0);
   }
 );
+
+function handleSendDanmu() {
+  sendDanmu();
+}
 
 function handlePushStr(str) {
   danmuStr.value += str;

@@ -102,6 +102,7 @@ async function startPay() {
 
 <style lang="scss" scoped>
 .recharge-wrap {
+  position: fixed;
   .title {
     display: flex;
     align-items: center;

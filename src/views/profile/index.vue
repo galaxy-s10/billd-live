@@ -89,7 +89,7 @@
 
 <script lang="ts" setup>
 import { copyToClipBoard, openToTarget } from 'billd-utils';
-import { ref, watchEffect } from 'vue';
+import { ref, watch, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { fetchUpdateLiveRoomKey } from '@/api/liveRoom';
@@ -119,16 +119,21 @@ watchEffect(() => {
   }
 });
 
+watch(
+  () => userStore.userInfo,
+  (newval) => {
+    if (newval) {
+      pushRes.value = newval.live_rooms?.[0];
+    }
+  }
+);
+
 async function handleUserInfo() {
   try {
     getUserLoading.value = true;
     const res = await fetchFindUser(userId.value);
     if (res.code === 200) {
       userInfo.value = res.data;
-    }
-    if (userStore.userInfo) {
-      const liveRoom = userStore.userInfo.live_rooms?.[0];
-      pushRes.value = liveRoom;
     }
   } catch (error) {
     console.error(error);
