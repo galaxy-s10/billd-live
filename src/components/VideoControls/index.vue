@@ -195,14 +195,14 @@ import {
   VolumeHighOutline,
   VolumeMuteOutline,
 } from '@vicons/ionicons5';
-import { debounce } from 'billd-utils';
+import { debounce, isSafari } from 'billd-utils';
+import { onMounted, onUnmounted } from 'vue';
 
 import { handleTip } from '@/hooks/use-common';
 import { LiveLineEnum, LiveRenderEnum } from '@/interface';
 import { AppRootState, useAppStore } from '@/store/app';
 import { usePiniaCacheStore } from '@/store/cache';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
-import { onMounted } from 'vue';
 
 const props = withDefaults(
   defineProps<{
@@ -230,6 +230,10 @@ onMounted(() => {
   window.addEventListener('keydown', handleKeydown);
 });
 
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown);
+});
+
 function handleKeydown(e) {
   if (e.key === 'Escape') {
     console.log('esc');
@@ -241,6 +245,13 @@ function handleKeydown(e) {
 }
 
 function handlePip() {
+  if (
+    isSafari() &&
+    appStore.videoControls.renderMode === LiveRenderEnum.canvas
+  ) {
+    window.$message.info('请先切换渲染模式为video');
+    return;
+  }
   emits('pictureInPicture');
   appStore.videoControlsValue.pipMode = !appStore.videoControlsValue.pipMode;
 }

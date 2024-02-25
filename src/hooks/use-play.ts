@@ -25,13 +25,25 @@ function handlePlayUrl(url: string) {
       }=${userInfo.id!}&${SRS_CB_URL_PARAMS.randomId}=${getRandomString(8)}`;
 }
 
+let pipVideo;
+
 function closePip() {
-  const appStore = useAppStore();
-  appStore.videoControlsValue.pipMode = false;
+  try {
+    const appStore = useAppStore();
+    appStore.videoControlsValue.pipMode = false;
+    // 直接play貌似会有延迟
+    setTimeout(() => {
+      pipVideo.play?.();
+    }, 50);
+  } catch (error) {
+    console.error('closePip错误');
+    console.error(error);
+  }
 }
 
 export async function usePictureInPicture(el, parentEl) {
   try {
+    pipVideo = el;
     if (el?.tagName?.toLowerCase() === 'video') {
       await el.requestPictureInPicture();
       el.addEventListener('leavepictureinpicture', closePip);

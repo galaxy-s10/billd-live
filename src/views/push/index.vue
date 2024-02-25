@@ -2218,7 +2218,9 @@ function handleChangeMuted(item: AppRootState['allTrack'][0]) {
     item.volume = res ? 0 : appStore.normalVolume;
     item.muted = res;
     if (item.type) {
-      item.videoEl.muted = res;
+      if (item.type !== MediaTypeEnum.microphone) {
+        item.videoEl.muted = res;
+      }
       item.videoEl.volume = res ? 0 : appStore.normalVolume / 100;
     }
     cacheStore.setResourceList(appStore.allTrack);
@@ -2234,7 +2236,9 @@ function handleChangeVolume(item: AppRootState['allTrack'][0], v) {
         iten.muted = v === 0;
         if (iten.videoEl && item.type) {
           iten.videoEl.volume = v / 100;
-          iten.videoEl.muted = v === 0;
+          if (item.type !== MediaTypeEnum.microphone) {
+            iten.videoEl.muted = v === 0;
+          }
         }
       }
     }
