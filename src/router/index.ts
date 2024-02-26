@@ -28,7 +28,7 @@ export const routerName = {
   rank: 'rank',
   sponsors: 'sponsors',
   privatizationDeployment: 'privatizationDeployment',
-  wasm: 'wasm',
+  videoTools: 'videoTools',
   support: 'support',
   order: 'order',
   wallet: 'wallet',
@@ -65,7 +65,6 @@ export const defaultRoutes: RouteRecordRaw[] = [
         path: '/',
         component: () => import('@/views/home/index.vue'),
       },
-
       {
         name: routerName.about,
         path: '/about',
@@ -152,17 +151,20 @@ export const defaultRoutes: RouteRecordRaw[] = [
         component: () => import('@/views/wallet/index.vue'),
       },
       {
+        name: routerName.videoTools,
+        path: '/videoTools',
+        component: () => import('@/views/videoTools/index.vue'),
+      },
+      {
         name: routerName.ad,
         path: '/ad',
         component: () => import('@/views/doc/ad/index.vue'),
       },
-
       {
         name: routerName.pull,
         path: '/pull/:roomId',
         component: () => import('@/views/pull/index.vue'),
       },
-
       {
         name: routerName.push,
         path: '/push',

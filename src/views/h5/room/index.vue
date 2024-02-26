@@ -57,9 +57,11 @@
         :resolution="videoResolution"
         @refresh="handleRefresh"
         @full-screen="handleFullScreen"
+        @picture-in-picture="hanldePictureInPicture"
         :control="{
           line: true,
           fullMode: true,
+          pipMode: true,
         }"
       ></VideoControls>
     </div>
@@ -204,7 +206,7 @@ import { useRoute } from 'vue-router';
 import { fetchFindLiveRoom } from '@/api/liveRoom';
 import { THEME_COLOR } from '@/constant';
 import { emojiArray } from '@/emoji';
-import { useFullScreen } from '@/hooks/use-play';
+import { useFullScreen, usePictureInPicture } from '@/hooks/use-play';
 import { usePull } from '@/hooks/use-pull';
 import { DanmuMsgTypeEnum, WsMessageMsgIsFileEnum } from '@/interface';
 import router, { mobileRouterName } from '@/router';
@@ -283,6 +285,17 @@ watch(
     }, 0);
   }
 );
+
+async function hanldePictureInPicture() {
+  if (appStore.videoControlsValue.pipMode) {
+    document.exitPictureInPicture();
+  } else {
+    const el = remoteVideoRef.value?.childNodes[0];
+    if (el && remoteVideoRef.value) {
+      await usePictureInPicture(el, remoteVideoRef.value);
+    }
+  }
+}
 
 function handleScrollTop() {
   if (danmuListRef.value) {

@@ -220,7 +220,6 @@ export function usePull(roomId: string) {
 
   function handlePlay(data: ILiveRoom) {
     roomLiving.value = true;
-    appStore.playing = false;
     flvurl.value = data.flv_url!;
     hlsurl.value = data.hls_url!;
     function play() {

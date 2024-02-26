@@ -7,8 +7,6 @@ import { ILiveRoom } from '@/types/ILiveRoom';
 
 export type AppRootState = {
   playing: boolean;
-  videoKBs?: string;
-  videoFps?: number;
   videoRatio: number;
   normalVolume: number;
   navList: { routeName: string; name: string }[];
@@ -54,6 +52,8 @@ export type AppRootState = {
   videoControlsValue: {
     pipMode?: boolean;
     pageFullMode?: boolean;
+    kbs?: string;
+    fps?: number;
   };
   liveLine: LiveLineEnum;
   liveRoomInfo?: ILiveRoom;
@@ -66,8 +66,6 @@ export const useAppStore = defineStore('app', {
   state: (): AppRootState => {
     return {
       playing: false,
-      videoKBs: undefined,
-      videoFps: undefined,
       videoRatio: 16 / 9,
       videoControls: {
         renderMode: LiveRenderEnum.video,

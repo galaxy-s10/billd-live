@@ -42,6 +42,7 @@
             class="item"
             :href="COMMON_URL.admin"
             @click.prevent="openToTarget(COMMON_URL.admin)"
+            v-if="!isMobile()"
           >
             {{ t('layout.liveAdmin') }}
           </a>
@@ -55,20 +56,14 @@
               <div class="txt">new</div>
             </div>
           </a>
-          <!-- <a
-          class="item"
-          :class="{
-            active: router.currentRoute.value.name === routerName.ad,
-          }"
-          href="/ad"
-          @click.prevent="router.push({ name: routerName.ad })"
-        >
-          广告
-        </a> -->
         </div>
       </div>
+
       <div class="right">
-        <Dropdown class="doc">
+        <Dropdown
+          class="doc"
+          v-if="!isMobile()"
+        >
           <template #btn>
             <div class="btn">
               <span>{{ t('layout.doc') }}</span>
@@ -113,7 +108,10 @@
           </template>
         </Dropdown>
 
-        <Dropdown class="ecosystem">
+        <Dropdown
+          class="ecosystem"
+          v-if="!isMobile()"
+        >
           <template #btn>
             <div class="btn">
               <span>{{ t('layout.ecosystem') }}</span>
@@ -155,7 +153,10 @@
           </template>
         </Dropdown>
 
-        <Dropdown class="about">
+        <Dropdown
+          class="about"
+          v-if="!isMobile()"
+        >
           <template #btn>
             <div class="btn">
               <span>{{ t('layout.about') }}</span>
@@ -185,19 +186,10 @@
           </template>
         </Dropdown>
 
-        <!-- <a
-          class="sponsors"
-          :class="{
-            active: router.currentRoute.value.name === routerName.sponsors,
-          }"
-          href="/sponsors"
-          @click.prevent="router.push({ name: routerName.sponsors })"
-        >
-          {{ t('layout.sponsor') }}
-        </a> -->
         <a
           class="signin"
           @click="handleSignin"
+          v-if="!isMobile()"
         >
           {{ t('layout.signin') }}
           <div
@@ -205,6 +197,7 @@
             v-if="appStore.showSigninRedDot"
           ></div>
         </a>
+
         <a
           class="privatizationDeployment"
           :class="{
@@ -216,24 +209,35 @@
           @click.prevent="
             router.push({ name: routerName.privatizationDeployment })
           "
+          v-if="!isMobile()"
         >
           {{ t('layout.deploy') }}
           <div class="badge">
-            <div class="txt">new</div>
+            <div class="txt">hot</div>
           </div>
         </a>
 
-        <a
-          class="wasm"
+        <!-- <a
+          class="videoTools"
           :class="{
-            active: router.currentRoute.value.name === routerName.wasm,
+            active: router.currentRoute.value.name === routerName.videoTools,
           }"
-          href="/wasm"
-          @click.prevent="handleTip"
+          href="/videoTools"
+          @click.prevent="router.push({ name: routerName.videoTools })"
+          v-if="!isMobile()"
+        > -->
+        <a
+          class="videoTools"
+          :class="{
+            active: router.currentRoute.value.name === routerName.videoTools,
+          }"
+          href="/videoTools"
+          @click.prevent
+          v-if="!isMobile()"
         >
-          {{ t('layout.wasm') }}
+          {{ t('layout.videoTools') }}
           <div class="badge">
-            <div class="txt">wasm</div>
+            <div class="txt">beta</div>
           </div>
         </a>
 
@@ -319,6 +323,7 @@
         >
           <div class="btn">{{ t('layout.login') }}</div>
         </div>
+
         <Dropdown
           v-else
           class="qqlogin"
@@ -354,7 +359,10 @@
           </template>
         </Dropdown>
 
-        <Dropdown class="switch-lang">
+        <Dropdown
+          class="switch-lang"
+          v-if="!isMobile()"
+        >
           <template #btn>
             <div class="btn">
               {{ localeMap[locale] }}
@@ -381,7 +389,7 @@
 </template>
 
 <script lang="ts" setup>
-import { openToTarget, windowReload } from 'billd-utils';
+import { isMobile, openToTarget, windowReload } from 'billd-utils';
 import { onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
@@ -436,6 +444,7 @@ const about = ref([
     url: '',
   },
 ]);
+
 const resource = ref([
   {
     label: 'billd-live',
@@ -462,6 +471,7 @@ const resource = ref([
     url: 'https://github.com/galaxy-s10/billd-live-react-native',
   },
 ]);
+
 const plugins = ref([
   {
     label: 'billd-ui',
@@ -578,7 +588,7 @@ function handleWebsiteJump() {
   left: 0;
   z-index: 50;
   box-sizing: border-box;
-  min-width: $w-1100;
+  // min-width: $w-1100;
   width: 100%;
   background-color: #fff;
 
@@ -676,6 +686,10 @@ function handleWebsiteJump() {
       align-items: center;
       height: 100%;
 
+      & > :last-child {
+        margin-right: 0 !important;
+      }
+
       .doc,
       .about,
       .ecosystem {
@@ -742,7 +756,7 @@ function handleWebsiteJump() {
       .github,
       .sponsors,
       .privatizationDeployment,
-      .wasm,
+      .videoTools,
       .signin {
         display: flex;
         align-items: center;
@@ -754,7 +768,8 @@ function handleWebsiteJump() {
           color: $theme-color-gold;
         }
       }
-      .wasm,
+
+      .videoTools,
       .privatizationDeployment,
       .signin {
         position: relative;

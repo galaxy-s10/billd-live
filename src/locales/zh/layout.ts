@@ -12,7 +12,7 @@ export default nameSpaceWrap('layout', {
   sponsor: '赞助',
   signin: '签到',
   deploy: '私有化部署',
-  wasm: '视频工具',
+  videoTools: '视频工具',
   startLive: '我要开播',
   login: '登录',
   logout: '退出',

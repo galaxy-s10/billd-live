@@ -52,15 +52,15 @@
     <div class="right">
       <div
         class="item fps"
-        v-if="props.control?.fps && appStore.videoFps"
+        v-if="props.control?.fps && appStore.videoControlsValue.fps"
       >
-        {{ appStore.videoFps }}帧
+        {{ appStore.videoControlsValue.fps }}帧
       </div>
       <div
         class="item kbs"
-        v-if="props.control?.kbs && appStore.videoKBs"
+        v-if="props.control?.kbs && appStore.videoControlsValue.kbs"
       >
-        {{ appStore.videoKBs }}KB/s
+        {{ appStore.videoControlsValue.kbs }}KB/s
       </div>
       <div
         class="item resolution"
