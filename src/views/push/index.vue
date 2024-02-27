@@ -414,6 +414,7 @@ import {
   VolumeMuteOutline,
 } from '@vicons/ionicons5';
 import { AVRecorder } from '@webav/av-recorder';
+import { getRandomString } from 'billd-utils';
 import { fabric } from 'fabric';
 import {
   Raw,
@@ -436,7 +437,7 @@ import { emojiArray } from '@/emoji';
 import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { usePush } from '@/hooks/use-push';
 import { useRTCParams } from '@/hooks/use-rtcParams';
-import { useUpload } from '@/hooks/use-upload';
+import { useQiniuJsUpload } from '@/hooks/use-upload';
 import {
   DanmuMsgTypeEnum,
   MediaTypeEnum,
@@ -449,7 +450,9 @@ import { usePiniaCacheStore } from '@/store/cache';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
+import { WsMsgTypeEnum, WsUpdateLiveRoomCoverImg } from '@/types/websocket';
 import {
+  base64ToFile,
   createVideo,
   formatDownTime2,
   generateBase64,
@@ -484,7 +487,6 @@ const {
   roomId,
   msgIsFile,
   mySocketId,
-  lastCoverImg,
   canvasVideoStream,
   roomLiving,
   currentResolutionRatio,
@@ -661,7 +663,7 @@ async function uploadChange() {
     try {
       msgLoading.value = true;
       msgIsFile.value = WsMessageMsgIsFileEnum.yes;
-      const res = await useUpload({
+      const res = await useQiniuJsUpload({
         prefix: QINIU_RESOURCE.prefix['billd-live/msg-image/'],
         file: fileList[0],
       });
@@ -1047,13 +1049,33 @@ function initAudio() {
   handleMixedAudio();
 }
 
+async function uploadLivePreview() {
+  const base64 = generateBase64(pushCanvasRef.value!);
+  const file = base64ToFile(base64, `tmp.webp`);
+  const uploadRes = await useQiniuJsUpload({
+    prefix: QINIU_RESOURCE.prefix['billd-live/live-preview/'],
+    file,
+  });
+  if (uploadRes.flag && uploadRes.resultUrl) {
+    networkStore.wsMap
+      .get(roomId.value)
+      ?.send<WsUpdateLiveRoomCoverImg['data']>({
+        requestId: getRandomString(8),
+        msgType: WsMsgTypeEnum.updateLiveRoomCoverImg,
+        data: {
+          cover_img: uploadRes.resultUrl,
+        },
+      });
+  }
+}
+
 function handleStartLive() {
   if (!appStore.allTrack.length) {
     window.$message.warning('至少选择一个素材');
     return;
   }
+  uploadLivePreview();
   initAudio();
-  lastCoverImg.value = generateBase64(pushCanvasRef.value!);
   startLive({
     type: liveType,
     msrDelay: msrDelay.value,

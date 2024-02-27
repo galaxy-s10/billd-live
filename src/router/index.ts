@@ -29,6 +29,8 @@ export const routerName = {
   sponsors: 'sponsors',
   privatizationDeployment: 'privatizationDeployment',
   videoTools: 'videoTools',
+  frameScreenshotByCanvas: 'frameScreenshotByCanvas',
+  frameScreenshotByWebcodec: 'frameScreenshotByWebcodec',
   support: 'support',
   order: 'order',
   wallet: 'wallet',
@@ -154,6 +156,18 @@ export const defaultRoutes: RouteRecordRaw[] = [
         name: routerName.videoTools,
         path: '/videoTools',
         component: () => import('@/views/videoTools/index.vue'),
+      },
+      {
+        name: routerName.frameScreenshotByCanvas,
+        path: '/videoTools/frameScreenshotByCanvas',
+        component: () =>
+          import('@/views/videoTools/frameScreenshot/canvas/index.vue'),
+      },
+      {
+        name: routerName.frameScreenshotByWebcodec,
+        path: '/videoTools/frameScreenshotByWebcodec',
+        component: () =>
+          import('@/views/videoTools/frameScreenshot/webcodec/index.vue'),
       },
       {
         name: routerName.ad,

@@ -417,7 +417,7 @@ import { emojiArray } from '@/emoji';
 import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { useFullScreen, usePictureInPicture } from '@/hooks/use-play';
 import { usePull } from '@/hooks/use-pull';
-import { useUpload } from '@/hooks/use-upload';
+import { useQiniuJsUpload } from '@/hooks/use-upload';
 import {
   DanmuMsgTypeEnum,
   GiftRecordStatusEnum,
@@ -731,7 +731,7 @@ async function uploadChange() {
     try {
       msgLoading.value = true;
       msgIsFile.value = WsMessageMsgIsFileEnum.yes;
-      const res = await useUpload({
+      const res = await useQiniuJsUpload({
         prefix: QINIU_RESOURCE.prefix['billd-live/msg-image/'],
         file: fileList[0],
       });

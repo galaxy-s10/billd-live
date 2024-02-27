@@ -48,6 +48,8 @@ export enum WsMsgTypeEnum {
   getLiveUser = 'getLiveUser',
   /** 更新加入信息 */
   updateJoinInfo = 'updateJoinInfo',
+  /** 更新直播间预览图 */
+  updateLiveRoomCoverImg = 'updateLiveRoomCoverImg',
   /** 心跳 */
   heartbeat = 'heartbeat',
   /** 开始直播 */
@@ -174,13 +176,17 @@ export type WsOtherJoinType = IWsFormat<{
 
 /** 开始直播 */
 export type WsStartLiveType = IWsFormat<{
-  cover_img: string;
   name: string;
   type: LiveRoomTypeEnum;
   /** 单位：毫秒 */
   msrDelay: number;
   /** 单位：毫秒 */
   msrMaxDelay: number;
+}>;
+
+/** 更新直播间预览图 */
+export type WsUpdateLiveRoomCoverImg = IWsFormat<{
+  cover_img: string;
 }>;
 
 /** 用户加入直播间 */

@@ -1,6 +1,6 @@
 <template>
   <div class="layout">
-    <div class="fixed-mask"></div>
+    <!-- <div class="fixed-mask"></div> -->
     <HeadCpt></HeadCpt>
     <router-view v-slot="{ Component }">
       <component :is="Component"></component>

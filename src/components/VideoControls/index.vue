@@ -236,7 +236,6 @@ onUnmounted(() => {
 
 function handleKeydown(e) {
   if (e.key === 'Escape') {
-    console.log('esc');
     if (appStore.videoControlsValue.pageFullMode) {
       window.$message.info('已退出网页全屏');
       appStore.videoControlsValue.pageFullMode = false;

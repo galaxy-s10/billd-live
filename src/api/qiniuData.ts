@@ -7,6 +7,10 @@ export interface IQiniuKey {
   ext: string;
 }
 
+export function fetchQiniuUploadToken(params: IQiniuKey) {
+  return request.get('/qiniu_data/get_token', { params });
+}
+
 export function fetchQiniuDataList(params) {
   return request.get('/qiniu_data/list', {
     params,

@@ -140,13 +140,11 @@ export const useWebsocket = () => {
   }
 
   function handleStartLive({
-    coverImg,
     name,
     type,
     msrDelay,
     msrMaxDelay,
   }: {
-    coverImg?: string;
     name?: string;
     type: LiveRoomTypeEnum;
     videoEl?: HTMLVideoElement;
@@ -160,7 +158,6 @@ export const useWebsocket = () => {
       requestId: getRandomString(8),
       msgType: WsMsgTypeEnum.startLive,
       data: {
-        cover_img: coverImg!,
         name: name!,
         type,
         msrDelay,

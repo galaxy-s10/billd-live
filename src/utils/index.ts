@@ -2,6 +2,27 @@
 import { computeBox, getRangeRandom } from 'billd-utils';
 import sparkMD5 from 'spark-md5';
 
+/**
+ * 将base64转换为file
+ */
+export function base64ToFile(base64: string, fileName: string) {
+  // 解析Base64编码的字符串，分离数据头和编码数据
+  const splitDataURI = base64.split(',');
+  const byteString = atob(splitDataURI[1]);
+  const mimeString = splitDataURI[0].split(':')[1].split(';')[0];
+
+  // 构建Uint8Array类型的数组，用数组来创建Blob对象
+  const arrayBuffer = new ArrayBuffer(byteString.length);
+  const intArray = new Uint8Array(arrayBuffer);
+
+  for (let i = 0; i < byteString.length; i += 1) {
+    intArray[i] = byteString.charCodeAt(i);
+  }
+  const imageBlob = new Blob([intArray], { type: mimeString });
+  const file = new File([imageBlob], fileName, { type: mimeString });
+  return file;
+}
+
 export function stringToArrayBuffer(str: string) {
   const encoder = new TextEncoder(); // 默认是'utf-8'编码
   const uint8Array = encoder.encode(str);
@@ -363,9 +384,27 @@ export function readFile(fileName: string) {
 export function generateBase64(dom: CanvasImageSource) {
   const canvas = document.createElement('canvas');
   // @ts-ignore
-  const { width, height } = dom.getBoundingClientRect();
+  const res = dom.getBoundingClientRect();
+  let width = res.width;
+  let height = res.height;
+  if (dom instanceof HTMLVideoElement) {
+    if (dom.videoWidth) {
+      width = dom.videoWidth;
+    }
+    if (dom.videoHeight) {
+      height = dom.videoHeight;
+    }
+  }
+  if (dom instanceof HTMLCanvasElement) {
+    if (dom.width) {
+      width = dom.width;
+    }
+    if (dom.height) {
+      height = dom.height;
+    }
+  }
   const rate = width / height;
-  let ratio = 0.5;
+  const ratio = 1;
   function geturl() {
     const coverWidth = width * ratio;
     const coverHeight = coverWidth / rate;
@@ -373,13 +412,9 @@ export function generateBase64(dom: CanvasImageSource) {
     canvas.height = coverHeight;
     canvas.getContext('2d')!.drawImage(dom, 0, 0, coverWidth, coverHeight);
     // webp比png的体积小非常多！因此coverWidth就可以不用压缩太夸张
-    return canvas.toDataURL('image/webp');
+    return canvas.toDataURL('image/webp', 1);
   }
-  let dataURL = geturl();
-  while (dataURL.length > 1000 * 20) {
-    ratio = ratio * 0.8;
-    dataURL = geturl();
-  }
+  const dataURL = geturl();
   return dataURL;
 }
 

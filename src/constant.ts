@@ -50,6 +50,7 @@ export const QINIU_RESOURCE = {
   prefix: {
     'billd-live/image/': 'billd-live/image/',
     'billd-live/msg-image/': 'billd-live/msg-image/',
+    'billd-live/live-preview/': 'billd-live/live-preview/',
   },
 };
 

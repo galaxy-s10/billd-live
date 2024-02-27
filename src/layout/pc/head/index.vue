@@ -217,22 +217,13 @@
           </div>
         </a>
 
-        <!-- <a
-          class="videoTools"
-          :class="{
-            active: router.currentRoute.value.name === routerName.videoTools,
-          }"
-          href="/videoTools"
-          @click.prevent="router.push({ name: routerName.videoTools })"
-          v-if="!isMobile()"
-        > -->
         <a
           class="videoTools"
           :class="{
             active: router.currentRoute.value.name === routerName.videoTools,
           }"
           href="/videoTools"
-          @click.prevent
+          @click.prevent="router.push({ name: routerName.videoTools })"
           v-if="!isMobile()"
         >
           {{ t('layout.videoTools') }}

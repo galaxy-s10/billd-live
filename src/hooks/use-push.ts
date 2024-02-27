@@ -236,7 +236,6 @@ export function usePush() {
       frameRate: currentMaxFramerate.value,
     });
     handleStartLive({
-      coverImg: lastCoverImg.value,
       name: roomName.value,
       type,
       msrDelay,
