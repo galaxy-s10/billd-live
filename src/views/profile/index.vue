@@ -125,7 +125,8 @@ watch(
     if (newval) {
       pushRes.value = newval.live_rooms?.[0];
     }
-  }
+  },
+  { immediate: true }
 );
 
 async function handleUserInfo() {

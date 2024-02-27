@@ -48,7 +48,7 @@ import JSZip from 'jszip';
 import MP4Box from 'mp4box';
 import { nextTick, onMounted, ref } from 'vue';
 
-import { createVideo, formatDownTime2, generateBase64 } from '@/utils';
+import { formatDownTime2, generateBase64 } from '@/utils';
 
 const uploadRef = ref<HTMLInputElement>();
 const loading = ref(false);
@@ -92,7 +92,7 @@ let countSample = 0;
 mp4box.onReady = function (info) {
   console.log('onReady', info); // 记住视频轨道信息，onSamples匹配的时候需要
   videoTrack = info.videoTracks[0];
-
+  videoDuration.value = Math.ceil(info.duration / 1000);
   if (videoTrack != null) {
     mp4box.setExtractionOptions(videoTrack.id, 'video', {
       nbSamples: 100,
@@ -108,6 +108,7 @@ mp4box.onReady = function (info) {
     output: (videoFrame: VideoFrame) => {
       num += 1;
       if (num % 10 !== 0) return;
+      currentDuation.value += 1;
       const res = formatDownTime2({
         startTime: +new Date(),
         endTime: +new Date() + num * 100,
@@ -260,64 +261,6 @@ function uploadChange() {
     buffer.fileStart = 0;
     mp4box.appendBuffer(buffer);
     mp4box.flush();
-    return;
-    const url = URL.createObjectURL(file);
-    const videoEl = createVideo({
-      appendChild: false,
-    });
-    videoEl.src = url;
-
-    let currentTime = 0;
-
-    function captureFrame() {
-      const res = formatDownTime2({
-        startTime: +new Date(),
-        endTime: +new Date() + (currentTime + 1) * 1000,
-        addZero: true,
-      });
-      let time = '';
-      if (res.d) {
-        time = `${res.d}天${res.h}:${res.m}:${res.s}`;
-      } else {
-        time = `${res.h}:${res.m}:${res.s}`;
-      }
-      imgList.value.push(time);
-      nextTick(() => {
-        // 确保视频已足够加载以获取当前帧
-        const img = imgListRef.value[imgListRef.value.length - 1];
-        if (img) {
-          const str = generateBase64(videoEl);
-          img.src = str;
-          fileList.value.push({
-            name: `${currentTime}.webp`,
-            data: str.split(';base64,')[1],
-          });
-          currentDuation.value = currentDuation.value + 1;
-          if (videoDuration.value > currentTime) {
-            // 移动到下一帧
-            videoEl.currentTime += 1;
-            currentTime += 1;
-          }
-        }
-      });
-    }
-
-    videoEl.onloadeddata = () => {
-      currentTime = videoEl.currentTime;
-      videoDuration.value = Math.ceil(videoEl.duration);
-      captureFrame();
-    };
-
-    videoEl.onseeked = () => {
-      if (currentTime < videoDuration.value) {
-        captureFrame();
-      } else {
-        loading.value = false;
-        if (uploadRef.value) {
-          uploadRef.value.value = '';
-        }
-      }
-    };
   });
 }
 
