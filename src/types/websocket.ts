@@ -67,6 +67,13 @@ export enum WsMsgTypeEnum {
   srsAnswer = 'srsAnswer',
   srsCandidate = 'srsCandidate',
 
+  startRemoteDesk = 'startRemoteDesk',
+  remoteDeskMoveMsg = 'remoteDeskMoveMsg',
+
+  remoteDeskOffer = 'remoteDeskOffer',
+  remoteDeskAnswer = 'remoteDeskAnswer',
+  remoteDeskCandidate = 'remoteDeskCandidate',
+
   nativeWebRtcOffer = 'nativeWebRtcOffer',
   nativeWebRtcAnswer = 'nativeWebRtcAnswer',
   nativeWebRtcCandidate = 'nativeWebRtcCandidate',
@@ -119,6 +126,12 @@ export type WsRoomLivingType = IWsFormat<{
 /** 直播间没在直播 */
 export type WsRoomNoLiveType = IWsFormat<{
   live_room: ILiveRoom;
+}>;
+
+export type WsRemoteDeskMoveMsgType = IWsFormat<{
+  roomId: string;
+  sender: string;
+  receiver: string;
 }>;
 
 export interface IDanmu {
@@ -196,6 +209,7 @@ export type WsJoinType = IWsFormat<{
   live_room?: ILiveRoom;
   anchor_info?: IUser;
   user_info?: IUser;
+  isRemoteDesk?: boolean;
   socket_list?: string[];
 }>;
 
@@ -223,12 +237,19 @@ export type WsMsrBlobType = IWsFormat<{
   max_delay: number;
 }>;
 
+export type WsStartRemoteDesk = IWsFormat<{
+  sender: string;
+  receiver: string;
+  roomId: string;
+}>;
+
 export type WsOfferType = IWsFormat<{
   live_room: ILiveRoom;
   sdp: any;
   sender: string;
   receiver: string;
   live_room_id: number;
+  isRemoteDesk?: boolean;
 }>;
 
 export type WsAnswerType = IWsFormat<{

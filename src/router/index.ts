@@ -35,6 +35,7 @@ export const routerName = {
   order: 'order',
   wallet: 'wallet',
   shop: 'shop',
+  remoteDesktop: 'remoteDesktop',
   link: 'link',
   ad: 'ad',
   faq: 'faq',
@@ -120,6 +121,11 @@ export const defaultRoutes: RouteRecordRaw[] = [
         name: routerName.shop,
         path: '/shop',
         component: () => import('@/views/shop/index.vue'),
+      },
+      {
+        name: routerName.remoteDesktop,
+        path: '/remoteDesktop',
+        component: () => import('@/views/remoteDesktop/index.vue'),
       },
       {
         name: routerName.profile,

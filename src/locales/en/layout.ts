@@ -13,6 +13,7 @@ export default nameSpaceWrap('layout', {
   signin: 'Signin',
   deploy: 'Private Deploy',
   videoTools: 'Video Tool',
+  remoteDesktop: 'Remote Desktop',
   startLive: 'Start Live',
   login: 'Login',
   logout: 'Logout',

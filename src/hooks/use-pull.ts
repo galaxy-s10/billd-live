@@ -34,6 +34,7 @@ export function usePull(roomId: string) {
   const hlsurl = ref('');
   const videoWrapRef = ref<HTMLDivElement>();
   const videoResolution = ref();
+  const isRemoteDesk = ref(false);
   const videoElArr = ref<HTMLVideoElement[]>([]);
   const remoteVideo = ref<HTMLElement[]>([]);
   const {
@@ -152,6 +153,7 @@ export function usePull(roomId: string) {
         videoLoading.value = false;
       }
       if (
+        isRemoteDesk.value ||
         appStore.liveRoomInfo?.type === LiveRoomTypeEnum.wertc_meeting_one ||
         appStore.liveRoomInfo?.type === LiveRoomTypeEnum.wertc_live ||
         appStore.liveRoomInfo?.type === LiveRoomTypeEnum.pk ||
@@ -273,7 +275,8 @@ export function usePull(roomId: string) {
             handlePlay(liveRoomInfo!);
           }
         }
-      } else {
+      }
+      if (!roomLiving.value) {
         closeRtc();
         handleStopDrawing();
       }
@@ -359,12 +362,18 @@ export function usePull(roomId: string) {
     }
   );
 
-  function initPull(autolay = true) {
-    autoplayVal.value = autolay;
+  function initPull(data: { autolay?: boolean; isRemoteDesk?: boolean }) {
+    if (data.autolay === undefined) {
+      autoplayVal.value = true;
+    } else {
+      autoplayVal.value = data.autolay;
+    }
     if (autoplayVal.value) {
       videoLoading.value = true;
     }
+    isRemoteDesk.value = !!data.isRemoteDesk;
     initWs({
+      isRemoteDesk: data.isRemoteDesk,
       roomId,
       isAnchor: false,
     });

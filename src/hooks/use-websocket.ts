@@ -39,8 +39,10 @@ import {
   WsMsgTypeEnum,
   WsOfferType,
   WsOtherJoinType,
+  WsRemoteDeskMoveMsgType,
   WsRoomLivingType,
   WsStartLiveType,
+  WsStartRemoteDesk,
   WsUpdateJoinInfoType,
 } from '@/types/websocket';
 import { createNullVideo, handleUserMedia } from '@/utils';
@@ -49,6 +51,8 @@ import {
   prettierReceiveWsMsg,
 } from '@/utils/network/webSocket';
 
+import { useWebRtcRemoteDesk } from './webrtc/remoteDesk';
+
 export const useWebsocket = () => {
   const route = useRoute();
   const appStore = useAppStore();
@@ -56,6 +60,8 @@ export const useWebsocket = () => {
   const networkStore = useNetworkStore();
 
   const { maxBitrate, maxFramerate, resolutionRatio } = useRTCParams();
+  const { updateWebRtcRemoteDeskConfig, webRtcRemoteDesk } =
+    useWebRtcRemoteDesk();
   const { updateWebRtcMeetingPkConfig, webRtcMeetingPk } = useWebRtcMeetingPk();
   const { updateWebRtcSrsConfig, webRtcSrs } = useWebRtcSrs();
   const { updateWebRtcTencentcloudCssConfig, webRtcTencentcloudCss } =
@@ -71,6 +77,7 @@ export const useWebsocket = () => {
   const roomId = ref('');
   const roomLiving = ref(false);
   const isAnchor = ref(false);
+  const isRemoteDesk = ref(false);
   const anchorInfo = ref<IUser>();
   const anchorSocketId = ref('');
   const canvasVideoStream = ref<MediaStream>();
@@ -234,6 +241,7 @@ export const useWebsocket = () => {
       requestId: getRandomString(8),
       msgType: WsMsgTypeEnum.join,
       data: {
+        isRemoteDesk: isRemoteDesk.value,
         socket_id: mySocketId.value,
         live_room_id: Number(roomId.value),
         user_info: userStore.userInfo,
@@ -247,7 +255,7 @@ export const useWebsocket = () => {
     // websocket连接成功
     ws.socketIo.on(WsConnectStatusEnum.connect, () => {
       prettierReceiveWsMsg(WsConnectStatusEnum.connect, ws.socketIo);
-      handleHeartbeat(ws.socketIo!.id);
+      handleHeartbeat(ws.socketIo!.id!);
       if (!ws) return;
       connectStatus.value = WsConnectStatusEnum.connect;
       ws.status = WsConnectStatusEnum.connect;
@@ -299,6 +307,15 @@ export const useWebsocket = () => {
       }).catch(() => {});
     });
 
+    // 收到startRemoteDesk
+    ws.socketIo.on(WsMsgTypeEnum.startRemoteDesk, (data: WsStartRemoteDesk) => {
+      console.log('收到startRemoteDesk', data);
+      if (data.data.receiver === mySocketId.value) {
+        appStore.remoteDesk.startRemoteDesk = true;
+        appStore.remoteDesk.sender = data.data.sender;
+      }
+    });
+
     // 收到srsOffer
     ws.socketIo.on(WsMsgTypeEnum.srsOffer, (data: WsOfferType['data']) => {
       console.log('收到srsOffer', data);
@@ -329,6 +346,36 @@ export const useWebsocket = () => {
       WsMsgTypeEnum.nativeWebRtcOffer,
       async (data: WsOfferType['data']) => {
         console.log('收到nativeWebRtcOffer', data);
+        if (data.isRemoteDesk) {
+          if (data.receiver === mySocketId.value) {
+            console.warn('是发给我的nativeWebRtcOffer');
+            if (networkStore.rtcMap.get(data.sender)) {
+              return;
+            }
+            updateWebRtcRemoteDeskConfig({
+              roomId: roomId.value,
+              userStream: userStream.value,
+              anchorStream: canvasVideoStream.value,
+            });
+            webRtcRemoteDesk.newWebRtc({
+              // 因为这里是收到offer，而offer是房主发的，所以此时的data.data.sender是房主；data.data.receiver是接收者；
+              // 但是这里的nativeWebRtc的sender，得是自己，不能是data.data.sender，不要混淆
+              sender: mySocketId.value,
+              receiver: data.sender,
+              videoEl: createNullVideo(),
+            });
+            await webRtcRemoteDesk.sendAnswer({
+              sender: mySocketId.value,
+              // data.data.receiver是接收者；我们现在new pc，发送者是自己，接收者肯定是房主，不能是data.data.receiver，因为data.data.receiver是自己
+              receiver: data.sender,
+              sdp: data.sdp,
+            });
+          } else {
+            console.error('不是发给我的nativeWebRtcOffer');
+          }
+          return;
+        }
+        console.log('kkkkkkkkkkk');
         if (
           data.live_room.type === LiveRoomTypeEnum.pk ||
           data.live_room.type === LiveRoomTypeEnum.tencent_css_pk
@@ -473,6 +520,14 @@ export const useWebsocket = () => {
         } else {
           console.error('不是发给我的nativeWebRtcCandidate');
         }
+      }
+    );
+
+    // 收到remoteDeskMoveMsg
+    ws.socketIo.on(
+      WsMsgTypeEnum.remoteDeskMoveMsg,
+      (data: WsRemoteDeskMoveMsgType['data']) => {
+        console.log('收到remoteDeskMoveMsg', data);
       }
     );
 
@@ -740,12 +795,16 @@ export const useWebsocket = () => {
   function initWs(data: {
     isAnchor: boolean;
     roomId: string;
+    isRemoteDesk?: boolean;
     currentResolutionRatio?: number;
     currentMaxFramerate?: number;
     currentMaxBitrate?: number;
   }) {
     roomId.value = data.roomId;
     isAnchor.value = data.isAnchor;
+    if (data.isRemoteDesk) {
+      isRemoteDesk.value = data.isRemoteDesk;
+    }
     if (data.currentMaxBitrate) {
       currentMaxBitrate.value = data.currentMaxBitrate;
     }

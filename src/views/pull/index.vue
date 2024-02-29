@@ -509,7 +509,7 @@ onMounted(() => {
     height.value = res;
   }
   getBg();
-  initPull();
+  initPull({});
   getGiftRecord();
   getGiftGroupList();
   handleSendGetLiveUser(Number(roomId.value));

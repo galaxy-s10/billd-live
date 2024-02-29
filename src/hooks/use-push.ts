@@ -192,6 +192,7 @@ export function usePush() {
 
   function connectWs() {
     initWs({
+      isRemoteDesk: false,
       isAnchor: true,
       roomId: roomId.value,
       currentMaxBitrate: currentMaxBitrate.value,

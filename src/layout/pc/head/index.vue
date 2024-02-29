@@ -29,7 +29,7 @@
           >
             {{ t('layout.area') }}
           </a>
-          <a
+          <!-- <a
             class="item"
             :class="{
               active: router.currentRoute.value.name === routerName.shop,
@@ -37,7 +37,7 @@
             @click.prevent="router.push({ name: routerName.shop })"
           >
             {{ t('layout.shop') }}
-          </a>
+          </a> -->
           <a
             class="item"
             :href="COMMON_URL.admin"
@@ -54,6 +54,15 @@
             {{ t('layout.appdownload') }}
             <div class="badge">
               <div class="txt">new</div>
+            </div>
+          </a>
+          <a
+            class="item"
+            @click.prevent="router.push({ name: routerName.remoteDesktop })"
+          >
+            {{ t('layout.remoteDesktop') }}
+            <div class="badge">
+              <div class="txt">beta</div>
             </div>
           </a>
         </div>

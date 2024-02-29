@@ -328,7 +328,7 @@ async function getLiveRoomInfo() {
       } else {
         showPlayBtn.value = true;
       }
-      initPull(autoplayVal.value);
+      initPull({ autolay: autoplayVal.value });
     }
   } catch (error) {
     console.error(error);
