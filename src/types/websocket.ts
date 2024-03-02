@@ -68,7 +68,7 @@ export enum WsMsgTypeEnum {
   srsCandidate = 'srsCandidate',
 
   startRemoteDesk = 'startRemoteDesk',
-  remoteDeskMoveMsg = 'remoteDeskMoveMsg',
+  remoteDeskBehavior = 'remoteDeskBehavior',
 
   remoteDeskOffer = 'remoteDeskOffer',
   remoteDeskAnswer = 'remoteDeskAnswer',
@@ -128,10 +128,33 @@ export type WsRoomNoLiveType = IWsFormat<{
   live_room: ILiveRoom;
 }>;
 
-export type WsRemoteDeskMoveMsgType = IWsFormat<{
+export enum RemoteDeskBehaviorEnum {
+  move,
+  drag,
+  pressButtonLeft,
+  pressButtonRight,
+  releaseButtonLeft,
+  releaseButtonRight,
+  setPosition,
+  doubleClick,
+  leftClick,
+  rightClick,
+  scrollDown,
+  scrollUp,
+  scrollLeft,
+  scrollRight,
+
+  keyboardType,
+}
+
+export type WsRemoteDeskBehaviorType = IWsFormat<{
   roomId: string;
   sender: string;
   receiver: string;
+  type: RemoteDeskBehaviorEnum;
+  x: number;
+  y: number;
+  keyboardtype: string | number;
 }>;
 
 export interface IDanmu {

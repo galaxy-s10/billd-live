@@ -72,6 +72,8 @@ export class WebRTCClass {
   videoEl: HTMLVideoElement;
 
   peerConnection: RTCPeerConnection | null = null;
+  dataChannel: RTCDataChannel | null = null;
+  cbDataChannel: RTCDataChannel | null = null;
 
   /** 最大码率 */
   maxBitrate = -1;
@@ -311,15 +313,15 @@ export class WebRTCClass {
       const stream = event.streams[0];
       this.localStream = stream;
       const appStore = useAppStore();
-      stream.onremovetrack = (event) => {
+      stream.onremovetrack = () => {
         this.prettierLog({ msg: 'onremovetrack事件', type: 'warn' });
-        const res = appStore.allTrack.filter((info) => {
-          if (info.track?.id === event.track.id) {
-            return false;
-          }
-          return true;
-        });
-        appStore.setAllTrack(res);
+        // const res = appStore.allTrack.filter((info) => {
+        //   if (info.track?.id === event.track.id) {
+        //     return false;
+        //   }
+        //   return true;
+        // });
+        // appStore.setAllTrack(res);
       };
 
       const addTrack: AppRootState['allTrack'] = [];
@@ -445,6 +447,7 @@ export class WebRTCClass {
             msg: 'webrtc连接成功！',
             type: 'success',
           });
+          appStore.remoteDesk.isRemoteing = true;
           console.log('sender', this.sender, 'receiver', this.receiver);
           this.update();
         }
@@ -461,6 +464,7 @@ export class WebRTCClass {
             msg: 'iceConnectionState:failed',
             type: 'error',
           });
+          this.close();
         }
         if (iceConnectionState === 'disconnected') {
           // 测试不再活跃，这可能是一个暂时的状态，可以自我恢复。
@@ -468,6 +472,7 @@ export class WebRTCClass {
             msg: 'iceConnectionState:disconnected',
             type: 'error',
           });
+          this.close();
         }
         if (iceConnectionState === 'closed') {
           // ICE 代理关闭，不再应答任何请求。
@@ -514,6 +519,7 @@ export class WebRTCClass {
             msg: 'connectionState:disconnected',
             type: 'error',
           });
+          this.close();
         }
         if (connectionState === 'closed') {
           // 表示 RTCPeerConnection 已关闭。
@@ -528,6 +534,7 @@ export class WebRTCClass {
             msg: 'connectionState:failed',
             type: 'error',
           });
+          this.close();
         }
       }
     );
@@ -542,6 +549,29 @@ export class WebRTCClass {
         type: 'warn',
       });
     });
+  };
+
+  dataChannelSend = <T extends unknown>({
+    // 写成<T extends unknown>而不是<T>是为了避免eslint将箭头函数的<T>后面的内容识别成jsx语法
+    msgType,
+    requestId,
+    data,
+  }: {
+    msgType: WsMsgTypeEnum;
+    requestId: string;
+    data?: T;
+  }) => {
+    if (this.dataChannel?.readyState !== 'open') {
+      console.error('dataChannel未连接成功，不发送消息！', msgType, data);
+      return;
+    }
+    this.dataChannel.send(
+      JSON.stringify({
+        msgType,
+        requestId,
+        data,
+      })
+    );
   };
 
   /** 创建对等连接 */
@@ -567,6 +597,32 @@ export class WebRTCClass {
       this.peerConnection = new RTCPeerConnection({
         iceServers,
       });
+      this.peerConnection.ondatachannel = (event) => {
+        this.cbDataChannel = event.channel;
+        this.update();
+      };
+      this.dataChannel = this.peerConnection.createDataChannel(
+        'MessageChannel',
+        {
+          // maxRetransmits，用户代理应尝试重新传输在不可靠模式下第一次失败的消息的最大次数。虽然该值是 16 位无符号数，但每个用户代理都可以将其限制为它认为合适的任何最大值。
+          maxRetransmits: 3,
+          // ordered，表示通过 RTCDataChannel 的信息的到达顺序需要和发送顺序一致 (true), 或者到达顺序不需要和发送顺序一致 (false). 默认：true
+          ordered: false,
+          protocol: 'udp',
+        }
+      );
+      this.dataChannel.onopen = () => {
+        this.prettierLog({
+          msg: 'dataChannel连接成功！',
+          type: 'success',
+        });
+      };
+      this.dataChannel.onerror = () => {
+        this.prettierLog({
+          msg: 'dataChannel连接失败！',
+          type: 'error',
+        });
+      };
       this.handleStreamEvent();
       this.handleConnectionEvent();
       this.update();
@@ -583,7 +639,11 @@ export class WebRTCClass {
       this.localStream = null;
       this.peerConnection?.close();
       this.peerConnection = null;
+      this.dataChannel = null;
       this.videoEl.remove();
+      const appStore = useAppStore();
+      appStore.remoteDesk.isClose = true;
+      appStore.remoteDesk.isRemoteing = false;
     } catch (error) {
       this.prettierLog({ msg: '手动关闭webrtc连接失败', type: 'error' });
       console.error(error);

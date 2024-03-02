@@ -179,6 +179,11 @@ export function usePull(roomId: string) {
             videoElArr.value.push(item.videoEl);
           }
         });
+        nextTick(() => {
+          if (isRemoteDesk.value && videoWrapRef.value) {
+            videoWrapRef.value.style.display = 'inline-block';
+          }
+        });
       }
     },
     {

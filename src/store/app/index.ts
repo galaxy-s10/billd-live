@@ -9,6 +9,8 @@ export type AppRootState = {
   remoteDesk: {
     sender: string;
     startRemoteDesk: boolean;
+    isRemoteing?: boolean;
+    isClose?: boolean;
   };
   playing: boolean;
   videoRatio: number;
@@ -28,7 +30,8 @@ export type AppRootState = {
     stream?: MediaStream;
     streamid?: string;
     trackid?: string;
-    canvasDom?: fabric.Image | fabric.Text;
+    // canvasDom?: fabric.Image | fabric.Text;
+    canvasDom?: any;
     hidden?: boolean;
     muted?: boolean;
     volume?: number;
@@ -72,6 +75,8 @@ export const useAppStore = defineStore('app', {
       remoteDesk: {
         startRemoteDesk: false,
         sender: '',
+        isRemoteing: false,
+        isClose: undefined,
       },
       playing: false,
       videoRatio: 16 / 9,
