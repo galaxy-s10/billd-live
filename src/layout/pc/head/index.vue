@@ -20,6 +20,7 @@
           >
             {{ t('layout.home') }}
           </a>
+
           <a
             class="item"
             :class="{
@@ -29,15 +30,7 @@
           >
             {{ t('layout.area') }}
           </a>
-          <!-- <a
-            class="item"
-            :class="{
-              active: router.currentRoute.value.name === routerName.shop,
-            }"
-            @click.prevent="router.push({ name: routerName.shop })"
-          >
-            {{ t('layout.shop') }}
-          </a> -->
+
           <a
             class="item"
             :href="COMMON_URL.admin"
@@ -46,23 +39,68 @@
           >
             {{ t('layout.liveAdmin') }}
           </a>
+
           <a
             class="item"
-            :href="COMMON_URL.mobileApk"
-            @click.prevent="openToTarget(COMMON_URL.mobileApk)"
+            :href="COMMON_URL.androidApp"
+            @click.prevent="openToTarget(COMMON_URL.androidApp)"
           >
-            {{ t('layout.appdownload') }}
+            <Dropdown
+              class="download"
+              v-if="!isMobile()"
+            >
+              <template #btn>
+                <div class="btn">
+                  <span>{{ t('layout.download') }}</span>
+                  <VPIconChevronDown class="icon"></VPIconChevronDown>
+                </div>
+              </template>
+              <template #list>
+                <div class="list">
+                  <a
+                    class="item"
+                    @click.prevent="openToTarget(COMMON_URL.androidApp)"
+                  >
+                    <div class="txt">{{ t('layout.android') }}</div>
+                    <VPIconExternalLink class="icon"></VPIconExternalLink>
+                  </a>
+                  <a
+                    class="item"
+                    @click.prevent="handleTip"
+                  >
+                    <div class="txt">{{ t('layout.ios') }}</div>
+                  </a>
+                  <a
+                    class="item"
+                    :href="COMMON_URL.payCoursesArticle"
+                    @click.prevent="openToTarget(COMMON_URL.windows)"
+                  >
+                    <div class="txt">{{ t('layout.windows') }}</div>
+                    <VPIconExternalLink class="icon"></VPIconExternalLink>
+                  </a>
+                  <a
+                    class="item"
+                    :href="COMMON_URL.payCoursesArticle"
+                    @click.prevent="openToTarget(COMMON_URL.macos)"
+                  >
+                    <div class="txt">{{ t('layout.macos') }}</div>
+                    <VPIconExternalLink class="icon"></VPIconExternalLink>
+                  </a>
+                </div>
+              </template>
+            </Dropdown>
             <div class="badge">
               <div class="txt">new</div>
             </div>
           </a>
+
           <a
             class="item"
             @click.prevent="router.push({ name: routerName.remoteDesktop })"
           >
             {{ t('layout.remoteDesktop') }}
             <div class="badge">
-              <div class="txt">beta</div>
+              <div class="txt">stage</div>
             </div>
           </a>
         </div>
@@ -680,62 +718,67 @@ function handleWebsiteJump() {
         }
       }
     }
+    .download,
+    .doc,
+    .about,
+    .ecosystem {
+      &:hover {
+        color: $theme-color-gold;
+      }
+      .btn {
+        display: flex;
+        align-items: center;
+        .icon {
+          margin-left: 5px;
+          width: 13px;
+
+          fill: currentColor;
+        }
+        &:hover {
+          color: $theme-color-gold;
+        }
+      }
+
+      .list {
+        width: 150px;
+        padding: 10px 0;
+
+        .item {
+          display: flex;
+          align-items: center;
+          margin-bottom: 5px;
+          padding: 0 15px;
+          color: black;
+          text-decoration: none;
+          cursor: pointer;
+          &:hover {
+            color: $theme-color-gold;
+          }
+          .icon {
+            margin-left: 5px;
+            width: 14px;
+            color: #3c3c4354;
+
+            fill: currentColor;
+          }
+        }
+      }
+    }
 
     .right {
       display: flex;
       align-items: center;
       height: 100%;
+      .doc,
+      .about,
+      .ecosystem {
+        margin-right: 20px;
+      }
 
       & > :last-child {
         margin-right: 0 !important;
       }
 
-      .doc,
-      .about,
-      .ecosystem {
-        margin-right: 20px;
-        &:hover {
-          color: $theme-color-gold;
-        }
-        .btn {
-          display: flex;
-          align-items: center;
-          .icon {
-            margin-left: 5px;
-            width: 13px;
-
-            fill: currentColor;
-          }
-          &:hover {
-            color: $theme-color-gold;
-          }
-        }
-
-        .list {
-          width: 150px;
-          padding: 10px 0;
-
-          .item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 5px;
-            padding: 0 15px;
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-            &:hover {
-              color: $theme-color-gold;
-            }
-            .icon {
-              margin-left: 5px;
-              width: 14px;
-              color: #3c3c4354;
-
-              fill: currentColor;
-            }
-          }
-        }
-      }
       .ecosystem {
         .list {
           width: 225px;

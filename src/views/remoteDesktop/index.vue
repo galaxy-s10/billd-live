@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>
+    <h1 v-if="NODE_ENV === 'development'">
       我的id：{{ mySocketId }}，<n-button @click="copyToClipBoard(mySocketId)">
         复制
       </n-button>
@@ -58,6 +58,7 @@ import {
   WsRemoteDeskBehaviorType,
   WsStartRemoteDesk,
 } from '@/types/websocket';
+import { NODE_ENV } from 'script/constant';
 
 const num = '123456';
 const appStore = useAppStore();

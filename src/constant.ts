@@ -62,7 +62,9 @@ export const QINIU_RESOURCE = {
 export const COMMON_URL = {
   apifox: `https://apifox.com/apidoc/shared-c7556b54-17b2-494e-a039-572d83f103ed/`,
   admin: `https://live-admin.${prodDomain}`,
-  mobileApk: `${QINIU_RESOURCE.url}/billd-live/image/app-release.apk`,
+  androidApp: `${QINIU_RESOURCE.url}/billd-live/image/app-release.apk`,
+  windows: `${QINIU_RESOURCE.url}/test/billd-desk-Win-0.0.1-Installer.exe`,
+  macos: `${QINIU_RESOURCE.url}/test/billd-desk-Mac-0.0.1-Installer.dmg`,
   bilibiliCollectiondetail: `https://space.bilibili.com/381307133/channel/collectiondetail?sid=1458070&ctype=0`,
   payCoursesArticle: `https://www.${prodDomain}/article/151`,
 };

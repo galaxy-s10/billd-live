@@ -164,32 +164,6 @@ export class WebRTCClass {
       });
       return res;
     }
-    // return new Promise<number>((resolve) => {
-    // this.peerConnection?.getSenders().forEach((sender) => {
-    //   if (sender.track?.kind === 'video') {
-    //     const parameters = { ...sender.getParameters() };
-    //     if (parameters.encodings[0]) {
-    //       if (parameters.encodings[0].maxFramerate === maxFramerate) {
-    //         console.log('最大帧率不变，不设置');
-    //         resolve(1);
-    //         return;
-    //       }
-    //       parameters.encodings[0].maxFramerate = maxFramerate;
-    //       sender
-    //         .setParameters(parameters)
-    //         .then(() => {
-    //           console.log('设置最大帧率成功', maxFramerate);
-    //           this.maxFramerate = maxFramerate;
-    //           resolve(1);
-    //         })
-    //         .catch((error) => {
-    //           console.error('设置最大帧率失败', maxFramerate, error);
-    //           resolve(0);
-    //         });
-    //     }
-    //   }
-    // });
-    // });
   };
 
   /** 设置最大码率 */
@@ -589,7 +563,7 @@ export class WebRTCClass {
             //   urls: 'stun:stun.l.google.com:19302',
             // },
             {
-              urls: `turn:live.${prodDomain}:3478`,
+              urls: `turn:hk.${prodDomain}`,
               username: 'hss',
               credential: '123456',
             },
