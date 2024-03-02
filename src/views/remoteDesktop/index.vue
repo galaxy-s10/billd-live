@@ -160,6 +160,7 @@ watch(
   () => appStore.remoteDesk.isClose,
   (newval) => {
     if (newval) {
+      networkStore.removeRtc(receiverId.value);
       useTip({
         content: '远程连接断开',
         hiddenCancel: true,
@@ -234,6 +235,7 @@ function handleMouseDown(event: MouseEvent) {
         roomId: roomId.value,
         sender: mySocketId.value,
         receiver: receiverId.value,
+        keyboardtype: 0,
         type: isLongClick
           ? RemoteDeskBehaviorEnum.pressButtonLeft
           : RemoteDeskBehaviorEnum.pressButtonLeft,
@@ -301,7 +303,7 @@ function handleMouseUp(event: MouseEvent) {
         roomId: roomId.value,
         sender: mySocketId.value,
         receiver: receiverId.value,
-        keyboardtype: '',
+        keyboardtype: 0,
         type: isLongClick
           ? RemoteDeskBehaviorEnum.releaseButtonLeft
           : RemoteDeskBehaviorEnum.releaseButtonLeft,
@@ -313,7 +315,7 @@ function handleMouseUp(event: MouseEvent) {
 }
 
 function handleClose() {
-  networkStore.rtcMap.get(receiverId.value)?.close();
+  networkStore.removeRtc(receiverId.value);
 }
 
 function handleRemote() {

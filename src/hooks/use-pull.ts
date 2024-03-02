@@ -63,6 +63,9 @@ export function usePull(roomId: string) {
     stopDrawingArr.value = [];
     remoteVideo.value.forEach((el) => el.remove());
     remoteVideo.value = [];
+    if (isRemoteDesk.value && videoWrapRef.value) {
+      videoWrapRef.value.removeAttribute('style');
+    }
   }
 
   function handleVideoWrapResize() {
@@ -181,7 +184,11 @@ export function usePull(roomId: string) {
         });
         nextTick(() => {
           if (isRemoteDesk.value && videoWrapRef.value) {
-            videoWrapRef.value.style.display = 'inline-block';
+            if (newVal.size) {
+              videoWrapRef.value.style.display = 'inline-block';
+            } else {
+              videoWrapRef.value.style.removeProperty('display');
+            }
           }
         });
       }
@@ -364,6 +371,15 @@ export function usePull(roomId: string) {
     () => flvIsPlaying.value,
     (newVal) => {
       isPlaying.value = newVal;
+    }
+  );
+
+  watch(
+    () => appStore.remoteDesk.isClose,
+    (newval) => {
+      if (newval) {
+        handleStopDrawing();
+      }
     }
   );
 
