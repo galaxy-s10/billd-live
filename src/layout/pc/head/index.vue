@@ -40,11 +40,7 @@
             {{ t('layout.liveAdmin') }}
           </a>
 
-          <a
-            class="item"
-            :href="COMMON_URL.androidApp"
-            @click.prevent="openToTarget(COMMON_URL.androidApp)"
-          >
+          <span class="item">
             <Dropdown
               class="download"
               v-if="!isMobile()"
@@ -59,6 +55,7 @@
                 <div class="list">
                   <a
                     class="item"
+                    :href="COMMON_URL.androidApp"
                     @click.prevent="openToTarget(COMMON_URL.androidApp)"
                   >
                     <div class="txt">{{ t('layout.android') }}</div>
@@ -72,7 +69,7 @@
                   </a>
                   <a
                     class="item"
-                    :href="COMMON_URL.payCoursesArticle"
+                    :href="COMMON_URL.windows"
                     @click.prevent="openToTarget(COMMON_URL.windows)"
                   >
                     <div class="txt">{{ t('layout.windows') }}</div>
@@ -80,7 +77,7 @@
                   </a>
                   <a
                     class="item"
-                    :href="COMMON_URL.payCoursesArticle"
+                    :href="COMMON_URL.macos"
                     @click.prevent="openToTarget(COMMON_URL.macos)"
                   >
                     <div class="txt">{{ t('layout.macos') }}</div>
@@ -92,7 +89,7 @@
             <div class="badge">
               <div class="txt">new</div>
             </div>
-          </a>
+          </span>
 
           <a
             class="item"
