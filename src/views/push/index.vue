@@ -868,7 +868,7 @@ function handleNullAudio() {
   if (stream) {
     console.log('已创建空的直播音频流');
     const video = createVideo({
-      appendChild: true,
+      appendChild: false,
     });
     video.srcObject = stream;
     nullAudioStream.value = stream;
@@ -1107,33 +1107,46 @@ function handleScale({ width, height }: { width: number; height: number }) {
   return ratio;
 }
 
-function autoCreateVideo({
-  stream,
-  id,
-  rect,
-  muted,
-}: {
-  stream: MediaStream;
+function autoCreateVideo(data: {
+  file?: File;
+  stream?: MediaStream;
   id: string;
   rect?: { left: number; top: number };
   muted?: boolean;
 }) {
-  const videoEl = createVideo({ appendChild: true });
+  const { file, id, rect, muted } = data;
+  let stream = data.stream;
+  let videoEl: HTMLVideoElement | undefined;
+  if (file) {
+    const url = URL.createObjectURL(file);
+    videoEl = createVideo({
+      appendChild: false,
+      muted,
+    });
+    videoEl.src = url;
+    // @ts-ignore
+    stream = videoEl.captureStream();
+  } else {
+    videoEl = createVideo({ appendChild: false, muted });
+    if (stream) {
+      videoEl.srcObject = stream;
+    }
+  }
+  if (!videoEl) return;
   bodyAppendChildElArr.value.push(videoEl);
   videoEl.setAttribute('videoid', id);
-  if (muted !== undefined) {
-    videoEl.muted = muted;
-  }
-  videoEl.srcObject = stream;
   return new Promise<{
     canvasDom: Raw<fabric.Image>;
     videoEl: HTMLVideoElement;
     scale: number;
+    stream: MediaStream;
   }>((resolve) => {
+    if (!videoEl) return;
     videoEl.onloadedmetadata = () => {
       let canvasDom: Raw<fabric.Image>;
       let ratio;
       function main() {
+        if (!stream || !videoEl) return;
         const width = stream.getVideoTracks()[0].getSettings().width!;
         const height = stream.getVideoTracks()[0].getSettings().height!;
         ratio = handleScale({ width, height });
@@ -1180,10 +1193,10 @@ function autoCreateVideo({
         handleScaling({ canvasDom, id });
         canvasDom.scale(ratio / window.devicePixelRatio);
         fabricCanvas.value!.add(canvasDom);
-        resolve({ canvasDom, scale: ratio, videoEl });
+        resolve({ canvasDom, scale: ratio, videoEl, stream });
       }
       main();
-      videoEl.addEventListener('resize', () => {
+      videoEl?.addEventListener('resize', () => {
         main();
       });
     };
@@ -1428,7 +1441,7 @@ async function handleCache() {
         const url = URL.createObjectURL(file);
         const videoEl = createVideo({
           muted: item.muted ? item.muted : false,
-          appendChild: true,
+          appendChild: false,
         });
         bodyAppendChildElArr.value.push(videoEl);
         videoEl.setAttribute('videoid', item.id);
@@ -1526,7 +1539,7 @@ async function handleCache() {
           audio: true,
         });
         if (!event) return;
-        const videoEl = createVideo({ appendChild: true });
+        const videoEl = createVideo({ appendChild: false });
         bodyAppendChildElArr.value.push(videoEl);
         videoEl.setAttribute('videoid', obj.id);
         videoEl.srcObject = event;
@@ -1573,7 +1586,7 @@ async function handleCache() {
         audio: { deviceId: obj.deviceId },
       });
       if (!event) return;
-      const videoEl = createVideo({ appendChild: true, muted: true });
+      const videoEl = createVideo({ appendChild: false, muted: true });
       bodyAppendChildElArr.value.push(videoEl);
       videoEl.setAttribute('videoid', obj.id);
       videoEl.srcObject = event;
@@ -1592,7 +1605,7 @@ async function handleCache() {
         video: { deviceId: obj.deviceId },
         audio: false,
       });
-      const videoEl = createVideo({ appendChild: true });
+      const videoEl = createVideo({ appendChild: false });
       bodyAppendChildElArr.value.push(videoEl);
       videoEl.setAttribute('videoid', obj.id);
       videoEl.srcObject = event;
@@ -1914,7 +1927,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
       volume: 60,
       scaleInfo: {},
     };
-    const videoEl = createVideo({ appendChild: true, muted: true });
+    const videoEl = createVideo({ appendChild: false, muted: true });
     bodyAppendChildElArr.value.push(videoEl);
     videoEl.setAttribute('videoid', microphoneVideoTrack.id);
     videoEl.srcObject = event;
@@ -2133,21 +2146,11 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
       const file = val.mediaInfo[0].file!;
       const { code } = await saveFile({ file, fileName: mediaVideoTrack.id });
       if (code !== 1) return;
-      const url = URL.createObjectURL(file);
-      const videoEl = createVideo({ muted: false, appendChild: true });
-      bodyAppendChildElArr.value.push(videoEl);
-      videoEl.src = url;
-      videoEl.muted = false;
-      const videoRes = await new Promise<HTMLVideoElement>((resolve) => {
-        videoEl.onloadedmetadata = () => {
-          resolve(videoEl);
-        };
-      });
-      // @ts-ignore
-      const stream = videoRes.captureStream();
-      const { canvasDom, scale } = await autoCreateVideo({
-        stream,
+      // const videoEl = createVideo({ muted: false, appendChild: false });
+      const { videoEl, canvasDom, scale, stream } = await autoCreateVideo({
+        file,
         id: mediaVideoTrack.id,
+        muted: false,
       });
       setScaleInfo({ canvasDom, track: mediaVideoTrack, scale });
       mediaVideoTrack.videoEl = videoEl;

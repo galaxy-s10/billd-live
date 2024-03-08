@@ -486,6 +486,10 @@ const resource = ref([
     url: 'https://github.com/galaxy-s10/billd-live',
   },
   {
+    label: 'billd-desk',
+    url: 'https://github.com/galaxy-s10/billd-desk',
+  },
+  {
     label: 'billd-live-server',
     url: 'https://github.com/galaxy-s10/billd-live-server',
   },
