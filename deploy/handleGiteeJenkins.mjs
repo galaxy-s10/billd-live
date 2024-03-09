@@ -71,16 +71,20 @@ async function clearOld() {
   await Promise.all(queue);
 }
 
-clearOld().then(() => {
-  findFile(dir);
-  putFile();
-  const gitignoreTxt =
-    'node_modules\ndist\ncomponents.d.ts\n.eslintcache\n.DS_Store\n';
-  fs.writeFileSync(path.resolve(giteeDir, './.gitignore'), gitignoreTxt);
-  execSync(`pnpm i`, { cwd: giteeDir });
-  execSync(`git add .`, { cwd: giteeDir });
-  execSync(`git commit -m 'feat: ${new Date().toLocaleString()}'`, {
-    cwd: giteeDir,
+if (process.cwd().indexOf('jenkins') !== -1) {
+  console.log('当前目录错误');
+} else {
+  clearOld().then(() => {
+    findFile(dir);
+    putFile();
+    const gitignoreTxt =
+      'node_modules\ndist\ncomponents.d.ts\n.eslintcache\n.DS_Store\n';
+    fs.writeFileSync(path.resolve(giteeDir, './.gitignore'), gitignoreTxt);
+    execSync(`pnpm i`, { cwd: giteeDir });
+    execSync(`git add .`, { cwd: giteeDir });
+    execSync(`git commit -m 'feat: ${new Date().toLocaleString()}'`, {
+      cwd: giteeDir,
+    });
+    execSync(`git push`, { cwd: giteeDir });
   });
-  execSync(`git push`, { cwd: giteeDir });
-});
+}
