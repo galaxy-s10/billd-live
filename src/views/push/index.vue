@@ -1116,7 +1116,7 @@ function autoCreateVideo(data: {
 }) {
   const { file, id, rect, muted } = data;
   let stream = data.stream;
-  let videoEl: HTMLVideoElement | undefined;
+  let videoEl: HTMLVideoElement;
   if (file) {
     const url = URL.createObjectURL(file);
     videoEl = createVideo({
@@ -1132,7 +1132,6 @@ function autoCreateVideo(data: {
       videoEl.srcObject = stream;
     }
   }
-  if (!videoEl) return;
   bodyAppendChildElArr.value.push(videoEl);
   videoEl.setAttribute('videoid', id);
   return new Promise<{
@@ -1141,14 +1140,12 @@ function autoCreateVideo(data: {
     scale: number;
     stream: MediaStream;
   }>((resolve) => {
-    if (!videoEl) return;
     videoEl.onloadedmetadata = () => {
       let canvasDom: Raw<fabric.Image>;
       let ratio;
       function main() {
-        if (!stream || !videoEl) return;
-        const width = stream.getVideoTracks()[0].getSettings().width!;
-        const height = stream.getVideoTracks()[0].getSettings().height!;
+        const width = stream?.getVideoTracks()[0].getSettings().width!;
+        const height = stream?.getVideoTracks()[0].getSettings().height!;
         ratio = handleScale({ width, height });
         videoEl.width = width;
         videoEl.height = height;
@@ -1193,7 +1190,7 @@ function autoCreateVideo(data: {
         handleScaling({ canvasDom, id });
         canvasDom.scale(ratio / window.devicePixelRatio);
         fabricCanvas.value!.add(canvasDom);
-        resolve({ canvasDom, scale: ratio, videoEl, stream });
+        resolve({ canvasDom, scale: ratio, videoEl, stream: stream! });
       }
       main();
       videoEl?.addEventListener('resize', () => {
@@ -1438,50 +1435,50 @@ async function handleCache() {
     async function handleMediaVideo() {
       const { code, file } = await readFile(item.id);
       if (code === 1 && file) {
-        const url = URL.createObjectURL(file);
-        const videoEl = createVideo({
-          muted: item.muted ? item.muted : false,
-          appendChild: false,
+        const { videoEl, stream } = await autoCreateVideo({
+          file,
+          id: obj.id,
+          muted: true,
         });
-        bodyAppendChildElArr.value.push(videoEl);
-        videoEl.setAttribute('videoid', item.id);
         if (obj.volume !== undefined) {
           videoEl.volume = obj.volume / 100;
         }
-        videoEl.src = url;
-        await new Promise((resolve) => {
-          videoEl.onloadedmetadata = () => {
-            const stream = videoEl
-              // @ts-ignore
-              .captureStream();
-            const width = stream.getVideoTracks()[0].getSettings().width!;
-            const height = stream.getVideoTracks()[0].getSettings().height!;
-            videoEl.width = width;
-            videoEl.height = height;
+        console.log('kkkkk', videoEl);
+        document.body.appendChild(videoEl);
+        // await new Promise((resolve) => {
+        //   videoEl.onloadedmetadata = () => {
+        //     const stream = videoEl
+        //       // @ts-ignore
+        //       .captureStream();
+        //     const width = stream.getVideoTracks()[0].getSettings().width!;
+        //     const height = stream.getVideoTracks()[0].getSettings().height!;
+        //     videoEl.width = width;
+        //     videoEl.height = height;
 
-            const canvasDom = markRaw(
-              new fabric.Image(videoEl, {
-                top: (item.rect?.top || 0) / window.devicePixelRatio,
-                left: (item.rect?.left || 0) / window.devicePixelRatio,
-                width,
-                height,
-              })
-            );
-            handleMoving({ canvasDom, id: item.id });
-            handleScaling({ canvasDom, id: item.id });
-            canvasDom.scale(
-              item.scaleInfo[window.devicePixelRatio].scaleX || 1
-            );
-            canvasDom.opacity = item.openEye ? 1 : 0;
-            fabricCanvas.value!.add(canvasDom);
-            obj.videoEl = videoEl;
-            obj.canvasDom = canvasDom;
-            resolve({ videoEl, canvasDom });
-          };
-        });
-        const stream = videoEl
-          // @ts-ignore
-          .captureStream() as MediaStream;
+        //     const canvasDom = markRaw(
+        //       new fabric.Image(videoEl, {
+        //         top: (item.rect?.top || 0) / window.devicePixelRatio,
+        //         left: (item.rect?.left || 0) / window.devicePixelRatio,
+        //         width,
+        //         height,
+        //       })
+        //     );
+        //     handleMoving({ canvasDom, id: item.id });
+        //     handleScaling({ canvasDom, id: item.id });
+        //     canvasDom.scale(
+        //       item.scaleInfo[window.devicePixelRatio].scaleX || 1
+        //     );
+        //     canvasDom.opacity = item.openEye ? 1 : 0;
+        //     fabricCanvas.value!.add(canvasDom);
+        //     obj.videoEl = videoEl;
+        //     obj.canvasDom = canvasDom;
+        //     resolve({ videoEl, canvasDom });
+        //   };
+        // });
+        // const stream = videoEl
+        //   // @ts-ignore
+        //   .captureStream() as MediaStream;
+        obj.videoEl = videoEl;
         obj.stream = stream;
         obj.streamid = stream.id;
         obj.track = stream.getVideoTracks()[0];
@@ -2153,6 +2150,10 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
         muted: false,
       });
       setScaleInfo({ canvasDom, track: mediaVideoTrack, scale });
+      mediaVideoTrack.stream = stream;
+      mediaVideoTrack.streamid = stream.id;
+      mediaVideoTrack.track = stream.getVideoTracks()[0];
+      mediaVideoTrack.trackid = stream.getVideoTracks()[0].id;
       mediaVideoTrack.videoEl = videoEl;
       mediaVideoTrack.canvasDom = canvasDom;
       if (stream.getAudioTracks()[0]) {
@@ -2301,14 +2302,21 @@ function handleActiveObject(item: AppRootState['allTrack'][0]) {
 }
 
 function handleDel(item: AppRootState['allTrack'][0]) {
+  console.log('iii', item);
   if (item.canvasDom !== undefined) {
     fabricCanvas.value?.remove(item.canvasDom);
-    item.videoEl?.remove();
-    item.stream?.getTracks().forEach((track) => {
-      track.stop();
-      item.stream?.removeTrack(track);
-    });
   }
+  const delItem = appStore.allTrack.filter((iten) => iten.id === item.id);
+
+  delItem.forEach((v) => {
+    v.videoEl?.pause();
+    v.videoEl?.removeAttribute('src');
+    v.videoEl?.remove();
+    v.stream?.getTracks().forEach((track) => {
+      track.stop();
+      v.stream?.removeTrack(track);
+    });
+  });
   bodyAppendChildElArr.value.forEach((el) => {
     const videoid = el.getAttribute('videoid');
     if (item.id === videoid) {

@@ -28,7 +28,7 @@
   },
   "config": {
     "commitizen": {
-      "path": "./node_modules/cz-customizable"
+      "path": "./node_modules/cz-conventional-changelog"
     },
     "cz-customizable": {
       "config": "./.cz-config.js"
