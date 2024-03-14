@@ -6,7 +6,7 @@
 # Email: 2274751790@qq.com
 # FilePath: /billd-live/deploy/static-build.sh
 # Github: https://github.com/galaxy-s10
-# LastEditTime: 2024-02-20 11:51:28
+# LastEditTime: 2024-03-14 14:15:20
 # LastEditors: shuisheng
 ###
 
@@ -54,7 +54,7 @@ pnpm -v
 
 echo 设置pnpm淘宝镜像:
 pnpm config set registry https://registry.npmmirror.com/
-pnpm config set @billd:registry http://registry.hsslive.cn/
+pnpm config set @billd:registry https://registry.hsslive.cn/
 
 echo 查看当前pnpm镜像:
 pnpm config get registry

@@ -12,6 +12,7 @@ import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 import { ILiveRoom } from '@/types/ILiveRoom';
 import {
+  WsConnectStatusEnum,
   WsMessageType,
   WsMsgTypeEnum,
   WsMsrBlobType,
@@ -44,6 +45,7 @@ export function usePush() {
     initWs,
     handleStartLive,
     handleSendGetLiveUser,
+    connectStatus,
     mySocketId,
     canvasVideoStream,
     lastCoverImg,
@@ -74,22 +76,6 @@ export function usePush() {
       networkStore.removeRtc(rtc.receiver);
     });
   }
-
-  watch(
-    () => appStore.allTrack,
-    (newTrack) => {
-      console.log('appStore.allTrack变了');
-      const mixedStream = new MediaStream();
-      newTrack.forEach((item) => {
-        if (item.track) {
-          mixedStream.addTrack(item.track);
-        }
-      });
-      console.log('新的allTrack音频轨', mixedStream.getAudioTracks());
-      console.log('新的allTrack视频轨', mixedStream.getVideoTracks());
-    },
-    { deep: true }
-  );
 
   watch(
     () => currentResolutionRatio.value,
@@ -210,6 +196,10 @@ export function usePush() {
       return;
     }
     if (!roomNameIsOk()) {
+      return;
+    }
+    if (connectStatus.value !== WsConnectStatusEnum.connect) {
+      window.$message.warning('websocket未连接');
       return;
     }
 

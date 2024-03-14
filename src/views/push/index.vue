@@ -545,6 +545,8 @@ watch(
     if (!newval) {
       handleEndLive();
       showNoLiveTipModalCpt.value = true;
+    } else {
+      uploadLivePreview();
     }
   }
 );
@@ -1074,7 +1076,6 @@ function handleStartLive() {
     window.$message.warning('至少选择一个素材');
     return;
   }
-  uploadLivePreview();
   initAudio();
   startLive({
     type: liveType,
@@ -1177,15 +1178,6 @@ function autoCreateVideo(data: {
             }
           }
         });
-        console.log(
-          '初始化',
-          ratio,
-          canvasDom.width,
-          canvasDom.height,
-          width * ratio,
-          height * ratio,
-          canvasDom
-        );
         handleMoving({ canvasDom, id });
         handleScaling({ canvasDom, id });
         canvasDom.scale(ratio / window.devicePixelRatio);
@@ -1380,13 +1372,6 @@ function handleMoving({
   id: string;
 }) {
   canvasDom.on('moving', () => {
-    console.log(
-      'moving',
-      canvasDom.width,
-      canvasDom.height,
-      canvasDom.scaleX,
-      canvasDom.scaleY
-    );
     appStore.allTrack.forEach((item) => {
       if (id === item.id) {
         item.rect = {
@@ -1435,50 +1420,20 @@ async function handleCache() {
     async function handleMediaVideo() {
       const { code, file } = await readFile(item.id);
       if (code === 1 && file) {
-        const { videoEl, stream } = await autoCreateVideo({
+        const { videoEl, stream, canvasDom } = await autoCreateVideo({
           file,
           id: obj.id,
-          muted: true,
+          muted: item.muted,
+          rect: item.rect,
         });
         if (obj.volume !== undefined) {
           videoEl.volume = obj.volume / 100;
         }
-        console.log('kkkkk', videoEl);
-        document.body.appendChild(videoEl);
-        // await new Promise((resolve) => {
-        //   videoEl.onloadedmetadata = () => {
-        //     const stream = videoEl
-        //       // @ts-ignore
-        //       .captureStream();
-        //     const width = stream.getVideoTracks()[0].getSettings().width!;
-        //     const height = stream.getVideoTracks()[0].getSettings().height!;
-        //     videoEl.width = width;
-        //     videoEl.height = height;
-
-        //     const canvasDom = markRaw(
-        //       new fabric.Image(videoEl, {
-        //         top: (item.rect?.top || 0) / window.devicePixelRatio,
-        //         left: (item.rect?.left || 0) / window.devicePixelRatio,
-        //         width,
-        //         height,
-        //       })
-        //     );
-        //     handleMoving({ canvasDom, id: item.id });
-        //     handleScaling({ canvasDom, id: item.id });
-        //     canvasDom.scale(
-        //       item.scaleInfo[window.devicePixelRatio].scaleX || 1
-        //     );
-        //     canvasDom.opacity = item.openEye ? 1 : 0;
-        //     fabricCanvas.value!.add(canvasDom);
-        //     obj.videoEl = videoEl;
-        //     obj.canvasDom = canvasDom;
-        //     resolve({ videoEl, canvasDom });
-        //   };
-        // });
-        // const stream = videoEl
-        //   // @ts-ignore
-        //   .captureStream() as MediaStream;
+        handleMoving({ canvasDom, id: obj.id });
+        handleScaling({ canvasDom, id: obj.id });
+        canvasDom.scale(item.scaleInfo[window.devicePixelRatio].scaleX);
         obj.videoEl = videoEl;
+        obj.canvasDom = canvasDom;
         obj.stream = stream;
         obj.streamid = stream.id;
         obj.track = stream.getVideoTracks()[0];
@@ -1635,6 +1590,7 @@ async function handleCache() {
         };
       });
     }
+
     if ([MediaTypeEnum.metting, MediaTypeEnum.pk].includes(obj.type)) {
       err.push(obj.id);
     }
@@ -1782,7 +1738,6 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     });
     setScaleInfo({ canvasDom, track: videoTrack, scale });
     videoTrack.videoEl = videoEl;
-    // @ts-ignore
     videoTrack.canvasDom = canvasDom;
 
     const audio = event.getAudioTracks();
@@ -1845,7 +1800,6 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     });
     setScaleInfo({ canvasDom, track: videoTrack, scale });
     videoTrack.videoEl = videoEl;
-    // @ts-ignore
     videoTrack.canvasDom = canvasDom;
 
     const res = [...appStore.allTrack, videoTrack];
@@ -1877,7 +1831,6 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     });
     setScaleInfo({ canvasDom, track: videoTrack, scale });
     videoTrack.videoEl = videoEl;
-    // @ts-ignore
     videoTrack.canvasDom = canvasDom;
 
     const res = [...appStore.allTrack, videoTrack];
@@ -1894,7 +1847,6 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     });
     setScaleInfo({ canvasDom, track: videoTrack, scale });
     videoTrack.videoEl = videoEl;
-    // @ts-ignore
     videoTrack.canvasDom = canvasDom;
 
     const res = [...appStore.allTrack, videoTrack];
@@ -2143,19 +2095,19 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
       const file = val.mediaInfo[0].file!;
       const { code } = await saveFile({ file, fileName: mediaVideoTrack.id });
       if (code !== 1) return;
-      // const videoEl = createVideo({ muted: false, appendChild: false });
       const { videoEl, canvasDom, scale, stream } = await autoCreateVideo({
         file,
         id: mediaVideoTrack.id,
-        muted: false,
+        muted: mediaVideoTrack.muted,
       });
       setScaleInfo({ canvasDom, track: mediaVideoTrack, scale });
+      mediaVideoTrack.videoEl = videoEl;
+      mediaVideoTrack.canvasDom = canvasDom;
       mediaVideoTrack.stream = stream;
       mediaVideoTrack.streamid = stream.id;
       mediaVideoTrack.track = stream.getVideoTracks()[0];
       mediaVideoTrack.trackid = stream.getVideoTracks()[0].id;
-      mediaVideoTrack.videoEl = videoEl;
-      mediaVideoTrack.canvasDom = canvasDom;
+
       if (stream.getAudioTracks()[0]) {
         console.log('视频有音频', stream.getAudioTracks()[0]);
         mediaVideoTrack.audio = 1;
@@ -2302,7 +2254,6 @@ function handleActiveObject(item: AppRootState['allTrack'][0]) {
 }
 
 function handleDel(item: AppRootState['allTrack'][0]) {
-  console.log('iii', item);
   if (item.canvasDom !== undefined) {
     fabricCanvas.value?.remove(item.canvasDom);
   }
