@@ -40,56 +40,16 @@
             {{ t('layout.liveAdmin') }}
           </a>
 
-          <span class="item">
-            <Dropdown
-              class="download"
-              v-if="!isMobile()"
-            >
-              <template #btn>
-                <div class="btn">
-                  <span>{{ t('layout.download') }}</span>
-                  <VPIconChevronDown class="icon"></VPIconChevronDown>
-                </div>
-              </template>
-              <template #list>
-                <div class="list">
-                  <a
-                    class="item"
-                    :href="COMMON_URL.androidApp"
-                    @click.prevent="openToTarget(COMMON_URL.androidApp)"
-                  >
-                    <div class="txt">{{ t('layout.android') }}</div>
-                    <VPIconExternalLink class="icon"></VPIconExternalLink>
-                  </a>
-                  <a
-                    class="item"
-                    @click.prevent="handleTip"
-                  >
-                    <div class="txt">{{ t('layout.ios') }}</div>
-                  </a>
-                  <a
-                    class="item"
-                    :href="COMMON_URL.windows"
-                    @click.prevent="openToTarget(COMMON_URL.windows)"
-                  >
-                    <div class="txt">{{ t('layout.windows') }}</div>
-                    <VPIconExternalLink class="icon"></VPIconExternalLink>
-                  </a>
-                  <a
-                    class="item"
-                    :href="COMMON_URL.macos"
-                    @click.prevent="openToTarget(COMMON_URL.macos)"
-                  >
-                    <div class="txt">{{ t('layout.macos') }}</div>
-                    <VPIconExternalLink class="icon"></VPIconExternalLink>
-                  </a>
-                </div>
-              </template>
-            </Dropdown>
+          <a
+            class="item"
+            v-if="!isMobile()"
+            @click.prevent="router.push({ name: routerName.download })"
+          >
+            {{ t('layout.download') }}
             <div class="badge">
               <div class="txt">new</div>
             </div>
-          </span>
+          </a>
 
           <a
             class="item"

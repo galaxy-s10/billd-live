@@ -1,5 +1,26 @@
 <template>
   <div>
+    <n-space>
+      <n-button
+        type="primary"
+        @click="openToTarget(COMMON_URL.download.deskWindows)"
+      >
+        Windows版下载
+      </n-button>
+      <n-button
+        type="primary"
+        @click="openToTarget(COMMON_URL.download.deskMacOS)"
+      >
+        macOS版下载
+      </n-button>
+      <n-button
+        type="primary"
+        @click="openToTarget(COMMON_URL.release.desk)"
+      >
+        历史版本
+      </n-button>
+    </n-space>
+
     <h1 v-if="NODE_ENV === 'development'">
       我的id：{{ mySocketId }}，<n-button @click="copyToClipBoard(mySocketId)">
         复制
@@ -45,9 +66,10 @@
 
 <script lang="ts" setup>
 import { Key } from '@nut-tree/shared';
-import { copyToClipBoard, getRandomString } from 'billd-utils';
+import { copyToClipBoard, getRandomString, openToTarget } from 'billd-utils';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
+import { COMMON_URL } from '@/constant';
 import { usePull } from '@/hooks/use-pull';
 import { useTip } from '@/hooks/use-tip';
 import { useAppStore } from '@/store/app';

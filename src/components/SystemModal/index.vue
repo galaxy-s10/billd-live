@@ -6,6 +6,7 @@
         title="提示"
         role="dialog"
         closable
+        @close="showModal = false"
       >
         <div>
           欢迎进入直播间，遇到问题请提<a

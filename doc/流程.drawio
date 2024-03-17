@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="dqmK7txivQjgTJvqpF2s" name="第 1 页">
-        <mxGraphModel dx="1738" dy="809" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+        <mxGraphModel dx="945" dy="483" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -8,16 +8,16 @@
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="2" value="安卓端" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="70" y="80" width="120" height="60" as="geometry"/>
+                    <mxGeometry x="80" y="80" width="120" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="3" value="流媒体服务器" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="150" y="300" width="120" height="60" as="geometry"/>
+                    <mxGeometry x="200" y="300" width="120" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="6" value="推流" style="edgeStyle=none;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="4" target="3" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="4" value="浏览器" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="270" y="80" width="120" height="60" as="geometry"/>
+                    <mxGeometry x="280" y="80" width="120" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="9" value="拉流" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="3" target="7" edge="1">
                     <mxGeometry relative="1" as="geometry">
@@ -25,12 +25,12 @@
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="7" value="安卓端" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="70" y="510" width="120" height="60" as="geometry"/>
+                    <mxGeometry x="80" y="500" width="120" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="8" value="浏览器" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="280" y="510" width="120" height="60" as="geometry"/>
+                    <mxGeometry x="320" y="500" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="13" value="拉流" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="3" target="8">
+                <mxCell id="13" value="拉流" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="3" target="8" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <mxPoint x="220" y="339.9999999999998" as="sourcePoint"/>
                         <mxPoint x="140" y="520.0000000000002" as="targetPoint"/>

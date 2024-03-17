@@ -783,6 +783,16 @@ onUnmounted(() => {
   });
   clearFrame();
   worker.value?.terminate();
+
+  appStore.allTrack.forEach((v) => {
+    v.videoEl?.pause();
+    v.videoEl?.removeAttribute('src');
+    v.videoEl?.remove();
+    v.stream?.getTracks().forEach((track) => {
+      track.stop();
+      v.stream?.removeTrack(track);
+    });
+  });
 });
 
 async function initUserMedia() {
