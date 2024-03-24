@@ -1123,9 +1123,10 @@ function autoCreateVideo(data: {
   stream?: MediaStream;
   id: string;
   rect?: { left: number; top: number };
+  scaleInfo?: Record<number, { scaleX: number; scaleY: number }>;
   muted?: boolean;
 }) {
-  const { file, id, rect, muted } = data;
+  const { file, id, rect, scaleInfo, muted } = data;
   let stream = data.stream;
   let videoEl: HTMLVideoElement;
   if (file) {
@@ -1161,12 +1162,11 @@ function autoCreateVideo(data: {
         videoEl.width = width;
         videoEl.height = height;
         if (canvasDom) {
-          const old = appStore.allTrack.find((item) => item.id === id);
           fabricCanvas.value?.remove(canvasDom);
           canvasDom = markRaw(
             new fabric.Image(videoEl, {
-              top: (old?.rect?.top || 0) / window.devicePixelRatio,
-              left: (old?.rect?.left || 0) / window.devicePixelRatio,
+              top: (rect?.top || 0) / window.devicePixelRatio,
+              left: (rect?.left || 0) / window.devicePixelRatio,
               width,
               height,
             })
@@ -1174,8 +1174,8 @@ function autoCreateVideo(data: {
         } else {
           canvasDom = markRaw(
             new fabric.Image(videoEl, {
-              top: rect?.top || 0,
-              left: rect?.left || 0,
+              top: (rect?.top || 0) / window.devicePixelRatio,
+              left: (rect?.left || 0) / window.devicePixelRatio,
               width,
               height,
             })
@@ -1190,7 +1190,7 @@ function autoCreateVideo(data: {
         });
         handleMoving({ canvasDom, id });
         handleScaling({ canvasDom, id });
-        canvasDom.scale(ratio / window.devicePixelRatio);
+        canvasDom.scale(scaleInfo?.[window.devicePixelRatio]?.scaleX || 1);
         fabricCanvas.value!.add(canvasDom);
         resolve({ canvasDom, scale: ratio, videoEl, stream: stream! });
       }
@@ -1435,13 +1435,11 @@ async function handleCache() {
           id: obj.id,
           muted: item.muted,
           rect: item.rect,
+          scaleInfo: item.scaleInfo,
         });
         if (obj.volume !== undefined) {
           videoEl.volume = obj.volume / 100;
         }
-        handleMoving({ canvasDom, id: obj.id });
-        handleScaling({ canvasDom, id: obj.id });
-        canvasDom.scale(item.scaleInfo[window.devicePixelRatio].scaleX);
         obj.videoEl = videoEl;
         obj.canvasDom = canvasDom;
         obj.stream = stream;
@@ -1740,11 +1738,14 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
       hidden: false,
       muted: false,
       scaleInfo: {},
+      rect: { left: 0, top: 0 },
     };
 
     const { canvasDom, videoEl, scale } = await autoCreateVideo({
       stream: event,
       id: videoTrack.id,
+      rect: videoTrack.rect,
+      scaleInfo: videoTrack.scaleInfo,
     });
     setScaleInfo({ canvasDom, track: videoTrack, scale });
     videoTrack.videoEl = videoEl;
@@ -1803,10 +1804,13 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
       hidden: false,
       muted: false,
       scaleInfo: {},
+      rect: { left: 0, top: 0 },
     };
     const { canvasDom, videoEl, scale } = await autoCreateVideo({
       stream: event,
       id: videoTrack.id,
+      rect: videoTrack.rect,
+      scaleInfo: videoTrack.scaleInfo,
     });
     setScaleInfo({ canvasDom, track: videoTrack, scale });
     videoTrack.videoEl = videoEl;
@@ -1834,10 +1838,13 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
       hidden: false,
       muted: false,
       scaleInfo: {},
+      rect: { left: 0, top: 0 },
     };
     const { canvasDom, videoEl, scale } = await autoCreateVideo({
       stream: event,
       id: videoTrack.id,
+      rect: videoTrack.rect,
+      scaleInfo: videoTrack.scaleInfo,
     });
     setScaleInfo({ canvasDom, track: videoTrack, scale });
     videoTrack.videoEl = videoEl;
@@ -1851,9 +1858,12 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     const event = val.stream;
     if (!event) return;
     const videoTrack = val;
+    videoTrack.rect = { left: 0, top: 0 };
     const { canvasDom, videoEl, scale } = await autoCreateVideo({
       stream: event,
       id: videoTrack.id,
+      rect: videoTrack.rect,
+      scaleInfo: videoTrack.scaleInfo,
     });
     setScaleInfo({ canvasDom, track: videoTrack, scale });
     videoTrack.videoEl = videoEl;
@@ -2099,6 +2109,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
       hidden: false,
       muted: false,
       scaleInfo: {},
+      rect: { left: 0, top: 0 },
     };
     if (fabricCanvas.value) {
       if (!val.mediaInfo) return;
@@ -2109,6 +2120,8 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
         file,
         id: mediaVideoTrack.id,
         muted: mediaVideoTrack.muted,
+        rect: mediaVideoTrack.rect,
+        scaleInfo: mediaVideoTrack.scaleInfo,
       });
       setScaleInfo({ canvasDom, track: mediaVideoTrack, scale });
       mediaVideoTrack.videoEl = videoEl;

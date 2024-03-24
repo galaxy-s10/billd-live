@@ -53,7 +53,7 @@ import {
 
 import { useForwardAll } from './webrtc/forwardAll';
 import { useForwardBilibili } from './webrtc/forwardBilibili';
-import { useForwardDouyu } from './webrtc/forwardDouyu';
+import { useForwardHuya } from './webrtc/forwardHuya';
 import { useWebRtcRemoteDesk } from './webrtc/remoteDesk';
 
 export const useWebsocket = () => {
@@ -69,7 +69,7 @@ export const useWebsocket = () => {
   const { updateWebRtcSrsConfig, webRtcSrs } = useWebRtcSrs();
   const { updateForwardBilibiliConfig, forwardBilibili } = useForwardBilibili();
   const { updateForwardAllConfig, forwardAll } = useForwardAll();
-  const { updateForwardDouyuConfig, forwardDouyu } = useForwardDouyu();
+  const { updateForwardHuyaConfig, forwardHuya } = useForwardHuya();
   const { updateWebRtcTencentcloudCssConfig, webRtcTencentcloudCss } =
     useWebRtcTencentcloudCss();
   const { updateWebRtcLiveConfig, webRtcLive } = useWebRtcLive();
@@ -208,17 +208,17 @@ export const useWebsocket = () => {
         receiver: 'srs',
       });
     } else if (type === LiveRoomTypeEnum.forward_huya) {
-      updateForwardDouyuConfig({
+      updateForwardHuyaConfig({
         isPk: false,
         roomId: roomId.value,
         canvasVideoStream: canvasVideoStream.value,
       });
-      forwardDouyu.newWebRtc({
+      forwardHuya.newWebRtc({
         sender: mySocketId.value,
         receiver: 'srs',
         videoEl: createNullVideo(),
       });
-      forwardDouyu.sendOffer({
+      forwardHuya.sendOffer({
         sender: mySocketId.value,
         receiver: 'srs',
       });

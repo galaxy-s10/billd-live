@@ -41,7 +41,6 @@ export default nameSpaceWrap('layout', {
   srsLive: 'SRS Live',
   forwardBilibili: 'forward Bilibili',
   forwardHuya: 'forward Huya',
-  forwardDouyu: 'forward Douyu',
   forwardAll: 'forward All',
   webrtcLive: 'WebRTC Live',
   webrtcMeeting: 'WebRTC Meeting',

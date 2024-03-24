@@ -9,7 +9,7 @@ import { useUserStore } from '@/store/user';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import { WebRTCClass } from '@/utils/network/webRTC';
 
-export const useForwardDouyu = () => {
+export const useForwardHuya = () => {
   const userStore = useUserStore();
   const networkStore = useNetworkStore();
 
@@ -21,13 +21,13 @@ export const useForwardDouyu = () => {
   const roomId = ref('');
   const canvasVideoStream = ref<MediaStream>();
 
-  function updateForwardDouyuConfig(data: { isPk; roomId; canvasVideoStream }) {
+  function updateForwardHuyaConfig(data: { isPk; roomId; canvasVideoStream }) {
     isPk.value = data.isPk;
     roomId.value = data.roomId;
     canvasVideoStream.value = data.canvasVideoStream;
   }
 
-  const forwardDouyu = {
+  const forwardHuya = {
     newWebRtc: (data: {
       sender: string;
       receiver: string;
@@ -54,7 +54,7 @@ export const useForwardDouyu = () => {
       sender: string;
       receiver: string;
     }) => {
-      console.log('开始ForwardDouyu的sendOffer', {
+      console.log('开始ForwardHuya的sendOffer', {
         sender,
         receiver,
       });
@@ -66,7 +66,7 @@ export const useForwardDouyu = () => {
           canvasVideoStream.value?.getTracks().forEach((track) => {
             if (canvasVideoStream.value) {
               console.log(
-                'ForwardDouyu的canvasVideoStream插入track',
+                'ForwardHuya的canvasVideoStream插入track',
                 track.kind,
                 track
               );
@@ -75,8 +75,8 @@ export const useForwardDouyu = () => {
           });
           const offerSdp = await rtc.createOffer();
           if (!offerSdp) {
-            console.error('ForwardDouyu的offerSdp为空');
-            window.$message.error('ForwardDouyu的offerSdp为空');
+            console.error('ForwardHuya的offerSdp为空');
+            window.$message.error('ForwardHuya的offerSdp为空');
             return;
           }
           await rtc.setLocalDescription(offerSdp!);
@@ -112,10 +112,10 @@ export const useForwardDouyu = () => {
           console.error('rtc不存在');
         }
       } catch (error) {
-        console.error('ForwardDouyu的sendOffer错误');
+        console.error('ForwardHuya的sendOffer错误');
       }
     },
   };
 
-  return { updateForwardDouyuConfig, forwardDouyu };
+  return { updateForwardHuyaConfig, forwardHuya };
 };
