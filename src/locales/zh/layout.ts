@@ -39,6 +39,10 @@ export default nameSpaceWrap('layout', {
   release: '版本发布',
 
   srsLive: 'SRS直播(推荐)',
+  forwardBilibili: '转推b站(beta)',
+  forwardHuya: '转推虎牙(beta)',
+  forwardDouyu: '转推斗鱼(beta)',
+  forwardAll: '转推b站和斗鱼(beta)',
   webrtcLive: 'WebRTC直播(低延迟)',
   webrtcMeeting: 'WebRTC会议(低延迟)',
   msrLive: 'Msr直播(b站实现)',

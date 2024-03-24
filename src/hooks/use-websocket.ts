@@ -51,6 +51,9 @@ import {
   prettierReceiveWsMsg,
 } from '@/utils/network/webSocket';
 
+import { useForwardAll } from './webrtc/forwardAll';
+import { useForwardBilibili } from './webrtc/forwardBilibili';
+import { useForwardDouyu } from './webrtc/forwardDouyu';
 import { useWebRtcRemoteDesk } from './webrtc/remoteDesk';
 
 export const useWebsocket = () => {
@@ -64,6 +67,9 @@ export const useWebsocket = () => {
     useWebRtcRemoteDesk();
   const { updateWebRtcMeetingPkConfig, webRtcMeetingPk } = useWebRtcMeetingPk();
   const { updateWebRtcSrsConfig, webRtcSrs } = useWebRtcSrs();
+  const { updateForwardBilibiliConfig, forwardBilibili } = useForwardBilibili();
+  const { updateForwardAllConfig, forwardAll } = useForwardAll();
+  const { updateForwardDouyuConfig, forwardDouyu } = useForwardDouyu();
   const { updateWebRtcTencentcloudCssConfig, webRtcTencentcloudCss } =
     useWebRtcTencentcloudCss();
   const { updateWebRtcLiveConfig, webRtcLive } = useWebRtcLive();
@@ -183,6 +189,51 @@ export const useWebsocket = () => {
         videoEl: createNullVideo(),
       });
       webRtcSrs.sendOffer({
+        sender: mySocketId.value,
+        receiver: 'srs',
+      });
+    } else if (type === LiveRoomTypeEnum.forward_bilibili) {
+      updateForwardBilibiliConfig({
+        isPk: false,
+        roomId: roomId.value,
+        canvasVideoStream: canvasVideoStream.value,
+      });
+      forwardBilibili.newWebRtc({
+        sender: mySocketId.value,
+        receiver: 'srs',
+        videoEl: createNullVideo(),
+      });
+      forwardBilibili.sendOffer({
+        sender: mySocketId.value,
+        receiver: 'srs',
+      });
+    } else if (type === LiveRoomTypeEnum.forward_huya) {
+      updateForwardDouyuConfig({
+        isPk: false,
+        roomId: roomId.value,
+        canvasVideoStream: canvasVideoStream.value,
+      });
+      forwardDouyu.newWebRtc({
+        sender: mySocketId.value,
+        receiver: 'srs',
+        videoEl: createNullVideo(),
+      });
+      forwardDouyu.sendOffer({
+        sender: mySocketId.value,
+        receiver: 'srs',
+      });
+    } else if (type === LiveRoomTypeEnum.forward_all) {
+      updateForwardAllConfig({
+        isPk: false,
+        roomId: roomId.value,
+        canvasVideoStream: canvasVideoStream.value,
+      });
+      forwardAll.newWebRtc({
+        sender: mySocketId.value,
+        receiver: 'srs',
+        videoEl: createNullVideo(),
+      });
+      forwardAll.sendOffer({
         sender: mySocketId.value,
         receiver: 'srs',
       });

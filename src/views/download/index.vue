@@ -127,9 +127,7 @@ import { onMounted, ref } from 'vue';
 
 import { fetchServerInfo } from '@/api/other';
 import { COMMON_URL } from '@/constant';
-import { BilldHtmlWebpackPluginLog, IServerInfo } from '@/interface';
-// @ts-ignore
-const billd: BilldHtmlWebpackPluginLog = process.env.BilldHtmlWebpackPlugin;
+import { IServerInfo } from '@/interface';
 
 const serverInfo = ref<IServerInfo>();
 const loading = ref(false);

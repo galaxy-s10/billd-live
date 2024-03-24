@@ -261,6 +261,26 @@
               </a>
               <a
                 class="item"
+                @click.prevent="
+                  handleStartLive(LiveRoomTypeEnum.forward_bilibili)
+                "
+              >
+                <div class="txt">{{ t('layout.forwardBilibili') }}</div>
+              </a>
+              <a
+                class="item"
+                @click.prevent="handleStartLive(LiveRoomTypeEnum.forward_huya)"
+              >
+                <div class="txt">{{ t('layout.forwardHuya') }}</div>
+              </a>
+              <a
+                class="item"
+                @click.prevent="handleStartLive(LiveRoomTypeEnum.forward_all)"
+              >
+                <div class="txt">{{ t('layout.forwardAll') }}</div>
+              </a>
+              <a
+                class="item"
                 @click.prevent="handleStartLive(LiveRoomTypeEnum.wertc_live)"
               >
                 <div class="txt">{{ t('layout.webrtcLive') }}</div>

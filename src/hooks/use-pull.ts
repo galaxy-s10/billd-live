@@ -223,7 +223,7 @@ export function usePull(roomId: string) {
   }
 
   function handleFlvPlay() {
-    console.log('handleFlvPlay');
+    console.log('handleFlvPlay', flvurl.value);
     handleStopDrawing();
     videoLoading.value = true;
     appStore.setLiveLine(LiveLineEnum.flv);
@@ -252,6 +252,9 @@ export function usePull(roomId: string) {
         LiveRoomTypeEnum.obs,
         LiveRoomTypeEnum.msr,
         LiveRoomTypeEnum.pk,
+        LiveRoomTypeEnum.forward_bilibili,
+        LiveRoomTypeEnum.forward_huya,
+        LiveRoomTypeEnum.forward_all,
       ].includes(data.type!)
     ) {
       play();
@@ -279,6 +282,9 @@ export function usePull(roomId: string) {
             LiveRoomTypeEnum.obs,
             LiveRoomTypeEnum.tencent_css,
             LiveRoomTypeEnum.tencent_css_pk,
+            LiveRoomTypeEnum.forward_bilibili,
+            LiveRoomTypeEnum.forward_huya,
+            LiveRoomTypeEnum.forward_all,
           ].includes(liveRoomInfo.type!)
         ) {
           handlePlay(liveRoomInfo!);
