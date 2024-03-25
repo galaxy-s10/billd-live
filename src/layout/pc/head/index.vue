@@ -577,13 +577,23 @@ function handleStartLive(key: LiveRoomTypeEnum) {
     return;
   }
   if (
-    key === LiveRoomTypeEnum.msr &&
-    !userStore.userInfo?.auths?.find(
-      (v) => v.auth_value === DEFAULT_AUTH_INFO.LIVE_PULL_SVIP.auth_value
-    )
+    [
+      LiveRoomTypeEnum.msr,
+      LiveRoomTypeEnum.tencent_css,
+      LiveRoomTypeEnum.tencent_css_pk,
+      LiveRoomTypeEnum.forward_all,
+      LiveRoomTypeEnum.forward_bilibili,
+      LiveRoomTypeEnum.forward_huya,
+    ].includes(key)
   ) {
-    window.$message.info('权限不足，请更换其他开播方式');
-    return;
+    if (
+      !userStore.userInfo?.auths?.find(
+        (v) => v.auth_value === DEFAULT_AUTH_INFO.LIVE_PULL_SVIP.auth_value
+      )
+    ) {
+      window.$message.info('权限不足，请更换其他开播方式');
+      return;
+    }
   }
   const url = router.resolve({
     name: routerName.push,

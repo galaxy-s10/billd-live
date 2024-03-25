@@ -23,7 +23,10 @@
         <div class="item">
           <div class="label">名称</div>
           <div class="value">
-            <n-input v-model:value="mediaName" />
+            <n-input
+              type="textarea"
+              v-model:value="mediaName"
+            />
           </div>
         </div>
         <template v-if="props.mediaType === MediaTypeEnum.txt && txtInfo">
@@ -31,6 +34,7 @@
             <div class="label">内容</div>
             <div class="value">
               <n-input
+                type="textarea"
                 ref="inputInstRef"
                 v-model:value="txtInfo.txt"
               />

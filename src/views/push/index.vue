@@ -372,7 +372,8 @@
         </div> -->
       </div>
     </div>
-
+  </div>
+  <div>
     <SelectMediaModalCpt
       v-if="showSelectMediaModalCpt"
       :all-media-type-list="allMediaTypeList"
@@ -1333,7 +1334,7 @@ function initCanvas() {
  * 二倍屏展示：100px等于100个像素，二比一展示，即在二倍屏的100px看起来会比一倍屏的100px小一倍
  * 如果需要在一杯和二倍屏幕的时候看的大小都一样：
  * 1，在二倍屏的时候，需要将100px放大一倍，即200px；
- * 2，在一倍屏的时候，需要将100px缩小一百，即50px；
+ * 2，在一倍屏的时候，需要将100px缩小一倍，即50px；
  */
 function handleScaling({ canvasDom, id }) {
   canvasDom.on('scaling', () => {
@@ -1482,7 +1483,9 @@ async function handleCache() {
           );
           handleMoving({ canvasDom, id: obj.id });
           handleScaling({ canvasDom, id: obj.id });
-          canvasDom.scale(item.scaleInfo[window.devicePixelRatio].scaleX || 1);
+          canvasDom.scale(
+            item.scaleInfo?.[window.devicePixelRatio]?.scaleX || 1
+          );
           canvasDom.opacity = item.openEye ? 1 : 0;
           fabricCanvas.value.add(canvasDom);
           obj.canvasDom = canvasDom;
@@ -1524,7 +1527,7 @@ async function handleCache() {
             handleMoving({ canvasDom, id: item.id });
             handleScaling({ canvasDom, id: item.id });
             canvasDom.scale(
-              item.scaleInfo[window.devicePixelRatio].scaleX || 1
+              item.scaleInfo?.[window.devicePixelRatio]?.scaleX || 1
             );
             canvasDom.opacity = item.openEye ? 1 : 0;
             fabricCanvas.value!.add(canvasDom);
@@ -1589,7 +1592,9 @@ async function handleCache() {
           );
           handleMoving({ canvasDom, id: item.id });
           handleScaling({ canvasDom, id: item.id });
-          canvasDom.scale(item.scaleInfo[window.devicePixelRatio].scaleX || 1);
+          canvasDom.scale(
+            item.scaleInfo?.[window.devicePixelRatio]?.scaleX || 1
+          );
           canvasDom.opacity = item.openEye ? 1 : 0;
           fabricCanvas.value!.add(canvasDom);
           obj.videoEl = videoEl;
@@ -1627,7 +1632,7 @@ async function handleCache() {
         handleMoving({ canvasDom, id: obj.id });
         handleScaling({ canvasDom, id: obj.id });
         // fabric.Text类型不能除以分辨率
-        canvasDom.scale(item.scaleInfo[window.devicePixelRatio].scaleX);
+        canvasDom.scale(item.scaleInfo?.[window.devicePixelRatio]?.scaleX || 1);
         canvasDom.opacity = item.openEye ? 1 : 0;
         fabricCanvas.value.add(canvasDom);
         obj.canvasDom = canvasDom;
@@ -1647,7 +1652,7 @@ async function handleCache() {
         handleMoving({ canvasDom, id: obj.id });
         handleScaling({ canvasDom, id: obj.id });
         // fabric.Text类型不能除以分辨率
-        canvasDom.scale(item.scaleInfo[window.devicePixelRatio].scaleX);
+        canvasDom.scale(item.scaleInfo?.[window.devicePixelRatio]?.scaleX || 1);
         canvasDom.opacity = item.openEye ? 1 : 0;
         fabricCanvas.value.add(canvasDom);
         obj.canvasDom = canvasDom;
@@ -1667,7 +1672,7 @@ async function handleCache() {
         handleMoving({ canvasDom, id: obj.id });
         handleScaling({ canvasDom, id: obj.id });
         // fabric.Text类型不能除以分辨率
-        canvasDom.scale(item.scaleInfo[window.devicePixelRatio].scaleX);
+        canvasDom.scale(item.scaleInfo?.[window.devicePixelRatio]?.scaleX || 1);
         canvasDom.opacity = item.openEye ? 1 : 0;
         fabricCanvas.value.add(canvasDom);
         obj.canvasDom = canvasDom;
