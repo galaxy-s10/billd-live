@@ -110,9 +110,24 @@ onMounted(() => {
   window.addEventListener('keydown', handleKeyDown);
 });
 
+watch(
+  () => appStore.remoteDesk.isClose,
+  (newval) => {
+    if (newval) {
+      networkStore.removeRtc(receiverId.value);
+      useTip({
+        content: '远程连接断开',
+        hiddenCancel: true,
+        hiddenClose: true,
+      }).catch();
+    }
+  }
+);
+
 function handleKeyDown(e: KeyboardEvent) {
   // console.log(e.key, e.code);
   const keyMap = {
+    Delete: Key.Delete,
     Enter: Key.Enter,
     Space: Key.Space,
     Backspace: Key.Backspace,
@@ -177,20 +192,6 @@ function handleKeyDown(e: KeyboardEvent) {
       },
     });
 }
-
-watch(
-  () => appStore.remoteDesk.isClose,
-  (newval) => {
-    if (newval) {
-      networkStore.removeRtc(receiverId.value);
-      useTip({
-        content: '远程连接断开',
-        hiddenCancel: true,
-        hiddenClose: true,
-      }).catch();
-    }
-  }
-);
 
 function handleDoublelclick() {
   networkStore.rtcMap
