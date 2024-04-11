@@ -144,6 +144,20 @@ export const useWebRtcMeetingOne = () => {
         }
       } catch (error) {
         console.error('meetingOne的sendAnswer错误');
+        console.log(error);
+      }
+    },
+    addTrack: ({ stream, receiver }: { stream; receiver: string }) => {
+      console.log('33333', receiver);
+      console.log(networkStore.rtcMap);
+      const rtc = networkStore.rtcMap.get(receiver);
+      console.log('33333', rtc);
+      console.log(stream);
+      if (rtc) {
+        stream.getTracks().forEach((track) => {
+          console.log('meetingOne的sendOffer插入track66', track.kind, track);
+          rtc.peerConnection?.addTrack(track, stream);
+        });
       }
     },
   };

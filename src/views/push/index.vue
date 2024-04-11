@@ -573,20 +573,21 @@ watch(
     renderFrame();
   }
 );
-const lockMap = ref(new Set());
+
 watch(
   () => networkStore.rtcMap,
   (newVal) => {
     newVal.forEach((item) => {
-      // if (appStore.allTrack.find((v) => v.mediaName === item.receiver)) {
-      //   return;
-      // }
+      if (appStore.allTrack.find((v) => v.mediaName === item.receiver)) {
+        return;
+      }
       // if (lockMap.value.has(item.localStream?.id)) {
       //   return;
       // }
       // if (item.localStream?.id) {
       //   lockMap.value.add(item.localStream?.id);
       // }
+      console.log('kkkkkkkkkk1111', item);
       addMediaOk({
         id: getRandomEnglishString(6),
         openEye: true,
@@ -1163,8 +1164,13 @@ function autoCreateVideo(data: {
       let canvasDom: Raw<fabric.Image>;
       let ratio;
       function main() {
-        const width = stream?.getVideoTracks()[0].getSettings().width!;
-        const height = stream?.getVideoTracks()[0].getSettings().height!;
+        const width =
+          stream?.getVideoTracks()[0].getSettings().width! ||
+          videoEl.videoWidth;
+        const height =
+          stream?.getVideoTracks()[0].getSettings().height! ||
+          videoEl.videoHeight;
+        console.log(width, height, '353333', videoEl.videoWidth);
         ratio = handleScale({ width, height });
         videoEl.width = width;
         videoEl.height = height;
@@ -1866,7 +1872,11 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     cacheStore.setResourceList(res);
     console.log('获取pk成功');
   } else if (val.type === MediaTypeEnum.metting) {
+    console.log('mettingmetting111');
     const event = val.stream;
+    console.log('mettingmetting111', event);
+    console.log(val, '22');
+
     if (!event) return;
     const videoTrack = val;
     videoTrack.rect = { left: 0, top: 0 };
@@ -1876,6 +1886,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
       rect: videoTrack.rect,
       scaleInfo: videoTrack.scaleInfo,
     });
+    document.body.appendChild(videoEl);
     setScaleInfo({ canvasDom, track: videoTrack, scale });
     videoTrack.videoEl = videoEl;
     videoTrack.canvasDom = canvasDom;

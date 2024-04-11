@@ -1,7 +1,6 @@
 import { getRandomString } from 'billd-utils';
 
 import { LiveLineEnum, MediaTypeEnum } from '@/interface';
-import { prodDomain } from '@/spec-config';
 import { AppRootState, useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { WsCandidateType, WsMsgTypeEnum } from '@/types/websocket';
@@ -574,17 +573,17 @@ export class WebRTCClass {
             // {
             //   urls: 'stun:stun.l.google.com:19302',
             // },
-            {
-              urls: `turn:hk.${prodDomain}`,
-              username: 'hss',
-              credential: '123456',
-            },
+            // {
+            //   urls: `turn:hk.${prodDomain}`,
+            //   username: 'hss',
+            //   credential: '123456',
+            // },
           ];
       this.peerConnection = new RTCPeerConnection({
         iceServers,
       });
       if (!this.isSRS) {
-        this.handleDataChannel();
+        // this.handleDataChannel();
       }
       this.handleStreamEvent();
       this.handleConnectionEvent();
@@ -644,6 +643,7 @@ export class WebRTCClass {
   /** 更新store */
   update = () => {
     const networkStore = useNetworkStore();
+    console.log('updateRtcMap', this.receiver);
     networkStore.updateRtcMap(this.receiver, this);
   };
 }
