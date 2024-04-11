@@ -45,7 +45,7 @@ import {
   WsStartRemoteDesk,
   WsUpdateJoinInfoType,
 } from '@/types/websocket';
-import { createNullVideo, handleUserMedia } from '@/utils';
+import { createNullVideo, createVideo, handleUserMedia } from '@/utils';
 import {
   WebSocketClass,
   prettierReceiveWsMsg,
@@ -434,7 +434,7 @@ export const useWebsocket = () => {
             return;
           }
           if (data.receiver === mySocketId.value) {
-            console.warn('是发给我的nativeWebRtcOffer');
+            console.warn('是发给我的nativeWebRtcOffer-pk-tencent_css_pk');
             const res = await fetchVerifyPkKey({
               liveRoomId: Number(roomId.value),
               key: route.query.pkKey,
@@ -478,7 +478,7 @@ export const useWebsocket = () => {
           }
         } else if (data.live_room.type === LiveRoomTypeEnum.wertc_live) {
           if (data.receiver === mySocketId.value) {
-            console.warn('是发给我的nativeWebRtcOffer');
+            console.warn('是发给我的nativeWebRtcOffer-wertc_live');
             if (networkStore.rtcMap.get(data.sender)) {
               return;
             }
@@ -504,7 +504,7 @@ export const useWebsocket = () => {
           }
         } else if (data.live_room.type === LiveRoomTypeEnum.wertc_meeting_one) {
           if (data.receiver === mySocketId.value) {
-            console.warn('是发给我的nativeWebRtcOffer');
+            console.warn('是发给我的nativeWebRtcOffer-wertc_meeting_one');
             await useTip({
               content: '是否加入会议？',
             });
@@ -512,7 +512,16 @@ export const useWebsocket = () => {
               video: true,
               audio: true,
             });
+            console.log('===66');
+            console.log(stream);
+            console.log(canvasVideoStream.value);
             userStream.value = stream;
+            const video = createVideo({
+              appendChild: true,
+              show: true,
+            });
+            video.srcObject = stream;
+            console.log('kkkk11');
             updateWebRtcMeetingOneConfig({
               roomId: roomId.value,
               userStream: userStream.value,

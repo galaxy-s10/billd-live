@@ -84,9 +84,9 @@
               </n-input-group>
             </div>
             <div class="bottom">
-              <span v-if="NODE_ENV === 'development'">
-                {{ mySocketId }}
-              </span>
+              <!-- <span v-if="NODE_ENV === 'development'"> -->
+              {{ mySocketId }}
+              <!-- </span> -->
             </div>
           </div>
         </div>
@@ -573,14 +573,20 @@ watch(
     renderFrame();
   }
 );
-
+const lockMap = ref(new Set());
 watch(
   () => networkStore.rtcMap,
   (newVal) => {
     newVal.forEach((item) => {
-      if (appStore.allTrack.find((v) => v.mediaName === item.receiver)) {
-        return;
-      }
+      // if (appStore.allTrack.find((v) => v.mediaName === item.receiver)) {
+      //   return;
+      // }
+      // if (lockMap.value.has(item.localStream?.id)) {
+      //   return;
+      // }
+      // if (item.localStream?.id) {
+      //   lockMap.value.add(item.localStream?.id);
+      // }
       addMediaOk({
         id: getRandomEnglishString(6),
         openEye: true,

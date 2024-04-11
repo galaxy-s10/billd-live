@@ -514,6 +514,18 @@ export class WebRTCClass {
     );
 
     this.prettierLog({
+      msg: '开始监听pc的icecandidateerror事件',
+      type: 'warn',
+    });
+    this.peerConnection.addEventListener('icecandidateerror', (err) => {
+      this.prettierLog({
+        msg: 'pc收到icecandidateerror',
+        type: 'error',
+      });
+      console.log(err);
+    });
+
+    this.prettierLog({
       msg: '开始监听pc的negotiationneeded事件',
       type: 'warn',
     });

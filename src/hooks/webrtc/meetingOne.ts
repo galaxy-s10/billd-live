@@ -119,7 +119,7 @@ export const useWebRtcMeetingOne = () => {
           await rtc.setRemoteDescription(sdp);
           userStream.value?.getTracks().forEach((track) => {
             if (userStream.value) {
-              console.log('meetingOne的sendAnswer插入track');
+              console.log('meetingOne的sendAnswer插入track', track);
               rtc.peerConnection?.addTrack(track, userStream.value);
             }
           });
