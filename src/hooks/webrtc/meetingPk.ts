@@ -144,6 +144,16 @@ export const useWebRtcMeetingPk = () => {
         }
       } catch (error) {
         console.error('meetingPk的sendAnswer错误');
+        console.log(error);
+      }
+    },
+    addTrack: ({ stream, receiver }: { stream; receiver: string }) => {
+      const rtc = networkStore.rtcMap.get(receiver);
+      if (rtc) {
+        stream.getTracks().forEach((track) => {
+          console.log('meetingPk的sendOffer插入track666', track.kind, track);
+          rtc.peerConnection?.addTrack(track, stream);
+        });
       }
     },
   };
