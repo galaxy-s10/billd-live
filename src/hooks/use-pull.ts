@@ -154,6 +154,8 @@ export function usePull(roomId: string) {
       if (newVal.size) {
         roomLiving.value = true;
         videoLoading.value = false;
+        appStore.playing = true;
+        cacheStore.muted = false;
       }
       if (
         isRemoteDesk.value ||

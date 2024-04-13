@@ -547,8 +547,6 @@ export const useWebsocket = () => {
         if (data.receiver === mySocketId.value) {
           console.warn('是发给我的nativeWebRtcCandidate');
           const rtc = networkStore.rtcMap.get(data.sender);
-          console.log('rtc', rtc);
-          console.log('sender', data.sender);
           rtc?.addIceCandidate(data.candidate);
         } else {
           console.error('不是发给我的nativeWebRtcCandidate');
@@ -682,6 +680,8 @@ export const useWebsocket = () => {
         video: true,
         audio: true,
       });
+      console.log(stream?.getAudioTracks());
+      console.log(stream?.getVideoTracks(), 1111);
       userStream.value = stream;
       networkStore.wsMap.get(roomId.value)?.send<WsBatchSendOffer['data']>({
         requestId: getRandomString(8),
@@ -692,6 +692,9 @@ export const useWebsocket = () => {
       });
     }
     async function handlePk() {
+      if (!route.query.pkKey) {
+        return;
+      }
       const res = await fetchVerifyPkKey({
         liveRoomId: Number(roomId.value),
         key: route.query.pkKey,

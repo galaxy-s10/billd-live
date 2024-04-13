@@ -9,6 +9,26 @@
         class="container"
       >
         <div
+          class="screenshot"
+          @click="handleScreenshot"
+        >
+          <n-popover
+            placement="top"
+            trigger="hover"
+            :flip="false"
+          >
+            <template #trigger>
+              <n-icon
+                size="26"
+                :color="THEME_COLOR"
+              >
+                <Camera></Camera>
+              </n-icon>
+            </template>
+            <div class="slider">截屏</div>
+          </n-popover>
+        </div>
+        <div
           class="recording"
           v-if="recording"
         >
@@ -84,9 +104,9 @@
               </n-input-group>
             </div>
             <div class="bottom">
-              <!-- <span v-if="NODE_ENV === 'development'"> -->
-              {{ mySocketId }}
-              <!-- </span> -->
+              <span v-if="NODE_ENV === 'development'">
+                {{ mySocketId }}
+              </span>
             </div>
           </div>
         </div>
@@ -405,6 +425,7 @@
 
 <script lang="ts" setup>
 import {
+  Camera,
   Close,
   CreateOutline,
   EyeOffOutline,
@@ -431,6 +452,7 @@ import { useRoute } from 'vue-router';
 import { fetchGetWsMessageList } from '@/api/wsMessage';
 import {
   QINIU_RESOURCE,
+  THEME_COLOR,
   liveRoomTypeEnumMap,
   mediaTypeEnumMap,
 } from '@/constant';
@@ -928,6 +950,7 @@ function handleMixedAudio() {
     const source = audioCtx.createMediaStreamSource(item.stream);
     const gainNode = audioCtx.createGain();
     gainNode.gain.value = (item.volume || 0) / 100;
+    console.log((item.volume || 0) / 100, item, '88888');
     source.connect(gainNode);
     res.push({ source, gainNode });
     // console.log('混流', item.stream?.id, item.stream);
@@ -1015,6 +1038,15 @@ async function handleHistoryMsg() {
   } catch (error) {
     console.log(error);
   }
+}
+
+function handleScreenshot() {
+  const url = generateBase64(pushCanvasRef.value!);
+  const a = document.createElement('a');
+  const event = new MouseEvent('click');
+  a.download = `${+new Date()}截屏`;
+  a.href = url;
+  a.dispatchEvent(event);
 }
 
 async function handleRecordVideo() {
@@ -1172,12 +1204,14 @@ function autoCreateVideo(data: {
         ratio = handleScale({ width, height });
         videoEl.width = width;
         videoEl.height = height;
+        const old = appStore.allTrack.find((item) => item.id === id);
         if (canvasDom) {
           fabricCanvas.value?.remove(canvasDom);
           canvasDom = markRaw(
             new fabric.Image(videoEl, {
-              top: (rect?.top || 0) / window.devicePixelRatio,
-              left: (rect?.left || 0) / window.devicePixelRatio,
+              top: (old?.rect?.top || rect?.top || 0) / window.devicePixelRatio,
+              left:
+                (old?.rect?.left || rect?.left || 0) / window.devicePixelRatio,
               width,
               height,
             })
@@ -1185,8 +1219,9 @@ function autoCreateVideo(data: {
         } else {
           canvasDom = markRaw(
             new fabric.Image(videoEl, {
-              top: (rect?.top || 0) / window.devicePixelRatio,
-              left: (rect?.left || 0) / window.devicePixelRatio,
+              top: (old?.rect?.top || rect?.top || 0) / window.devicePixelRatio,
+              left:
+                (old?.rect?.left || rect?.left || 0) / window.devicePixelRatio,
               width,
               height,
             })
@@ -1870,26 +1905,54 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     cacheStore.setResourceList(res);
     console.log('获取pk成功');
   } else if (val.type === MediaTypeEnum.metting) {
-    const event = val.stream;
+    const stream = val.stream;
 
-    if (!event) return;
-    const videoTrack = val;
-    videoTrack.rect = { left: 0, top: 0 };
+    if (!stream) return;
+    const mettingVideoTrack = val;
+    mettingVideoTrack.rect = { left: 0, top: 0 };
     const { canvasDom, videoEl, scale } = await autoCreateVideo({
-      stream: event,
-      id: videoTrack.id,
-      rect: videoTrack.rect,
-      scaleInfo: videoTrack.scaleInfo,
+      stream,
+      id: mettingVideoTrack.id,
+      rect: mettingVideoTrack.rect,
+      scaleInfo: mettingVideoTrack.scaleInfo,
     });
-    document.body.appendChild(videoEl);
-    setScaleInfo({ canvasDom, track: videoTrack, scale });
-    videoTrack.videoEl = videoEl;
-    videoTrack.canvasDom = canvasDom;
+    setScaleInfo({ canvasDom, track: mettingVideoTrack, scale });
+    mettingVideoTrack.videoEl = videoEl;
+    mettingVideoTrack.canvasDom = canvasDom;
 
-    const res = [...appStore.allTrack, videoTrack];
+    const res = [...appStore.allTrack, mettingVideoTrack];
     appStore.setAllTrack(res);
     cacheStore.setResourceList(res);
     console.log('获取会议成功');
+    if (stream.getAudioTracks()[0]) {
+      console.log(
+        '会议有音频',
+        stream.getAudioTracks()[0],
+        mettingVideoTrack.volume
+      );
+      mettingVideoTrack.audio = 1;
+      mettingVideoTrack.volume = appStore.normalVolume;
+      const audioTrack: AppRootState['allTrack'][0] = {
+        id: mettingVideoTrack.id,
+        openEye: true,
+        audio: 1,
+        video: 2,
+        mediaName: val.mediaName,
+        type: MediaTypeEnum.media,
+        track: stream.getAudioTracks()[0],
+        trackid: stream.getAudioTracks()[0].id,
+        stream,
+        streamid: stream.id,
+        hidden: true,
+        muted: false,
+        volume: mettingVideoTrack.volume,
+        scaleInfo: {},
+      };
+      const res = [...appStore.allTrack, audioTrack];
+      appStore.setAllTrack(res);
+      cacheStore.setResourceList(res);
+      handleMixedAudio();
+    }
   } else if (val.type === MediaTypeEnum.microphone) {
     const event = await handleUserMedia({
       video: false,
@@ -1910,7 +1973,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
       streamid: event.id,
       hidden: false,
       muted: false,
-      volume: 60,
+      volume: appStore.normalVolume,
       scaleInfo: {},
     };
     const videoEl = createVideo({ appendChild: false, muted: true });
@@ -2363,6 +2426,13 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
       .record-ico {
         position: absolute;
         top: 0;
+        left: -10px;
+        cursor: pointer;
+        transform: translateX(-100%);
+      }
+      .screenshot {
+        position: absolute;
+        top: 30px;
         left: -10px;
         cursor: pointer;
         transform: translateX(-100%);

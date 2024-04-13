@@ -45,9 +45,9 @@
             </div>
             <div class="bottom">
               <span>{{ appStore.liveRoomInfo?.desc }}</span>
-              <!-- <span v-if="NODE_ENV === 'development'"> -->
-              socketId:{{ mySocketId }}
-              <!-- </span> -->
+              <span v-if="NODE_ENV === 'development'">
+                socketId:{{ mySocketId }}
+              </span>
               <span
                 class="area"
                 @click="
