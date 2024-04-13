@@ -587,7 +587,6 @@ watch(
       // if (item.localStream?.id) {
       //   lockMap.value.add(item.localStream?.id);
       // }
-      console.log('kkkkkkkkkk1111', item);
       addMediaOk({
         id: getRandomEnglishString(6),
         openEye: true,
@@ -1170,7 +1169,6 @@ function autoCreateVideo(data: {
         const height =
           stream?.getVideoTracks()[0].getSettings().height! ||
           videoEl.videoHeight;
-        console.log(width, height, '353333', videoEl.videoWidth);
         ratio = handleScale({ width, height });
         videoEl.width = width;
         videoEl.height = height;
@@ -1872,10 +1870,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     cacheStore.setResourceList(res);
     console.log('获取pk成功');
   } else if (val.type === MediaTypeEnum.metting) {
-    console.log('mettingmetting111');
     const event = val.stream;
-    console.log('mettingmetting111', event);
-    console.log(val, '22');
 
     if (!event) return;
     const videoTrack = val;
