@@ -6,6 +6,8 @@ export default nameSpaceWrap('layout', {
   shop: '商店',
   liveAdmin: '后台',
   download: '下载',
+  liveClient: '直播客户端',
+  remoteDesktopClient: '远程桌面客户端',
   android: '安卓版',
   ios: '苹果版',
   windows: 'Windows版',

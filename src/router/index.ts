@@ -47,6 +47,8 @@ export const routerName = {
   group: 'group',
   profile: 'profile',
   download: 'download',
+  downloadLive: 'downloadLive',
+  downloadRemoteDesktop: 'downloadRemoteDesktop',
 
   pull: 'pull',
   push: 'push',
@@ -134,9 +136,14 @@ export const defaultRoutes: RouteRecordRaw[] = [
         component: () => import('@/views/profile/index.vue'),
       },
       {
-        name: routerName.download,
-        path: '/download',
-        component: () => import('@/views/download/index.vue'),
+        name: routerName.downloadRemoteDesktop,
+        path: '/download/remoteDesktop',
+        component: () => import('@/views/download/remoteDesktop/index.vue'),
+      },
+      {
+        name: routerName.downloadLive,
+        path: '/download/live',
+        component: () => import('@/views/download/live/index.vue'),
       },
       {
         name: routerName.sponsors,

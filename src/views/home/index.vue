@@ -1,6 +1,6 @@
 <template>
   <div class="home-wrap">
-    <SystemModal></SystemModal>
+    <!-- <SystemModal></SystemModal> -->
     <div class="play-container">
       <div
         v-if="configBg && configBg !== ''"

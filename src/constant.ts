@@ -60,17 +60,43 @@ export const COMMON_URL = {
   bilibiliCollectiondetail: `https://space.bilibili.com/381307133/channel/collectiondetail?sid=1458070&ctype=0`,
   payCoursesArticle: `https://www.${prodDomain}/article/151`,
   download: {
-    androidFlutter: `${QINIU_RESOURCE.url}/billd-live/image/app-release.apk`,
-    deskWindows: `${QINIU_RESOURCE.url}/test/billd-desk-Win-0.0.1-Installer.exe`,
-    deskMacOS: `${QINIU_RESOURCE.url}/test/billd-desk-Mac-0.0.1-Installer.dmg`,
+    live: {
+      flutter: {
+        android: `${QINIU_RESOURCE.url}/billd-live/download/billd-live-v0.0.4.apk`,
+        github: 'https://github.com/galaxy-s10/billd-live-flutter',
+      },
+      reactNative: {
+        android: '',
+        github: 'https://github.com/galaxy-s10/billd-live-react-native',
+      },
+      kotlin: {
+        android: '',
+        github: 'https://github.com/galaxy-s10/billd-live-kotlin',
+      },
+      electron: {
+        github: 'https://github.com/galaxy-s10/billd-live-electron',
+        windows: ``,
+        macOS: ``,
+      },
+    },
+    remoteDesktop: {
+      electron: {
+        windows: `${QINIU_RESOURCE.url}/test/billd-desk-Win-0.0.1-Installer.exe`,
+        github: 'https://github.com/galaxy-s10/billd-desk',
+        macOS: `${QINIU_RESOURCE.url}/test/billd-desk-Mac-0.0.1-Installer.dmg`,
+      },
+      flutter: {
+        android: ``,
+        github: 'https://github.com/galaxy-s10/billd-desk-flutter',
+      },
+    },
   },
   release: {
-    flutter: 'https://github.com/galaxy-s10/billd-live-flutter/releases',
-    kotlin: 'https://github.com/galaxy-s10/billd-live-kotlin/releases',
-    reactNative:
-      'https://github.com/galaxy-s10/billd-live-react-native/releases',
-    electron: 'https://github.com/galaxy-s10/billd-live-electron/releases',
-    desk: 'https://github.com/galaxy-s10/billd-desk/releases',
+    flutter: 'https://github.com/galaxy-s10/billd-live-flutter',
+    kotlin: 'https://github.com/galaxy-s10/billd-live-kotlin',
+    reactNative: 'https://github.com/galaxy-s10/billd-live-react-native',
+    electron: 'https://github.com/galaxy-s10/billd-live-electron',
+    desk: 'https://github.com/galaxy-s10/billd-desk',
   },
 };
 

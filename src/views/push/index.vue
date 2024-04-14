@@ -950,7 +950,6 @@ function handleMixedAudio() {
     const source = audioCtx.createMediaStreamSource(item.stream);
     const gainNode = audioCtx.createGain();
     gainNode.gain.value = (item.volume || 0) / 100;
-    console.log((item.volume || 0) / 100, item, '88888');
     source.connect(gainNode);
     res.push({ source, gainNode });
     // console.log('混流', item.stream?.id, item.stream);
@@ -1925,11 +1924,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     cacheStore.setResourceList(res);
     console.log('获取会议成功');
     if (stream.getAudioTracks()[0]) {
-      console.log(
-        '会议有音频',
-        stream.getAudioTracks()[0],
-        mettingVideoTrack.volume
-      );
+      console.log('会议有音频');
       mettingVideoTrack.audio = 1;
       mettingVideoTrack.volume = appStore.normalVolume;
       const audioTrack: AppRootState['allTrack'][0] = {
@@ -2032,7 +2027,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     appStore.setAllTrack(res);
     // @ts-ignore
     cacheStore.setResourceList(res);
-    console.log('获取文字成功', fabricCanvas.value);
+    console.log('获取文字成功');
   } else if (val.type === MediaTypeEnum.time) {
     const timeTrack: AppRootState['allTrack'][0] = {
       id: getRandomEnglishString(6),
@@ -2071,7 +2066,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     appStore.setAllTrack(res);
     // @ts-ignore
     cacheStore.setResourceList(res);
-    console.log('获取时间成功', fabricCanvas.value);
+    console.log('获取时间成功');
   } else if (val.type === MediaTypeEnum.stopwatch) {
     const stopwatchTrack: AppRootState['allTrack'][0] = {
       id: getRandomEnglishString(6),
@@ -2111,7 +2106,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     appStore.setAllTrack(res);
     // @ts-ignore
     cacheStore.setResourceList(res);
-    console.log('获取秒表成功', fabricCanvas.value);
+    console.log('获取秒表成功');
   } else if (val.type === MediaTypeEnum.img) {
     const imgTrack: AppRootState['allTrack'][0] = {
       id: getRandomEnglishString(6),
@@ -2173,7 +2168,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     appStore.setAllTrack(res);
     // @ts-ignore
     cacheStore.setResourceList(res);
-    console.log('获取图片成功', fabricCanvas.value);
+    console.log('获取图片成功');
   } else if (val.type === MediaTypeEnum.media) {
     const mediaVideoTrack: AppRootState['allTrack'][0] = {
       id: getRandomEnglishString(6),
@@ -2212,7 +2207,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
       mediaVideoTrack.trackid = stream.getVideoTracks()[0].id;
 
       if (stream.getAudioTracks()[0]) {
-        console.log('视频有音频', stream.getAudioTracks()[0]);
+        console.log('视频有音频');
         mediaVideoTrack.audio = 1;
         mediaVideoTrack.volume = appStore.normalVolume;
         const audioTrack: AppRootState['allTrack'][0] = {
@@ -2242,7 +2237,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     appStore.setAllTrack(res);
     // @ts-ignore
     cacheStore.setResourceList(res);
-    console.log('获取视频成功', fabricCanvas.value);
+    console.log('获取视频成功');
   }
 }
 

@@ -604,8 +604,8 @@ async function handlePk() {
   const stream = await handleUserMedia({ video: true, audio: true });
   const rtc = networkStore.rtcMap.get(`${roomId.value}`)!;
   if (rtc?.peerConnection) {
-    rtc.peerConnection.onnegotiationneeded = (event) => {
-      console.log('onnegotiationneeded', event);
+    rtc.peerConnection.onnegotiationneeded = () => {
+      console.log('onnegotiationneeded');
     };
     stream?.getTracks().forEach((track) => {
       rtc.peerConnection?.addTrack(track, stream);

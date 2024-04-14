@@ -12,8 +12,9 @@
           欢迎进入直播间，遇到问题请提<a
             href="https://github.com/galaxy-s10/billd-live/issues/new"
             target="_blank"
-            >issue</a
           >
+            issue
+          </a>
         </div>
       </n-card>
     </n-modal>

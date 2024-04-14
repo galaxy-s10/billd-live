@@ -6,6 +6,8 @@ export default nameSpaceWrap('layout', {
   shop: 'Shop',
   liveAdmin: 'Admin',
   download: 'Download',
+  liveClient: 'Live Client',
+  remoteDesktopClient: 'Desk Client',
   android: 'Android',
   ios: 'IOS',
   windows: 'Windows',

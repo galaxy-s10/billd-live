@@ -40,16 +40,37 @@
             {{ t('layout.liveAdmin') }}
           </a>
 
-          <a
+          <Dropdown
             class="item"
             v-if="!isMobile()"
-            @click.prevent="router.push({ name: routerName.download })"
           >
-            {{ t('layout.download') }}
-            <div class="badge">
-              <div class="txt">new</div>
-            </div>
-          </a>
+            <template #btn>
+              <div class="btn">
+                <span>{{ t('layout.download') }}</span>
+                <VPIconChevronDown class="icon"></VPIconChevronDown>
+              </div>
+            </template>
+            <template #list>
+              <div class="list">
+                <a
+                  class="item"
+                  @click.prevent="
+                    router.push({ name: routerName.downloadLive })
+                  "
+                >
+                  <div class="txt">{{ t('layout.liveClient') }}</div>
+                </a>
+                <a
+                  class="item"
+                  @click.prevent="
+                    router.push({ name: routerName.downloadRemoteDesktop })
+                  "
+                >
+                  <div class="txt">{{ t('layout.remoteDesktopClient') }}</div>
+                </a>
+              </div>
+            </template>
+          </Dropdown>
 
           <a
             class="item"
@@ -629,6 +650,36 @@ function handleWebsiteJump() {
     height: $layout-head-h;
     box-shadow: inset 0 -1px #f1f2f3 !important;
     font-size: 15px;
+    .icon {
+      margin-left: 5px;
+      width: 13px;
+
+      fill: currentColor;
+    }
+    .list {
+      padding: 10px 0;
+      width: 150px;
+
+      .item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+        padding: 0 15px;
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+        &:hover {
+          color: $theme-color-gold;
+        }
+        .icon {
+          margin-left: 5px;
+          width: 13px;
+          color: #3c3c4354;
+
+          fill: currentColor;
+        }
+      }
+    }
     .badge {
       position: absolute;
       top: -10px;
@@ -731,8 +782,8 @@ function handleWebsiteJump() {
       }
 
       .list {
-        width: 150px;
         padding: 10px 0;
+        width: 150px;
 
         .item {
           display: flex;
@@ -747,7 +798,7 @@ function handleWebsiteJump() {
           }
           .icon {
             margin-left: 5px;
-            width: 14px;
+            width: 13px;
             color: #3c3c4354;
 
             fill: currentColor;
@@ -772,8 +823,8 @@ function handleWebsiteJump() {
 
       .ecosystem {
         .list {
-          width: 225px;
           padding: 10px 0;
+          width: 225px;
 
           .title {
             margin: 10px 0 5px;
@@ -820,9 +871,9 @@ function handleWebsiteJump() {
           cursor: pointer;
         }
         .list {
-          width: 180px;
           position: relative;
           padding: 10px 0;
+          width: 180px;
 
           .item {
             display: flex;
@@ -870,8 +921,8 @@ function handleWebsiteJump() {
           @extend %containBg;
         }
         .list {
-          width: 90px;
           padding: 10px 0;
+          width: 90px;
 
           .item {
             position: relative;
@@ -896,8 +947,8 @@ function handleWebsiteJump() {
           }
         }
         .list {
-          width: 80px;
           padding: 10px 0;
+          width: 80px;
 
           .item {
             display: flex;
