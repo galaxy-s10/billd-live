@@ -46,7 +46,11 @@ import {
   WsStartRemoteDesk,
   WsUpdateJoinInfoType,
 } from '@/types/websocket';
-import { createNullVideo, handleUserMedia } from '@/utils';
+import {
+  createNullVideo,
+  handleUserMedia,
+  setVideoTrackContentHints,
+} from '@/utils';
 import {
   WebSocketClass,
   prettierReceiveWsMsg,
@@ -827,6 +831,11 @@ export const useWebsocket = () => {
         ) {
           return;
         }
+        setVideoTrackContentHints(
+          // @ts-ignore
+          canvasVideoStream.value,
+          'detail'
+        );
         if (data.live_room.type === LiveRoomTypeEnum.wertc_live) {
           updateWebRtcLiveConfig({
             roomId: roomId.value,

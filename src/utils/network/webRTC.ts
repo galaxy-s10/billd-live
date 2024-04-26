@@ -283,7 +283,6 @@ export class WebRTCClass {
       console.log('track事件的stream', event.streams[0]);
       console.log('track事件的视频轨', event.streams[0].getVideoTracks());
       console.log('track事件的音频轨', event.streams[0].getAudioTracks());
-
       const stream = event.streams[0];
       this.localStream = stream;
       const appStore = useAppStore();

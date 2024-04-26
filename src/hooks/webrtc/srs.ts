@@ -33,10 +33,15 @@ export const useWebRtcSrs = () => {
       receiver: string;
       videoEl: HTMLVideoElement;
     }) => {
-      return new WebRTCClass({
+      console.log({
         maxBitrate: currentMaxBitrate.value,
         maxFramerate: currentMaxFramerate.value,
         resolutionRatio: currentResolutionRatio.value,
+      });
+      return new WebRTCClass({
+        // maxBitrate: currentMaxBitrate.value,
+        // maxFramerate: currentMaxFramerate.value,
+        // resolutionRatio: currentResolutionRatio.value,
         isSRS: true,
         roomId: roomId.value,
         videoEl: data.videoEl,
