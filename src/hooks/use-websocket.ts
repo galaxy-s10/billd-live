@@ -49,6 +49,7 @@ import {
 import {
   createNullVideo,
   handleUserMedia,
+  setAudioTrackContentHints,
   setVideoTrackContentHints,
 } from '@/utils';
 import {
@@ -67,7 +68,13 @@ export const useWebsocket = () => {
   const userStore = useUserStore();
   const networkStore = useNetworkStore();
 
-  const { maxBitrate, maxFramerate, resolutionRatio } = useRTCParams();
+  const {
+    maxBitrate,
+    maxFramerate,
+    resolutionRatio,
+    videoContentHint,
+    audioContentHint,
+  } = useRTCParams();
   const { updateWebRtcRemoteDeskConfig, webRtcRemoteDesk } =
     useWebRtcRemoteDesk();
   const { updateWebRtcMeetingPkConfig, webRtcMeetingPk } = useWebRtcMeetingPk();
@@ -97,6 +104,8 @@ export const useWebsocket = () => {
   const currentMaxBitrate = ref(maxBitrate.value[3].value);
   const currentMaxFramerate = ref(maxFramerate.value[2].value);
   const currentResolutionRatio = ref(resolutionRatio.value[3].value);
+  const currentVideoContentHint = ref(videoContentHint.value[3].value);
+  const currentAudioContentHint = ref(audioContentHint.value[0].value);
   const timerObj = ref({});
   const damuList = ref<IDanmu[]>([]);
 
@@ -182,6 +191,19 @@ export const useWebsocket = () => {
         msrMaxDelay,
       },
     });
+    if (canvasVideoStream.value) {
+      setVideoTrackContentHints(
+        canvasVideoStream.value,
+        // @ts-ignore
+        currentVideoContentHint.value
+      );
+      setAudioTrackContentHints(
+        canvasVideoStream.value,
+        // @ts-ignore
+        currentAudioContentHint.value
+      );
+    }
+
     if (type === LiveRoomTypeEnum.srs) {
       updateWebRtcSrsConfig({
         isPk: false,
@@ -831,11 +853,6 @@ export const useWebsocket = () => {
         ) {
           return;
         }
-        setVideoTrackContentHints(
-          // @ts-ignore
-          canvasVideoStream.value,
-          'detail'
-        );
         if (data.live_room.type === LiveRoomTypeEnum.wertc_live) {
           updateWebRtcLiveConfig({
             roomId: roomId.value,
@@ -995,5 +1012,7 @@ export const useWebsocket = () => {
     currentMaxFramerate,
     currentMaxBitrate,
     currentResolutionRatio,
+    currentAudioContentHint,
+    currentVideoContentHint,
   };
 };

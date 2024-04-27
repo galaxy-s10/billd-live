@@ -46,7 +46,7 @@
             <template #trigger>
               <n-icon
                 size="26"
-                :color="recording ? 'red' : '#3f7ee8'"
+                :color="recording ? 'red' : THEME_COLOR"
               >
                 <Videocam v-if="!recording"></Videocam>
                 <VideocamOffSharp v-else></VideocamOffSharp>
@@ -87,91 +87,114 @@
           ></div>
           <div class="detail">
             <div class="top">
-              <n-input-group>
-                <n-input
-                  v-model:value="roomName"
-                  size="small"
-                  placeholder="输入房间名"
-                  :style="{ width: '50%' }"
-                />
-                <n-button
-                  size="small"
-                  type="primary"
-                  @click="confirmRoomName"
+              <div class="name">
+                <n-input-group>
+                  <n-input
+                    v-model:value="roomName"
+                    size="small"
+                    placeholder="输入房间名"
+                    :style="{ width: '50%' }"
+                  />
+                  <n-button
+                    size="small"
+                    type="primary"
+                    @click="confirmRoomName"
+                  >
+                    确定
+                  </n-button>
+                </n-input-group>
+              </div>
+              <div class="other">
+                <span
+                  v-if="NODE_ENV === 'development'"
+                  class="item"
                 >
-                  确定
-                </n-button>
-              </n-input-group>
+                  <span>{{ mySocketId }}</span>
+                  <span>---</span>
+                  <span>{{
+                    liveRoomTypeEnumMap[appStore.liveRoomInfo?.type || '']
+                  }}</span>
+                </span>
+                <span
+                  class="item share"
+                  @click="handleShare"
+                >
+                  分享直播间
+                </span>
+                <span class="item">
+                  正在观看：
+                  {{ liveUserList.length }}
+                </span>
+              </div>
             </div>
             <div class="bottom">
-              <span v-if="NODE_ENV === 'development'">
-                {{ mySocketId }}
-              </span>
+              <div class="rtc">
+                <div class="item">
+                  <div class="txt">码率：</div>
+                  <div class="down small">
+                    <n-select
+                      size="small"
+                      v-model:value="currentMaxBitrate"
+                      :options="maxBitrate"
+                    />
+                  </div>
+                </div>
+                <div class="item">
+                  <div class="txt">帧率：</div>
+                  <div class="down small">
+                    <n-select
+                      size="small"
+                      v-model:value="currentMaxFramerate"
+                      :options="maxFramerate"
+                    />
+                  </div>
+                </div>
+                <div class="item">
+                  <div class="txt">分辨率：</div>
+                  <div class="down big">
+                    <n-select
+                      size="small"
+                      v-model:value="currentResolutionRatio"
+                      :options="resolutionRatio"
+                    />
+                  </div>
+                </div>
+                <div class="item">
+                  <div class="txt">视频内容：</div>
+                  <div class="down small">
+                    <n-select
+                      size="small"
+                      v-model:value="currentVideoContentHint"
+                      :options="videoContentHint"
+                    />
+                  </div>
+                </div>
+                <div class="item">
+                  <div class="txt">音频内容：</div>
+                  <div class="down big">
+                    <n-select
+                      size="small"
+                      v-model:value="currentAudioContentHint"
+                      :options="audioContentHint"
+                    />
+                  </div>
+                </div>
+              </div>
+              <n-button
+                v-if="!roomLiving"
+                type="primary"
+                @click="handleStartLive"
+              >
+                开始直播
+              </n-button>
+              <n-button
+                v-else
+                type="error"
+                @click="handleEndLive"
+              >
+                结束直播
+              </n-button>
             </div>
-          </div>
-        </div>
-        <div class="rtc">
-          <div class="item">
-            <div class="txt">码率设置</div>
-            <div class="down">
-              <n-select
-                v-model:value="currentMaxBitrate"
-                :options="maxBitrate"
-              />
-            </div>
-          </div>
-          <div class="item">
-            <div class="txt">帧率设置</div>
-            <div class="down">
-              <n-select
-                v-model:value="currentMaxFramerate"
-                :options="maxFramerate"
-              />
-            </div>
-          </div>
-          <div class="item">
-            <div class="txt">分辨率设置</div>
-            <div class="down">
-              <n-select
-                v-model:value="currentResolutionRatio"
-                :options="resolutionRatio"
-              />
-            </div>
-          </div>
-        </div>
-        <div class="other">
-          <div class="top">
-            <div class="item">
-              <i class="ico"></i>
-              <span>
-                正在观看：
-                {{ liveUserList.length }}
-              </span>
-            </div>
-            <div
-              class="item"
-              v-if="NODE_ENV === 'development'"
-            >
-              {{ liveRoomTypeEnumMap[appStore.liveRoomInfo?.type || ''] }}
-            </div>
-          </div>
-          <div class="bottom">
-            <n-button
-              v-if="!roomLiving"
-              type="info"
-              size="small"
-              @click="handleStartLive"
-            >
-              开始直播
-            </n-button>
-            <n-button
-              v-else
-              type="error"
-              size="small"
-              @click="handleEndLive"
-            >
-              结束直播
-            </n-button>
           </div>
         </div>
       </div>
@@ -436,7 +459,7 @@ import {
   VolumeMuteOutline,
 } from '@vicons/ionicons5';
 import { AVRecorder } from '@webav/av-recorder';
-import { getRandomString } from 'billd-utils';
+import { copyToClipBoard, getRandomString } from 'billd-utils';
 import { fabric } from 'fabric';
 import {
   Raw,
@@ -460,6 +483,7 @@ import { emojiArray } from '@/emoji';
 import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { usePush } from '@/hooks/use-push';
 import { useRTCParams } from '@/hooks/use-rtcParams';
+import { useTip } from '@/hooks/use-tip';
 import { useQiniuJsUpload } from '@/hooks/use-upload';
 import {
   DanmuMsgTypeEnum,
@@ -479,6 +503,7 @@ import {
   createVideo,
   formatDownTime2,
   generateBase64,
+  getLiveRoomPageUrl,
   getRandomEnglishString,
   handleUserMedia,
   readFile,
@@ -496,8 +521,14 @@ const userStore = useUserStore();
 const appStore = useAppStore();
 const networkStore = useNetworkStore();
 const cacheStore = usePiniaCacheStore();
-const { maxBitrate, maxFramerate, resolutionRatio, allMediaTypeList } =
-  useRTCParams();
+const {
+  maxBitrate,
+  maxFramerate,
+  resolutionRatio,
+  audioContentHint,
+  videoContentHint,
+  allMediaTypeList,
+} = useRTCParams();
 
 const {
   confirmRoomName,
@@ -515,6 +546,8 @@ const {
   currentResolutionRatio,
   currentMaxBitrate,
   currentMaxFramerate,
+  currentAudioContentHint,
+  currentVideoContentHint,
   danmuStr,
   roomName,
   damuList,
@@ -576,7 +609,8 @@ watch(
 
 watch(
   () => currentMaxBitrate.value,
-  () => {
+  (newval) => {
+    console.log('码率变了', newval);
     if (liveType === LiveRoomTypeEnum.msr) {
       const stream = pushCanvasRef.value!.captureStream();
       const audioTrack = webaudioVideo
@@ -591,8 +625,17 @@ watch(
 
 watch(
   () => currentMaxFramerate.value,
-  () => {
+  (newval) => {
+    console.log('帧率变了，修改画布', newval);
     renderFrame();
+  }
+);
+
+watch(
+  () => currentResolutionRatio.value,
+  (newval, oldval) => {
+    console.log('分辨率变了，修改画布', newval);
+    changeCanvasAttr({ newHeight: newval, oldHeight: oldval });
   }
 );
 
@@ -603,12 +646,6 @@ watch(
       if (appStore.allTrack.find((v) => v.mediaName === item.receiver)) {
         return;
       }
-      // if (lockMap.value.has(item.localStream?.id)) {
-      //   return;
-      // }
-      // if (item.localStream?.id) {
-      //   lockMap.value.add(item.localStream?.id);
-      // }
       addMediaOk({
         id: getRandomEnglishString(6),
         openEye: true,
@@ -1119,6 +1156,20 @@ async function uploadLivePreview() {
   }
 }
 
+function handleShare() {
+  useTip({
+    content: `直播间地址：${getLiveRoomPageUrl(+roomId.value)}`,
+    title: '分享',
+    confirmButtonText: '复制',
+    hiddenCancel: true,
+  })
+    .then(() => {
+      copyToClipBoard(getLiveRoomPageUrl(+roomId.value));
+      window.$message.success('复制成功');
+    })
+    .catch();
+}
+
 function handleStartLive() {
   if (!appStore.allTrack.length) {
     window.$message.warning('至少选择一个素材');
@@ -1246,13 +1297,6 @@ function autoCreateVideo(data: {
     };
   });
 }
-
-watch(
-  () => currentResolutionRatio.value,
-  (newHeight, oldHeight) => {
-    changeCanvasAttr({ newHeight, oldHeight });
-  }
-);
 
 // 容器宽高，1280*720，即720p
 // canvas容器宽高，2560*1440，即1440p
@@ -2450,17 +2494,15 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
     .room-control {
       display: flex;
       justify-content: space-between;
-      padding: 20px;
+      padding: 15px;
+      border-radius: 0 0 6px 6px;
       background-color: papayawhip;
-
       .info {
         display: flex;
-        align-items: center;
-
+        width: 100%;
         .avatar {
-          margin-right: 20px;
-          width: 55px;
-          height: 55px;
+          width: 80px;
+          height: 80px;
           border-radius: 50%;
           background-position: center center;
           background-size: cover;
@@ -2468,48 +2510,49 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
         }
         .detail {
           display: flex;
+          flex: 1;
           flex-direction: column;
-          flex-shrink: 0;
-          width: 200px;
-          text-align: initial;
+          margin-left: 20px;
+          font-size: 14px;
+
           .top {
-            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             color: #18191c;
+            .other {
+              .item {
+                margin-right: 10px;
+                &.share {
+                  cursor: pointer;
+                }
+              }
+            }
           }
           .bottom {
-            font-size: 14px;
+            display: flex;
+            align-items: center;
+            flex: 1;
+            justify-content: space-between;
+            .rtc {
+              display: flex;
+              align-items: center;
+              flex: 0.95;
+              .item {
+                display: flex;
+                align-items: center;
+                padding-right: 10px;
+                .down {
+                  &.small {
+                    width: 90px;
+                  }
+                  &.big {
+                    width: 110px;
+                  }
+                }
+              }
+            }
           }
-        }
-      }
-      .rtc {
-        display: flex;
-        align-items: center;
-        flex: 1;
-        font-size: 14px;
-        .item {
-          display: flex;
-          align-items: center;
-          flex: 1;
-          .txt {
-            flex-shrink: 0;
-            width: 80px;
-          }
-          .down {
-            width: 90px;
-
-            user-select: none;
-          }
-        }
-      }
-      .other {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        font-size: 12px;
-        .top {
-        }
-        .bottom {
-          margin-top: 10px;
         }
       }
     }

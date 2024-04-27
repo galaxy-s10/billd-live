@@ -6,15 +6,15 @@ import { AppRootState, useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { WsCandidateType, WsMsgTypeEnum } from '@/types/websocket';
 
-/** 设置分辨率 */
-export async function handleResolutionRatio(data: {
+/** 设置约束 */
+export async function handlConstraints(data: {
   frameRate: number;
   height: number;
   stream: MediaStream;
 }): Promise<number> {
   const { frameRate, height, stream } = data;
   const queue: Promise<any>[] = [];
-  console.log('开始设置分辨率', height);
+  console.log('开始设置约束', JSON.stringify({ height, frameRate }));
   stream.getTracks().forEach((track) => {
     if (track.kind === 'video') {
       queue.push(
@@ -27,39 +27,10 @@ export async function handleResolutionRatio(data: {
   });
   try {
     await Promise.all(queue);
-    console.log('设置分辨率成功');
+    console.log('设置设置约束成功');
     return 1;
   } catch (error) {
-    console.error('设置分辨率失败', height, error);
-    return 0;
-  }
-}
-
-/** 设置帧率 */
-export async function handleMaxFramerate(data: {
-  frameRate: number;
-  height: number;
-  stream: MediaStream;
-}): Promise<number> {
-  const { frameRate, height, stream } = data;
-  const queue: Promise<any>[] = [];
-  console.log('开始设置帧率', frameRate);
-  stream.getTracks().forEach((track) => {
-    if (track.kind === 'video') {
-      queue.push(
-        track.applyConstraints({
-          height: { ideal: height },
-          frameRate: { ideal: frameRate },
-        })
-      );
-    }
-  });
-  try {
-    await Promise.all(queue);
-    console.log('设置帧率成功');
-    return 1;
-  } catch (error) {
-    console.error('设置帧率失败', frameRate, error);
+    console.error('设置设置约束失败', error);
     return 0;
   }
 }
@@ -95,14 +66,12 @@ export class WebRTCClass {
     isSRS: boolean;
     sender: string;
     receiver: string;
-    localStream?: MediaStream;
   }) {
     this.roomId = data.roomId;
     this.videoEl = data.videoEl;
     // document.body.appendChild(this.videoEl);
     this.sender = data.sender;
     this.receiver = data.receiver;
-    this.localStream = data.localStream;
     if (data.maxBitrate) {
       this.maxBitrate = data.maxBitrate;
     }
@@ -139,30 +108,6 @@ export class WebRTCClass {
         `【WebRTCClass】${new Date().toLocaleString()},房间id:${this.roomId}`,
         msg
       );
-    }
-  };
-
-  /** 设置分辨率 */
-  setResolutionRatio = async (height: number) => {
-    if (this.localStream) {
-      const res = await handleResolutionRatio({
-        frameRate: this.maxFramerate,
-        stream: this.localStream,
-        height,
-      });
-      return res;
-    }
-  };
-
-  /** 设置最大帧率 */
-  setMaxFramerate = async (maxFramerate: number) => {
-    if (this.localStream) {
-      const res = await handleMaxFramerate({
-        frameRate: maxFramerate,
-        stream: this.localStream,
-        height: this.resolutionRatio,
-      });
-      return res;
     }
   };
 
@@ -478,12 +423,6 @@ export class WebRTCClass {
           appStore.setLiveLine(LiveLineEnum.rtc);
           if (this.maxBitrate !== -1) {
             this.setMaxBitrate(this.maxBitrate);
-          }
-          if (this.maxFramerate !== -1) {
-            this.setMaxFramerate(this.maxFramerate);
-          }
-          if (this.resolutionRatio !== -1) {
-            this.setResolutionRatio(this.resolutionRatio);
           }
         }
         if (connectionState === 'disconnected') {

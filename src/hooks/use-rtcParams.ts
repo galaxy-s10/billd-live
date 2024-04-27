@@ -122,6 +122,50 @@ export const useRTCParams = () => {
       disabled: true,
     },
   ]);
+  const videoContentHint = ref([
+    {
+      label: '默认',
+      value: '',
+      disabled: false,
+    },
+    {
+      label: '运动',
+      value: 'motion',
+      disabled: false,
+    },
+    {
+      label: '文本',
+      value: 'text',
+      disabled: false,
+    },
+    {
+      label: '平衡',
+      value: 'detail',
+      disabled: false,
+    },
+  ]);
+  const audioContentHint = ref([
+    {
+      label: '默认',
+      value: '',
+      disabled: false,
+    },
+    {
+      label: '音乐',
+      value: 'music',
+      disabled: false,
+    },
+    {
+      label: '语言',
+      value: 'speech',
+      disabled: false,
+    },
+    {
+      label: '语音识别',
+      value: 'speech-recognition',
+      disabled: false,
+    },
+  ]);
   watch(
     () => userStore.userInfo,
     (newval) => {
@@ -184,5 +228,12 @@ export const useRTCParams = () => {
       },
     };
 
-  return { maxBitrate, maxFramerate, resolutionRatio, allMediaTypeList };
+  return {
+    maxBitrate,
+    maxFramerate,
+    resolutionRatio,
+    videoContentHint,
+    audioContentHint,
+    allMediaTypeList,
+  };
 };
