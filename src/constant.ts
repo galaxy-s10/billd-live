@@ -59,6 +59,7 @@ export const COMMON_URL = {
   admin: `https://live-admin.${prodDomain}`,
   bilibiliCollectiondetail: `https://space.bilibili.com/381307133/channel/collectiondetail?sid=1458070&ctype=0`,
   payCoursesArticle: `https://www.${prodDomain}/article/151`,
+  desk: `https://desk.${prodDomain}`,
   download: {
     live: {
       flutter: {
@@ -79,13 +80,14 @@ export const COMMON_URL = {
         macOS: ``,
       },
     },
-    remoteDesktop: {
+    desk: {
       electron: {
-        windows: `${QINIU_RESOURCE.url}/test/billd-desk-Win-0.0.1-Installer.exe`,
-        github: 'https://github.com/galaxy-s10/billd-desk',
-        macOS: `${QINIU_RESOURCE.url}/test/billd-desk-Mac-0.0.1-Installer.dmg`,
+        windows: `${QINIU_RESOURCE.url}/test/billd-desk-win-darwin-0.0.36-x64-Installer.exe`,
+        macOS: `${QINIU_RESOURCE.url}/test/billd-desk-mac-darwin-0.0.36-arm64-Installer.dmg`,
+        github: 'https://github.com/galaxy-s10/billd-desk-electron',
       },
       flutter: {
+        ios: ``,
         android: ``,
         github: 'https://github.com/galaxy-s10/billd-desk-flutter',
       },

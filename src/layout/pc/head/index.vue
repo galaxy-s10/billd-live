@@ -74,12 +74,12 @@
 
           <a
             class="item"
-            @click.prevent="router.push({ name: routerName.remoteDesktop })"
+            @click.prevent="openToTarget(COMMON_URL.desk)"
           >
             {{ t('layout.remoteDesktop') }}
-            <div class="badge">
+            <!-- <div class="badge">
               <div class="txt">stage</div>
-            </div>
+            </div> -->
           </a>
         </div>
       </div>
@@ -487,8 +487,8 @@ const resource = ref([
     url: 'https://github.com/galaxy-s10/billd-live',
   },
   {
-    label: 'billd-desk',
-    url: 'https://github.com/galaxy-s10/billd-desk',
+    label: 'billd-live-electron',
+    url: 'https://github.com/galaxy-s10/billd-live-electron',
   },
   {
     label: 'billd-live-server',
@@ -510,6 +510,18 @@ const resource = ref([
     label: 'billd-live-react-native',
     url: 'https://github.com/galaxy-s10/billd-live-react-native',
   },
+  {
+    label: 'billd-desk',
+    url: 'https://github.com/galaxy-s10/billd-desk',
+  },
+  {
+    label: 'billd-desk-electron',
+    url: 'https://github.com/galaxy-s10/billd-desk-electron',
+  },
+  {
+    label: 'billd-desk-flutter',
+    url: 'https://github.com/galaxy-s10/billd-desk-flutter',
+  },
 ]);
 
 const plugins = ref([
@@ -522,16 +534,16 @@ const plugins = ref([
     url: 'https://github.com/galaxy-s10/billd-cli',
   },
   {
-    label: 'billd-deploy',
-    url: 'https://github.com/galaxy-s10/billd-deploy',
-  },
-  {
     label: 'billd-utils',
     url: 'https://github.com/galaxy-s10/billd-utils',
   },
   {
     label: 'billd-scss',
     url: 'https://github.com/galaxy-s10/billd-scss',
+  },
+  {
+    label: 'billd-deploy',
+    url: 'https://github.com/galaxy-s10/billd-deploy',
   },
   {
     label: 'billd-html-webpack-plugin',

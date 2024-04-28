@@ -9,20 +9,30 @@
           <span>
             代码仓库：<span
               class="link"
-              @click="
-                openToTarget(COMMON_URL.download.remoteDesktop.electron.github)
-              "
+              @click="openToTarget(COMMON_URL.download.desk.electron.github)"
             >
-              {{ COMMON_URL.download.remoteDesktop.electron.github }}
+              {{ COMMON_URL.download.desk.electron.github }}
             </span>
           </span>
           <h3>Windows</h3>
           <div>
-            <span>最新版本：<span>自行构建</span></span>
+            <span
+              >最新版本：<span
+                class="link"
+                @click="openToTarget(COMMON_URL.download.desk.electron.windows)"
+                >下载</span
+              ></span
+            >
           </div>
           <h3>macOS</h3>
           <div>
-            <span>最新版本：<span>自行构建</span></span>
+            <span
+              >最新版本：<span
+                class="link"
+                @click="openToTarget(COMMON_URL.download.desk.electron.macOS)"
+                >下载</span
+              ></span
+            >
           </div>
           <h3>Linux</h3>
           <div>
@@ -35,11 +45,9 @@
           <span>
             代码仓库：<span
               class="link"
-              @click="
-                openToTarget(COMMON_URL.download.remoteDesktop.flutter.github)
-              "
+              @click="openToTarget(COMMON_URL.download.desk.flutter.github)"
             >
-              {{ COMMON_URL.download.remoteDesktop.flutter.github }}
+              {{ COMMON_URL.download.desk.flutter.github }}
             </span>
           </span>
           <h3>安卓</h3>
