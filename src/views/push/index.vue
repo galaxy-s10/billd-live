@@ -88,21 +88,24 @@
           <div class="detail">
             <div class="top">
               <div class="name">
-                <n-input-group>
-                  <n-input
-                    v-model:value="roomName"
-                    size="small"
-                    placeholder="输入房间名"
-                    :style="{ width: '50%' }"
-                  />
-                  <n-button
-                    size="small"
-                    type="primary"
-                    @click="confirmRoomName"
-                  >
-                    确定
-                  </n-button>
-                </n-input-group>
+                <div class="ipt">
+                  <n-input-group>
+                    <n-input
+                      v-model:value="roomName"
+                      size="small"
+                      placeholder="输入房间名"
+                    />
+                    <n-button
+                      size="small"
+                      type="primary"
+                      @click="confirmRoomName"
+                    >
+                      确定
+                    </n-button>
+                  </n-input-group>
+                </div>
+                <div class="item">延迟：{{ rtcRtt || '-' }}</div>
+                <div class="item">丢包：{{ rtcLoss || '-' }}</div>
               </div>
               <div class="other">
                 <span
@@ -128,57 +131,60 @@
               </div>
             </div>
             <div class="bottom">
-              <div class="rtc">
-                <div class="item">
-                  <div class="txt">码率：</div>
-                  <div class="down small">
-                    <n-select
-                      size="small"
-                      v-model:value="currentMaxBitrate"
-                      :options="maxBitrate"
-                    />
+              <div class="rtc-config">
+                <div class="item-list">
+                  <div class="item">
+                    <div class="txt">码率：</div>
+                    <div class="down small">
+                      <n-select
+                        size="small"
+                        v-model:value="currentMaxBitrate"
+                        :options="maxBitrate"
+                      />
+                    </div>
+                  </div>
+                  <div class="item">
+                    <div class="txt">帧率：</div>
+                    <div class="down small">
+                      <n-select
+                        size="small"
+                        v-model:value="currentMaxFramerate"
+                        :options="maxFramerate"
+                      />
+                    </div>
+                  </div>
+                  <div class="item">
+                    <div class="txt">分辨率：</div>
+                    <div class="down big">
+                      <n-select
+                        size="small"
+                        v-model:value="currentResolutionRatio"
+                        :options="resolutionRatio"
+                      />
+                    </div>
+                  </div>
+                  <div class="item">
+                    <div class="txt">视频内容：</div>
+                    <div class="down small">
+                      <n-select
+                        size="small"
+                        v-model:value="currentVideoContentHint"
+                        :options="videoContentHint"
+                      />
+                    </div>
+                  </div>
+                  <div class="item">
+                    <div class="txt">音频内容：</div>
+                    <div class="down big">
+                      <n-select
+                        size="small"
+                        v-model:value="currentAudioContentHint"
+                        :options="audioContentHint"
+                      />
+                    </div>
                   </div>
                 </div>
-                <div class="item">
-                  <div class="txt">帧率：</div>
-                  <div class="down small">
-                    <n-select
-                      size="small"
-                      v-model:value="currentMaxFramerate"
-                      :options="maxFramerate"
-                    />
-                  </div>
-                </div>
-                <div class="item">
-                  <div class="txt">分辨率：</div>
-                  <div class="down big">
-                    <n-select
-                      size="small"
-                      v-model:value="currentResolutionRatio"
-                      :options="resolutionRatio"
-                    />
-                  </div>
-                </div>
-                <div class="item">
-                  <div class="txt">视频内容：</div>
-                  <div class="down small">
-                    <n-select
-                      size="small"
-                      v-model:value="currentVideoContentHint"
-                      :options="videoContentHint"
-                    />
-                  </div>
-                </div>
-                <div class="item">
-                  <div class="txt">音频内容：</div>
-                  <div class="down big">
-                    <n-select
-                      size="small"
-                      v-model:value="currentAudioContentHint"
-                      :options="audioContentHint"
-                    />
-                  </div>
-                </div>
+                <div class="rtc-network"></div>
               </div>
               <n-button
                 v-if="!roomLiving"
@@ -305,6 +311,9 @@
               class="item"
             >
               <template v-if="item.msgType === DanmuMsgTypeEnum.danmu">
+                <span class="time">
+                  [{{ formatTimeHour(item.send_msg_time) }}]
+                </span>
                 <span class="name">
                   <span v-if="item.userInfo">
                     {{ item.userInfo.username }}[{{
@@ -399,20 +408,6 @@
             发送
           </div>
         </div>
-        <!-- <div class="send-msg">
-          <input
-            v-model="danmuStr"
-            class="ipt"
-            @keydown="keydownDanmu"
-          />
-          <n-button
-            type="info"
-            size="small"
-            @click="sendDanmu"
-          >
-            发送
-          </n-button>
-        </div> -->
       </div>
     </div>
   </div>
@@ -463,6 +458,7 @@ import { copyToClipBoard, getRandomString } from 'billd-utils';
 import { fabric } from 'fabric';
 import {
   Raw,
+  computed,
   markRaw,
   onMounted,
   onUnmounted,
@@ -502,12 +498,15 @@ import {
   base64ToFile,
   createVideo,
   formatDownTime2,
+  formatTimeHour,
   generateBase64,
   getLiveRoomPageUrl,
   getRandomEnglishString,
   handleUserMedia,
   readFile,
   saveFile,
+  setAudioTrackContentHints,
+  setVideoTrackContentHints,
 } from '@/utils';
 import { NODE_ENV } from 'script/constant';
 
@@ -595,6 +594,22 @@ const recordVideoTimer = ref();
 const recordVideoTime = ref('00:00:00');
 let avRecorder: AVRecorder | null = null;
 
+const rtcRtt = computed(() => {
+  const arr: any[] = [];
+  networkStore.rtcMap.forEach((rtc) => {
+    arr.push(`${rtc.rtt}ms`);
+  });
+  return arr.join();
+});
+
+const rtcLoss = computed(() => {
+  const arr: any[] = [];
+  networkStore.rtcMap.forEach((rtc) => {
+    arr.push(`${Number(rtc.loss.toFixed(2))}%`);
+  });
+  return arr.join();
+});
+
 watch(
   () => roomLiving.value,
   (newval) => {
@@ -619,6 +634,34 @@ watch(
         .getAudioTracks()[0];
       stream.addTrack(audioTrack);
       handleMsr(stream);
+    }
+  }
+);
+
+watch(
+  () => currentVideoContentHint.value,
+  (newval) => {
+    console.log('视频内容变了', newval);
+    if (canvasVideoStream.value) {
+      setVideoTrackContentHints(
+        canvasVideoStream.value,
+        // @ts-ignore
+        currentVideoContentHint.value
+      );
+    }
+  }
+);
+
+watch(
+  () => currentAudioContentHint.value,
+  (newval) => {
+    console.log('音频内容变了', newval);
+    if (canvasVideoStream.value) {
+      setAudioTrackContentHints(
+        canvasVideoStream.value,
+        // @ts-ignore
+        currentAudioContentHint.value
+      );
     }
   }
 );
@@ -752,23 +795,23 @@ async function uploadChange() {
 }
 
 function handleMediaRecorderAllType() {
-  // const types = [
-  //   'video/webm',
-  //   'audio/webm',
-  //   'video/mpeg',
-  //   'video/webm;codecs=vp8',
-  //   'video/webm;codecs=vp9',
-  //   'video/webm;codecs=daala',
-  //   'video/webm;codecs=h264',
-  //   'audio/webm;codecs=opus',
-  //   'audio/webm;codecs=aac',
-  //   'audio/webm;codecs=h264,opus',
-  //   'video/webm;codecs=avc1.64001f,opus',
-  //   'video/webm;codecs=avc1.4d002a,opus',
-  // ];
-  // Object.keys(types).forEach((item) => {
-  //   console.log(types[item], MediaRecorder.isTypeSupported(types[item]));
-  // });
+  const types = [
+    'video/webm',
+    'audio/webm',
+    'video/mpeg',
+    'video/webm;codecs=vp8',
+    'video/webm;codecs=vp9',
+    'video/webm;codecs=daala',
+    'video/webm;codecs=h264',
+    'audio/webm;codecs=opus',
+    'audio/webm;codecs=aac',
+    'audio/webm;codecs=h264,opus',
+    'video/webm;codecs=avc1.64001f,opus',
+    'video/webm;codecs=avc1.4d002a,opus',
+  ];
+  Object.keys(types).forEach((item) => {
+    console.log(types[item], MediaRecorder.isTypeSupported(types[item]));
+  });
 }
 
 function handleMsr(stream: MediaStream) {
@@ -2476,7 +2519,15 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
         cursor: pointer;
         transform: translateX(-100%);
       }
-
+      .rtt {
+        position: absolute;
+        top: 5px;
+        left: 5px;
+        z-index: 100;
+        color: red;
+        font-size: 12px;
+        line-height: 1;
+      }
       .add-wrap {
         position: absolute;
         top: 50%;
@@ -2520,6 +2571,17 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
             align-items: center;
             justify-content: space-between;
             color: #18191c;
+            .name {
+              display: flex;
+              align-items: center;
+              .ipt {
+                margin-right: 15px;
+                width: 200px;
+              }
+              .item {
+                padding-right: 10px;
+              }
+            }
             .other {
               .item {
                 margin-right: 10px;
@@ -2534,22 +2596,31 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
             align-items: center;
             flex: 1;
             justify-content: space-between;
-            .rtc {
-              display: flex;
-              align-items: center;
-              flex: 0.95;
-              .item {
+            .rtc-config {
+              .item-list {
                 display: flex;
                 align-items: center;
-                padding-right: 10px;
-                .down {
-                  &.small {
-                    width: 90px;
-                  }
-                  &.big {
-                    width: 110px;
+                flex: 1;
+                .item {
+                  display: flex;
+                  align-items: center;
+                  padding-right: 10px;
+
+                  .down {
+                    &.small {
+                      width: 85px;
+                    }
+                    &.big {
+                      width: 105px;
+                    }
                   }
                 }
+              }
+            }
+            .rtc-network {
+              display: flex;
+              .item {
+                padding-right: 10px;
               }
             }
           }

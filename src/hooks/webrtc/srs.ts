@@ -39,9 +39,9 @@ export const useWebRtcSrs = () => {
         resolutionRatio: currentResolutionRatio.value,
       });
       return new WebRTCClass({
-        // maxBitrate: currentMaxBitrate.value,
-        // maxFramerate: currentMaxFramerate.value,
-        // resolutionRatio: currentResolutionRatio.value,
+        maxBitrate: currentMaxBitrate.value,
+        maxFramerate: currentMaxFramerate.value,
+        resolutionRatio: currentResolutionRatio.value,
         isSRS: true,
         roomId: roomId.value,
         videoEl: data.videoEl,

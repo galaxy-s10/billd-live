@@ -86,9 +86,9 @@
                 class="item"
               >
                 <template v-if="item.msgType === DanmuMsgTypeEnum.danmu">
-                  <span class="time"
-                    >[{{ formatTimeHour(item.send_msg_time) }}]</span
-                  >
+                  <span class="time">
+                    [{{ formatTimeHour(item.send_msg_time) }}]
+                  </span>
                   <span class="name">
                     <span v-if="item.userInfo">
                       <span>{{ item.userInfo.username }}</span>

@@ -84,7 +84,7 @@ export class WebSocketClass {
   // 更新store
   update = () => {
     const networkStore = useNetworkStore();
-    networkStore.updateWsMap(this.roomId, this);
+    networkStore.wsMap.set(this.roomId, { ...this });
   };
 
   // 手动关闭websocket连接

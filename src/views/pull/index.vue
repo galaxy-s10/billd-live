@@ -42,6 +42,8 @@
                 <div class="f-left">+关注</div>
                 <div class="f-right">666</div>
               </div>
+              <div class="rtt">延迟：{{ rtcRtt || '-' }}</div>
+              <div class="loss">丢包：{{ rtcLoss || '-' }}</div>
             </div>
             <div class="bottom">
               <span>{{ appStore.liveRoomInfo?.desc }}</span>
@@ -401,7 +403,7 @@
 
 <script lang="ts" setup>
 import { getRandomString, openToTarget } from 'billd-utils';
-import { onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 
@@ -482,6 +484,22 @@ const {
   danmuStr,
   anchorInfo,
 } = usePull(roomId.value);
+
+const rtcRtt = computed(() => {
+  const arr: any[] = [];
+  networkStore.rtcMap.forEach((rtc) => {
+    arr.push(`${rtc.rtt}ms`);
+  });
+  return arr.join();
+});
+
+const rtcLoss = computed(() => {
+  const arr: any[] = [];
+  networkStore.rtcMap.forEach((rtc) => {
+    arr.push(`${Number(rtc.loss.toFixed(2))}%`);
+  });
+  return arr.join();
+});
 
 onMounted(() => {
   appStore.videoControls.fps = true;
@@ -933,14 +951,17 @@ function handleScrollTop() {
           .top {
             display: flex;
             margin-bottom: 10px;
+
             .follow {
               display: flex;
               align-items: center;
+              margin-right: 10px;
               margin-left: 10px;
               height: 20px;
               border-radius: 12px;
               background-color: $theme-color-gold;
               font-size: 12px;
+
               .f-left {
                 display: flex;
                 align-items: center;
@@ -956,6 +977,11 @@ function handleScrollTop() {
                 border-radius: 0 12px 12px 0;
                 background-color: #e3e5e7;
               }
+            }
+            .rtt,
+            .loss {
+              margin-right: 10px;
+              font-size: 14px;
             }
           }
           .bottom {

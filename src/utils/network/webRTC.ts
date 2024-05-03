@@ -57,6 +57,12 @@ export class WebRTCClass {
 
   isSRS: boolean;
 
+  loss = -1;
+
+  rtt = -1;
+
+  loopGetStatsTimer: any = null;
+
   constructor(data: {
     roomId: string;
     videoEl: HTMLVideoElement;
@@ -83,8 +89,54 @@ export class WebRTCClass {
     }
     this.isSRS = data.isSRS;
     console.warn('new webrtc参数:', data);
+    this.loopGetStats();
     this.createPeerConnection();
   }
+
+  loopGetStats = () => {
+    this.loopGetStatsTimer = setInterval(async () => {
+      if (!this.peerConnection) return;
+      try {
+        const res = await this.peerConnection.getStats();
+        // 总丢包率（音频丢包和视频丢包）
+        let loss = 0;
+        let rtt = 0;
+        res.forEach((report: RTCInboundRtpStreamStats) => {
+          // @ts-ignore
+          const currentRoundTripTime = report?.currentRoundTripTime;
+          const packetsLost = report?.packetsLost;
+          const packetsReceived = report.packetsReceived;
+          if (currentRoundTripTime !== undefined) {
+            rtt = currentRoundTripTime * 1000;
+          }
+          if (report.type === 'inbound-rtp' && report.kind === 'audio') {
+            if (packetsReceived !== undefined && packetsLost !== undefined) {
+              if (packetsLost === 0 || packetsReceived === 0) {
+                loss += 0;
+              } else {
+                loss += packetsLost / packetsReceived;
+              }
+            }
+          }
+          if (report.type === 'inbound-rtp' && report.kind === 'video') {
+            if (packetsReceived !== undefined && packetsLost !== undefined) {
+              if (packetsLost === 0 || packetsReceived === 0) {
+                loss += 0;
+              } else {
+                loss += packetsLost / packetsReceived;
+              }
+            }
+          }
+        });
+        this.loss = loss;
+        this.rtt = rtt;
+        this.update();
+      } catch (error) {
+        console.error('getStats错误');
+        console.log(error);
+      }
+    }, 1000);
+  };
 
   prettierLog = (data: {
     msg: string;
@@ -233,13 +285,6 @@ export class WebRTCClass {
       const appStore = useAppStore();
       stream.onremovetrack = () => {
         this.prettierLog({ msg: 'onremovetrack事件', type: 'warn' });
-        // const res = appStore.allTrack.filter((info) => {
-        //   if (info.track?.id === event.track.id) {
-        //     return false;
-        //   }
-        //   return true;
-        // });
-        // appStore.setAllTrack(res);
       };
 
       const addTrack: AppRootState['allTrack'] = [];
@@ -561,6 +606,7 @@ export class WebRTCClass {
   close = () => {
     try {
       this.prettierLog({ msg: '手动关闭webrtc连接', type: 'warn' });
+      clearInterval(this.loopGetStatsTimer);
       this.localStream?.getTracks().forEach((track) => {
         track.stop();
       });
@@ -582,6 +628,6 @@ export class WebRTCClass {
   /** 更新store */
   update = () => {
     const networkStore = useNetworkStore();
-    networkStore.updateRtcMap(this.receiver, this);
+    networkStore.rtcMap.set(this.receiver, { ...this });
   };
 }
