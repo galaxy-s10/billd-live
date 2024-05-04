@@ -22,6 +22,7 @@
             {{ cancelButtonText }}
           </div>
           <div
+            v-if="!hiddenConfirm"
             :class="{ btn: 1, next: 1, hiddenCancel }"
             @click="handleOk()"
           >
@@ -48,6 +49,7 @@ export default defineComponent({
     const show = ref(false);
     const hiddenCancel = ref(false);
     const hiddenClose = ref(false);
+    const hiddenConfirm = ref(false);
     const maskClosable = ref(true);
     const domRef = ref();
     watch([() => show.value, () => domRef.value], ([val1, val2]) => {
@@ -69,6 +71,7 @@ export default defineComponent({
       show,
       hiddenCancel,
       hiddenClose,
+      hiddenConfirm,
       maskClosable,
       domRef,
       handleCancel,

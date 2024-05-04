@@ -15,16 +15,20 @@ export function useTip(data: {
   width?: string;
   content: string | VNode;
   hiddenCancel?: boolean;
+  hiddenConfirm?: boolean;
   hiddenClose?: boolean;
+  maskClosable?: boolean;
   confirmButtonText?: string;
   cancelButtonText?: string;
 }) {
   instance.show = true;
   instance.title = data.title || '提示';
   instance.width = data.width || '320px';
+  instance.maskClosable = !!data.maskClosable;
   instance.content = data.content;
   instance.hiddenCancel = !!data.hiddenCancel;
   instance.hiddenClose = !!data.hiddenClose;
+  instance.hiddenConfirm = !!data.hiddenConfirm;
   instance.confirmButtonText = data.confirmButtonText || '确认';
   instance.cancelButtonText = data.cancelButtonText || '取消';
   return new Promise((resolve, reject) => {

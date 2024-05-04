@@ -433,11 +433,6 @@
       v-if="showOpenMicophoneTipCpt"
       @close="showOpenMicophoneTipCpt = false"
     ></OpenMicophoneTipCpt>
-
-    <NoLiveTipModalCpt
-      v-if="showNoLiveTipModalCpt"
-      @close="showNoLiveTipModalCpt = false"
-    ></NoLiveTipModalCpt>
   </div>
 </template>
 
@@ -511,7 +506,6 @@ import {
 import { NODE_ENV } from 'script/constant';
 
 import MediaModalCpt from './mediaModal/index.vue';
-import NoLiveTipModalCpt from './noLiveTipModal/index.vue';
 import OpenMicophoneTipCpt from './openMicophoneTip/index.vue';
 import SelectMediaModalCpt from './selectMediaModal/index.vue';
 
@@ -559,7 +553,6 @@ const recording = ref(false);
 const showOpenMicophoneTipCpt = ref(false);
 const showSelectMediaModalCpt = ref(false);
 const showMediaModalCpt = ref(false);
-const showNoLiveTipModalCpt = ref(false);
 const isEdit = ref(false);
 const topRef = ref<HTMLDivElement>();
 const bottomRef = ref<HTMLDivElement>();
@@ -615,7 +608,11 @@ watch(
   (newval) => {
     if (!newval) {
       handleEndLive();
-      showNoLiveTipModalCpt.value = true;
+      useTip({
+        content: '直播已结束',
+        hiddenCancel: true,
+        hiddenConfirm: true,
+      });
     } else {
       uploadLivePreview();
     }
@@ -1205,6 +1202,7 @@ function handleShare() {
     title: '分享',
     confirmButtonText: '复制',
     hiddenCancel: true,
+    maskClosable: false,
   })
     .then(() => {
       copyToClipBoard(getLiveRoomPageUrl(+roomId.value));

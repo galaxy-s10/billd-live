@@ -159,7 +159,10 @@ export function usePush() {
       if (newVal) {
         const res = await handleUserHasLiveRoom();
         if (!res) {
-          await useTip({ content: '你还没有直播间，是否立即开通？' });
+          await useTip({
+            content: '你还没有直播间，是否立即开通？',
+            maskClosable: false,
+          });
           await handleCreateUserLiveRoom();
         } else {
           roomName.value = liveRoomInfo.value?.name || '';
@@ -212,7 +215,10 @@ export function usePush() {
     if (!loginTip()) return;
     const flag = await handleUserHasLiveRoom();
     if (!flag) {
-      await useTip({ content: '你还没有直播间，是否立即开通？' });
+      await useTip({
+        content: '你还没有直播间，是否立即开通？',
+        maskClosable: false,
+      });
       await handleCreateUserLiveRoom();
       return;
     }

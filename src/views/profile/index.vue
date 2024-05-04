@@ -15,11 +15,17 @@
     <br />
     <div class="pull-url">
       <span
-        v-if="!userInfo?.live_rooms?.length"
+        v-if="
+          !userInfo?.live_rooms?.length &&
+          userStore.userInfo?.id === userInfo?.id
+        "
         class="link"
         @click="openLiveRoom"
       >
         未开通
+      </span>
+      <span v-else-if="!userInfo?.live_rooms?.length">
+        该用户未开通直播间
       </span>
       <div v-else>
         <div>
@@ -33,7 +39,9 @@
           </a>
         </div>
         <div>直播间名称：{{ userInfo?.live_rooms?.[0].name }}</div>
-        <div>直播间简介：{{ userInfo?.live_rooms?.[0].desc }}</div>
+        <div>
+          直播间简介：{{ userInfo?.live_rooms?.[0].desc || '暂无简介' }}
+        </div>
         <div>
           直播间分区：{{ userInfo.live_rooms[0].areas?.[0].name || '暂无分区' }}
         </div>

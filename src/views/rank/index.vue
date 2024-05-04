@@ -359,7 +359,7 @@ async function getSigninList() {
   try {
     fullLoading({ loading: true });
     const res = await fetchSigninList({
-      orderName: 'nums',
+      orderName: 'sum_nums',
       orderBy: 'desc',
     });
     if (res.code === 200) {
