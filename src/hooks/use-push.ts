@@ -349,16 +349,6 @@ export function usePush() {
         user_agent: navigator.userAgent,
       },
     });
-    // damuList.value.push({
-    //   user_agent: navigator.userAgent,
-    //   live_room_id: Number(roomId.value),
-    //   socket_id: mySocketId.value,
-    //   msgType: DanmuMsgTypeEnum.danmu,
-    //   msg: danmuStr.value,
-    //   userInfo: userStore.userInfo!,
-    //   msgIsFile: msgIsFile.value,
-    //   send_msg_time: +new Date(),
-    // });
     danmuStr.value = '';
   }
 

@@ -1,8 +1,8 @@
 import { getRandomString } from 'billd-utils';
 
-import { LiveLineEnum, MediaTypeEnum } from '@/interface';
+import { LiveLineEnum } from '@/interface';
 import { prodDomain } from '@/spec-config';
-import { AppRootState, useAppStore } from '@/store/app';
+import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { WsCandidateType, WsMsgTypeEnum } from '@/types/websocket';
 
@@ -281,82 +281,10 @@ export class WebRTCClass {
       console.log('track事件的视频轨', event.streams[0].getVideoTracks());
       console.log('track事件的音频轨', event.streams[0].getAudioTracks());
       const stream = event.streams[0];
-      this.localStream = stream;
-      const appStore = useAppStore();
       stream.onremovetrack = () => {
         this.prettierLog({ msg: 'onremovetrack事件', type: 'warn' });
       };
-
-      const addTrack: AppRootState['allTrack'] = [];
-
-      this.localStream?.getVideoTracks().forEach((track) => {
-        if (!appStore.allTrack.find((info) => info.track?.id === track.id)) {
-          addTrack.push({
-            openEye: true,
-            id: getRandomString(8),
-            track,
-            stream,
-            audio: 2,
-            video: 1,
-            type: MediaTypeEnum.screen,
-            mediaName: '',
-            streamid: stream.id,
-            trackid: track.id,
-            scaleInfo: {},
-          });
-        }
-      });
-      this.localStream?.getAudioTracks().forEach((track) => {
-        if (!appStore.allTrack.find((info) => info.track?.id === track.id)) {
-          addTrack.push({
-            openEye: true,
-            id: getRandomString(8),
-            track,
-            stream,
-            audio: 1,
-            video: 2,
-            type: MediaTypeEnum.microphone,
-            mediaName: '',
-            streamid: stream.id,
-            trackid: track.id,
-            scaleInfo: {},
-          });
-        }
-      });
-      stream.getVideoTracks().forEach((track) => {
-        if (!appStore.allTrack.find((info) => info.track?.id === track.id)) {
-          addTrack.push({
-            openEye: true,
-            id: getRandomString(8),
-            track,
-            stream,
-            audio: 2,
-            video: 1,
-            type: MediaTypeEnum.screen,
-            mediaName: '',
-            streamid: stream.id,
-            trackid: track.id,
-            scaleInfo: {},
-          });
-        }
-      });
-      stream.getAudioTracks().forEach((track) => {
-        if (!appStore.allTrack.find((info) => info.track?.id === track.id)) {
-          addTrack.push({
-            openEye: true,
-            id: getRandomString(8),
-            track,
-            stream,
-            audio: 1,
-            video: 2,
-            type: MediaTypeEnum.microphone,
-            mediaName: '',
-            streamid: stream.id,
-            trackid: track.id,
-            scaleInfo: {},
-          });
-        }
-      });
+      this.localStream = stream;
       this.videoEl.srcObject = event.streams[0];
     });
   };

@@ -547,6 +547,7 @@ const {
   liveUserList,
 } = usePush();
 
+const addMediaOkMap = ref(new Map());
 const currentMediaType = ref(MediaTypeEnum.camera);
 const currentMediaData = ref<AppRootState['allTrack'][0]>();
 const recording = ref(false);
@@ -686,6 +687,10 @@ watch(
       if (appStore.allTrack.find((v) => v.mediaName === item.receiver)) {
         return;
       }
+      const streamid = item.localStream?.id;
+      if (!streamid) return;
+      if (addMediaOkMap.value.get(streamid)) return;
+      addMediaOkMap.value.set(streamid, item);
       addMediaOk({
         id: getRandomEnglishString(6),
         openEye: true,
@@ -1848,6 +1853,7 @@ function setScaleInfo({ track, canvasDom, scale = 1 }) {
 }
 
 async function addMediaOk(val: AppRootState['allTrack'][0]) {
+  console.log('addMediaOk');
   showMediaModalCpt.value = false;
   if (val.type === MediaTypeEnum.screen) {
     const event = await handleDisplayMedia({
@@ -2327,6 +2333,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
 }
 
 function editMediaOk(val: AppRootState['allTrack'][0]) {
+  console.log('editMediaOk');
   showMediaModalCpt.value = false;
   const res = appStore.allTrack.map((item) => {
     if (item.id === val.id) {
