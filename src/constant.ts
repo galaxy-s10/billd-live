@@ -82,8 +82,8 @@ export const COMMON_URL = {
     },
     desk: {
       electron: {
-        windows: `${QINIU_RESOURCE.url}/test/billd-desk-win-darwin-0.0.36-x64-Installer.exe`,
-        macOS: `${QINIU_RESOURCE.url}/test/billd-desk-mac-darwin-0.0.36-arm64-Installer.dmg`,
+        windows: `${QINIU_RESOURCE.url}/test/billd-desk-win-darwin-0.0.37-x64-Installer.exe`,
+        macOS: `${QINIU_RESOURCE.url}/test/billd-desk-mac-darwin-0.0.37-arm64-Installer.dmg`,
         github: 'https://github.com/galaxy-s10/billd-desk-electron',
       },
       flutter: {
