@@ -1,5 +1,2 @@
-let a = {
-  aaa: 1,
-  gg: '2',
-};
-console.log(Object.keys(a));
+let a = [1, 3, 4];
+console.log(a.join(','));

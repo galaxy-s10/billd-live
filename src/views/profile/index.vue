@@ -12,6 +12,14 @@
       ></Avatar>
     </div>
     <div class="username">用户昵称：{{ userInfo?.username }}</div>
+    <div
+      class="username"
+      v-if="userStore.userInfo"
+    >
+      用户角色：{{
+        userStore.userInfo?.roles?.map((item) => item.role_name).join(',')
+      }}
+    </div>
     <br />
     <div class="pull-url">
       <span
