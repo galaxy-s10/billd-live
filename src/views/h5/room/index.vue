@@ -152,7 +152,7 @@
             <div>名称：{{ appStore.liveRoomInfo?.name }}</div>
             <div>简介：{{ appStore.liveRoomInfo?.desc }}</div>
             <div>
-              分区：{{ appStore.liveRoomInfo?.areas?.[0].name || '暂无分区' }}
+              分区：{{ appStore.liveRoomInfo?.areas?.[0]?.name || '暂无分区' }}
             </div>
           </div>
         </n-tab-pane>

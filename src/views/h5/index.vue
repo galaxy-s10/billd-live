@@ -36,7 +36,8 @@
               class="cover"
               :style="{
                 backgroundImage: `url('${
-                  iten.live_room?.cover_img || iten.live_room?.users?.[0].avatar
+                  iten.live_room?.cover_img ||
+                  iten.live_room?.users?.[0]?.avatar
                 }')`,
               }"
             >

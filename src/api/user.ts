@@ -2,6 +2,13 @@ import { IPaging } from '@/interface';
 import { IUser } from '@/types/IUser';
 import request from '@/utils/request';
 
+export function fetchUserRegister({ username, password }) {
+  return request.post('/user/register', {
+    username,
+    password,
+  });
+}
+
 export function fetchQrcodeLogin({ platform, exp }) {
   return request.post<{
     login_id: string;
@@ -29,7 +36,13 @@ export function fetchQrcodeLoginStatus({ platform, login_id }) {
   });
 }
 
-export function fetchLogin({ id, password }) {
+export function fetchUsernameLogin({ username, password }) {
+  return request.post('/user/username_login', {
+    username,
+    password,
+  });
+}
+export function fetchIdLogin({ id, password }) {
   return request.post('/user/login', {
     id,
     password,

@@ -907,10 +907,10 @@ onUnmounted(() => {
 });
 
 async function initUserMedia() {
-  const res1 = await handleUserMedia({ video: true, audio: false });
-  console.log('初始化获取摄像头成功');
+  const res1 = await handleUserMedia({ video: true, audio: true });
+  console.log('初始化获取摄像头成功', res1);
   const res2 = await handleUserMedia({ video: false, audio: true });
-  console.log('初始化获取麦克风成功');
+  console.log('初始化获取麦克风成功', res2);
   if (!res1 || !res2) {
     showOpenMicophoneTipCpt.value = true;
   }

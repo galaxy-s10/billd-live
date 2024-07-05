@@ -39,7 +39,7 @@
           >
             <div class="txt">CDN</div>
           </div>
-          <div class="txt">{{ iten?.users?.[0].username }}</div>
+          <div class="txt">{{ iten?.users?.[0]?.username }}</div>
         </div>
         <div class="desc">{{ iten?.name }}</div>
       </div>

@@ -15,7 +15,7 @@
             class="cover"
             :style="{
               backgroundImage: `url('${
-                iten?.cover_img || iten?.users?.[0].avatar
+                iten?.cover_img || iten?.users?.[0]?.avatar
               }')`,
             }"
           >
@@ -42,7 +42,7 @@
             >
               <div class="txt">CDN</div>
             </div>
-            <div class="txt">{{ iten?.users?.[0].username }}</div>
+            <div class="txt">{{ iten?.users?.[0]?.username }}</div>
           </div>
           <div class="desc">{{ iten?.name }}</div>
         </div>

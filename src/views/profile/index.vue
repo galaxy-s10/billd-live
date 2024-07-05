@@ -16,9 +16,7 @@
       class="username"
       v-if="userStore.userInfo"
     >
-      用户角色：{{
-        userStore.userInfo?.roles?.map((item) => item.role_name).join(',')
-      }}
+      用户角色：{{ userInfo?.roles?.map((item) => item.role_name).join(',') }}
     </div>
     <br />
     <div class="pull-url">
@@ -39,19 +37,21 @@
         <div>
           直播间地址：
           <a
-            :href="getLiveRoomPageUrl(userInfo?.live_rooms?.[0].id!)"
+            :href="getLiveRoomPageUrl(userInfo?.live_rooms?.[0]?.id!)"
             class="link"
             target="_blank"
           >
-            {{ getLiveRoomPageUrl(userInfo?.live_rooms?.[0].id!) }}
+            {{ getLiveRoomPageUrl(userInfo?.live_rooms?.[0]?.id!) }}
           </a>
         </div>
-        <div>直播间名称：{{ userInfo?.live_rooms?.[0].name }}</div>
+        <div>直播间名称：{{ userInfo?.live_rooms?.[0]?.name }}</div>
         <div>
-          直播间简介：{{ userInfo?.live_rooms?.[0].desc || '暂无简介' }}
+          直播间简介：{{ userInfo?.live_rooms?.[0]?.desc || '暂无简介' }}
         </div>
         <div>
-          直播间分区：{{ userInfo.live_rooms[0].areas?.[0].name || '暂无分区' }}
+          直播间分区：{{
+            userInfo.live_rooms[0]?.areas?.[0]?.name || '暂无分区'
+          }}
         </div>
         <div
           v-if="
@@ -63,22 +63,44 @@
           class="rtmp-url-wrap"
           v-loading="updateKeyLoading"
         >
-          <div>
-            <span>RTMP推流地址：{{ pushRes?.push_rtmp_url! }}，</span>
+          <div
+            class="link"
+            @click="handleUpdateKey"
+          >
+            更新地址
+          </div>
+          <div
+            v-if="
+              userStore.userInfo?.auths?.find(
+                (v) =>
+                  v.auth_value === DEFAULT_AUTH_INFO.LIVE_PULL_SVIP.auth_value
+              )
+            "
+          >
+            <span>
+              CDN推流地址：{{ handleReplaceCDNUrl(pushRes?.push_rtmp_url!) }}，
+            </span>
             <span
               class="link"
-              @click="handleCopy(pushRes?.push_rtmp_url!)"
+              @click="handleCopy(handleReplaceCDNUrl(pushRes?.push_rtmp_url!))"
             >
               复制
             </span>
-            <span>，</span>
+          </div>
+          <div>
+            <span>
+              RTMP推流地址：{{
+                handleReplaceRtmpUrl(pushRes?.push_rtmp_url!)
+              }}，
+            </span>
             <span
               class="link"
-              @click="handleUpdateKey"
+              @click="handleCopy(handleReplaceRtmpUrl(pushRes?.push_rtmp_url!))"
             >
-              更新
+              复制
             </span>
           </div>
+
           <div>
             <span>OBS服务器：{{ pushRes?.push_obs_server! }}，</span>
             <span
@@ -144,6 +166,17 @@ watch(
   },
   { immediate: true }
 );
+
+function handleReplaceCDNUrl(url: string) {
+  const reg = /pushtype=([0-9]+)/g;
+  console.log(url.replace(reg, 'pushtype=3'));
+  return url.replace(reg, `pushtype=${LiveRoomTypeEnum.tencent_css}`);
+}
+function handleReplaceRtmpUrl(url: string) {
+  const reg = /pushtype=([0-9]+)/g;
+  console.log(url.replace(reg, 'pushtype=3'));
+  return url.replace(reg, `pushtype=${LiveRoomTypeEnum.obs}`);
+}
 
 async function handleUserInfo() {
   try {

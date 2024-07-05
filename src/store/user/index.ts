@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 
-import { fetchLogin, fetchUserInfo } from '@/api/user';
+import { fetchUserInfo, fetchUsernameLogin } from '@/api/user';
 import { fetchMyWallet } from '@/api/wallet';
 import { IAuth, IRole } from '@/interface';
 import { IUser } from '@/types/IUser';
@@ -42,10 +42,10 @@ export const useUserStore = defineStore('user', {
       this.userInfo = undefined;
       this.roles = undefined;
     },
-    async pwdLogin({ id, password }) {
+    async usernameLogin({ username, password }) {
       try {
-        const { data: token } = await fetchLogin({
-          id,
+        const { data: token } = await fetchUsernameLogin({
+          username,
           password,
         });
         this.setToken(token, 24);

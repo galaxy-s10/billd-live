@@ -29,9 +29,9 @@
               >
                 <n-form-item path="id">
                   <n-input
-                    v-model:value="loginForm.id"
+                    v-model:value="loginForm.username"
                     type="text"
-                    placeholder="请输入账号"
+                    placeholder="请输入用户名"
                   >
                     <template #prefix>
                       <n-icon
@@ -74,6 +74,64 @@
                 登录
               </n-button>
             </n-tab-pane>
+            <n-tab-pane
+              name="pwdregister"
+              tab="注册"
+            >
+              <n-form
+                ref="loginFormRefRef"
+                label-placement="left"
+                size="large"
+                :model="loginFormRef"
+                :rules="loginRules"
+              >
+                <n-form-item path="id">
+                  <n-input
+                    v-model:value="loginForm.username"
+                    type="text"
+                    placeholder="请输入用户名"
+                  >
+                    <template #prefix>
+                      <n-icon
+                        size="20"
+                        class="lang"
+                      >
+                        <PersonOutline></PersonOutline>
+                      </n-icon>
+                    </template>
+                  </n-input>
+                </n-form-item>
+                <n-form-item path="password">
+                  <n-input
+                    v-model:value="loginForm.password"
+                    type="password"
+                    show-password-on="mousedown"
+                    placeholder="请输入密码"
+                    @focus="onFocus"
+                    @blur="onBlur"
+                    @keyup.enter="handleUserRegister"
+                  >
+                    <template #prefix>
+                      <n-icon
+                        size="20"
+                        class="lang"
+                      >
+                        <LockClosedOutline></LockClosedOutline>
+                      </n-icon>
+                    </template>
+                  </n-input>
+                </n-form-item>
+              </n-form>
+              <n-button
+                type="primary"
+                block
+                secondary
+                strong
+                @click="handleUserRegister"
+              >
+                注册
+              </n-button>
+            </n-tab-pane>
           </n-tabs>
         </n-card>
         <div class="other-login">
@@ -106,24 +164,25 @@
 import { LockClosedOutline, PersonOutline } from '@vicons/ionicons5';
 import { onMounted, onUnmounted, ref } from 'vue';
 
+import { fetchUserRegister } from '@/api/user';
 import { handleTip } from '@/hooks/use-common';
 import { useQQLogin } from '@/hooks/use-login';
 import { useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
 
 const loginRules = {
-  id: { required: true, message: '请输入账号', trigger: 'blur' },
+  username: { required: true, message: '请输入用户名', trigger: 'blur' },
   password: { required: true, message: '请输入密码', trigger: 'blur' },
 };
-
 const userStore = useUserStore();
 const appStore = useAppStore();
 
 const loginForm = ref({
-  id: '',
+  username: '',
   password: '',
 });
 const loginFormRef = ref(null);
+const loginFormRefRef = ref(null);
 const currentTab = ref('pwdlogin'); // pwdlogin
 const loopTimer = ref();
 const emits = defineEmits(['close']);
@@ -143,17 +202,48 @@ function handleClose() {
 }
 
 const handleLogin = async () => {
+  if (
+    loginForm.value.username.length < 3 ||
+    loginForm.value.username.length > 12
+  ) {
+    window.$message.warning('用户名长度要求3-12！');
+    return;
+  }
+  if (
+    loginForm.value.password.length < 6 ||
+    loginForm.value.password.length > 18
+  ) {
+    window.$message.warning('密码长度要求6-18！');
+    return;
+  }
   let token = null;
-  token = await userStore.pwdLogin({
-    id: +loginForm.value.id,
+  token = await userStore.usernameLogin({
+    username: loginForm.value.username,
     password: loginForm.value.password,
   });
   if (token) {
-    window.$message.success('登录成功!');
+    window.$message.success('登录成功！');
     userStore.getUserInfo();
     appStore.showLoginModal = false;
   }
 };
+
+function handleUserRegister(e) {
+  e.preventDefault();
+  // @ts-ignore
+  loginFormRefRef.value.validate(async (errors) => {
+    if (!errors) {
+      const res = await fetchUserRegister({
+        username: loginForm.value.username,
+        password: loginForm.value.password,
+      });
+      if (res.code === 200) {
+        window.$message.success('注册成功!');
+      }
+    }
+  });
+}
+
 const handleLoginSubmit = (e) => {
   e.preventDefault();
   // @ts-ignore

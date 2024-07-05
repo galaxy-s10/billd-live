@@ -55,11 +55,11 @@
                 @click="
                   router.push({
                     name: routerName.area,
-                    query: { id: appStore.liveRoomInfo?.areas?.[0].id },
+                    query: { id: appStore.liveRoomInfo?.areas?.[0]?.id },
                   })
                 "
               >
-                {{ appStore.liveRoomInfo?.areas?.[0].name }}
+                {{ appStore.liveRoomInfo?.areas?.[0]?.name }}
               </span>
             </div>
           </div>

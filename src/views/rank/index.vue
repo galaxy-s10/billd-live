@@ -259,7 +259,7 @@ async function getWalletList() {
             {
               id: item.user?.id,
               username: item.user?.username,
-              avatar: item.user?.avatar,
+              avatar: item.user?.avatar || '',
             },
           ],
           rank: index + 1,
@@ -295,9 +295,9 @@ async function getLiveRoomList() {
         return {
           users: [
             {
-              id: item.users?.[0].id,
-              username: item.users?.[0].username,
-              avatar: item.users?.[0].avatar,
+              id: item.users?.[0]?.id,
+              username: item.users?.[0]?.username,
+              avatar: item.users?.[0]?.avatar || '',
             },
           ],
           live: item,
@@ -334,7 +334,7 @@ async function getUserList() {
             {
               id: item.id,
               username: item.username,
-              avatar: item.avatar,
+              avatar: item.avatar || '',
             },
           ],
           rank: index + 1,
@@ -370,7 +370,7 @@ async function getSigninList() {
             {
               id: item.user?.id,
               username: item.user?.username,
-              avatar: item.user?.avatar,
+              avatar: item.user?.avatar || '',
             },
           ],
           rank: index + 1,
