@@ -87,10 +87,10 @@ export interface IWsFormat<T> {
   request_id: string;
   /** 用户socket_id */
   socket_id: string;
-  /** 是否是主播 */
-  is_anchor: boolean;
   /** 用户信息 */
   user_info?: IUser;
+  /** 用户id */
+  user_id?: number;
   /** 用户token */
   user_token?: string;
   data: T;

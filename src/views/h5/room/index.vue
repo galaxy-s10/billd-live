@@ -156,6 +156,45 @@
             </div>
           </div>
         </n-tab-pane>
+        <n-tab-pane
+          name="liveUser"
+          :tab="`在线用户`"
+        >
+          <div
+            class="liveUser-wrap"
+            :style="{ height: containerHeight + 'px' }"
+          >
+            <div
+              v-for="(item, index) in liveUserList"
+              :key="index"
+              class="item"
+            >
+              <div
+                class="info"
+                v-if="item.value?.userInfo"
+              >
+                <div
+                  class="avatar"
+                  :style="{
+                    backgroundImage: `url(${item.value.userInfo.avatar})`,
+                  }"
+                ></div>
+                <div class="username">
+                  {{ item.value.userInfo.username }}
+                </div>
+              </div>
+              <div
+                class="info"
+                v-else
+              >
+                <div class="avatar"></div>
+                <div class="username">
+                  {{ item.value?.socketId }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </n-tab-pane>
       </n-tabs>
     </div>
 
@@ -203,12 +242,19 @@
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
+import { fetchLiveRoomOnlineUser } from '@/api/live';
 import { fetchFindLiveRoom } from '@/api/liveRoom';
+import { fetchGetWsMessageList } from '@/api/wsMessage';
 import { THEME_COLOR } from '@/constant';
 import { emojiArray } from '@/emoji';
 import { useFullScreen, usePictureInPicture } from '@/hooks/use-play';
 import { usePull } from '@/hooks/use-pull';
-import { DanmuMsgTypeEnum, WsMessageMsgIsFileEnum } from '@/interface';
+import {
+  DanmuMsgTypeEnum,
+  WsMessageMsgIsFileEnum,
+  WsMessageMsgIsShowEnum,
+  WsMessageMsgIsVerifyEnum,
+} from '@/interface';
 import router, { mobileRouterName } from '@/router';
 import { useAppStore } from '@/store/app';
 import { usePiniaCacheStore } from '@/store/cache';
@@ -227,6 +273,8 @@ const containerHeight = ref(0);
 const videoWrapHeight = ref(0);
 const remoteVideoRef = ref<HTMLDivElement>();
 const roomId = ref(route.params.roomId as string);
+const loopGetLiveUserTimer = ref();
+
 const {
   videoWrapRef,
   handlePlay,
@@ -235,7 +283,7 @@ const {
   sendDanmu,
   closeRtc,
   closeWs,
-  handleSendGetLiveUser,
+  liveUserList,
   showPlayBtn,
   autoplayVal,
   videoLoading,
@@ -250,6 +298,7 @@ onUnmounted(() => {
   closeWs();
   closeRtc();
   appStore.showLoginModal = false;
+  clearInterval(loopGetLiveUserTimer.value);
 });
 
 onMounted(() => {
@@ -270,7 +319,67 @@ onMounted(() => {
   });
   getLiveRoomInfo();
   handleSendGetLiveUser(Number(roomId.value));
+  handleHistoryMsg();
 });
+
+async function handleHistoryMsg() {
+  try {
+    const res = await fetchGetWsMessageList({
+      nowPage: 1,
+      pageSize: appStore.liveRoomInfo?.history_msg_total || 10,
+      orderName: 'created_at',
+      orderBy: 'desc',
+      live_room_id: Number(roomId.value),
+      is_show: WsMessageMsgIsShowEnum.yes,
+      is_verify: WsMessageMsgIsVerifyEnum.yes,
+    });
+    if (res.code === 200) {
+      res.data.rows.forEach((v) => {
+        damuList.value.unshift({
+          ...v,
+          live_room_id: v.live_room_id!,
+          msg_id: v.id!,
+          socket_id: '',
+          msgType: v.msg_type!,
+          msgIsFile: v.msg_is_file!,
+          userInfo: v.user,
+          msg: v.content!,
+          username: v.username!,
+          send_msg_time: Number(v.send_msg_time),
+          redbag_send_id: v.redbag_send_id,
+        });
+      });
+      if (
+        appStore.liveRoomInfo?.system_msg &&
+        appStore.liveRoomInfo?.system_msg !== ''
+      ) {
+        damuList.value.push({
+          live_room_id: Number(roomId.value),
+          socket_id: '',
+          msgType: DanmuMsgTypeEnum.system,
+          msgIsFile: WsMessageMsgIsFileEnum.no,
+          msg: appStore.liveRoomInfo.system_msg,
+          send_msg_time: Number(+new Date()),
+        });
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+function handleSendGetLiveUser(liveRoomId: number) {
+  async function main() {
+    const res = await fetchLiveRoomOnlineUser({ live_room_id: liveRoomId });
+    if (res.code === 200) {
+      liveUserList.value = res.data;
+    }
+  }
+  main();
+  loopGetLiveUserTimer.value = setInterval(() => {
+    main();
+  }, 1000 * 3);
+}
 
 function handlePushStr(str) {
   danmuStr.value += str;
@@ -518,6 +627,36 @@ function startPull() {
       margin: 0 auto 10px;
       width: 200px;
       height: 200px;
+    }
+  }
+  .liveUser-wrap {
+    overflow-y: scroll;
+    box-sizing: border-box;
+    height: 100px;
+
+    @extend %customScrollbar;
+    .item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 12px;
+      .info {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        .avatar {
+          margin-right: 5px;
+          width: 25px;
+          height: 25px;
+          border-radius: 50%;
+
+          @extend %containBg;
+        }
+        .username {
+          color: white;
+        }
+      }
     }
   }
   .send-msg {

@@ -32,7 +32,6 @@ import {
   WsCandidateType,
   WsConnectStatusEnum,
   WsDisableSpeakingType,
-  WsGetLiveUserType,
   WsHeartbeatType,
   WsJoinType,
   WsLeavedType,
@@ -147,20 +146,6 @@ export const useWebsocket = () => {
           socket_id: socketId,
           live_room_id: Number(roomId.value),
           roomLiving: isAnchor.value && roomLiving.value,
-        },
-      });
-    }, 1000 * 5);
-  }
-
-  function handleSendGetLiveUser(liveRoomId: number) {
-    loopGetLiveUserTimer.value = setInterval(() => {
-      const ws = networkStore.wsMap.get(roomId.value);
-      if (!ws) return;
-      ws.send<WsGetLiveUserType['data']>({
-        requestId: getRandomString(8),
-        msgType: WsMsgTypeEnum.getLiveUser,
-        data: {
-          live_room_id: liveRoomId,
         },
       });
     }, 1000 * 5);
@@ -1000,7 +985,6 @@ export const useWebsocket = () => {
   return {
     initWs,
     handleStartLive,
-    handleSendGetLiveUser,
     connectStatus,
     mySocketId,
     canvasVideoStream,

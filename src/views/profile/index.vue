@@ -60,7 +60,7 @@
               (v) => v.auth_value === DEFAULT_AUTH_INFO.LIVE_PUSH.auth_value
             )
           "
-          class="rtmp-url-wrap"
+          class="url-wrap"
           v-loading="updateKeyLoading"
         >
           <div
@@ -70,6 +70,7 @@
             更新地址
           </div>
           <div
+            class="cdn"
             v-if="
               userStore.userInfo?.auths?.find(
                 (v) =>
@@ -77,47 +78,69 @@
               )
             "
           >
-            <span>
-              CDN推流地址：{{ handleReplaceCDNUrl(pushRes?.push_rtmp_url!) }}，
-            </span>
-            <span
-              class="link"
-              @click="handleCopy(handleReplaceCDNUrl(pushRes?.push_rtmp_url!))"
-            >
-              复制
-            </span>
-          </div>
-          <div>
-            <span>
-              RTMP推流地址：{{
-                handleReplaceRtmpUrl(pushRes?.push_rtmp_url!)
-              }}，
-            </span>
-            <span
-              class="link"
-              @click="handleCopy(handleReplaceRtmpUrl(pushRes?.push_rtmp_url!))"
-            >
-              复制
-            </span>
+            <div>
+              <span>
+                RTMP推流地址（CDN）：{{ liveRoomInfo?.cdn_push_rtmp_url! }}，
+              </span>
+              <span
+                class="link"
+                @click="handleCopy(liveRoomInfo?.cdn_push_rtmp_url!)"
+              >
+                复制
+              </span>
+            </div>
+            <div>
+              <span>
+                OBS服务器（CDN）：{{ liveRoomInfo?.cdn_push_obs_server! }}，
+              </span>
+              <span
+                class="link"
+                @click="handleCopy(liveRoomInfo?.cdn_push_obs_server!)"
+              >
+                复制
+              </span>
+            </div>
+            <div>
+              <span>
+                OBS推流码（CDN）：{{ liveRoomInfo?.cdn_push_obs_stream_key! }}，
+              </span>
+              <span
+                class="link"
+                @click="handleCopy(liveRoomInfo?.cdn_push_obs_stream_key!)"
+              >
+                复制
+              </span>
+            </div>
           </div>
 
-          <div>
-            <span>OBS服务器：{{ pushRes?.push_obs_server! }}，</span>
-            <span
-              class="link"
-              @click="handleCopy(pushRes?.push_obs_server!)"
-            >
-              复制
-            </span>
-          </div>
-          <div>
-            <span>OBS推流码：{{ pushRes?.push_obs_stream_key! }}，</span>
-            <span
-              class="link"
-              @click="handleCopy(pushRes?.push_obs_stream_key!)"
-            >
-              复制
-            </span>
+          <div class="srs">
+            <div>
+              <span> RTMP推流地址：{{ liveRoomInfo?.push_rtmp_url! }}， </span>
+              <span
+                class="link"
+                @click="handleCopy(liveRoomInfo?.push_rtmp_url!)"
+              >
+                复制
+              </span>
+            </div>
+            <div>
+              <span>OBS服务器：{{ liveRoomInfo?.push_obs_server! }}，</span>
+              <span
+                class="link"
+                @click="handleCopy(liveRoomInfo?.push_obs_server!)"
+              >
+                复制
+              </span>
+            </div>
+            <div>
+              <span>OBS推流码：{{ liveRoomInfo?.push_obs_stream_key! }}，</span>
+              <span
+                class="link"
+                @click="handleCopy(liveRoomInfo?.push_obs_stream_key!)"
+              >
+                复制
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -136,7 +159,7 @@ import { DEFAULT_AUTH_INFO } from '@/constant';
 import { loginTip } from '@/hooks/use-login';
 import { routerName } from '@/router';
 import { useUserStore } from '@/store/user';
-import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
+import { ILiveRoom, LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import { IUser } from '@/types/IUser';
 import { getLiveRoomPageUrl } from '@/utils';
 
@@ -144,7 +167,7 @@ const userStore = useUserStore();
 const route = useRoute();
 const router = useRouter();
 
-const pushRes = ref();
+const liveRoomInfo = ref<ILiveRoom>();
 const userId = ref(-1);
 const userInfo = ref<IUser>();
 const getUserLoading = ref(false);
@@ -161,7 +184,7 @@ watch(
   () => userStore.userInfo,
   (newval) => {
     if (newval) {
-      pushRes.value = newval.live_rooms?.[0];
+      liveRoomInfo.value = newval.live_rooms?.[0];
     }
   },
   { immediate: true }
@@ -172,6 +195,7 @@ function handleReplaceCDNUrl(url: string) {
   console.log(url.replace(reg, 'pushtype=3'));
   return url.replace(reg, `pushtype=${LiveRoomTypeEnum.tencent_css}`);
 }
+
 function handleReplaceRtmpUrl(url: string) {
   const reg = /pushtype=([0-9]+)/g;
   console.log(url.replace(reg, 'pushtype=3'));
@@ -213,7 +237,25 @@ async function handleUpdateKey() {
     updateKeyLoading.value = true;
     const res = await fetchUpdateLiveRoomKey();
     if (res.code === 200) {
-      pushRes.value = res.data;
+      if (liveRoomInfo.value) {
+        liveRoomInfo.value.push_obs_server =
+          res.data.srsPushRes.push_obs_server;
+        liveRoomInfo.value.push_obs_stream_key =
+          res.data.srsPushRes.push_obs_stream_key;
+        liveRoomInfo.value.push_rtmp_url = res.data.srsPushRes.push_rtmp_url;
+        liveRoomInfo.value.push_srt_url = res.data.srsPushRes.push_srt_url;
+        liveRoomInfo.value.push_webrtc_url =
+          res.data.srsPushRes.push_webrtc_url;
+        liveRoomInfo.value.cdn_push_obs_server =
+          res.data.srsPushRes.push_obs_server;
+        liveRoomInfo.value.cdn_push_obs_stream_key =
+          res.data.cdnPushRes.push_obs_stream_key;
+        liveRoomInfo.value.cdn_push_rtmp_url =
+          res.data.cdnPushRes.push_rtmp_url;
+        liveRoomInfo.value.cdn_push_srt_url = res.data.cdnPushRes.push_srt_url;
+        liveRoomInfo.value.cdn_push_webrtc_url =
+          res.data.cdnPushRes.push_webrtc_url;
+      }
     }
   } catch (error) {
     console.error(error);
@@ -239,8 +281,12 @@ async function handleUpdateKey() {
       margin-right: 10px;
     }
   }
-  .rtmp-url-wrap {
+  .url-wrap {
     position: relative;
+    margin-top: 10px;
+    .cdn {
+      margin-bottom: 10px;
+    }
   }
 }
 </style>

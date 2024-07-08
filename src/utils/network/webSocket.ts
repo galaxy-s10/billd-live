@@ -72,8 +72,8 @@ export class WebSocketClass {
     const sendData: IWsFormat<any> = {
       request_id: requestId,
       socket_id: this.socketIo.id,
-      is_anchor: this.isAnchor,
       user_info: userStore.userInfo,
+      user_id: userStore.userInfo?.id || undefined,
       user_token: userStore.token || undefined,
       data: data || {},
     };

@@ -240,6 +240,15 @@ export interface ILiveRoom {
   push_obs_stream_key?: string;
   push_webrtc_url?: string;
   push_srt_url?: string;
+  cdn_rtmp_url?: string;
+  cdn_flv_url?: string;
+  cdn_hls_url?: string;
+  cdn_webrtc_url?: string;
+  cdn_push_rtmp_url?: string;
+  cdn_push_obs_server?: string;
+  cdn_push_obs_stream_key?: string;
+  cdn_push_webrtc_url?: string;
+  cdn_push_srt_url?: string;
   forward_bilibili_url?: string;
   forward_douyu_url?: string;
   forward_huya_url?: string;
@@ -261,7 +270,10 @@ export interface ILiveRoom {
   live?: ILive;
   user_live_room?: IUserLiveRoom & { user: IUser };
 
-  hidden_cover_img?: boolean;
+  /** 是否假直播间，1是，2否 */
+  is_fake?: number;
+
+  exclude_key?: boolean;
 
   created_at?: string;
   updated_at?: string;

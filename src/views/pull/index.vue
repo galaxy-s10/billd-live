@@ -413,6 +413,7 @@ import {
   fetchGiftRecordList,
 } from '@/api/giftRecord';
 import { fetchGoodsList } from '@/api/goods';
+import { fetchLiveRoomOnlineUser } from '@/api/live';
 import { fetchGetWsMessageList } from '@/api/wsMessage';
 import { QINIU_RESOURCE, liveRoomTypeEnumMap } from '@/constant';
 import { emojiArray } from '@/emoji';
@@ -464,6 +465,8 @@ const danmuListRef = ref<HTMLDivElement>();
 const remoteVideoRef = ref<HTMLDivElement>();
 const uploadRef = ref<HTMLInputElement>();
 const danmuIptRef = ref<HTMLTextAreaElement>();
+const loopGetLiveUserTimer = ref();
+
 const {
   initPull,
   closeWs,
@@ -471,7 +474,6 @@ const {
   keydownDanmu,
   sendDanmu,
   handlePlay,
-  handleSendGetLiveUser,
   videoWrapRef,
   danmuMsgType,
   msgIsFile,
@@ -536,7 +538,21 @@ onMounted(() => {
 onUnmounted(() => {
   closeWs();
   closeRtc();
+  clearInterval(loopGetLiveUserTimer.value);
 });
+
+function handleSendGetLiveUser(liveRoomId: number) {
+  async function main() {
+    const res = await fetchLiveRoomOnlineUser({ live_room_id: liveRoomId });
+    if (res.code === 200) {
+      liveUserList.value = res.data;
+    }
+  }
+  main();
+  loopGetLiveUserTimer.value = setInterval(() => {
+    main();
+  }, 1000 * 3);
+}
 
 function handleSendDanmu() {
   danmuMsgType.value = DanmuMsgTypeEnum.danmu;

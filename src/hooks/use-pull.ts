@@ -14,7 +14,11 @@ import {
 import { useAppStore } from '@/store/app';
 import { usePiniaCacheStore } from '@/store/cache';
 import { useNetworkStore } from '@/store/network';
-import { ILiveRoom, LiveRoomTypeEnum } from '@/types/ILiveRoom';
+import {
+  ILiveRoom,
+  LiveRoomTypeEnum,
+  LiveRoomUseCDNEnum,
+} from '@/types/ILiveRoom';
 import { WsMessageType, WsMsgTypeEnum } from '@/types/websocket';
 import { videoFullBox, videoToCanvas } from '@/utils';
 
@@ -37,15 +41,8 @@ export function usePull(roomId: string) {
   const isRemoteDesk = ref(false);
   const videoElArr = ref<HTMLVideoElement[]>([]);
   const remoteVideo = ref<HTMLElement[]>([]);
-  const {
-    mySocketId,
-    initWs,
-    roomLiving,
-    anchorInfo,
-    liveUserList,
-    damuList,
-    handleSendGetLiveUser,
-  } = useWebsocket();
+  const { mySocketId, initWs, roomLiving, anchorInfo, liveUserList, damuList } =
+    useWebsocket();
   const { flvVideoEl, flvIsPlaying, startFlvPlay, destroyFlv } = useFlvPlay();
   const { hlsVideoEl, hlsIsPlaying, startHlsPlay, destroyHls } = useHlsPlay();
   const stopDrawingArr = ref<any[]>([]);
@@ -214,13 +211,13 @@ export function usePull(roomId: string) {
     }
   );
 
-  function handleHlsPlay(url: string) {
-    console.log('handleHlsPlay', url);
+  function handleHlsPlay() {
+    console.log('handleHlsPlay', hlsurl.value);
     handleStopDrawing();
     videoLoading.value = true;
     appStore.setLiveLine(LiveLineEnum.hls);
     startHlsPlay({
-      hlsurl: url,
+      hlsurl: hlsurl.value,
     });
   }
 
@@ -236,13 +233,15 @@ export function usePull(roomId: string) {
 
   function handlePlay(data: ILiveRoom) {
     roomLiving.value = true;
-    flvurl.value = data.flv_url!;
-    hlsurl.value = data.hls_url!;
+    flvurl.value =
+      data.cdn === LiveRoomUseCDNEnum.yes ? data.cdn_flv_url! : data.flv_url!;
+    hlsurl.value =
+      data.cdn === LiveRoomUseCDNEnum.yes ? data.cdn_hls_url! : data.hls_url!;
     function play() {
       if (appStore.liveLine === LiveLineEnum.flv) {
         handleFlvPlay();
       } else if (appStore.liveLine === LiveLineEnum.hls) {
-        handleHlsPlay(data.hls_url!);
+        handleHlsPlay();
       }
     }
     if (LiveRoomTypeEnum.pk === data.type && !route.query.pkKey) {
@@ -319,7 +318,7 @@ export function usePull(roomId: string) {
           handleFlvPlay();
           break;
         case LiveLineEnum.hls:
-          handleHlsPlay(hlsurl.value);
+          handleHlsPlay();
           break;
         case LiveLineEnum.rtc:
           break;
@@ -471,7 +470,6 @@ export function usePull(roomId: string) {
     closeRtc,
     keydownDanmu,
     sendDanmu,
-    handleSendGetLiveUser,
     showPlayBtn,
     danmuMsgType,
     isPlaying,

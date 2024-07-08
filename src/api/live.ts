@@ -6,3 +6,8 @@ export function fetchLiveList(params) {
     params,
   });
 }
+export function fetchLiveRoomOnlineUser(params) {
+  return request.get('/live/live_room_online_user', {
+    params,
+  });
+}

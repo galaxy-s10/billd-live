@@ -463,6 +463,7 @@ import {
 } from 'vue';
 import { useRoute } from 'vue-router';
 
+import { fetchLiveRoomOnlineUser } from '@/api/live';
 import { fetchGetWsMessageList } from '@/api/wsMessage';
 import {
   QINIU_RESOURCE,
@@ -530,7 +531,6 @@ const {
   sendDanmu,
   keydownDanmu,
   sendBlob,
-  handleSendGetLiveUser,
   roomId,
   msgIsFile,
   mySocketId,
@@ -587,6 +587,7 @@ const suggestedName = ref('');
 const recordVideoTimer = ref();
 const recordVideoTime = ref('00:00:00');
 let avRecorder: AVRecorder | null = null;
+const loopGetLiveUserTimer = ref();
 
 const rtcRtt = computed(() => {
   const arr: any[] = [];
@@ -869,7 +870,6 @@ watch(
   () => roomId.value,
   (newval) => {
     if (newval) {
-      handleSendGetLiveUser(Number(newval));
       handleHistoryMsg();
     }
   }
@@ -884,6 +884,7 @@ onMounted(() => {
   initUserMedia();
   initCanvas();
   handleCache();
+  handleSendGetLiveUser(Number(roomId.value));
 });
 
 onUnmounted(() => {
@@ -904,7 +905,21 @@ onUnmounted(() => {
       v.stream?.removeTrack(track);
     });
   });
+  clearInterval(loopGetLiveUserTimer.value);
 });
+
+function handleSendGetLiveUser(liveRoomId: number) {
+  async function main() {
+    const res = await fetchLiveRoomOnlineUser({ live_room_id: liveRoomId });
+    if (res.code === 200) {
+      liveUserList.value = res.data;
+    }
+  }
+  main();
+  loopGetLiveUserTimer.value = setInterval(() => {
+    main();
+  }, 1000 * 3);
+}
 
 async function initUserMedia() {
   const res1 = await handleUserMedia({ video: true, audio: true });
