@@ -26,6 +26,8 @@ import { getHostnameUrl } from '@/utils';
 import { getLastBuildDate, setLastBuildDate } from '@/utils/localStorage/app';
 import { getToken } from '@/utils/localStorage/user';
 
+import { fetchSettingsList } from './api/settings';
+
 const { checkUpdate } = useCheckUpdate();
 const cacheStore = usePiniaCacheStore();
 const userStore = useUserStore();
@@ -38,6 +40,7 @@ const themeOverrides: GlobalThemeOverrides = {
 };
 
 onMounted(() => {
+  initSettings();
   checkUpdate({
     htmlUrl: getHostnameUrl(),
   });
@@ -65,6 +68,11 @@ onMounted(() => {
     );
   }
 });
+
+async function initSettings() {
+  const res = await fetchSettingsList({});
+  console.log(res);
+}
 
 function handleUpdate() {
   const old = getLastBuildDate();

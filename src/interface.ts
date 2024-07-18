@@ -386,6 +386,17 @@ export enum GoodsTypeEnum {
   recharge = 'recharge',
 }
 
+export interface ISettings {
+  id?: number;
+  key?: string;
+  value?: string;
+  desc?: string;
+  type?: string;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string;
+}
+
 export interface IGoods {
   id?: number;
   type?: GoodsTypeEnum;
