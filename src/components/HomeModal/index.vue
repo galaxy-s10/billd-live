@@ -5,16 +5,37 @@
     preset="dialog"
     positive-text="OK"
   >
-    <p></p>
+    <p>{{ content }}</p>
   </n-modal>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
+const props = withDefaults(
+  defineProps<{
+    show?: boolean;
+    content: string;
+  }>(),
+  {
+    show: () => {
+      return false;
+    },
+    content: '',
+  }
+);
 const showModal = ref(false);
-// const showModal = ref(true);
-// const showModal = ref(router.currentRoute.value.name === routerName.home);
+
+watch(
+  () => props.show,
+  () => {
+    showModal.value = props.show;
+  }
+);
+
+onMounted(() => {
+  showModal.value = props.show;
+});
 </script>
 
 <style lang="scss" scoped>

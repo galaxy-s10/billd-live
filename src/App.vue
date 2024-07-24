@@ -2,6 +2,10 @@
   <n-config-provider :theme-overrides="themeOverrides">
     <n-dialog-provider>
       <router-view></router-view>
+      <HomeModal
+        :show="showModal"
+        :content="modalContent"
+      ></HomeModal>
     </n-dialog-provider>
   </n-config-provider>
 </template>
@@ -15,8 +19,9 @@ export default {
 <script lang="ts" setup>
 import { isMobile } from 'billd-utils';
 import { GlobalThemeOverrides, NConfigProvider } from 'naive-ui';
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 
+import { fetchSettingsList } from '@/api/settings';
 import { THEME_COLOR, appBuildInfo } from '@/constant';
 import { useCheckUpdate } from '@/hooks/use-common';
 import { loginMessage } from '@/hooks/use-login';
@@ -25,12 +30,15 @@ import { useUserStore } from '@/store/user';
 import { getHostnameUrl } from '@/utils';
 import { getLastBuildDate, setLastBuildDate } from '@/utils/localStorage/app';
 import { getToken } from '@/utils/localStorage/user';
-
-import { fetchSettingsList } from './api/settings';
+import { useRoute } from 'vue-router';
 
 const { checkUpdate } = useCheckUpdate();
 const cacheStore = usePiniaCacheStore();
 const userStore = useUserStore();
+const route = useRoute();
+
+const showModal = ref(false);
+const modalContent = ref('');
 
 const themeOverrides: GlobalThemeOverrides = {
   common: {
@@ -69,9 +77,25 @@ onMounted(() => {
   }
 });
 
-async function initSettings() {
-  const res = await fetchSettingsList({});
-  console.log(res);
+function initSettings() {
+  setTimeout(async () => {
+    if (route.path !== '/') {
+      return;
+    }
+    const res = await fetchSettingsList({});
+    if (res.code === 200) {
+      const allowHomeModal = res.data.rows.find(
+        (v) => v.key === 'allow_home_modal'
+      );
+      const homeModalContent = res.data.rows.find(
+        (v) => v.key === 'home_modal_content'
+      );
+      if (allowHomeModal?.value === '1' && homeModalContent?.value) {
+        showModal.value = true;
+        modalContent.value = homeModalContent.value;
+      }
+    }
+  }, 500);
 }
 
 function handleUpdate() {
