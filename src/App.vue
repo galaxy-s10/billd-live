@@ -20,6 +20,7 @@ export default {
 import { isMobile } from 'billd-utils';
 import { GlobalThemeOverrides, NConfigProvider } from 'naive-ui';
 import { onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 
 import { fetchSettingsList } from '@/api/settings';
 import { THEME_COLOR, appBuildInfo } from '@/constant';
@@ -30,7 +31,6 @@ import { useUserStore } from '@/store/user';
 import { getHostnameUrl } from '@/utils';
 import { getLastBuildDate, setLastBuildDate } from '@/utils/localStorage/app';
 import { getToken } from '@/utils/localStorage/user';
-import { useRoute } from 'vue-router';
 
 const { checkUpdate } = useCheckUpdate();
 const cacheStore = usePiniaCacheStore();
