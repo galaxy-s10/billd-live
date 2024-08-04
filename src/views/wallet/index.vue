@@ -38,9 +38,10 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import { fetchMyWallet } from '@/api/wallet';
 import { fetchWalletRecordMyList } from '@/api/walletRecord';
 import { fullLoading } from '@/components/FullLoading';
 import {
@@ -84,11 +85,19 @@ const typeMap = {
   [WalletRecordEnum.signin]: '签到',
 };
 
-onUnmounted(() => {});
-
 onMounted(() => {
+  updateMyWallet();
   getPayList();
 });
+
+async function updateMyWallet() {
+  const res = await fetchMyWallet();
+  if (res.code === 200) {
+    if (userStore.userInfo?.wallet?.balance !== undefined) {
+      userStore.userInfo.wallet.balance = res.data.balance;
+    }
+  }
+}
 
 async function getPayList() {
   try {

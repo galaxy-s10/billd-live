@@ -23,7 +23,7 @@ export default nameSpaceWrap('layout', {
   startLive: 'Start Live',
   login: 'Login',
   logout: 'Logout',
-  profile: 'Profile',
+  my: 'My',
   resource: 'Resource',
   libraries: 'Official libraries',
   rank: 'Rank',

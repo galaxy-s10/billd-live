@@ -376,14 +376,14 @@
                 class="item"
                 @click.prevent="
                   router.push({
-                    name: routerName.profile,
+                    name: routerName.my,
                     params: {
                       userId: userStore.userInfo.id,
                     },
                   })
                 "
               >
-                <div class="txt">{{ t('layout.profile') }}</div>
+                <div class="txt">{{ t('layout.my') }}</div>
               </a>
               <a
                 class="item"

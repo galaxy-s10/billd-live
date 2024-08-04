@@ -24,17 +24,14 @@
           <div
             class="avatar"
             @click="
-              currRankType !== RankTypeEnum.blog &&
-                router.push({
-                  name: routerName.profile,
-                  params: { userId: item.users[0]?.id },
-                })
+              currRankType !== RankTypeEnum.blog && handleJump(item.users[0])
             "
           >
             <Avatar
               :size="100"
               :avatar="item.users[0]?.avatar"
               :living="!!item.live?.live"
+              :border="!item.users[0]?.avatar?.length"
             ></Avatar>
           </div>
           <div class="username">{{ item.users[0]?.username }}</div>
@@ -77,11 +74,7 @@
           <div
             class="left"
             @click="
-              currRankType !== RankTypeEnum.blog &&
-                router.push({
-                  name: routerName.profile,
-                  params: { userId: item.users[0]?.id },
-                })
+              currRankType !== RankTypeEnum.blog && handleJump(item.users[0])
             "
           >
             <img
@@ -133,9 +126,11 @@ import { fetchWalletList } from '@/api/wallet';
 import { fullLoading } from '@/components/FullLoading';
 import { RankTypeEnum } from '@/interface';
 import router, { routerName } from '@/router';
+import { useUserStore } from '@/store/user';
 import { ILiveRoom, LiveRoomIsShowEnum } from '@/types/ILiveRoom';
 import { formatMoney } from '@/utils';
 
+const userStore = useUserStore();
 export interface IRankType {
   type: RankTypeEnum;
   label: string;
@@ -239,6 +234,19 @@ const mockRank: {
   },
 ];
 const rankList = ref(mockRank);
+
+function handleJump(item) {
+  if (userStore.userInfo?.id === item.id) {
+    router.push({
+      name: routerName.my,
+    });
+  } else {
+    router.push({
+      name: routerName.user,
+      params: { id: item.id },
+    });
+  }
+}
 
 function handleJoin(item) {
   router.push({

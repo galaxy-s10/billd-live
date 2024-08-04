@@ -6,6 +6,7 @@
     <div class="cycle-wrap">
       <div
         class="avatar"
+        :class="{ border }"
         :style="{ backgroundImage: `url(${avatar})` }"
       ></div>
       <template v-if="living">
@@ -24,11 +25,13 @@ withDefaults(
     avatar: string;
     size: number;
     living?: boolean;
+    border?: boolean;
   }>(),
   {
     avatar: '',
     size: 100,
     living: false,
+    border: false,
   }
 );
 </script>
@@ -52,12 +55,17 @@ withDefaults(
     height: var(--width);
     .avatar {
       display: inline-block;
+      box-sizing: border-box;
       margin: 0 auto;
       width: var(--width);
       height: var(--width);
       border-radius: 50%;
+      cursor: pointer;
 
       @extend %containBg;
+      &.border {
+        border: 1px solid $theme-color-gold;
+      }
     }
     .cycle {
       position: absolute;

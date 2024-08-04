@@ -23,7 +23,7 @@ export default nameSpaceWrap('layout', {
   startLive: '我要开播',
   login: '登录',
   logout: '退出',
-  profile: '个人信息',
+  my: '个人信息',
   resource: '资源',
   libraries: '官方库',
   rank: '排行榜',

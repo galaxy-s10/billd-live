@@ -724,6 +724,19 @@ watch(
   }
 );
 
+watch(
+  () => route.query.roomId,
+  (newval) => {
+    if (newval) {
+      handleSendGetLiveUser(Number(newval));
+    }
+  },
+  {
+    deep: true,
+    immediate: true,
+  }
+);
+
 function handleSendDanmu() {
   sendDanmu();
 }
@@ -884,7 +897,6 @@ onMounted(() => {
   initUserMedia();
   initCanvas();
   handleCache();
-  handleSendGetLiveUser(Number(roomId.value));
 });
 
 onUnmounted(() => {
@@ -909,6 +921,7 @@ onUnmounted(() => {
 });
 
 function handleSendGetLiveUser(liveRoomId: number) {
+  clearInterval(loopGetLiveUserTimer.value);
   async function main() {
     const res = await fetchLiveRoomOnlineUser({ live_room_id: liveRoomId });
     if (res.code === 200) {

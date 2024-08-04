@@ -30,7 +30,7 @@
             }"
             @click="
               router.push({
-                name: routerName.profile,
+                name: routerName.my,
                 params: { userId: anchorInfo?.id },
               })
             "
@@ -707,7 +707,7 @@ function handleRestoreSpeakingUser({ socketId, userId }) {
 
 function jumpProfile(userId: number) {
   const url = router.resolve({
-    name: routerName.profile,
+    name: routerName.my,
     params: { userId },
   });
   openToTarget(url.href);

@@ -90,7 +90,7 @@ export const useAppStore = defineStore('app', {
       navList: [
         { routeName: mobileRouterName.h5, name: '频道' },
         { routeName: mobileRouterName.h5Rank, name: '排行' },
-        { routeName: mobileRouterName.h5Profile, name: '我的' },
+        { routeName: mobileRouterName.h5My, name: '我的' },
       ],
       allTrack: [],
       liveLine: LiveLineEnum.hls,

@@ -16,7 +16,7 @@ export const mobileRouterName = {
   h5Room: 'h5Room',
   h5Area: 'h5Area',
   h5Rank: 'h5Rank',
-  h5Profile: 'h5Profile',
+  h5My: 'h5My',
   ...commonRouterName,
 };
 
@@ -44,7 +44,8 @@ export const routerName = {
   pushStreamDifferent: 'pushStreamDifferent',
   notFound: 'notFound',
   group: 'group',
-  profile: 'profile',
+  my: 'my',
+  user: 'user',
   download: 'download',
   downloadLive: 'downloadLive',
   downloadRemoteDesktop: 'downloadRemoteDesktop',
@@ -125,9 +126,14 @@ export const defaultRoutes: RouteRecordRaw[] = [
         component: () => import('@/views/shop/index.vue'),
       },
       {
-        name: routerName.profile,
-        path: '/profile/:userId',
-        component: () => import('@/views/profile/index.vue'),
+        name: routerName.my,
+        path: '/my',
+        component: () => import('@/views/my/index.vue'),
+      },
+      {
+        name: routerName.user,
+        path: '/user/:id',
+        component: () => import('@/views/user/index.vue'),
       },
       {
         name: routerName.downloadRemoteDesktop,
@@ -219,9 +225,9 @@ export const defaultRoutes: RouteRecordRaw[] = [
         component: () => import('@/views/h5/rank/index.vue'),
       },
       {
-        name: mobileRouterName.h5Profile,
-        path: 'profile',
-        component: () => import('@/views/h5/profile/index.vue'),
+        name: mobileRouterName.h5My,
+        path: 'my',
+        component: () => import('@/views/h5/my/index.vue'),
       },
     ],
   },

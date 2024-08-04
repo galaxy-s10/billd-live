@@ -79,10 +79,10 @@
               tab="注册"
             >
               <n-form
-                ref="loginFormRefRef"
+                ref="loginFormRef"
                 label-placement="left"
                 size="large"
-                :model="loginFormRef"
+                :model="loginForm"
                 :rules="loginRules"
               >
                 <n-form-item path="id">
@@ -182,7 +182,6 @@ const loginForm = ref({
   password: '',
 });
 const loginFormRef = ref(null);
-const loginFormRefRef = ref(null);
 const currentTab = ref('pwdlogin'); // pwdlogin
 const loopTimer = ref();
 const emits = defineEmits(['close']);
@@ -206,14 +205,14 @@ const handleLogin = async () => {
     loginForm.value.username.length < 3 ||
     loginForm.value.username.length > 12
   ) {
-    window.$message.warning('用户名长度要求3-12！');
+    window.$message.warning('用户名长度要求3-12位！');
     return;
   }
   if (
     loginForm.value.password.length < 6 ||
     loginForm.value.password.length > 18
   ) {
-    window.$message.warning('密码长度要求6-18！');
+    window.$message.warning('密码长度要求6-18位！');
     return;
   }
   let token = null;
@@ -231,7 +230,7 @@ const handleLogin = async () => {
 function handleUserRegister(e) {
   e.preventDefault();
   // @ts-ignore
-  loginFormRefRef.value.validate(async (errors) => {
+  loginFormRef.value.validate(async (errors) => {
     if (!errors) {
       const res = await fetchUserRegister({
         username: loginForm.value.username,
