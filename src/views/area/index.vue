@@ -47,7 +47,7 @@ onMounted(() => {
 .tab-list {
   display: flex;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   height: 40px;
   font-size: 14px;
   padding: 0 30px;

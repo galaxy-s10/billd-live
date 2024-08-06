@@ -21,7 +21,7 @@
         >
           <img
             class="avatar"
-            src="https://www.github.com/galaxy-s10.png"
+            v-lazy="'https://www.github.com/galaxy-s10.png'"
             alt=""
           />
           <div class="data">
@@ -94,7 +94,15 @@
               </a>
             </div>
           </div>
-          <div class="sponsor">
+          <div
+            class="sponsor"
+            @click="
+              router.push({
+                name: routerName.shop,
+                query: { [URL_PARAMS.goodsType]: GoodsTypeEnum.sponsors },
+              })
+            "
+          >
             <n-icon
               size="18"
               class="ico"
@@ -121,6 +129,9 @@ import {
 import { openToTarget } from 'billd-utils';
 import { ref } from 'vue';
 
+import { URL_PARAMS } from '@/constant';
+import { GoodsTypeEnum } from '@/interface';
+import router, { routerName } from '@/router';
 import { prodDomain } from '@/spec-config';
 
 const list = ref([

@@ -42,6 +42,9 @@ export const SRS_CB_URL_PARAMS = {
   userId: 'userid',
   randomId: 'randomid',
 };
+export const URL_PARAMS = {
+  goodsType: 'goodsType',
+};
 
 export const QINIU_RESOURCE = {
   domain: `resource.${prodDomain}`,

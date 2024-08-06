@@ -4,9 +4,7 @@
       <div class="left">
         <div
           class="avatar"
-          :style="{
-            backgroundImage: `url(${anchorInfo?.avatar})`,
-          }"
+          v-lazy:background-image="anchorInfo?.avatar"
         ></div>
         <div class="username">
           {{ anchorInfo?.username }}
@@ -31,9 +29,7 @@
     >
       <div
         class="cover"
-        :style="{
-          backgroundImage: `url(${appStore.liveRoomInfo?.cover_img})`,
-        }"
+        v-lazy:background-image="appStore.liveRoomInfo?.cover_img"
       ></div>
       <div
         v-if="!roomLiving"
@@ -115,7 +111,7 @@
                     v-else
                   >
                     <img
-                      :src="item.msg"
+                      v-lazy="item.msg"
                       alt=""
                       @load="handleScrollTop"
                     />
@@ -175,9 +171,7 @@
               >
                 <div
                   class="avatar"
-                  :style="{
-                    backgroundImage: `url(${item.value.userInfo.avatar})`,
-                  }"
+                  v-lazy:background-image="item.value.userInfo.avatar"
                 ></div>
                 <div class="username">
                   {{ item.value.userInfo.username }}

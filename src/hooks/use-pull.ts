@@ -234,9 +234,19 @@ export function usePull(roomId: string) {
   function handlePlay(data: ILiveRoom) {
     roomLiving.value = true;
     flvurl.value =
-      data.cdn === LiveRoomUseCDNEnum.yes ? data.cdn_flv_url! : data.flv_url!;
+      data.cdn === LiveRoomUseCDNEnum.yes &&
+      [LiveRoomTypeEnum.tencent_css, LiveRoomTypeEnum.tencent_css_pk].includes(
+        data.type!
+      )
+        ? data.cdn_flv_url!
+        : data.flv_url!;
     hlsurl.value =
-      data.cdn === LiveRoomUseCDNEnum.yes ? data.cdn_hls_url! : data.hls_url!;
+      data.cdn === LiveRoomUseCDNEnum.yes &&
+      [LiveRoomTypeEnum.tencent_css, LiveRoomTypeEnum.tencent_css_pk].includes(
+        data.type!
+      )
+        ? data.cdn_hls_url!
+        : data.hls_url!;
     function play() {
       if (appStore.liveLine === LiveLineEnum.flv) {
         handleFlvPlay();
@@ -256,6 +266,8 @@ export function usePull(roomId: string) {
         LiveRoomTypeEnum.forward_bilibili,
         LiveRoomTypeEnum.forward_huya,
         LiveRoomTypeEnum.forward_all,
+        LiveRoomTypeEnum.tencent_css,
+        LiveRoomTypeEnum.tencent_css_pk,
       ].includes(data.type!)
     ) {
       play();

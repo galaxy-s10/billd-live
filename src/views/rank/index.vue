@@ -77,11 +77,13 @@
               currRankType !== RankTypeEnum.blog && handleJump(item.users[0])
             "
           >
-            <img
-              :src="item.users[0]?.avatar"
-              class="avatar"
-              alt=""
-            />
+            <Avatar
+              :size="28"
+              :avatar="item.users[0]?.avatar"
+              :living="!!item.live?.live"
+              :border="!item.users[0]?.avatar?.length"
+              disableLiving
+            ></Avatar>
             <div class="username">{{ item.users[0]?.username }}</div>
             <div
               class="wallet"
@@ -116,7 +118,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { fetchLiveRoomList } from '@/api/liveRoom';
@@ -161,6 +163,11 @@ const rankTypeList = ref<IRankType[]>([
 
 const mockDataNums = 4;
 
+const pageParams = reactive({
+  nowPage: 1,
+  pageSize: 100,
+});
+
 const currRankType = ref(RankTypeEnum.liveRoom);
 const { t } = useI18n();
 const mockRank: {
@@ -172,66 +179,66 @@ const mockRank: {
   signin_nums: number;
   live?: ILiveRoom;
 }[] = [
-  {
-    users: [
-      {
-        id: -1,
-        username: '待上榜',
-        avatar: '',
-      },
-    ],
-    rank: 1,
-    level: 0,
-    score: 0,
-    balance: 0,
-    signin_nums: 0,
-    live: undefined,
-  },
-  {
-    users: [
-      {
-        id: -1,
-        username: '待上榜',
-        avatar: '',
-      },
-    ],
-    rank: 2,
-    level: 0,
-    score: 0,
-    balance: 0,
-    signin_nums: 0,
-    live: undefined,
-  },
-  {
-    users: [
-      {
-        id: -1,
-        username: '待上榜',
-        avatar: '',
-      },
-    ],
-    rank: 3,
-    level: 0,
-    score: 0,
-    balance: 0,
-    signin_nums: 0,
-    live: undefined,
-  },
-  {
-    users: [
-      {
-        id: -1,
-        username: '待上榜',
-        avatar: '',
-      },
-    ],
-    rank: 4,
-    level: 0,
-    score: 0,
-    balance: 0,
-    signin_nums: 0,
-    live: undefined,
-  },
+  // {
+  //   users: [
+  //     {
+  //       id: -1,
+  //       username: '待上榜',
+  //       avatar: '',
+  //     },
+  //   ],
+  //   rank: 1,
+  //   level: 0,
+  //   score: 0,
+  //   balance: 0,
+  //   signin_nums: 0,
+  //   live: undefined,
+  // },
+  // {
+  //   users: [
+  //     {
+  //       id: -1,
+  //       username: '待上榜',
+  //       avatar: '',
+  //     },
+  //   ],
+  //   rank: 2,
+  //   level: 0,
+  //   score: 0,
+  //   balance: 0,
+  //   signin_nums: 0,
+  //   live: undefined,
+  // },
+  // {
+  //   users: [
+  //     {
+  //       id: -1,
+  //       username: '待上榜',
+  //       avatar: '',
+  //     },
+  //   ],
+  //   rank: 3,
+  //   level: 0,
+  //   score: 0,
+  //   balance: 0,
+  //   signin_nums: 0,
+  //   live: undefined,
+  // },
+  // {
+  //   users: [
+  //     {
+  //       id: -1,
+  //       username: '待上榜',
+  //       avatar: '',
+  //     },
+  //   ],
+  //   rank: 4,
+  //   level: 0,
+  //   score: 0,
+  //   balance: 0,
+  //   signin_nums: 0,
+  //   live: undefined,
+  // },
 ];
 const rankList = ref(mockRank);
 
@@ -258,7 +265,7 @@ function handleJoin(item) {
 async function getWalletList() {
   try {
     fullLoading({ loading: true });
-    const res = await fetchWalletList({});
+    const res = await fetchWalletList({ ...pageParams });
     if (res.code === 200) {
       const length = res.data.rows.length;
       rankList.value = res.data.rows.map((item, index) => {
@@ -292,10 +299,10 @@ async function getLiveRoomList() {
   try {
     fullLoading({ loading: true });
     const res = await fetchLiveRoomList({
-      hidden_cover_img: true,
       is_show: LiveRoomIsShowEnum.yes,
       orderName: 'updated_at',
       orderBy: 'desc',
+      ...pageParams,
     });
     if (res.code === 200) {
       const length = res.data.rows.length;
@@ -333,6 +340,7 @@ async function getUserList() {
     const res = await fetchUserList({
       orderName: 'updated_at',
       orderBy: 'desc',
+      ...pageParams,
     });
     if (res.code === 200) {
       const length = res.data.rows.length;
@@ -369,6 +377,7 @@ async function getSigninList() {
     const res = await fetchSigninList({
       orderName: 'sum_nums',
       orderBy: 'desc',
+      ...pageParams,
     });
     if (res.code === 200) {
       const length = res.data.rows.length;
@@ -519,8 +528,8 @@ onMounted(() => {
         }
 
         .avatar {
-          margin-top: -50px;
           display: inline-block;
+          margin-top: -50px;
           cursor: pointer;
         }
 
@@ -580,12 +589,12 @@ onMounted(() => {
           font-size: 12px;
           cursor: pointer;
           .avatar {
-            margin-right: 10px;
             width: 28px;
             height: 28px;
             border-radius: 50%;
           }
           .username {
+            margin-left: 10px;
             width: 100px;
 
             @extend %singleEllipsis;

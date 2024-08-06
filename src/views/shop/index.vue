@@ -23,7 +23,7 @@
       >
         <div
           class="left"
-          :style="{ backgroundImage: `url(${item.cover})` }"
+          v-lazy:background-image="item.cover"
         >
           <div
             v-if="item.badge"
@@ -64,6 +64,7 @@ import { useRoute } from 'vue-router';
 
 import { fetchGoodsList } from '@/api/goods';
 import QrPayCpt from '@/components/QrPay/index.vue';
+import { URL_PARAMS } from '@/constant';
 import { GoodsTypeEnum, IGoods } from '@/interface';
 import router from '@/router';
 import { formatMoney } from '@/utils';
@@ -105,7 +106,7 @@ async function getGoodsList(type: GoodsTypeEnum) {
 }
 
 onMounted(() => {
-  const key = route.query.goodsType as GoodsTypeEnum;
+  const key = route.query[URL_PARAMS.goodsType] as GoodsTypeEnum;
   if (GoodsTypeEnum[key]) {
     currTab.value = key;
   } else {

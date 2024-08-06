@@ -20,7 +20,7 @@
         <div class="user">
           <template v-if="item.user">
             <img
-              :src="item.user.avatar"
+              v-lazy="item.user.avatar"
               class="avatar"
               alt=""
             />

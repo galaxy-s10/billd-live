@@ -1,21 +1,20 @@
 <template>
   <div class="home-wrap">
-    <!-- <SystemModal></SystemModal> -->
     <div class="play-container">
       <div
         v-if="configBg && configBg !== ''"
         class="bg-img"
-        :style="{ backgroundImage: `url(${configBg})` }"
+        v-lazy:background-image="configBg"
       ></div>
       <video
         v-if="configVideo && configVideo !== ''"
         class="bg-video"
-        :src="configVideo"
+        v-lazy="configVideo"
         muted
         autoplay
         loop
       ></video>
-      <div class="slider-wrap">
+      <!-- <div class="slider-wrap">
         <div
           v-for="(item, index) in interactionList"
           :key="index"
@@ -29,7 +28,7 @@
             :customStyle="{ margin: '0 auto' }"
           ></Slider>
         </div>
-      </div>
+      </div> -->
 
       <div class="container">
         <div
@@ -40,7 +39,7 @@
         >
           <div
             v-if="
-              currentLiveRoom?.live_room?.cdn === LiveRoomUseCDNEnum.yes ||
+              currentLiveRoom?.live_room?.cdn === LiveRoomUseCDNEnum.yes &&
               [
                 LiveRoomTypeEnum.tencent_css,
                 LiveRoomTypeEnum.tencent_css_pk,
@@ -50,28 +49,29 @@
           >
             <div class="txt">CDN</div>
           </div>
+          <div class="billd-logo">Billd直播</div>
           <div
             class="cover"
-            :style="{
-              backgroundImage: `url(${
-                currentLiveRoom?.live_room?.cover_img ||
-                currentLiveRoom?.user?.avatar
-              })`,
-            }"
+            v-lazy:background-image="
+              currentLiveRoom?.live_room?.cover_img ||
+              currentLiveRoom?.user?.avatar
+            "
           ></div>
           <div
             v-if="currentLiveRoom?.live_room?.flv_url"
             ref="remoteVideoRef"
           ></div>
           <template v-if="currentLiveRoom">
-            <VideoControls
-              @click.stop
-              :resolution="videoResolution"
-              @refresh="handleRefresh"
-              :control="{
-                line: true,
-              }"
-            ></VideoControls>
+            <div class="video-controls">
+              <VideoControls
+                :resolution="videoResolution"
+                @refresh="handleRefresh"
+                :control="{
+                  line: true,
+                }"
+              ></VideoControls>
+            </div>
+
             <div
               class="join-btn"
               :class="{
@@ -99,11 +99,9 @@
                 item: 1,
                 active: item.live_room_id === currentLiveRoom?.live_room_id,
               }"
-              :style="{
-                backgroundImage: `url(${
-                  item.live_room?.cover_img || item?.user?.avatar
-                })`,
-              }"
+              v-lazy:background-image="
+                item.live_room?.cover_img || item?.user?.avatar
+              "
               @click="changeLiveRoom(item)"
             >
               <PullAuthTip
@@ -116,7 +114,7 @@
                 <div
                   class="cdn-ico"
                   v-if="
-                    item?.live_room?.cdn === LiveRoomUseCDNEnum.yes ||
+                    item?.live_room?.cdn === LiveRoomUseCDNEnum.yes &&
                     [
                       LiveRoomTypeEnum.tencent_css,
                       LiveRoomTypeEnum.tencent_css_pk,
@@ -165,11 +163,9 @@
           >
             <div
               class="cover"
-              :style="{
-                backgroundImage: `url('${
-                  iten?.live_room?.cover_img || iten?.user?.avatar
-                }')`,
-              }"
+              v-lazy:background-image="
+                iten?.live_room?.cover_img || iten?.user?.avatar
+              "
             >
               <PullAuthTip
                 v-if="
@@ -179,7 +175,7 @@
               ></PullAuthTip>
               <div
                 v-if="
-                  iten?.live_room?.cdn === LiveRoomUseCDNEnum.yes ||
+                  iten?.live_room?.cdn === LiveRoomUseCDNEnum.yes &&
                   [
                     LiveRoomTypeEnum.tencent_css,
                     LiveRoomTypeEnum.tencent_css_pk,
@@ -374,8 +370,6 @@ function joinRoom(data: { roomId: number }) {
       z-index: -1;
       width: 100%;
       height: 100%;
-
-      // object-fit: fill;
     }
     .slider-wrap {
       padding: 4px 0;
@@ -385,6 +379,7 @@ function joinRoom(data: { roomId: number }) {
       justify-content: center;
       box-sizing: border-box;
       margin: 0 auto;
+      padding-top: 20px;
       height: calc($w-1100 / $video-ratio);
 
       .left {
@@ -419,12 +414,21 @@ function joinRoom(data: { roomId: number }) {
             font-size: 14px;
           }
         }
+        .billd-logo {
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          z-index: 2;
+          color: rgba($color: #fff, $alpha: 0.4);
+          font-weight: bold;
+          font-size: 30px;
+        }
 
         .cover {
           position: absolute;
           background-position: center center;
           background-size: cover;
-          filter: blur(10px);
+          filter: blur(5px);
 
           inset: 0;
         }
@@ -452,19 +456,12 @@ function joinRoom(data: { roomId: number }) {
 
           user-select: none;
         }
-
-        &:hover {
-          .join-btn {
-            display: inline-flex !important;
-          }
-        }
         .join-btn {
           position: absolute;
           top: 50%;
           left: 50%;
           z-index: 20;
           display: none;
-          align-items: center;
           align-items: center;
           justify-content: center;
           box-sizing: border-box;
@@ -486,6 +483,18 @@ function joinRoom(data: { roomId: number }) {
               background-color: $theme-color-gold;
               color: white;
             }
+          }
+        }
+        .video-controls {
+          display: none;
+        }
+
+        &:hover {
+          .join-btn {
+            display: block;
+          }
+          .video-controls {
+            display: block;
           }
         }
       }

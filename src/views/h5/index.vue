@@ -2,7 +2,10 @@
   <div class="h5-wrap">
     <div
       class="swiper"
-      :style="{ backgroundImage: `url(${currentSwiper.bgi})` }"
+      :style="{
+        backgroundImage: `url(${currentSwiper.bgi})`,
+      }"
+      @click="openToTarget(currentSwiper.url)"
     >
       <!-- {{ currentSwiper.txt }} -->
     </div>
@@ -34,12 +37,9 @@
           >
             <div
               class="cover"
-              :style="{
-                backgroundImage: `url('${
-                  iten.live_room?.cover_img ||
-                  iten.live_room?.users?.[0]?.avatar
-                }')`,
-              }"
+              v-lazy:background-image="
+                iten.live_room?.cover_img || iten.live_room?.users?.[0]?.avatar
+              "
             >
               <PullAuthTip
                 v-if="
@@ -82,11 +82,12 @@
 </template>
 
 <script lang="ts" setup>
+import { openToTarget } from 'billd-utils';
 import { onMounted, onUnmounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { fetchAreaLiveRoomList } from '@/api/area';
-import { QINIU_RESOURCE } from '@/constant';
+import { COMMON_URL } from '@/constant';
 import { IArea, IAreaLiveRoom } from '@/interface';
 import router, { mobileRouterName, routerName } from '@/router';
 import { useAppStore } from '@/store/app';
@@ -105,20 +106,14 @@ const swiperList = ref([
   {
     id: 1,
     txt: '广告位1',
-    bgi: `${QINIU_RESOURCE.url}/billd-live/image/ecdece08eb3eda2f37433cb7c748766f.webp`,
-    url: '',
+    bgi: `https://resource.hsslive.cn/billd-live/image/aa51fe9093c4c6887931d5e9224f0f07.webp`,
+    url: COMMON_URL.payCoursesArticle,
   },
   {
-    id: 2,
+    id: 1,
     txt: '广告位2',
-    bgi: `${QINIU_RESOURCE.url}/billd-live/image/b2e3459e7d4a70463cd201ee468491a1.webp`,
-    url: '',
-  },
-  {
-    id: 3,
-    txt: '广告位3',
-    bgi: `${QINIU_RESOURCE.url}/billd-live/image/71d01ff0bd34c57586500e425e21938f.webp`,
-    url: '',
+    bgi: `https://resource.hsslive.cn/billd-live/image/1d62827adb3f0575cf3138811aeed4f2.png`,
+    url: 'https://github.com/galaxy-s10/billd-live',
   },
 ]);
 const swiperTimer = ref();
@@ -218,9 +213,11 @@ onUnmounted(() => {
   .swiper {
     width: 100%;
     height: 180px;
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center center;
+    // background-size: cover;
+    // background-repeat: no-repeat;
+    // background-position: center center;
+
+    @extend %coverBg;
   }
   .type-list {
     .item {
@@ -314,8 +311,9 @@ onUnmounted(() => {
             }
           }
           .desc {
-            font-size: 14px;
             margin-top: 4px;
+            font-size: 14px;
+
             @extend %singleEllipsis;
           }
         }

@@ -45,7 +45,7 @@
               @click.prevent="openToTarget(item.url)"
             >
               <img
-                :src="item.logo"
+                v-lazy="item.logo"
                 alt=""
               />
             </a>
@@ -61,7 +61,7 @@
               @click.prevent="openToTarget(item.url)"
             >
               <img
-                :src="item.logo"
+                v-lazy="item.logo"
                 alt=""
               />
             </a>
@@ -77,7 +77,7 @@
               @click.prevent="openToTarget(item.url)"
             >
               <img
-                :src="item.logo"
+                v-lazy="item.logo"
                 alt=""
               />
             </a>

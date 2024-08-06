@@ -7,9 +7,9 @@
       <div
         class="avatar"
         :class="{ border }"
-        :style="{ backgroundImage: `url(${avatar})` }"
+        v-lazy:background-image="avatar"
       ></div>
-      <template v-if="living">
+      <template v-if="living && !disableLiving">
         <div class="cycle cycle-1"></div>
         <div class="cycle cycle-2"></div>
         <div class="cycle cycle-3"></div
@@ -22,16 +22,18 @@
 <script lang="ts" setup>
 withDefaults(
   defineProps<{
-    avatar: string;
+    avatar?: string;
     size: number;
     living?: boolean;
     border?: boolean;
+    disableLiving?: boolean;
   }>(),
   {
     avatar: '',
     size: 100,
     living: false,
     border: false,
+    disableLiving: false,
   }
 );
 </script>
@@ -62,7 +64,7 @@ withDefaults(
       border-radius: 50%;
       cursor: pointer;
 
-      @extend %containBg;
+      @extend %coverBg;
       &.border {
         border: 1px solid $theme-color-gold;
       }

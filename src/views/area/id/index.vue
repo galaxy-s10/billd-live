@@ -1,60 +1,72 @@
 <template>
-  <div class="area-wrap">
-    <div class="wrap">
+  <div
+    class="area-wrap"
+    ref="topRef"
+    :style="{ height: height + 'px' }"
+  >
+    <LongList
+      ref="longListRef"
+      class="list"
+      @get-list-data="getListData"
+      :rootMargin="{
+        top: 0,
+        bottom: 200,
+        left: 0,
+        right: 0,
+      }"
+    >
       <div
-        v-loading="loading"
-        class="live-room-list"
+        v-for="(item, index) in liveRoomList"
+        :key="index"
+        class="item"
+        @click="goRoom(item)"
       >
         <div
-          v-for="(iten, indey) in liveRoomList"
-          :key="indey"
-          class="live-room"
-          @click="goRoom(iten)"
+          class="cover"
+          v-lazy:background-image="item?.cover_img || item?.users?.[0]?.avatar"
         >
+          <PullAuthTip
+            v-if="
+              item?.pull_is_should_auth === LiveRoomPullIsShouldAuthEnum.yes
+            "
+          ></PullAuthTip>
           <div
-            class="cover"
-            :style="{
-              backgroundImage: `url('${
-                iten?.cover_img || iten?.users?.[0]?.avatar
-              }')`,
-            }"
+            v-if="item?.live"
+            class="living-ico"
           >
-            <PullAuthTip
-              v-if="
-                iten?.pull_is_should_auth === LiveRoomPullIsShouldAuthEnum.yes
-              "
-            ></PullAuthTip>
-            <div
-              v-if="iten?.live"
-              class="living-ico"
-            >
-              直播中
-            </div>
-            <div
-              v-if="
-                iten?.cdn === LiveRoomUseCDNEnum.yes ||
-                [
-                  LiveRoomTypeEnum.tencent_css,
-                  LiveRoomTypeEnum.tencent_css_pk,
-                ].includes(iten.type!)
-              "
-              class="cdn-ico"
-            >
-              <div class="txt">CDN</div>
-            </div>
-            <div class="txt">{{ iten?.users?.[0]?.username }}</div>
+            直播中
           </div>
-          <div class="desc">{{ iten?.name }}</div>
+          <div
+            v-if="
+              item?.cdn === LiveRoomUseCDNEnum.yes ||
+              [
+                LiveRoomTypeEnum.tencent_css,
+                LiveRoomTypeEnum.tencent_css_pk,
+              ].includes(item.type!)
+            "
+            class="cdn-ico"
+          >
+            <div class="txt">CDN</div>
+          </div>
+          <div class="txt">{{ item?.users?.[0]?.username }}</div>
         </div>
-        <div
-          v-if="!liveRoomList.length"
-          class="null"
-        >
-          {{ t('common.nonedata') }}
-        </div>
+        <div class="desc">{{ item?.name }}</div>
       </div>
-    </div>
-    <div
+      <div v-if="loading"></div>
+      <div
+        v-else-if="!liveRoomList.length"
+        class="null"
+      >
+        {{ t('common.nonedata') }}
+      </div>
+      <div
+        v-else-if="!hasMore"
+        class="null"
+      >
+        {{ t('common.allLoaded') }}
+      </div>
+    </LongList>
+    <!-- <div
       class="paging-wrap"
       v-if="pageParams.total > pageParams.pageSize"
     >
@@ -67,7 +79,7 @@
         @update-page="getData"
         @update-page-size="handleUpdatePageSize"
       />
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -77,6 +89,7 @@ import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 
 import { fetchLiveRoomList } from '@/api/area';
+import LongList from '@/components/LongList/index.vue';
 import router, { routerName } from '@/router';
 import {
   ILiveRoom,
@@ -90,28 +103,25 @@ const liveRoomList = ref<ILiveRoom[]>([]);
 const { t } = useI18n();
 const route = useRoute();
 
+const longListRef = ref<InstanceType<typeof LongList>>();
+const topRef = ref<HTMLDivElement>();
+const height = ref(0);
 const loading = ref(false);
+const hasMore = ref(true);
 const pageParams = reactive({
-  nowPage: 1,
-  pageSize: 30,
-  total: 0,
-  hasMore: false,
+  nowPage: 0,
+  pageSize: 50,
 });
 
 watch(
   () => route.params.id,
   (newVal) => {
     if (!newVal) return;
-    pageParams.nowPage = 1;
+    liveRoomList.value = [];
+    pageParams.nowPage = 0;
     getData();
   }
 );
-
-function handleUpdatePageSize(v) {
-  pageParams.nowPage = 1;
-  pageParams.pageSize = v;
-  getData();
-}
 
 function goRoom(item: ILiveRoom) {
   if (!item.live) {
@@ -125,12 +135,27 @@ function goRoom(item: ILiveRoom) {
 }
 
 onMounted(() => {
+  if (topRef.value) {
+    height.value =
+      document.documentElement.clientHeight -
+      topRef.value.getBoundingClientRect().top;
+  }
   getData();
 });
 
+function getListData() {
+  if (!hasMore.value) return;
+  getData();
+}
+
 async function getData() {
   try {
+    if (loading.value) return;
     loading.value = true;
+    pageParams.nowPage += 1;
+    if (longListRef.value) {
+      longListRef.value.loading = true;
+    }
     const res = await fetchLiveRoomList({
       id: Number(route.params.id),
       live_room_is_show: LiveRoomIsShowEnum.yes,
@@ -138,107 +163,111 @@ async function getData() {
       pageSize: pageParams.pageSize,
     });
     if (res.code === 200) {
-      liveRoomList.value = res.data.rows;
-      pageParams.total = res.data.total;
-      pageParams.hasMore = res.data.hasMore;
+      liveRoomList.value.push(...res.data.rows);
+      hasMore.value = res.data.hasMore;
     }
   } catch (error) {
+    pageParams.nowPage -= 1;
     console.log(error);
-  } finally {
-    loading.value = false;
+  }
+  loading.value = false;
+  if (longListRef.value) {
+    longListRef.value.loading = false;
   }
 }
 </script>
 
 <style lang="scss" scoped>
 .area-wrap {
-  .wrap {
-    margin-top: 10px;
-    padding: 0 20px;
-    .live-room-list {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      .live-room {
-        display: inline-block;
-        margin-right: 25px;
-        margin-bottom: 12px;
-        width: 300px;
-        cursor: pointer;
-        .cover {
-          position: relative;
-          overflow: hidden;
-          width: 100%;
-          height: 150px;
-          border-radius: 8px;
-          background-position: center center;
-          background-size: cover;
-          .living-ico {
-            position: absolute;
-            top: 0px;
-            left: 0px;
-            z-index: 10;
-            padding: 0 10px;
-            height: 20px;
-            border-radius: 8px 0 10px;
-            background-color: $theme-color-gold;
-            color: white;
-            text-align: center;
-            font-size: 12px;
-            line-height: 20px;
-          }
-          .cdn-ico {
-            position: absolute;
-            top: -10px;
-            right: -10px;
-            z-index: 2;
-            width: 70px;
-            height: 28px;
-            background-color: #f87c48;
-            color: white;
-            transform: rotate(45deg);
-            transform-origin: bottom;
-            .txt {
-              margin-left: 18px;
-              background-image: initial !important;
-              font-size: 13px;
-            }
-          }
+  padding: 0 20px;
 
+  .list {
+    display: flex;
+    align-content: flex-start;
+    flex-wrap: wrap;
+    .item {
+      display: inline-block;
+      margin-right: 25px;
+      margin-bottom: 12px;
+      width: 300px;
+      cursor: pointer;
+      .cover {
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+        height: 150px;
+        border-radius: 8px;
+        background-position: center center;
+        background-size: cover;
+        .living-ico {
+          position: absolute;
+          top: 0px;
+          left: 0px;
+          z-index: 10;
+          padding: 0 10px;
+          height: 20px;
+          border-radius: 8px 0 10px;
+          background-color: $theme-color-gold;
+          color: white;
+          text-align: center;
+          font-size: 12px;
+          line-height: 20px;
+        }
+        .cdn-ico {
+          position: absolute;
+          top: -10px;
+          right: -10px;
+          z-index: 2;
+          width: 70px;
+          height: 28px;
+          background-color: #f87c48;
+          color: white;
+          transform: rotate(45deg);
+          transform-origin: bottom;
           .txt {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            box-sizing: border-box;
-            padding: 4px 8px;
-            width: 100%;
-            border-radius: 0 0 4px 4px;
-            background-image: linear-gradient(
-              -180deg,
-              rgba(0, 0, 0, 0),
-              rgba(0, 0, 0, 0.6)
-            );
-            color: white;
-            text-align: initial;
+            margin-left: 18px;
+            background-image: initial !important;
             font-size: 13px;
-
-            @extend %singleEllipsis;
           }
         }
-        .desc {
-          margin-top: 4px;
-          font-size: 14px;
+
+        .txt {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          box-sizing: border-box;
+          padding: 4px 8px;
+          width: 100%;
+          border-radius: 0 0 4px 4px;
+          background-image: linear-gradient(
+            -180deg,
+            rgba(0, 0, 0, 0),
+            rgba(0, 0, 0, 0.6)
+          );
+          color: white;
+          text-align: initial;
+          font-size: 13px;
 
           @extend %singleEllipsis;
         }
       }
+      .desc {
+        margin-top: 4px;
+        font-size: 14px;
+
+        @extend %singleEllipsis;
+      }
+    }
+    .null {
+      width: 100%;
+      text-align: center;
     }
   }
   .paging-wrap {
-    margin-bottom: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-bottom: 20px;
   }
 }
 </style>

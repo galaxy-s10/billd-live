@@ -4,6 +4,9 @@ declare module '*.vue' {
   const component: DefineComponent<{}, {}, any>;
   export default component;
 }
+
+declare module '*.webp';
+
 interface Window {
   $message: import('naive-ui/es/message/src/MessageProvider').MessageApiInjection;
   TXLivePusher: any;

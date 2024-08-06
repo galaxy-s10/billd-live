@@ -28,7 +28,9 @@
             <div
               alt=""
               class="img"
-              :style="{ backgroundImage: `url(${slide.img})` }"
+              :style="{
+                backgroundImage: `url(${slide.img})`,
+              }"
             ></div>
           </div>
 

@@ -1,6 +1,8 @@
 import { nameSpaceWrap } from '@/locales/util';
 
 export default nameSpaceWrap('common', {
+  loading: 'loading...',
+  allLoaded: 'all loaded',
   nonedata: 'none data',
   living: 'living',
   wallet: 'wallet',

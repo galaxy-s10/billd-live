@@ -38,9 +38,7 @@
         >
           <div
             class="btn"
-            :style="{
-              backgroundImage: `url(${userStore.userInfo.avatar})`,
-            }"
+            v-lazy:background-image="userStore.userInfo.avatar"
           ></div>
         </n-dropdown>
       </div>

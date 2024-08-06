@@ -15,7 +15,7 @@
         <div>
           <img
             class="cover"
-            :src="item.cover"
+            v-lazy="item.cover"
             alt=""
           />
         </div>

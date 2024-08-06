@@ -44,6 +44,7 @@ import { useI18n } from 'vue-i18n';
 import { fetchMyWallet } from '@/api/wallet';
 import { fetchWalletRecordMyList } from '@/api/walletRecord';
 import { fullLoading } from '@/components/FullLoading';
+import { loginTip } from '@/hooks/use-login';
 import {
   IWalletRecord,
   WalletRecordAmountStatusEnum,
@@ -86,6 +87,9 @@ const typeMap = {
 };
 
 onMounted(() => {
+  if (!loginTip()) {
+    return;
+  }
   updateMyWallet();
   getPayList();
 });

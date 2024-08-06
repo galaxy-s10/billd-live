@@ -367,7 +367,7 @@
           <template #btn>
             <div
               class="btn"
-              :style="{ backgroundImage: `url(${userStore.userInfo.avatar})` }"
+              v-lazy:background-image="userStore.userInfo.avatar"
             ></div>
           </template>
           <template #list>
@@ -864,6 +864,9 @@ function handleWebsiteJump() {
         &:hover {
           color: $theme-color-gold;
         }
+      }
+      .github {
+        width: 82px;
       }
 
       .videoTools,

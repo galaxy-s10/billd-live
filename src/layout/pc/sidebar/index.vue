@@ -23,7 +23,7 @@
     </div>
     <div
       class="item"
-      @click="router.push({ name: routerName.wallet })"
+      @click="handleJump"
     >
       <div class="ico wallet"></div>
       <div class="txt">{{ t('layout.myWallet') }}</div>
@@ -34,9 +34,17 @@
 <script lang="ts" setup>
 import { useI18n } from 'vue-i18n';
 
+import { loginTip } from '@/hooks/use-login';
 import router, { routerName } from '@/router';
 
 const { t } = useI18n();
+
+function handleJump() {
+  if (!loginTip()) {
+    return;
+  }
+  router.push({ name: routerName.wallet });
+}
 </script>
 
 <style lang="scss" scoped>

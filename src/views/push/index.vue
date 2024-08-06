@@ -83,7 +83,7 @@
         <div class="info">
           <div
             class="avatar"
-            :style="{ backgroundImage: `url(${userStore.userInfo?.avatar})` }"
+            v-lazy:background-image="userStore.userInfo?.avatar"
           ></div>
           <div class="detail">
             <div class="top">
@@ -334,7 +334,7 @@
                   v-else
                 >
                   <img
-                    :src="item.msg"
+                    v-lazy="item.msg"
                     alt=""
                     @load="handleScrollTop"
                   />
@@ -1881,7 +1881,6 @@ function setScaleInfo({ track, canvasDom, scale = 1 }) {
 }
 
 async function addMediaOk(val: AppRootState['allTrack'][0]) {
-  console.log('addMediaOk');
   showMediaModalCpt.value = false;
   if (val.type === MediaTypeEnum.screen) {
     const event = await handleDisplayMedia({

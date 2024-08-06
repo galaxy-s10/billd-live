@@ -24,8 +24,9 @@
           <ol>
             <li>服务器自建SRS直播。</li>
             <li>服务器自建WebRTC会议。</li>
-            <li>接入第三方腾讯云直播。</li>
-            <li>PK互动。</li>
+            <li>接入第三方腾讯云云直播。</li>
+            <li>直播PK互动。</li>
+            <li>转推到第三方直播（b站、虎牙）。</li>
           </ol>
         </div>
         <div class="hr"></div>

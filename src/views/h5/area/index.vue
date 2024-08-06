@@ -1,64 +1,76 @@
 <template>
   <div class="h5-area-wrap">
-    <div class="title">{{ route.query.name }}</div>
-    <div class="live-room-list">
-      <div
-        v-for="(iten, indey) in liveRoomList"
-        :key="indey"
-        class="live-room"
-        @click="goRoom(iten)"
+    <div ref="topRef"></div>
+    <div :style="{ height: height + 'px' }">
+      <LongList
+        :class="{
+          list: 1,
+        }"
+        ref="longListRef"
+        @get-list-data="getListData"
       >
         <div
-          class="cover"
-          :style="{
-            backgroundImage: `url('${
-              iten?.cover_img || iten?.users?.[0].avatar
-            }')`,
-          }"
+          v-for="(iten, indey) in liveRoomList"
+          :key="indey"
+          class="item"
+          @click="goRoom(iten)"
         >
-          <PullAuthTip
-            v-if="
-              iten?.pull_is_should_auth === LiveRoomPullIsShouldAuthEnum.yes
-            "
-          ></PullAuthTip>
           <div
-            v-if="iten?.live"
-            class="living-ico"
+            class="cover"
+            v-lazy:background-image="iten?.cover_img || iten?.users?.[0].avatar"
           >
-            <div class="live-txt">直播中</div>
+            <PullAuthTip
+              v-if="
+                iten?.pull_is_should_auth === LiveRoomPullIsShouldAuthEnum.yes
+              "
+            ></PullAuthTip>
+            <div
+              v-if="iten?.live"
+              class="living-ico"
+            >
+              <div class="live-txt">直播中</div>
+            </div>
+            <div
+              v-if="
+                iten?.cdn === LiveRoomUseCDNEnum.yes ||
+                [
+                  LiveRoomTypeEnum.tencent_css,
+                  LiveRoomTypeEnum.tencent_css_pk,
+                ].includes(iten.type!)
+              "
+              class="cdn-ico"
+            >
+              <div class="txt">CDN</div>
+            </div>
+            <div class="txt">{{ iten?.users?.[0]?.username }}</div>
           </div>
-          <div
-            v-if="
-              iten?.cdn === LiveRoomUseCDNEnum.yes ||
-              [
-                LiveRoomTypeEnum.tencent_css,
-                LiveRoomTypeEnum.tencent_css_pk,
-              ].includes(iten.type!)
-            "
-            class="cdn-ico"
-          >
-            <div class="txt">CDN</div>
-          </div>
-          <div class="txt">{{ iten?.users?.[0]?.username }}</div>
+          <div class="desc">{{ iten?.name }}</div>
         </div>
-        <div class="desc">{{ iten?.name }}</div>
-      </div>
-      <div
-        v-if="!liveRoomList.length"
-        class="null"
-      >
-        {{ t('common.nonedata') }}
-      </div>
+        <div v-if="loading"></div>
+        <div
+          v-else-if="!liveRoomList.length"
+          class="null"
+        >
+          {{ t('common.nonedata') }}
+        </div>
+        <div
+          v-else-if="!hasMore"
+          class="null"
+        >
+          {{ t('common.allLoaded') }}
+        </div>
+      </LongList>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 
 import { fetchLiveRoomList } from '@/api/area';
+import LongList from '@/components/LongList/index.vue';
 import router, { routerName } from '@/router';
 import {
   ILiveRoom,
@@ -68,10 +80,21 @@ import {
   LiveRoomUseCDNEnum,
 } from '@/types/ILiveRoom';
 
-const liveRoomList = ref<ILiveRoom[]>([]);
 const { t } = useI18n();
-
 const route = useRoute();
+
+const liveRoomList = ref<ILiveRoom[]>([]);
+const topRef = ref<HTMLDivElement>();
+
+const pageParams = reactive({
+  nowPage: 0,
+  pageSize: 50,
+});
+const height = ref(0);
+const loading = ref(false);
+const hasMore = ref(true);
+const longListRef = ref<InstanceType<typeof LongList>>();
+
 function goRoom(item: ILiveRoom) {
   if (!item.live) {
     window.$message.info('该直播间没在直播~');
@@ -84,32 +107,56 @@ function goRoom(item: ILiveRoom) {
 }
 
 onMounted(() => {
+  if (topRef.value) {
+    height.value =
+      document.documentElement.clientHeight -
+      topRef.value.getBoundingClientRect().top;
+  }
   getData();
 });
 
 async function getData() {
-  const res = await fetchLiveRoomList({
-    id: Number(route.params.id),
-    live_room_is_show: LiveRoomIsShowEnum.yes,
-  });
-  if (res.code === 200) {
-    liveRoomList.value = res.data.rows;
+  try {
+    if (loading.value) return;
+    loading.value = true;
+    pageParams.nowPage += 1;
+    if (longListRef.value) {
+      longListRef.value.loading = true;
+    }
+    const res = await fetchLiveRoomList({
+      id: Number(route.params.id),
+      live_room_is_show: LiveRoomIsShowEnum.yes,
+      ...pageParams,
+    });
+    if (res.code === 200) {
+      liveRoomList.value.push(...res.data.rows);
+      hasMore.value = res.data.hasMore;
+    }
+  } catch (error) {
+    pageParams.nowPage -= 1;
+    console.log(error);
   }
+  loading.value = false;
+  if (longListRef.value) {
+    longListRef.value.loading = false;
+  }
+}
+function getListData() {
+  if (!hasMore.value) return;
+  getData();
 }
 </script>
 
 <style lang="scss" scoped>
 .h5-area-wrap {
   padding: 0 20px;
-  .title {
-    margin-bottom: 10px;
-  }
-  .live-room-list {
+
+  .list {
     display: flex;
-    align-items: center;
     flex-wrap: wrap;
+    align-content: flex-start;
     justify-content: space-between;
-    .live-room {
+    .item {
       display: inline-block;
       margin-bottom: 10px;
       width: 48%;
@@ -184,6 +231,10 @@ async function getData() {
 
         @extend %singleEllipsis;
       }
+    }
+    .null {
+      width: 100%;
+      text-align: center;
     }
   }
 }
