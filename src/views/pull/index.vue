@@ -7,14 +7,16 @@
       <video
         v-if="configVideo && configVideo !== ''"
         class="bg-video"
-        v-lazy="configVideo"
+        :src="configVideo"
         muted
         autoplay
         loop
       ></video>
       <div
         v-if="configBg && configBg !== ''"
-        v-lazy:background-image="configBg"
+        :style="{
+          backgroundImage: `url(${configBg})`,
+        }"
       ></div>
     </div>
     <div class="left">
@@ -25,7 +27,9 @@
         <div class="info">
           <div
             class="avatar"
-            v-lazy:background-image="anchorInfo?.avatar"
+            :style="{
+              backgroundImage: `url(${anchorInfo?.avatar})`,
+            }"
             @click="
               router.push({
                 name: routerName.my,
@@ -94,7 +98,9 @@
                   >
                     <div
                       class="ico"
-                      v-lazy:background-image="item.goods?.cover"
+                      :style="{
+                        backgroundImage: `url(${item.goods?.cover})`,
+                      }"
                     ></div>
                     <div class="nums">x{{ item.nums }}</div>
                   </div>
@@ -118,9 +124,11 @@
         </div>
         <div
           class="cover"
-          v-lazy:background-image="
-            appStore.liveRoomInfo?.cover_img || anchorInfo?.avatar
-          "
+          :style="{
+            backgroundImage: `url(${
+              appStore.liveRoomInfo?.cover_img || anchorInfo?.avatar
+            })`,
+          }"
         ></div>
         <div
           class="remote-video"
@@ -148,7 +156,9 @@
         >
           <div
             class="ico"
-            v-lazy:background-image="item.cover"
+            :style="{
+              backgroundImage: `url(${item.cover})`,
+            }"
           >
             <div
               v-if="item.badge"
@@ -193,7 +203,9 @@
             >
               <div
                 class="avatar"
-                v-lazy:background-image="item.value.userInfo.avatar"
+                :style="{
+                  backgroundImage: `url(${item.value?.userInfo?.avatar})`,
+                }"
               ></div>
               <div class="username">
                 {{ item.value.userInfo.username }}
@@ -304,7 +316,7 @@
               v-else
             >
               <img
-                v-lazy="item.msg"
+                :src="item.msg"
                 alt=""
                 @load="handleScrollTop"
               />

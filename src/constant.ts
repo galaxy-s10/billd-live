@@ -25,6 +25,11 @@ export const WEBSOCKET_URL =
     ? `ws://localhost:4300` // `ws://localhost:4300`
     : `wss://srs-pull.${prodDomain}`;
 
+export const HOME_WEBSOCKET_URL =
+  process.env.NODE_ENV === 'development'
+    ? `ws://localhost:4300/home` // `ws://localhost:4300`
+    : `wss://srs-pull.${prodDomain}/home`;
+
 export const AXIOS_BASEURL =
   process.env.NODE_ENV === 'development'
     ? `/api`

@@ -4,12 +4,14 @@
       <div
         v-if="configBg && configBg !== ''"
         class="bg-img"
-        v-lazy:background-image="configBg"
+        :style="{
+          backgroundImage: `url(${configBg})`,
+        }"
       ></div>
       <video
         v-if="configVideo && configVideo !== ''"
         class="bg-video"
-        v-lazy="configVideo"
+        :src="configVideo"
         muted
         autoplay
         loop
@@ -52,10 +54,12 @@
           <div class="billd-logo">Billd直播</div>
           <div
             class="cover"
-            v-lazy:background-image="
-              currentLiveRoom?.live_room?.cover_img ||
-              currentLiveRoom?.user?.avatar
-            "
+            :style="{
+              backgroundImage: `url(${
+                currentLiveRoom?.live_room?.cover_img ||
+                currentLiveRoom?.user?.avatar
+              })`,
+            }"
           ></div>
           <div
             v-if="currentLiveRoom?.live_room?.flv_url"
@@ -99,9 +103,11 @@
                 item: 1,
                 active: item.live_room_id === currentLiveRoom?.live_room_id,
               }"
-              v-lazy:background-image="
-                item.live_room?.cover_img || item?.user?.avatar
-              "
+              :style="{
+                backgroundImage: `url(${
+                  item.live_room?.cover_img || item?.user?.avatar
+                })`,
+              }"
               @click="changeLiveRoom(item)"
             >
               <PullAuthTip
