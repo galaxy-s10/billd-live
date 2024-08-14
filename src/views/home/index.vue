@@ -1,5 +1,8 @@
 <template>
-  <div class="home-wrap">
+  <div
+    class="home-wrap"
+    ref="doc"
+  >
     <div class="play-container">
       <div
         v-if="configBg && configBg !== ''"
@@ -84,7 +87,7 @@
             >
               <div
                 class="btn"
-                @click="joinRoom({ roomId: currentLiveRoom.live_room?.id! })"
+                @click="joinRoom(currentLiveRoom.live_room)"
               >
                 进入直播
               </div>
@@ -161,11 +164,7 @@
             v-for="(iten, indey) in otherLiveRoomList"
             :key="indey"
             class="live-room"
-            @click="
-              joinRoom({
-                roomId: iten.live_room?.id!,
-              })
-            "
+            @click="joinRoom(iten.live_room)"
           >
             <div
               class="cover"
@@ -205,20 +204,39 @@
       </div>
     </div>
 
+    <!-- <div
+      style="position: fixed; bottom: 200px; right: 0; background-color: red"
+    >
+      {{ arrivedState }}
+    </div> -->
+
+    <div class="ad-wrap">
+      <!-- live-首页广告位1 -->
+      <ins
+        class="adsbygoogle"
+        style="display: block"
+        data-ad-client="ca-pub-6064454674933772"
+        data-ad-slot="3325489849"
+        data-ad-format="auto"
+        data-full-width-responsive="true"
+      ></ins>
+    </div>
     <div class="foot">*{{ t('home.copyrightTip') }}~</div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
+import { useScroll } from '@vueuse/core';
+import { onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
+import { fetchLiveBilibiliGetUserRecommend } from '@/api/bilibili';
 import { fetchLiveList } from '@/api/live';
 import { fetchFindLiveConfigByKey } from '@/api/liveConfig';
 import { sliderList } from '@/constant';
 import { usePull } from '@/hooks/use-pull';
-import { ILive, LiveLineEnum } from '@/interface';
+import { IBilibiliLiveUserRecommend, ILive, LiveLineEnum } from '@/interface';
 import { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
 import {
@@ -232,6 +250,7 @@ const route = useRoute();
 const router = useRouter();
 const appStore = useAppStore();
 const canvasRef = ref<Element>();
+const loading = ref(false);
 const showJoinBtn = ref(false);
 const topNums = ref(6);
 const configBg = ref('');
@@ -246,7 +265,9 @@ const interactionList = ref<any[]>([]);
 const videoWrapTmpRef = ref<HTMLDivElement>();
 const remoteVideoRef = ref<HTMLDivElement>();
 const docW = document.documentElement.clientWidth;
+const doc = ref<HTMLElement | null>(null);
 
+const pageParams = reactive({ page: 0, page_size: 30, platform: 'web' });
 const { t } = useI18n();
 const {
   videoWrapRef,
@@ -256,13 +277,59 @@ const {
   handleStopDrawing,
   handlePlay,
 } = usePull(route.params.roomId as string);
-
+const { arrivedState } = useScroll(doc, {
+  offset: { top: 0, bottom: 400, right: 0, left: 0 },
+});
+const first = ref(true);
 onMounted(() => {
+  //  @ts-ignore
+  (adsbygoogle = window.adsbygoogle || []).push({});
   handleSlideList();
   getLiveRoomList();
   getBg();
   videoWrapRef.value = videoWrapTmpRef.value;
 });
+
+watch(
+  () => arrivedState.bottom,
+  async (newval) => {
+    if (newval && !first.value) {
+      const arr = await handleBilibil();
+      otherLiveRoomList.value.push(...arr);
+    }
+  }
+);
+
+async function handleBilibil() {
+  if (loading.value) return [];
+  loading.value = true;
+  let arr: any = [];
+  try {
+    pageParams.page += 1;
+    const res = await fetchLiveBilibiliGetUserRecommend(pageParams);
+    // const list = res.data?.list;
+    const list = res?.data?.data?.list;
+    if (list) {
+      arr = list.map((item) => {
+        return {
+          id: item.roomid,
+          user: { username: item.uname },
+          live_room: {
+            id: item.roomid,
+            name: item.title,
+            cover_img: item.cover,
+            is_bilibili: 1,
+          },
+        };
+      });
+    }
+  } catch (error) {
+    pageParams.page -= 1;
+    console.log(error);
+  }
+  loading.value = false;
+  return arr;
+}
 
 function handleSlideList() {
   const row = 2;
@@ -329,6 +396,10 @@ async function getLiveRoomList() {
       orderBy: 'desc',
     });
     if (res.code === 200) {
+      const arr: IBilibiliLiveUserRecommend[] = await handleBilibil();
+      first.value = false;
+      // @ts-ignore
+      res.data.rows.push(...arr);
       topLiveRoomList.value = res.data.rows.slice(0, topNums.value);
       otherLiveRoomList.value = res.data.rows.slice(topNums.value);
       if (res.data.total) {
@@ -342,16 +413,19 @@ async function getLiveRoomList() {
   }
 }
 
-function joinRoom(data: { roomId: number }) {
+function joinRoom(data) {
   router.push({
     name: routerName.pull,
-    params: { roomId: data.roomId },
+    params: { roomId: data.id },
+    query: { is_bilibili: data.is_bilibili },
   });
 }
 </script>
 
 <style lang="scss" scoped>
 .home-wrap {
+  overflow: scroll;
+  height: calc(100vh - $header-height);
   .play-container {
     position: relative;
     z-index: 1;
@@ -637,66 +711,85 @@ function joinRoom(data: { roomId: number }) {
         padding: 10px 0;
         font-size: 26px;
       }
-      .live-room {
-        display: inline-block;
-        margin-right: 32px;
-        margin-bottom: 10px;
-        width: 300px;
-        cursor: pointer;
+      .live-room-list {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        .live-room {
+          display: inline-block;
+          margin-right: 32px;
+          margin-bottom: 10px;
+          width: 300px;
+          cursor: pointer;
 
-        .cover {
-          position: relative;
-          overflow: hidden;
-          width: 100%;
-          height: 150px;
-          border-radius: 8px;
-          background-position: center center;
-          background-size: cover;
-          .cdn-ico {
-            position: absolute;
-            top: -10px;
-            right: -10px;
-            z-index: 2;
-            width: 70px;
-            height: 28px;
-            background-color: #f87c48;
-            color: white;
-            transform: rotate(45deg);
-            transform-origin: bottom;
+          .cover {
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            height: 150px;
+            border-radius: 8px;
+            background-position: center center;
+            background-size: cover;
+            .cdn-ico {
+              position: absolute;
+              top: -10px;
+              right: -10px;
+              z-index: 2;
+              width: 70px;
+              height: 28px;
+              background-color: #f87c48;
+              color: white;
+              transform: rotate(45deg);
+              transform-origin: bottom;
+              .txt {
+                margin-left: 18px;
+                background-image: initial !important;
+                font-size: 13px;
+              }
+            }
+
             .txt {
-              margin-left: 18px;
-              background-image: initial !important;
+              position: absolute;
+              bottom: 0;
+              left: 0;
+              box-sizing: border-box;
+              padding: 4px 8px;
+              width: 100%;
+              border-radius: 0 0 4px 4px;
+              background-image: linear-gradient(
+                -180deg,
+                rgba(0, 0, 0, 0),
+                rgba(0, 0, 0, 0.6)
+              );
+              color: white;
+              text-align: initial;
               font-size: 13px;
+
+              @extend %singleEllipsis;
             }
           }
-
-          .txt {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            box-sizing: border-box;
-            padding: 4px 8px;
-            width: 100%;
-            border-radius: 0 0 4px 4px;
-            background-image: linear-gradient(
-              -180deg,
-              rgba(0, 0, 0, 0),
-              rgba(0, 0, 0, 0.6)
-            );
-            color: white;
-            text-align: initial;
-            font-size: 13px;
+          .desc {
+            margin-top: 4px;
+            font-size: 14px;
 
             @extend %singleEllipsis;
           }
         }
-        .desc {
-          margin-top: 4px;
-          font-size: 14px;
-
-          @extend %singleEllipsis;
-        }
       }
+    }
+  }
+  .ad-wrap {
+    position: fixed;
+    top: 300px;
+    left: 10px;
+    width: 250px;
+    // height: 150px;
+    border-radius: 10px;
+    // background-color: red;
+    cursor: pointer;
+    ins {
+      width: 100%;
+      height: 100%;
     }
   }
   .foot {
@@ -729,6 +822,13 @@ function joinRoom(data: { roomId: number }) {
     }
     .area-container {
       width: $w-1150;
+      .area-item {
+        .live-room-list {
+          .live-room {
+            width: 250px;
+          }
+        }
+      }
     }
   }
 }

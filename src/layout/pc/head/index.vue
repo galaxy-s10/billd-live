@@ -465,13 +465,18 @@ const about = ref([
     url: '',
   },
   {
-    label: 'layout.sponsor',
-    routerName: routerName.sponsors,
+    label: 'layout.author',
+    routerName: routerName.author,
     url: '',
   },
   {
     label: 'layout.officialGroup',
     routerName: routerName.group,
+    url: '',
+  },
+  {
+    label: 'layout.sponsor',
+    routerName: routerName.sponsors,
     url: '',
   },
   {

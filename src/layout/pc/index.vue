@@ -52,7 +52,7 @@ const appStore = useAppStore();
     position: fixed;
     right: 10px;
     bottom: 10px;
-    width: 200px;
+    width: 300px;
     border-radius: 10px;
     cursor: pointer;
   }

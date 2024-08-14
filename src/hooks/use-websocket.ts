@@ -95,6 +95,7 @@ export const useWebsocket = () => {
   const roomLiving = ref(false);
   const isAnchor = ref(false);
   const isRemoteDesk = ref(false);
+  const isBilibili = ref(false);
   const anchorInfo = ref<IUser>();
   const anchorSocketId = ref('');
   const canvasVideoStream = ref<MediaStream>();
@@ -304,6 +305,7 @@ export const useWebsocket = () => {
       requestId: getRandomString(8),
       msgType: WsMsgTypeEnum.join,
       data: {
+        isBilibili: isBilibili.value,
         isRemoteDesk: isRemoteDesk.value,
         socket_id: mySocketId.value,
         live_room_id: Number(roomId.value),
@@ -955,6 +957,7 @@ export const useWebsocket = () => {
   function initWs(data: {
     isAnchor: boolean;
     roomId: string;
+    isBilibili?: boolean;
     isRemoteDesk?: boolean;
     currentResolutionRatio?: number;
     currentMaxFramerate?: number;
@@ -964,6 +967,9 @@ export const useWebsocket = () => {
     isAnchor.value = data.isAnchor;
     if (data.isRemoteDesk) {
       isRemoteDesk.value = data.isRemoteDesk;
+    }
+    if (data.isBilibili) {
+      isBilibili.value = data.isBilibili;
     }
     if (data.currentMaxBitrate) {
       currentMaxBitrate.value = data.currentMaxBitrate;

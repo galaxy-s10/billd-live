@@ -262,7 +262,9 @@ pnpm run dev
 
 ### 流媒体服务器环境
 
-> 配置：2 核 CPU，2G 内存，带宽 30M（香港）
+> ~~配置：2 核 CPU，2G 内存，带宽 30M（香港）~~，2G内存也能跑，但偶尔会占满内存导致服务器卡死。
+>
+> 配置：2 核 CPU，4G 内存，带宽 30M（香港）
 
 - 操作系统：Alibaba Cloud Linux release 3 (Soaring Falcon)
 - node 版本：v16.20.0

@@ -39,6 +39,7 @@ export default nameSpaceWrap('layout', {
   team: 'Team',
   officialGroup: 'Official Group',
   release: 'Version Release',
+  author: 'Author',
 
   srsLive: 'SRS Live',
   forwardBilibili: 'forward Bilibili',

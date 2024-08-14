@@ -49,9 +49,6 @@
             </div>
             <div class="bottom">
               <span>{{ appStore.liveRoomInfo?.desc }}</span>
-              <span v-if="NODE_ENV === 'development'">
-                socketId:{{ mySocketId }}
-              </span>
               <span
                 class="area"
                 @click="
@@ -62,6 +59,10 @@
                 "
               >
                 {{ appStore.liveRoomInfo?.areas?.[0]?.name }}
+              </span>
+
+              <span v-if="NODE_ENV === 'development'">
+                socketId:{{ mySocketId }}
               </span>
             </div>
           </div>
@@ -181,6 +182,17 @@
           </div>
           <div class="price">立即充值</div>
         </div>
+      </div>
+      <div class="ad-wrap-b">
+        <!-- live-拉流页面广告位2 -->
+        <ins
+          class="adsbygoogle"
+          style="display: block"
+          data-ad-client="ca-pub-6064454674933772"
+          data-ad-slot="2315064038"
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+        ></ins>
       </div>
     </div>
     <div class="right">
@@ -400,6 +412,19 @@
         </div>
       </div>
     </div>
+
+    <div class="ad-wrap-a">
+      <!-- live-拉流页面广告位1 -->
+      <ins
+        class="adsbygoogle"
+        style="display: block"
+        data-ad-client="ca-pub-6064454674933772"
+        data-ad-slot="6397310081"
+        data-ad-format="auto"
+        data-full-width-responsive="true"
+      ></ins>
+    </div>
+
     <RechargeCpt
       :show="showRecharge"
       @close="(v) => (showRecharge = v)"
@@ -414,6 +439,10 @@ import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 
 import {
+  fetchLiveBilibiliPlayUrl,
+  fetchLiveBilibiliRoomGetInfo,
+} from '@/api/bilibili';
+import {
   fetchGiftGroupList,
   fetchGiftRecordCreate,
   fetchGiftRecordList,
@@ -427,12 +456,14 @@ import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { useFullScreen, usePictureInPicture } from '@/hooks/use-play';
 import { usePull } from '@/hooks/use-pull';
 import { useQiniuJsUpload } from '@/hooks/use-upload';
+import { useWebsocket } from '@/hooks/use-websocket';
 import {
   DanmuMsgTypeEnum,
   GiftRecordStatusEnum,
   GoodsTypeEnum,
   IGiftRecord,
   IGoods,
+  LiveLineEnum,
   LiveRenderEnum,
   WsMessageMsgIsFileEnum,
   WsMessageMsgIsShowEnum,
@@ -442,6 +473,7 @@ import router, { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
+import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import { WsDisableSpeakingType, WsMsgTypeEnum } from '@/types/websocket';
 import { formatMoney, formatTimeHour, handleUserMedia } from '@/utils';
 import { NODE_ENV } from 'script/constant';
@@ -472,6 +504,7 @@ const remoteVideoRef = ref<HTMLDivElement>();
 const uploadRef = ref<HTMLInputElement>();
 const danmuIptRef = ref<HTMLTextAreaElement>();
 const loopGetLiveUserTimer = ref();
+const isBilibili = ref(false);
 
 const {
   initPull,
@@ -493,6 +526,8 @@ const {
   anchorInfo,
 } = usePull(roomId.value);
 
+const { initWs } = useWebsocket();
+
 const rtcRtt = computed(() => {
   const arr: any[] = [];
   networkStore.rtcMap.forEach((rtc) => {
@@ -510,6 +545,8 @@ const rtcLoss = computed(() => {
 });
 
 onMounted(() => {
+  // @ts-ignore
+  (adsbygoogle = window.adsbygoogle || []).push({});
   appStore.videoControls.fps = true;
   appStore.videoControls.fullMode = true;
   appStore.videoControls.kbs = true;
@@ -535,7 +572,19 @@ onMounted(() => {
     height.value = res;
   }
   getBg();
-  initPull({});
+  if (route.query.is_bilibili !== '1') {
+    isBilibili.value = false;
+    initPull({});
+  } else {
+    // initWs({
+    //   roomId: roomId.value,
+    //   isRemoteDesk: false,
+    //   isBilibili: true,
+    //   isAnchor: false,
+    // });
+    isBilibili.value = true;
+    handleBilibil();
+  }
   getGiftRecord();
   getGiftGroupList();
   handleSendGetLiveUser(Number(roomId.value));
@@ -546,6 +595,39 @@ onUnmounted(() => {
   closeRtc();
   clearInterval(loopGetLiveUserTimer.value);
 });
+
+async function handleBilibil() {
+  if (route.query.is_bilibili === '1') {
+    const flv = await fetchLiveBilibiliPlayUrl({
+      cid: route.params.roomId,
+      platform: 'web',
+    });
+    const hls = await fetchLiveBilibiliPlayUrl({
+      cid: route.params.roomId,
+      platform: 'h5',
+    });
+    const roomInfo = await fetchLiveBilibiliRoomGetInfo({
+      room_id: route.params.roomId,
+    });
+    console.log('roomInfo', roomInfo);
+    console.log(flv?.data?.data?.durl?.[0].url, 'flv');
+    console.log(hls?.data?.data?.durl?.[0].url, 'hls');
+    roomLiving.value = true;
+    appStore.liveLine = LiveLineEnum.flv;
+    anchorInfo.value = {
+      avatar: roomInfo?.data?.data?.user_cover,
+      username: roomInfo?.data?.data?.title,
+    };
+    appStore.liveRoomInfo = {
+      type: LiveRoomTypeEnum.system,
+      flv_url: flv?.data?.data?.durl?.[0].url,
+      hls_url: hls?.data?.data?.durl?.[0].url,
+      areas: [{ name: roomInfo?.data?.data?.area_name }],
+      desc: roomInfo?.data?.data?.description,
+    };
+    handleRefresh();
+  }
+}
 
 function handleSendGetLiveUser(liveRoomId: number) {
   async function main() {
@@ -797,6 +879,7 @@ async function handlePay(item: IGoods) {
     goodsId: item.id!,
     goodsNums: 1,
     liveRoomId: Number(roomId.value),
+    isBilibili: isBilibili.value,
   });
   if (res.code === 200) {
     window.$message.success('打赏成功！');
@@ -939,7 +1022,7 @@ function handleScrollTop() {
   .left {
     position: relative;
     display: inline-block;
-    overflow: hidden;
+    // overflow: hidden;
     box-sizing: border-box;
     width: $w-900;
     height: 740px;
@@ -1163,6 +1246,21 @@ function handleScrollTop() {
         }
       }
     }
+    .ad-wrap-b {
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      width: 100%;
+      // height: 150px;
+      border-radius: 10px;
+      // background-color: red;
+      cursor: pointer;
+      transform: translateY(100%);
+      ins {
+        width: 100%;
+        height: 100%;
+      }
+    }
   }
   .right {
     position: relative;
@@ -1374,6 +1472,22 @@ function handleScrollTop() {
       }
     }
   }
+
+  .ad-wrap-a {
+    position: fixed;
+    top: 300px;
+    left: 10px;
+    width: 250px;
+    // height: 150px;
+    border-radius: 10px;
+    // background-color: red;
+    cursor: pointer;
+    ins {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
   &.isPageFull {
     position: fixed;
     top: 0;

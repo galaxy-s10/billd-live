@@ -5,6 +5,128 @@ import {
 } from './types/ILiveRoom';
 import { IUser } from './types/IUser';
 
+export interface IBilibiliLiveUserRecommend {
+  roomid: number;
+  uid: number;
+  title: string;
+  uname: string;
+  online: number;
+  user_cover: string;
+  user_cover_flag: number;
+  system_cover: string;
+  cover: string;
+  show_cover: string;
+  link: string;
+  face: string;
+  parent_id: number;
+  parent_name: string;
+  area_id: number;
+  area_name: string;
+  area_v2_parent_id: number;
+  area_v2_parent_name: string;
+  area_v2_id: number;
+  area_v2_name: string;
+  session_id: string;
+  group_id: number;
+  show_callback: string;
+  click_callback: string;
+  web_pendent: string;
+  pk_id: number;
+  pendant_info: {
+    '1': {
+      pendent_id: number;
+      content: string;
+      color: string;
+      pic: string;
+      position: number;
+      type: string;
+      name: string;
+    };
+  };
+  verify: { role: number; desc: string; type: number };
+  head_box: { name: string; value: string; desc: string };
+  head_box_type: number;
+  is_auto_play: number;
+  flag: number;
+  watched_show: {
+    switch: boolean;
+    num: number;
+    text_small: string;
+    text_large: string;
+    icon: string;
+    icon_location: number;
+    icon_web: string;
+  };
+  is_nft: number;
+  nft_dmark: string;
+  play_together_goods?: any;
+  watermark: string;
+}
+export interface IBilibiliLiveRoomInfo {
+  uid: number;
+  room_id: number;
+  short_id: number;
+  attention: number;
+  online: number;
+  is_portrait: boolean;
+  description: string;
+  live_status: number;
+  area_id: number;
+  parent_area_id: number;
+  parent_area_name: string;
+  old_area_id: number;
+  background: string;
+  title: string;
+  user_cover: string;
+  keyframe: string;
+  is_strict_room: boolean;
+  live_time: string;
+  tags: string;
+  is_anchor: number;
+  room_silent_type: string;
+  room_silent_level: number;
+  room_silent_second: number;
+  area_name: string;
+  pendants: string;
+  area_pendants: string;
+  hot_words: string[];
+  hot_words_status: number;
+  verify: string;
+  new_pendants: {
+    frame: {
+      name: string;
+      value: string;
+      position: number;
+      desc: string;
+      area: number;
+      area_old: number;
+      bg_color: string;
+      bg_pic: string;
+      use_old_area: boolean;
+    };
+    badge?: any;
+    mobile_frame: {
+      name: string;
+      value: string;
+      position: number;
+      desc: string;
+      area: number;
+      area_old: number;
+      bg_color: string;
+      bg_pic: string;
+      use_old_area: boolean;
+    };
+    mobile_badge?: any;
+  };
+  up_session: string;
+  pk_status: number;
+  pk_id: number;
+  battle_id: number;
+  allow_change_area_time: number;
+  allow_upload_cover_time: number;
+  studio_info: { status: number; master_list: any[] };
+}
+
 export interface IFlvStatistics {
   url: string;
   hasRedirect: boolean;

@@ -41,6 +41,7 @@ export const routerName = {
   team: 'team',
   oauth: 'oauth',
   release: 'release',
+  author: 'author',
   pushStreamDifferent: 'pushStreamDifferent',
   notFound: 'notFound',
   group: 'group',
@@ -94,6 +95,11 @@ export const defaultRoutes: RouteRecordRaw[] = [
             name: routerName.release,
             path: 'release',
             component: () => import('@/views/about/release/index.vue'),
+          },
+          {
+            name: routerName.author,
+            path: 'author',
+            component: () => import('@/views/about/author/index.vue'),
           },
           {
             name: routerName.pushStreamDifferent,

@@ -27,10 +27,12 @@ export function fetchGiftRecordCreate(data: {
   goodsId: number;
   liveRoomId: number;
   goodsNums: number;
+  isBilibili: boolean;
 }) {
   return request.post('/gift_record/create', {
     live_room_id: data.liveRoomId,
     goods_id: data.goodsId,
     goods_nums: data.goodsNums,
+    is_bilibili: data.isBilibili,
   });
 }

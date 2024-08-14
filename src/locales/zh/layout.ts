@@ -39,6 +39,7 @@ export default nameSpaceWrap('layout', {
   team: '团队',
   officialGroup: '官方群',
   release: '版本发布',
+  author: '作者',
 
   srsLive: 'SRS直播(推荐)',
   forwardBilibili: '转推b站(beta)',

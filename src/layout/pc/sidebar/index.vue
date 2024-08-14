@@ -24,6 +24,7 @@
     <div
       class="item"
       @click="handleJump"
+      v-if="userStore.userInfo"
     >
       <div class="ico wallet"></div>
       <div class="txt">{{ t('layout.myWallet') }}</div>
@@ -36,8 +37,10 @@ import { useI18n } from 'vue-i18n';
 
 import { loginTip } from '@/hooks/use-login';
 import router, { routerName } from '@/router';
+import { useUserStore } from '@/store/user';
 
 const { t } = useI18n();
+const userStore = useUserStore();
 
 function handleJump() {
   if (!loginTip()) {

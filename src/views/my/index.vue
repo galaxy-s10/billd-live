@@ -46,6 +46,7 @@
             userStore.userInfo?.live_rooms?.[0]?.areas?.[0]?.name || '暂无分区'
           }}
         </div>
+
         <div
           v-if="
             userStore.userInfo?.auths?.find(
@@ -60,68 +61,6 @@
             @click="handleUpdateKey"
           >
             更新地址
-          </div>
-          <div
-            class="cdn"
-            v-if="
-              userStore.userInfo?.auths?.find(
-                (v) =>
-                  v.auth_value === DEFAULT_AUTH_INFO.LIVE_PULL_SVIP.auth_value
-              )
-            "
-          >
-            <div>
-              <span>
-                RTMP推流地址（CDN）：{{
-                  userStore.userInfo?.live_rooms?.[0]?.cdn_push_rtmp_url!
-                }}，
-              </span>
-              <span
-                class="link"
-                @click="
-                  handleCopy(
-                    userStore.userInfo?.live_rooms?.[0]?.cdn_push_rtmp_url!
-                  )
-                "
-              >
-                复制
-              </span>
-            </div>
-            <div>
-              <span>
-                OBS服务器（CDN）：{{
-                  userStore.userInfo?.live_rooms?.[0]?.cdn_push_obs_server!
-                }}，
-              </span>
-              <span
-                class="link"
-                @click="
-                  handleCopy(
-                    userStore.userInfo?.live_rooms?.[0]?.cdn_push_obs_server!
-                  )
-                "
-              >
-                复制
-              </span>
-            </div>
-            <div>
-              <span>
-                OBS推流码（CDN）：{{
-                  userStore.userInfo?.live_rooms?.[0]?.cdn_push_obs_stream_key!
-                }}，
-              </span>
-              <span
-                class="link"
-                @click="
-                  handleCopy(
-                    userStore.userInfo?.live_rooms?.[0]
-                      ?.cdn_push_obs_stream_key!
-                  )
-                "
-              >
-                复制
-              </span>
-            </div>
           </div>
 
           <div class="srs">
@@ -175,6 +114,82 @@
               >
                 复制
               </span>
+            </div>
+          </div>
+
+          <br />
+
+          <div>
+            CDN直播：
+            <div
+              class="cdn"
+              v-if="
+                userStore.userInfo?.auths?.find(
+                  (v) =>
+                    v.auth_value === DEFAULT_AUTH_INFO.LIVE_PULL_SVIP.auth_value
+                )
+              "
+            >
+              <div>
+                <span>
+                  RTMP推流地址（CDN）：{{
+                    userStore.userInfo?.live_rooms?.[0]?.cdn_push_rtmp_url!
+                  }}，
+                </span>
+                <span
+                  class="link"
+                  @click="
+                    handleCopy(
+                      userStore.userInfo?.live_rooms?.[0]?.cdn_push_rtmp_url!
+                    )
+                  "
+                >
+                  复制
+                </span>
+              </div>
+              <div>
+                <span>
+                  OBS服务器（CDN）：{{
+                    userStore.userInfo?.live_rooms?.[0]?.cdn_push_obs_server!
+                  }}，
+                </span>
+                <span
+                  class="link"
+                  @click="
+                    handleCopy(
+                      userStore.userInfo?.live_rooms?.[0]?.cdn_push_obs_server!
+                    )
+                  "
+                >
+                  复制
+                </span>
+              </div>
+              <div>
+                <span>
+                  OBS推流码（CDN）：{{
+                    userStore.userInfo?.live_rooms?.[0]
+                      ?.cdn_push_obs_stream_key!
+                  }}，
+                </span>
+                <span
+                  class="link"
+                  @click="
+                    handleCopy(
+                      userStore.userInfo?.live_rooms?.[0]
+                        ?.cdn_push_obs_stream_key!
+                    )
+                  "
+                >
+                  复制
+                </span>
+              </div>
+            </div>
+            <div
+              v-else
+              class="link"
+              @click="router.push({ name: routerName.author })"
+            >
+              请联系作者开通~
             </div>
           </div>
         </div>
@@ -256,9 +271,12 @@ async function handleUpdateKey() {
   position: relative;
   padding: 10px;
   .link {
+    display: inline-block;
     color: $theme-color-gold;
     text-decoration: none;
     cursor: pointer;
+
+    user-select: none;
   }
   .avatar {
     display: flex;

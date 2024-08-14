@@ -99,7 +99,7 @@
       </p>
       <p>2. 闲聊勿扰。</p>
     </div>
-    <h1 class="title">🚀 我的微信</h1>
+    <h1 class="title">🚀 作者微信</h1>
 
     <img
       src="@/assets/img/my-wechat.webp"

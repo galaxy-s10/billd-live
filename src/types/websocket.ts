@@ -234,6 +234,7 @@ export type WsJoinType = IWsFormat<{
   anchor_info?: IUser;
   user_info?: IUser;
   isRemoteDesk?: boolean;
+  isBilibili?: boolean;
   socket_list?: string[];
 }>;
 
