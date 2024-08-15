@@ -346,6 +346,7 @@ export function usePush() {
         msgIsFile: msgIsFile.value,
         send_msg_time: +new Date(),
         user_agent: navigator.userAgent,
+        isBilibili: false,
       },
     });
     danmuStr.value = '';

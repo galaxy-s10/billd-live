@@ -456,7 +456,6 @@ import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { useFullScreen, usePictureInPicture } from '@/hooks/use-play';
 import { usePull } from '@/hooks/use-pull';
 import { useQiniuJsUpload } from '@/hooks/use-upload';
-import { useWebsocket } from '@/hooks/use-websocket';
 import {
   DanmuMsgTypeEnum,
   GiftRecordStatusEnum,
@@ -507,6 +506,7 @@ const loopGetLiveUserTimer = ref();
 const isBilibili = ref(false);
 
 const {
+  initWs,
   initPull,
   closeWs,
   closeRtc,
@@ -526,7 +526,7 @@ const {
   anchorInfo,
 } = usePull(roomId.value);
 
-const { initWs } = useWebsocket();
+// const { initWs } = useWebsocket();
 
 const rtcRtt = computed(() => {
   const arr: any[] = [];
@@ -576,12 +576,12 @@ onMounted(() => {
     isBilibili.value = false;
     initPull({});
   } else {
-    // initWs({
-    //   roomId: roomId.value,
-    //   isRemoteDesk: false,
-    //   isBilibili: true,
-    //   isAnchor: false,
-    // });
+    initWs({
+      roomId: roomId.value,
+      isRemoteDesk: false,
+      isBilibili: true,
+      isAnchor: false,
+    });
     isBilibili.value = true;
     handleBilibil();
   }
@@ -1250,11 +1250,11 @@ function handleScrollTop() {
       position: absolute;
       bottom: -10px;
       left: 0;
+      z-index: 999;
       width: 100%;
       // height: 150px;
       border-radius: 10px;
       // background-color: red;
-      cursor: pointer;
       transform: translateY(100%);
       ins {
         width: 100%;
@@ -1477,11 +1477,11 @@ function handleScrollTop() {
     position: fixed;
     top: 300px;
     left: 10px;
+    z-index: 999;
     width: 250px;
     // height: 150px;
     border-radius: 10px;
     // background-color: red;
-    cursor: pointer;
     ins {
       width: 100%;
       height: 100%;

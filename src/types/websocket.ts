@@ -168,6 +168,7 @@ export interface IDanmu {
   live_room_id: number;
   redbag_send_id?: number;
   msg_id?: number;
+  isBilibili?: boolean;
 
   socket_id: string;
   request_id?: string;

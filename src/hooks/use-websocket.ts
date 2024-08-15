@@ -628,6 +628,7 @@ export const useWebsocket = () => {
         userInfo: data.user_info,
         msgIsFile: data.data.msgIsFile,
         send_msg_time: data.data.send_msg_time,
+        isBilibili: data.data.isBilibili,
       });
     });
 
@@ -965,19 +966,19 @@ export const useWebsocket = () => {
   }) {
     roomId.value = data.roomId;
     isAnchor.value = data.isAnchor;
-    if (data.isRemoteDesk) {
+    if (data.isRemoteDesk !== undefined) {
       isRemoteDesk.value = data.isRemoteDesk;
     }
-    if (data.isBilibili) {
+    if (data.isBilibili !== undefined) {
       isBilibili.value = data.isBilibili;
     }
-    if (data.currentMaxBitrate) {
+    if (data.currentMaxBitrate !== undefined) {
       currentMaxBitrate.value = data.currentMaxBitrate;
     }
-    if (data.currentMaxFramerate) {
+    if (data.currentMaxFramerate !== undefined) {
       currentMaxFramerate.value = data.currentMaxFramerate;
     }
-    if (data.currentResolutionRatio) {
+    if (data.currentResolutionRatio !== undefined) {
       currentResolutionRatio.value = data.currentResolutionRatio;
     }
     new WebSocketClass({
@@ -991,6 +992,7 @@ export const useWebsocket = () => {
   return {
     initWs,
     handleStartLive,
+    isBilibili,
     connectStatus,
     mySocketId,
     canvasVideoStream,

@@ -1,7 +1,7 @@
 <template>
   <div
     class="home-wrap"
-    ref="doc"
+    ref="docRef"
   >
     <div class="play-container">
       <div
@@ -207,26 +207,27 @@
     <!-- <div
       style="position: fixed; bottom: 200px; right: 0; background-color: red"
     >
-      {{ arrivedState }}
-    </div> -->
-
-    <div class="ad-wrap">
-      <!-- live-首页广告位1 -->
-      <ins
-        class="adsbygoogle"
-        style="display: block"
-        data-ad-client="ca-pub-6064454674933772"
-        data-ad-slot="3325489849"
-        data-ad-format="auto"
-        data-full-width-responsive="true"
-      ></ins>
+      {{ isBottom }}
     </div>
+     -->
+    <div ref="loadMoreRef"></div>
     <div class="foot">*{{ t('home.copyrightTip') }}~</div>
+  </div>
+  <div class="ad-wrap-a">
+    <!-- live-首页广告位1 -->
+    <ins
+      class="adsbygoogle"
+      style="display: block"
+      data-ad-client="ca-pub-6064454674933772"
+      data-ad-slot="3325489849"
+      data-ad-format="auto"
+      data-full-width-responsive="true"
+    ></ins>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { useScroll } from '@vueuse/core';
+import { openToTarget } from 'billd-utils';
 import { onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
@@ -264,8 +265,8 @@ const currentLiveRoom = ref<ILive>();
 const interactionList = ref<any[]>([]);
 const videoWrapTmpRef = ref<HTMLDivElement>();
 const remoteVideoRef = ref<HTMLDivElement>();
-const docW = document.documentElement.clientWidth;
-const doc = ref<HTMLElement | null>(null);
+const docRef = ref<HTMLElement | null>();
+const loadMoreRef = ref<HTMLElement | null>();
 
 const pageParams = reactive({ page: 0, page_size: 30, platform: 'web' });
 const { t } = useI18n();
@@ -277,13 +278,33 @@ const {
   handleStopDrawing,
   handlePlay,
 } = usePull(route.params.roomId as string);
-const { arrivedState } = useScroll(doc, {
-  offset: { top: 0, bottom: 400, right: 0, left: 0 },
-});
+const isBottom = ref(false);
 const first = ref(true);
+const rootMargin = {
+  bottom: 600,
+  top: 0,
+  left: 0,
+  right: 0,
+};
 onMounted(() => {
   //  @ts-ignore
   (adsbygoogle = window.adsbygoogle || []).push({});
+  const intersectionObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((item) => {
+        if (item.isIntersecting) {
+          isBottom.value = true;
+        } else {
+          isBottom.value = false;
+        }
+      });
+    },
+    {
+      // root: '',
+      rootMargin: `${rootMargin.top}px ${rootMargin.right}px ${rootMargin.bottom}px ${rootMargin.left}px`,
+    }
+  );
+  intersectionObserver.observe(loadMoreRef.value!);
   handleSlideList();
   getLiveRoomList();
   getBg();
@@ -291,7 +312,7 @@ onMounted(() => {
 });
 
 watch(
-  () => arrivedState.bottom,
+  () => isBottom.value,
   async (newval) => {
     if (newval && !first.value) {
       const arr = await handleBilibil();
@@ -414,18 +435,20 @@ async function getLiveRoomList() {
 }
 
 function joinRoom(data) {
-  router.push({
+  const url = router.resolve({
     name: routerName.pull,
     params: { roomId: data.id },
     query: { is_bilibili: data.is_bilibili },
   });
+  openToTarget(url.href);
 }
 </script>
 
 <style lang="scss" scoped>
 .home-wrap {
-  overflow: scroll;
-  height: calc(100vh - $header-height);
+  // overflow: scroll;
+  // height: 100vh;
+  // height: calc(100vh - $header-height);
   .play-container {
     position: relative;
     z-index: 1;
@@ -778,23 +801,25 @@ function joinRoom(data) {
       }
     }
   }
-  .ad-wrap {
-    position: fixed;
-    top: 300px;
-    left: 10px;
-    width: 250px;
-    // height: 150px;
-    border-radius: 10px;
-    // background-color: red;
-    cursor: pointer;
-    ins {
-      width: 100%;
-      height: 100%;
-    }
-  }
+
   .foot {
     margin-top: 10px;
     text-align: center;
+  }
+}
+
+.ad-wrap-a {
+  position: fixed;
+  top: 300px;
+  left: 10px;
+  // background-color: red;
+  z-index: 999;
+  width: 250px;
+  // height: 150px;
+  border-radius: 10px;
+  ins {
+    width: 100%;
+    height: 100%;
   }
 }
 

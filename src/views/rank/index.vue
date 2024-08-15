@@ -118,6 +118,7 @@
 </template>
 
 <script lang="ts" setup>
+import { openToTarget } from 'billd-utils';
 import { onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -256,10 +257,11 @@ function handleJump(item) {
 }
 
 function handleJoin(item) {
-  router.push({
+  const url = router.resolve({
     name: routerName.pull,
     params: { roomId: item.live.live_room_id },
   });
+  openToTarget(url.href);
 }
 
 async function getWalletList() {

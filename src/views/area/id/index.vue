@@ -84,6 +84,7 @@
 </template>
 
 <script lang="ts" setup>
+import { openToTarget } from 'billd-utils';
 import { onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
@@ -128,10 +129,11 @@ function goRoom(item: ILiveRoom) {
     window.$message.info('该直播间没在直播~');
     return;
   }
-  router.push({
+  const url = router.resolve({
     name: routerName.pull,
     params: { roomId: item.id },
   });
+  openToTarget(url.href);
 }
 
 onMounted(() => {
@@ -185,6 +187,7 @@ async function getData() {
     display: flex;
     align-content: flex-start;
     flex-wrap: wrap;
+    justify-content: space-between;
     .item {
       display: inline-block;
       margin-right: 25px;

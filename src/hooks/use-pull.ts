@@ -41,8 +41,15 @@ export function usePull(roomId: string) {
   const isRemoteDesk = ref(false);
   const videoElArr = ref<HTMLVideoElement[]>([]);
   const remoteVideo = ref<HTMLElement[]>([]);
-  const { mySocketId, initWs, roomLiving, anchorInfo, liveUserList, damuList } =
-    useWebsocket();
+  const {
+    mySocketId,
+    initWs,
+    isBilibili,
+    roomLiving,
+    anchorInfo,
+    liveUserList,
+    damuList,
+  } = useWebsocket();
   const { flvVideoEl, flvIsPlaying, startFlvPlay, destroyFlv } = useFlvPlay();
   const { hlsVideoEl, hlsIsPlaying, startHlsPlay, destroyHls } = useHlsPlay();
   const stopDrawingArr = ref<any[]>([]);
@@ -454,7 +461,7 @@ export function usePull(roomId: string) {
     const instance = networkStore.wsMap.get(roomId);
     if (!instance) return;
     const requestId = getRandomString(8);
-    console.log(danmuMsgType.value, 2221);
+    console.log(isBilibili.value, isBilibili, 'isBilibili');
     const messageData: WsMessageType['data'] = {
       socket_id: '',
       msg: danmuStr.value,
@@ -463,6 +470,7 @@ export function usePull(roomId: string) {
       msgIsFile: msgIsFile.value,
       send_msg_time: +new Date(),
       user_agent: navigator.userAgent,
+      isBilibili: isBilibili.value,
     };
     instance.send({
       requestId,
@@ -474,6 +482,7 @@ export function usePull(roomId: string) {
   }
 
   return {
+    initWs,
     videoWrapRef,
     handlePlay,
     handleStopDrawing,
