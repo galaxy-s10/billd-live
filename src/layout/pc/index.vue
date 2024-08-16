@@ -52,6 +52,7 @@ const appStore = useAppStore();
     position: fixed;
     right: 10px;
     bottom: 10px;
+    z-index: 999;
     width: 300px;
     border-radius: 10px;
     cursor: pointer;

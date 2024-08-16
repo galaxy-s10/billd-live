@@ -441,7 +441,7 @@ async function getLiveRoomInfo() {
 }
 
 function startPull() {
-  cacheStore.setMuted(false);
+  cacheStore.muted = false;
   showPlayBtn.value = false;
   handlePlay(appStore.liveRoomInfo!);
 }

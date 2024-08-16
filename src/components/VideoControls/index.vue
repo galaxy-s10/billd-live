@@ -20,7 +20,7 @@
       </div>
       <div
         class="muted"
-        @click="cacheStore.setMuted(!cacheStore.muted)"
+        @click="cacheStore.muted = !cacheStore.muted"
       >
         <n-popover
           placement="top"

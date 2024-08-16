@@ -46,9 +46,15 @@
               </div>
               <div class="rtt">延迟：{{ rtcRtt || '-' }}</div>
               <div class="loss">丢包：{{ rtcLoss || '-' }}</div>
+              <div class="bitrate">码率：-</div>
             </div>
             <div class="bottom">
-              <span>{{ appStore.liveRoomInfo?.desc }}</span>
+              <div
+                class="desc"
+                :title="appStore.liveRoomInfo?.desc"
+              >
+                {{ appStore.liveRoomInfo?.desc }}
+              </div>
               <span
                 class="area"
                 @click="
@@ -875,6 +881,9 @@ async function uploadChange() {
 }
 
 async function handlePay(item: IGoods) {
+  if (!loginTip()) {
+    return;
+  }
   const res = await fetchGiftRecordCreate({
     goodsId: item.id!,
     goodsNums: 1,
@@ -1090,9 +1099,16 @@ function handleScrollTop() {
             }
           }
           .bottom {
+            display: flex;
             font-size: 14px;
+            .desc {
+              width: 400px;
+              cursor: pointer;
+
+              @extend %singleEllipsis;
+            }
             .area {
-              margin-left: 10px;
+              margin: 0 10px;
               color: #9499a0;
               cursor: pointer;
             }

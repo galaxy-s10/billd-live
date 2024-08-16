@@ -94,6 +94,8 @@ export class WebRTCClass {
   }
 
   loopGetStats = () => {
+    const previousTimestamp = 0; // 初始化上一次获取码率信息的时间
+
     this.loopGetStatsTimer = setInterval(async () => {
       if (!this.peerConnection) return;
       try {
@@ -127,9 +129,31 @@ export class WebRTCClass {
               }
             }
           }
+
+          // if (report.type === 'outbound-rtp') {
+          //   // @ts-ignore
+          //   const bytesSent = report.bytesSent;
+          //   const timestamp = report.timestamp;
+          //   // 计算发送码率
+          //   const sendBitrate =
+          //     (bytesSent / (timestamp - previousTimestamp)) * 8;
+          //   console.log(`发送码率: ${sendBitrate} kbps`);
+          //   // 更新上一次获取码率信息的时间
+          //   previousTimestamp = timestamp;
+          // } else if (report.type === 'inbound-rtp') {
+          //   const bytesReceived = report.bytesReceived || 0;
+          //   const timestamp = report.timestamp;
+          //   // 计算接收码率
+          //   const receiveBitrate =
+          //     (bytesReceived / (timestamp - previousTimestamp)) * 8;
+          //   console.log(`接收码率: ${receiveBitrate} kbps`);
+          //   // 更新上一次获取码率信息的时间
+          //   previousTimestamp = timestamp;
+          // }
         });
         this.loss = loss;
         this.rtt = rtt;
+
         this.update();
       } catch (error) {
         console.error('getStats错误');

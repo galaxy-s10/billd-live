@@ -54,8 +54,8 @@ onMounted(() => {
   });
   handleUpdate();
   loginMessage();
-  cacheStore.setMuted(true);
-  cacheStore.setVolume(0);
+  cacheStore.muted = true;
+  cacheStore.volume = 0;
   const token = getToken();
   if (token) {
     userStore.getUserInfo();

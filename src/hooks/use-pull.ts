@@ -159,7 +159,7 @@ export function usePull(roomId: string) {
         roomLiving.value = true;
         videoLoading.value = false;
         appStore.playing = true;
-        cacheStore.muted = false;
+        // cacheStore.muted = false;
       }
       if (
         isRemoteDesk.value ||
@@ -352,9 +352,9 @@ export function usePull(roomId: string) {
         el.muted = newVal;
       });
       if (!newVal) {
-        cacheStore.setVolume(cacheStore.volume || appStore.normalVolume);
+        cacheStore.volume = cacheStore.volume || appStore.normalVolume;
       } else {
-        cacheStore.setVolume(0);
+        cacheStore.volume = 0;
       }
     }
   );
@@ -366,9 +366,9 @@ export function usePull(roomId: string) {
         el.volume = newVal / 100;
       });
       if (!newVal) {
-        cacheStore.setMuted(true);
+        cacheStore.muted = true;
       } else {
-        cacheStore.setMuted(false);
+        cacheStore.muted = false;
       }
     }
   );
