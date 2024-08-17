@@ -481,6 +481,7 @@ import { useUserStore } from '@/store/user';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import { WsDisableSpeakingType, WsMsgTypeEnum } from '@/types/websocket';
 import { formatMoney, formatTimeHour, handleUserMedia } from '@/utils';
+import { initAdsbygoogle } from '@/utils/google-ad';
 import { NODE_ENV } from 'script/constant';
 
 import RechargeCpt from './recharge/index.vue';
@@ -551,8 +552,7 @@ const rtcLoss = computed(() => {
 });
 
 onMounted(() => {
-  // @ts-ignore
-  (adsbygoogle = window.adsbygoogle || []).push({});
+  initAdsbygoogle();
   appStore.videoControls.fps = true;
   appStore.videoControls.fullMode = true;
   appStore.videoControls.kbs = true;
@@ -619,7 +619,7 @@ async function handleBilibil() {
     console.log(flv?.data?.data?.durl?.[0].url, 'flv');
     console.log(hls?.data?.data?.durl?.[0].url, 'hls');
     roomLiving.value = true;
-    appStore.liveLine = LiveLineEnum.flv;
+    appStore.liveLine = LiveLineEnum.hls;
     anchorInfo.value = {
       avatar: roomInfo?.data?.data?.user_cover,
       username: roomInfo?.data?.data?.title,

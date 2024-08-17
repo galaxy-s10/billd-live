@@ -246,6 +246,7 @@ import {
   LiveRoomTypeEnum,
   LiveRoomUseCDNEnum,
 } from '@/types/ILiveRoom';
+import { initAdsbygoogle } from '@/utils/google-ad';
 
 const route = useRoute();
 const router = useRouter();
@@ -286,9 +287,9 @@ const rootMargin = {
   left: 0,
   right: 0,
 };
+
 onMounted(() => {
-  //  @ts-ignore
-  (adsbygoogle = window.adsbygoogle || []).push({});
+  initAdsbygoogle();
   const intersectionObserver = new IntersectionObserver(
     (entries) => {
       entries.forEach((item) => {
