@@ -619,14 +619,50 @@ function handleStartLive(key: LiveRoomTypeEnum) {
       LiveRoomTypeEnum.msr,
       LiveRoomTypeEnum.tencent_css,
       LiveRoomTypeEnum.tencent_css_pk,
-      LiveRoomTypeEnum.forward_all,
-      LiveRoomTypeEnum.forward_bilibili,
-      LiveRoomTypeEnum.forward_huya,
     ].includes(key)
   ) {
     if (
       !userStore.userInfo?.auths?.find(
         (v) => v.auth_value === DEFAULT_AUTH_INFO.LIVE_PULL_SVIP.auth_value
+      )
+    ) {
+      window.$message.info('权限不足，请更换其他开播方式');
+      return;
+    }
+  }
+  if (key === LiveRoomTypeEnum.forward_huya) {
+    if (
+      !userStore.userInfo?.auths?.find(
+        (v) =>
+          v.auth_value === DEFAULT_AUTH_INFO.LIVE_PUSH_FORWARD_HUYA.auth_value
+      )
+    ) {
+      window.$message.info('权限不足，请更换其他开播方式');
+      return;
+    }
+  }
+  if (key === LiveRoomTypeEnum.forward_bilibili) {
+    if (
+      !userStore.userInfo?.auths?.find(
+        (v) =>
+          v.auth_value ===
+          DEFAULT_AUTH_INFO.LIVE_PUSH_FORWARD_BILIBILI.auth_value
+      )
+    ) {
+      window.$message.info('权限不足，请更换其他开播方式');
+      return;
+    }
+  }
+  if (key === LiveRoomTypeEnum.forward_all) {
+    if (
+      !userStore.userInfo?.auths?.find(
+        (v) =>
+          v.auth_value === DEFAULT_AUTH_INFO.LIVE_PUSH_FORWARD_HUYA.auth_value
+      ) &&
+      !userStore.userInfo?.auths?.find(
+        (v) =>
+          v.auth_value ===
+          DEFAULT_AUTH_INFO.LIVE_PUSH_FORWARD_BILIBILI.auth_value
       )
     ) {
       window.$message.info('权限不足，请更换其他开播方式');

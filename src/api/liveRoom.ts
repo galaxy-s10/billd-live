@@ -21,6 +21,10 @@ export function fetchUpdateLiveRoomKey() {
   });
 }
 
+export function fetchUpdateMyLiveRoom(data: ILiveRoom) {
+  return request.put('/live_room/update_my_live_room', data);
+}
+
 export function fetchFindLiveRoom(roomId: string) {
   return request.get<ILiveRoom>(`/live_room/find/${roomId}`);
 }

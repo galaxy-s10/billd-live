@@ -159,6 +159,34 @@ export const DEFAULT_AUTH_INFO = {
     id: 12,
     auth_value: 'LIVE_PULL_SVIP',
   },
+  LIVE_PUSH_CDN: {
+    id: 13,
+    auth_value: 'LIVE_PUSH_CDN',
+  },
+  LIVE_PUSH_FORWARD_BILIBILI: {
+    id: 14,
+    auth_value: 'LIVE_PUSH_FORWARD_BILIBILI',
+  },
+  LIVE_PUSH_FORWARD_HUYA: {
+    id: 15,
+    auth_value: 'LIVE_PUSH_FORWARD_HUYA',
+  },
+  LIVE_PUSH_FORWARD_DOUYU: {
+    id: 16,
+    auth_value: 'LIVE_PUSH_FORWARD_DOUYU',
+  },
+  LIVE_PUSH_FORWARD_DOUYIN: {
+    id: 17,
+    auth_value: 'LIVE_PUSH_FORWARD_DOUYIN',
+  },
+  LIVE_PUSH_FORWARD_KUAISHOU: {
+    id: 18,
+    auth_value: 'LIVE_PUSH_FORWARD_KUAISHOU',
+  },
+  LIVE_PUSH_FORWARD_XIAOHONGSHU: {
+    id: 19,
+    auth_value: 'LIVE_PUSH_FORWARD_XIAOHONGSHU',
+  },
 };
 
 // 全局的cookie的key
@@ -198,6 +226,9 @@ export const liveRoomTypeEnumMap = {
   [LiveRoomTypeEnum.wertc_live]: 'webrtc直播',
   [LiveRoomTypeEnum.wertc_meeting_one]: 'webrtc会议一',
   [LiveRoomTypeEnum.wertc_meeting_two]: 'webrtc会议二',
+  [LiveRoomTypeEnum.forward_bilibili]: '转推b站',
+  [LiveRoomTypeEnum.forward_huya]: '转推虎牙',
+  [LiveRoomTypeEnum.forward_all]: '转推所有',
 };
 
 export const sliderList = [

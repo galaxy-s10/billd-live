@@ -33,7 +33,7 @@ export enum LiveRoomTypeEnum {
   tencent_css_pk,
   /** 转推b站 */
   forward_bilibili,
-  /** 转推斗鱼 */
+  /** 转推虎牙 */
   forward_huya,
   /** 转推所有 */
   forward_all,
