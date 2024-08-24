@@ -133,6 +133,27 @@
                     {{ item.userInfo?.username || item.socket_id }}离开直播！
                   </span>
                 </template>
+                <template v-else-if="item.msgType === DanmuMsgTypeEnum.reward">
+                  <span class="time">
+                    [{{ formatTimeHour(item.send_msg_time) }}]
+                  </span>
+                  <span class="name">
+                    <span v-if="item.userInfo">
+                      <span>{{ item.userInfo.username }}</span>
+                      <span>
+                        [{{
+                          item.userInfo.roles?.map((v) => v.role_name).join()
+                        }}]
+                      </span>
+                    </span>
+                    <span v-else>
+                      <span>{{ item.socket_id }}</span>
+                      <span>[游客]</span>
+                    </span>
+                    <span>：</span>
+                  </span>
+                  <span class="msg"> 打赏了：{{ item.msg }} </span>
+                </template>
               </div>
             </div>
           </div>
@@ -190,6 +211,49 @@
           </div>
         </n-tab-pane>
       </n-tabs>
+      <div class="user-info">
+        <template v-if="!userStore.userInfo">
+          <div
+            class="btn"
+            @click="appStore.showLoginModal = true"
+          >
+            登录
+          </div>
+        </template>
+        <Dropdown v-else>
+          <template #btn>
+            <div class="info">
+              <div
+                class="btn"
+                :style="{
+                  backgroundImage: `url(${userStore.userInfo.avatar})`,
+                }"
+              ></div>
+            </div>
+          </template>
+          <template #list>
+            <div class="list">
+              <a class="item">
+                <div class="txt">用户名：{{ userStore.userInfo.username }}</div>
+              </a>
+              <a class="item">
+                <div
+                  class="txt"
+                  @click="appStore.showLoginModal = true"
+                >
+                  切换账号
+                </div>
+              </a>
+              <a
+                class="item"
+                @click.prevent="handleLogout()"
+              >
+                <div class="txt">退出登录</div>
+              </a>
+            </div>
+          </template>
+        </Dropdown>
+      </div>
     </div>
 
     <div
@@ -233,6 +297,7 @@
 </template>
 
 <script lang="ts" setup>
+import { windowReload } from 'billd-utils';
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -252,12 +317,14 @@ import {
 import router, { mobileRouterName } from '@/router';
 import { useAppStore } from '@/store/app';
 import { usePiniaCacheStore } from '@/store/cache';
+import { useUserStore } from '@/store/user';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import { formatTimeHour } from '@/utils';
 
 const route = useRoute();
 const cacheStore = usePiniaCacheStore();
 const appStore = useAppStore();
+const userStore = useUserStore();
 
 const bottomRef = ref<HTMLDivElement>();
 const danmuListRef = ref<HTMLDivElement>();
@@ -315,6 +382,13 @@ onMounted(() => {
   handleSendGetLiveUser(Number(roomId.value));
   handleHistoryMsg();
 });
+
+function handleLogout() {
+  userStore.logout();
+  setTimeout(() => {
+    windowReload();
+  }, 300);
+}
 
 async function handleHistoryMsg() {
   try {
@@ -549,6 +623,7 @@ function startPull() {
   }
 
   .n-tab-wrap {
+    position: relative;
     padding-left: 10px;
     background: #0c1622;
     color: white;
@@ -562,6 +637,44 @@ function startPull() {
     // :deep(.n-tabs-pane-wrapper) {
     //   --n-pane-text-color: white;
     // }
+
+    .user-info {
+      position: absolute;
+      top: 3px;
+      right: 10px;
+      .info {
+        display: flex;
+        align-items: center;
+      }
+      .list {
+        width: 100px;
+        .item {
+          position: relative;
+          display: flex;
+          padding: 2px 15px;
+          cursor: pointer;
+          &:hover {
+            color: $theme-color-gold;
+          }
+        }
+      }
+      .btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        margin-left: 10px;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background-color: $theme-color-papayawhip;
+        color: black;
+        font-size: 13px;
+        cursor: pointer;
+
+        @extend %containBg;
+      }
+    }
   }
   .danmu-list {
     box-sizing: border-box;

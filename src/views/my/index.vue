@@ -456,6 +456,9 @@ watch(
     if (newval?.live_rooms?.[0]) {
       liveRoomInfo.value = newval?.live_rooms[0];
     }
+  },
+  {
+    immediate: true,
   }
 );
 

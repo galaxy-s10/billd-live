@@ -202,6 +202,57 @@
           </div>
         </div>
       </div>
+      <div class="area-item">
+        <div class="title">{{ t('home.bilibiliLive') }}</div>
+        <div class="live-room-list">
+          <div
+            v-for="(iten, indey) in bilibiliLiveRoomList"
+            :key="indey"
+            class="live-room"
+            @click="joinRoom(iten.live_room)"
+          >
+            <div
+              class="cover"
+              v-lazy:background-image="
+                iten?.live_room?.cover_img || iten?.user?.avatar
+              "
+            >
+              <PullAuthTip
+                v-if="
+                  iten.live_room?.pull_is_should_auth ===
+                  LiveRoomPullIsShouldAuthEnum.yes
+                "
+              ></PullAuthTip>
+              <div
+                v-if="
+                  iten?.live_room?.cdn === LiveRoomUseCDNEnum.yes &&
+                  [
+                    LiveRoomTypeEnum.tencent_css,
+                    LiveRoomTypeEnum.tencent_css_pk,
+                  ].includes(iten.live_room?.type!)
+                "
+                class="cdn-ico"
+              >
+                <div class="txt">CDN</div>
+              </div>
+              <div class="txt">{{ iten?.user?.username }}</div>
+            </div>
+            <div class="desc">{{ iten?.live_room?.name }}</div>
+          </div>
+          <div
+            v-if="bilibiliLoading"
+            class="null"
+          >
+            {{ t('common.loading') }}
+          </div>
+          <div
+            v-else-if="!bilibiliLiveRoomList.length"
+            class="null"
+          >
+            {{ t('common.nonedata') }}
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- <div
@@ -237,7 +288,7 @@ import { fetchLiveList } from '@/api/live';
 import { fetchFindLiveConfigByKey } from '@/api/liveConfig';
 import { sliderList } from '@/constant';
 import { usePull } from '@/hooks/use-pull';
-import { IBilibiliLiveUserRecommend, ILive, LiveLineEnum } from '@/interface';
+import { ILive, LiveLineEnum } from '@/interface';
 import { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
 import {
@@ -252,7 +303,7 @@ const route = useRoute();
 const router = useRouter();
 const appStore = useAppStore();
 const canvasRef = ref<Element>();
-const loading = ref(false);
+const bilibiliLoading = ref(false);
 const showJoinBtn = ref(false);
 const topNums = ref(6);
 const configBg = ref('');
@@ -262,6 +313,7 @@ const configVideo = ref();
 // );
 const topLiveRoomList = ref<ILive[]>([]);
 const otherLiveRoomList = ref<ILive[]>([]);
+const bilibiliLiveRoomList = ref<ILive[]>([]);
 const currentLiveRoom = ref<ILive>();
 const interactionList = ref<any[]>([]);
 const videoWrapTmpRef = ref<HTMLDivElement>();
@@ -280,7 +332,6 @@ const {
   handlePlay,
 } = usePull(route.params.roomId as string);
 const isBottom = ref(false);
-const first = ref(true);
 const rootMargin = {
   bottom: 600,
   top: 0,
@@ -315,16 +366,19 @@ onMounted(() => {
 watch(
   () => isBottom.value,
   async (newval) => {
-    if (newval && !first.value) {
-      const arr = await handleBilibil();
-      otherLiveRoomList.value.push(...arr);
+    if (newval) {
+      const arr = await handleBilibilData();
+      bilibiliLiveRoomList.value.push(...arr);
     }
+  },
+  {
+    immediate: true,
   }
 );
 
-async function handleBilibil() {
-  if (loading.value) return [];
-  loading.value = true;
+async function handleBilibilData() {
+  if (bilibiliLoading.value) return [];
+  bilibiliLoading.value = true;
   let arr: any = [];
   try {
     pageParams.page += 1;
@@ -349,7 +403,7 @@ async function handleBilibil() {
     pageParams.page -= 1;
     console.log(error);
   }
-  loading.value = false;
+  bilibiliLoading.value = false;
   return arr;
 }
 
@@ -418,10 +472,10 @@ async function getLiveRoomList() {
       orderBy: 'desc',
     });
     if (res.code === 200) {
-      const arr: IBilibiliLiveUserRecommend[] = await handleBilibil();
-      first.value = false;
+      // const arr: IBilibiliLiveUserRecommend[] = await handleBilibilData();
+      // first.value = false;
       // @ts-ignore
-      res.data.rows.push(...arr);
+      // res.data.rows.push(...arr);
       topLiveRoomList.value = res.data.rows.slice(0, topNums.value);
       otherLiveRoomList.value = res.data.rows.slice(topNums.value);
       if (res.data.total) {
@@ -798,6 +852,10 @@ function joinRoom(data) {
 
             @extend %singleEllipsis;
           }
+        }
+        .null {
+          width: 100%;
+          text-align: center;
         }
       }
     }

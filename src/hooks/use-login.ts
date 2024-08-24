@@ -30,12 +30,12 @@ document.body.appendChild(container);
 const POSTMESSAGE_TYPE = [PlatformEnum.qqLogin];
 
 export async function handleQQLogin(e) {
+  let flag = false;
   const { type, data } = e.data;
-  if (!POSTMESSAGE_TYPE.includes(type)) return;
+  if (!POSTMESSAGE_TYPE.includes(type)) return flag;
   console.log('收到消息', type, data);
   const userStore = useUserStore();
   const appStore = useAppStore();
-
   try {
     switch (type) {
       case PlatformEnum.qqLogin: {
@@ -45,6 +45,7 @@ export async function handleQQLogin(e) {
           fullLoading({
             loading: false,
           });
+          flag = true;
         }
         userStore.setToken(res.data, data.qqExp);
         userStore.getUserInfo();
@@ -57,6 +58,7 @@ export async function handleQQLogin(e) {
   } finally {
     clearThirdLoginInfo();
   }
+  return flag;
 }
 
 export function loginTip(show = false) {

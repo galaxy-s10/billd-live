@@ -76,9 +76,12 @@ onMounted(async () => {
       const info = { type: PlatformEnum.qqLogin, data: { code, qqExp } };
       if (isMobile) {
         try {
-          await handleQQLogin({
+          const flag = await handleQQLogin({
             data: info,
           });
+          if (flag) {
+            router.push({ name: routerName.h5 });
+          }
         } catch (error) {
           console.log(error);
         }
