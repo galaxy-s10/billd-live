@@ -5,15 +5,17 @@
     :style="{ height: height + 'px' }"
   >
     <LongList
+      v-if="height > 0"
       ref="longListRef"
       class="list"
       @get-list-data="getListData"
       :rootMargin="{
         top: 0,
-        bottom: 200,
+        bottom: 100,
         left: 0,
         right: 0,
       }"
+      :status="status"
     >
       <div
         v-for="(item, index) in liveRoomList"
@@ -52,41 +54,13 @@
         </div>
         <div class="desc">{{ item?.name }}</div>
       </div>
-      <div v-if="loading"></div>
-      <div
-        v-else-if="!liveRoomList.length"
-        class="null"
-      >
-        {{ t('common.nonedata') }}
-      </div>
-      <div
-        v-else-if="!hasMore"
-        class="null"
-      >
-        {{ t('common.allLoaded') }}
-      </div>
     </LongList>
-    <!-- <div
-      class="paging-wrap"
-      v-if="pageParams.total > pageParams.pageSize"
-    >
-      <n-pagination
-        v-model:page="pageParams.nowPage"
-        v-model:page-size="pageParams.pageSize"
-        :item-count="pageParams.total"
-        show-size-picker
-        :page-sizes="[30, 50, 100, 200]"
-        @update-page="getData"
-        @update-page-size="handleUpdatePageSize"
-      />
-    </div> -->
   </div>
 </template>
 
 <script lang="ts" setup>
 import { openToTarget } from 'billd-utils';
 import { onMounted, reactive, ref, watch } from 'vue';
-import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 
 import { fetchLiveRoomList } from '@/api/area';
@@ -101,12 +75,12 @@ import {
 } from '@/types/ILiveRoom';
 
 const liveRoomList = ref<ILiveRoom[]>([]);
-const { t } = useI18n();
 const route = useRoute();
+const status = ref<'loading' | 'nonedata' | 'allLoaded' | 'normal'>('loading');
 
 const longListRef = ref<InstanceType<typeof LongList>>();
 const topRef = ref<HTMLDivElement>();
-const height = ref(0);
+const height = ref(-1);
 const loading = ref(false);
 const hasMore = ref(true);
 const pageParams = reactive({
@@ -123,6 +97,21 @@ watch(
     getData();
   }
 );
+
+function handleStatus() {
+  if (longListRef.value) {
+    if (loading.value) {
+      status.value = 'loading';
+    } else if (hasMore.value) {
+      status.value = 'normal';
+    } else {
+      status.value = 'allLoaded';
+    }
+    if (!liveRoomList.value?.length) {
+      status.value = 'nonedata';
+    }
+  }
+}
 
 function goRoom(item: ILiveRoom) {
   if (!item.live) {
@@ -154,10 +143,8 @@ async function getData() {
   try {
     if (loading.value) return;
     loading.value = true;
+    status.value = 'loading';
     pageParams.nowPage += 1;
-    if (longListRef.value) {
-      longListRef.value.loading = true;
-    }
     const res = await fetchLiveRoomList({
       id: Number(route.params.id),
       live_room_is_show: LiveRoomIsShowEnum.yes,
@@ -173,9 +160,8 @@ async function getData() {
     console.log(error);
   }
   loading.value = false;
-  if (longListRef.value) {
-    longListRef.value.loading = false;
-  }
+  status.value = 'normal';
+  handleStatus();
 }
 </script>
 
