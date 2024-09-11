@@ -7,19 +7,17 @@
     </router-view>
     <SidebarCpt></SidebarCpt>
     <LoginModal v-if="appStore.showLoginModal"></LoginModal>
-    <img
+    <!-- <img
       class="pay-course"
       src="@/assets/img/pay-course.webp"
       alt=""
       @click="openToTarget(COMMON_URL.payCoursesArticle)"
-    />
+    /> -->
+    <PayCourse></PayCourse>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { openToTarget } from 'billd-utils';
-
-import { COMMON_URL } from '@/constant';
 import { useAppStore } from '@/store/app';
 
 import HeadCpt from './head/index.vue';
@@ -47,15 +45,6 @@ const appStore = useAppStore();
     opacity: 0.2;
     filter: blur(70px);
     pointer-events: none;
-  }
-  .pay-course {
-    position: fixed;
-    right: 10px;
-    bottom: 10px;
-    z-index: 999;
-    width: 300px;
-    border-radius: 10px;
-    cursor: pointer;
   }
 }
 </style>

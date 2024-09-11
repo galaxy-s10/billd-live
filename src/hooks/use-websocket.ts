@@ -694,8 +694,6 @@ export const useWebsocket = () => {
         video: true,
         audio: true,
       });
-      console.log(stream?.getAudioTracks());
-      console.log(stream?.getVideoTracks(), 1111);
       userStream.value = stream;
       networkStore.wsMap.get(roomId.value)?.send<WsBatchSendOffer['data']>({
         requestId: getRandomString(8),

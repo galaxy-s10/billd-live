@@ -40,7 +40,15 @@
             {{ t('layout.liveAdmin') }}
           </a>
 
-          <Dropdown
+          <a
+            class="item"
+            @click.prevent="router.push({ name: routerName.downloadLive })"
+            v-if="!isMobile()"
+          >
+            {{ t('layout.download') }}
+          </a>
+
+          <!-- <Dropdown
             class="item"
             v-if="!isMobile()"
           >
@@ -70,17 +78,14 @@
                 </a>
               </div>
             </template>
-          </Dropdown>
+          </Dropdown> -->
 
-          <a
+          <!-- <a
             class="item"
             @click.prevent="openToTarget(COMMON_URL.desk)"
           >
             {{ t('layout.remoteDesktop') }}
-            <!-- <div class="badge">
-              <div class="txt">stage</div>
-            </div> -->
-          </a>
+          </a> -->
         </div>
       </div>
 
@@ -214,7 +219,7 @@
         <a
           class="signin"
           @click="handleSignin"
-          v-if="!isMobile()"
+          v-if="!isMobile() && userStore.userInfo"
         >
           {{ t('layout.signin') }}
           <div
@@ -242,7 +247,7 @@
           </div>
         </a>
 
-        <a
+        <!-- <a
           class="videoTools"
           :class="{
             active: router.currentRoute.value.name === routerName.videoTools,
@@ -255,7 +260,7 @@
           <div class="badge">
             <div class="txt">beta</div>
           </div>
-        </a>
+        </a> -->
 
         <a
           class="github"
@@ -282,6 +287,26 @@
               </a>
               <a
                 class="item"
+                @click.prevent="handleStartLive(LiveRoomTypeEnum.pk)"
+              >
+                <div class="txt">{{ t('layout.pkLive') }}</div>
+              </a>
+              <a
+                class="item"
+                @click.prevent="handleStartLive(LiveRoomTypeEnum.wertc_live)"
+              >
+                <div class="txt">{{ t('layout.webrtcLive') }}</div>
+              </a>
+              <a
+                class="item"
+                @click.prevent="
+                  handleStartLive(LiveRoomTypeEnum.wertc_meeting_one)
+                "
+              >
+                <div class="txt">{{ t('layout.webrtcMeeting') }}</div>
+              </a>
+              <a
+                class="item"
                 @click.prevent="
                   handleStartLive(LiveRoomTypeEnum.forward_bilibili)
                 "
@@ -302,30 +327,11 @@
               </a>
               <a
                 class="item"
-                @click.prevent="handleStartLive(LiveRoomTypeEnum.wertc_live)"
-              >
-                <div class="txt">{{ t('layout.webrtcLive') }}</div>
-              </a>
-              <a
-                class="item"
-                @click.prevent="
-                  handleStartLive(LiveRoomTypeEnum.wertc_meeting_one)
-                "
-              >
-                <div class="txt">{{ t('layout.webrtcMeeting') }}</div>
-              </a>
-              <a
-                class="item"
                 @click.prevent="handleStartLive(LiveRoomTypeEnum.msr)"
               >
                 <div class="txt">{{ t('layout.msrLive') }}</div>
               </a>
-              <a
-                class="item"
-                @click.prevent="handleStartLive(LiveRoomTypeEnum.pk)"
-              >
-                <div class="txt">{{ t('layout.pkLive') }}</div>
-              </a>
+
               <a
                 class="item"
                 @click.prevent="handleStartLive(LiveRoomTypeEnum.tencent_css)"

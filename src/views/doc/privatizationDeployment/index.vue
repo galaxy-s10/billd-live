@@ -1,156 +1,564 @@
 <template>
   <div class="privatizationDeployment-wrap">
-    <div class="content">
-      <h1 class="title">私有化部署</h1>
-      <div class="desc">
-        欢迎使用billd-live，在使用billd-live时，请遵循billd-live的
-        <span
-          class="link"
-          @click="
-            openToTarget(
-              'https://github.com/galaxy-s10/billd-live/blob/master/LICENSE'
-            )
-          "
-        >
-          开源协议
-        </span>
-        ，注明作者版权。
+    <h2 class="title">
+      <div
+        v-for="(item, index) in detail[currentTab].slogan"
+        :key="index"
+      >
+        {{ item }}
       </div>
-      <div class="list">
-        <div class="hr"></div>
-        <div class="item">
-          <h2>简介</h2>
-          <p>目前核心实现：</p>
-          <ol>
-            <li>服务器自建SRS直播。</li>
-            <li>服务器自建WebRTC会议。</li>
-            <li>接入第三方腾讯云云直播。</li>
-            <li>直播PK互动。</li>
-            <li>转推到第三方直播（b站、虎牙）。</li>
-          </ol>
-        </div>
-        <div class="hr"></div>
-        <div class="item">
-          <h2>远程协助</h2>
-          <p>如果在部署期间遇到问题，可以联系作者获取远程协助（付费）。</p>
-        </div>
-        <div class="hr"></div>
-        <div class="item">
-          <h2>定制服务</h2>
-          <p>
-            billd-live作为开源项目，不可能满足所有需求。但提供定制服务（付费），如有需要请联系作者。
-          </p>
-        </div>
-        <div class="hr"></div>
-        <div class="item">
-          <h2>收费标准</h2>
-          <p>1.咨询费用：每小时50-100元。</p>
-          <p>2.开发费用：每小时150-300元。</p>
-        </div>
-        <div class="hr"></div>
-        <div class="item">
-          <h2>联系方式</h2>
-          <p>添加时请备注: 私有化部署+用途</p>
-          <p>微信号: shuisheng9905</p>
-          <p>qq号: 2274751790</p>
-        </div>
+    </h2>
+    <div class="tab">
+      <div
+        v-for="(item, index) in tab"
+        :key="index"
+        class="item"
+        :class="{ active: item.id === currentTab }"
+        @click="currentTab = item.id"
+      >
+        {{ item.txt }}
       </div>
     </div>
-    <div class="aside">
-      <div class="title">本页目录</div>
-      <div class="item">简介</div>
-      <div class="item">远程协助</div>
-      <div class="item">定制服务</div>
-      <div class="item">收费标准</div>
-      <div class="item">联系方式</div>
+    <div class="list">
+      <div
+        class="item"
+        :class="{ [item['color']]: 1 }"
+        v-for="(item, index) in detail[currentTab].list"
+        :key="index"
+      >
+        <div class="name">{{ item.name }}</div>
+        <div class="desc">{{ item.desc }}</div>
+        <div class="price">
+          <span class="t1">{{ item.price.left }}</span>
+          <span class="t2">{{ item.price.center }}</span>
+          <span class="t3">{{ item.price.right }}</span>
+        </div>
+        <div class="feat">
+          <div
+            v-if="item.tip !== ''"
+            class="feat-item tip"
+          >
+            {{ item.tip }}
+          </div>
+          <div
+            class="feat-item"
+            v-for="(iten, indey) in item.feat"
+            :key="indey"
+          >
+            <div
+              :class="{
+                done: iten.status === 'done',
+                todo: iten.status === 'todo',
+              }"
+            ></div>
+            <div class="txt">{{ iten.txt }}</div>
+          </div>
+        </div>
+        <div
+          class="btn"
+          @click="handleClick(item.btn)"
+        >
+          {{ item.btn.txt }}
+        </div>
+      </div>
     </div>
   </div>
+  <n-modal v-model:show="showContach">
+    <n-card
+      style="width: 400px"
+      title="联系方式"
+      role="dialog"
+      closable
+      @close="showContach = false"
+    >
+      <div>
+        <div>微信：</div>
+        <img
+          src="@/assets/img/my-wechat.webp"
+          alt=""
+          style="width: 300px"
+        />
+        <div>qq：2274751790</div>
+        <p>添加时请备注：私有化部署+用途</p>
+      </div>
+    </n-card>
+  </n-modal>
 </template>
 
 <script lang="ts" setup>
 import { openToTarget } from 'billd-utils';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+
+import { COMMON_URL } from '@/constant';
+import { routerName } from '@/router';
+
+const router = useRouter();
+const showContach = ref(false);
+const currentTab = ref<'personal' | 'openSource' | 'customized' | string>(
+  'openSource'
+);
+
+const tab = ref([
+  {
+    id: 'personal',
+    txt: '个人版',
+  },
+  {
+    id: 'openSource',
+    txt: '开源版',
+  },
+  {
+    id: 'customized',
+    txt: '定制版',
+  },
+]);
+
+const detail = ref({
+  personal: {
+    slogan: ['欢迎使用billd直播~'],
+    list: [
+      {
+        color: 'blue',
+        name: 'VIP',
+        desc: '适用于个人用户简单体验',
+        price: {
+          left: '￥',
+          center: '0',
+          right: '',
+        },
+        tip: '',
+        feat: [
+          {
+            status: 'done',
+            txt: 'SRS直播',
+          },
+          {
+            status: 'done',
+            txt: '打PK直播',
+          },
+          {
+            status: 'done',
+            txt: 'WebRTC直播',
+          },
+          {
+            status: 'done',
+            txt: 'WebRTC会议',
+          },
+        ],
+        btn: {
+          type: 'push',
+          link: routerName.push,
+          txt: '免费体验',
+        },
+      },
+      {
+        color: 'green',
+        name: 'SVIP',
+        desc: '适用于个人用户中度体验',
+        price: {
+          left: '￥',
+          center: '10',
+          right: '元/月',
+        },
+        tip: '涵盖VIP全部功能',
+        feat: [
+          {
+            status: 'done',
+            txt: '转推b站',
+          },
+          {
+            status: 'done',
+            txt: '转推虎牙',
+          },
+          {
+            status: 'done',
+            txt: '去广告',
+          },
+        ],
+        btn: {
+          type: 'toast',
+          link: '即将上线~',
+          txt: '立即购买',
+        },
+      },
+      {
+        color: 'orange',
+        name: 'ADMIN',
+        desc: '适用于个人用户深度体验',
+        price: {
+          left: '￥',
+          center: '50',
+          right: '元/月',
+        },
+        tip: '涵盖SVIP全部功能',
+        feat: [
+          {
+            status: 'done',
+            txt: 'Msr直播',
+          },
+          {
+            status: 'done',
+            txt: '腾讯云直播（CDN）',
+          },
+          {
+            status: 'done',
+            txt: '腾讯云打PK（CDN）',
+          },
+        ],
+        btn: {
+          type: 'toast',
+          link: '即将上线~',
+          txt: '立即购买',
+        },
+      },
+    ],
+  },
+  openSource: {
+    slogan: ['billd直播开源至今，累计收获1k+ star', '值得信赖，欢迎部署~'],
+    list: [
+      {
+        color: 'blue',
+        name: 'Github',
+        desc: '适用于个人学习/测试用途',
+        price: {
+          left: '￥',
+          center: '0',
+          right: '',
+        },
+        tip: '',
+        feat: [
+          {
+            status: 'done',
+            txt: '源码开源，自行部署',
+          },
+          {
+            status: 'done',
+            txt: '直播前台（Web）',
+          },
+          {
+            status: 'done',
+            txt: '直播后台（Web）',
+          },
+          {
+            status: 'done',
+            txt: '直播安卓端（Flutter）',
+          },
+          {
+            status: 'todo',
+            txt: '直播苹果端（Flutter）',
+          },
+          {
+            status: 'todo',
+            txt: '直播客户端（Electron）',
+          },
+        ],
+        btn: {
+          type: 'link',
+          link: 'https://github.com/galaxy-s10/billd-live',
+          txt: '立即部署',
+        },
+      },
+      {
+        color: 'green',
+        name: '私有化部署',
+        desc: '适用于个人/企业自建直播平台',
+        price: {
+          left: '￥',
+          center: '3999',
+          right: '起',
+        },
+        tip: '涵盖Github全部/部分功能',
+        feat: [
+          {
+            status: 'done',
+            txt: '无门槛，全程专人负责部署',
+          },
+          {
+            status: 'done',
+            txt: '本地服务器部署',
+          },
+          {
+            status: 'done',
+            txt: '快速上线',
+          },
+        ],
+        btn: {
+          type: 'showContact',
+          link: '',
+          txt: '立即咨询',
+        },
+      },
+    ],
+  },
+  customized: {
+    slogan: ['billd直播支持定制化', '立即定制自己的个性化直播间~'],
+    list: [
+      {
+        color: 'blue',
+        name: '在线咨询',
+        desc: '咨询/答疑服务',
+        price: {
+          left: '￥',
+          center: '50',
+          right: '元/小时',
+        },
+        tip: '',
+        feat: [
+          {
+            status: 'done',
+            txt: '一对一解答',
+          },
+        ],
+        btn: {
+          type: 'showContact',
+          link: '',
+          txt: '立即咨询',
+        },
+      },
+      {
+        color: 'blue',
+        name: '付费课程',
+        desc: '适用于前端/音视频小白',
+        price: {
+          left: '￥',
+          center: '399',
+          right: '元',
+        },
+        tip: '',
+        feat: [
+          {
+            status: 'done',
+            txt: '一对一解答（4小时）',
+          },
+          {
+            status: 'done',
+            txt: '能够搭建最基础的直播间',
+          },
+          {
+            status: 'done',
+            txt: '单独的代码仓库',
+          },
+          {
+            status: 'done',
+            txt: '视频讲解',
+          },
+          {
+            status: 'done',
+            txt: 'billd-live付费课微信群',
+          },
+        ],
+        btn: {
+          type: 'link',
+          link: COMMON_URL.payCoursesArticle,
+          txt: '了解详情',
+        },
+      },
+      {
+        color: 'orange',
+        name: '私有化部署',
+        desc: '适用于个人/企业自建直播平台',
+        price: {
+          left: '￥',
+          center: '4999',
+          right: '起',
+        },
+        tip: '',
+        feat: [
+          {
+            status: 'done',
+            txt: '无门槛，全程专人负责部署',
+          },
+          {
+            status: 'done',
+            txt: '本地服务器部署',
+          },
+          {
+            status: 'done',
+            txt: '快速上线',
+          },
+          {
+            status: 'done',
+            txt: '定制化功能',
+          },
+        ],
+        btn: {
+          type: 'showContact',
+          link: '',
+          txt: '立即咨询',
+        },
+      },
+    ],
+  },
+});
+
+function handleClick(item) {
+  console.log(item);
+  if (item.type === 'link') {
+    openToTarget(item.link);
+  } else if (item.type === 'push') {
+    const url = router.resolve({
+      name: item.link,
+    });
+    openToTarget(url.href);
+  } else if (item.type === 'buy') {
+    console.log('buy');
+  } else if (item.type === 'toast') {
+    window.$message.info(item.link);
+  } else if (item.type === 'showContact') {
+    showContach.value = true;
+  }
+}
 </script>
 
 <style lang="scss" scoped>
 .privatizationDeployment-wrap {
-  display: flex;
-  box-sizing: border-box;
-  margin: 0 auto;
-  padding-top: 50px;
-  width: 960px;
-  color: rgb(33, 53, 71);
+  height: calc(100vh - $layout-head-h);
+  background-color: #f4f8ff;
+  .title {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+    margin: 0 auto;
+    width: 1200px;
+    height: 180px;
+    // background-color: red;
+    text-align: center;
+    font-size: 40px;
+  }
+  .tab {
+    display: flex;
+    justify-content: center;
+    margin: 0 auto;
+    padding: 8px 0;
+    width: 320px;
+    border-radius: 40px;
+    background: white;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
 
-  .content {
-    flex: 1;
-    font-size: 16px;
-    .title {
-      margin: 0;
-      margin-bottom: 60px;
-      font-weight: 500;
-      font-size: 40px;
-    }
-    .hr {
-      margin: 60px 0 20px 0;
-      width: 100%;
-      height: 1px;
-      background-color: #e7e7e7;
-    }
-
-    .link {
-      color: $theme-color-gold;
-      text-decoration: none;
-      font-weight: 500;
+    user-select: none;
+    .item {
+      padding: 4px 25px;
+      border-radius: 40px;
+      color: #686e88;
+      font-weight: 700;
+      font-size: 16px;
       cursor: pointer;
-    }
-    .list {
-      h2 {
-        font-weight: 600;
-      }
-
-      .item {
-        font-size: 16px;
-        &.sponsors {
-          h3 {
-            margin-top: 50px;
-            text-align: center;
-          }
-          .list {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-evenly;
-          }
-          .bg {
-            display: flex;
-            align-items: center;
-            flex-shrink: 0;
-            justify-content: center;
-            box-sizing: border-box;
-            margin-bottom: 5px;
-            border-radius: 4px;
-            background-color: #f9f9f9;
-            cursor: pointer;
-          }
-        }
+      &.active {
+        background-color: $theme-color-gold;
+        color: white;
       }
     }
   }
-  .aside {
-    padding-left: 90px;
-    width: 150px;
-
-    .title {
-      margin-bottom: 8px;
-      color: rgb(33, 53, 71);
-      font-weight: 700;
-      font-size: 12px;
-    }
+  .list {
+    display: flex;
+    justify-content: center;
+    margin: 50px auto 0;
+    width: 1200px;
     .item {
-      margin-bottom: 8px;
-      color: rgba(60, 60, 60, 0.7);
-      font-size: 13px;
-      cursor: pointer;
-      &:hover {
-        color: #213547;
+      box-sizing: border-box;
+      margin: 0 10px;
+      padding: 20px 20px;
+      width: 240px;
+      // border: 1px solid #dde6ed;
+      border-radius: 2px;
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+      background-color: white;
+      font-size: 14px;
+
+      &.blue {
+        border-top: 7px solid #38c0ff;
+      }
+      &.green {
+        border-top: 7px solid #30d1aa;
+      }
+      &.orange {
+        border-top: 7px solid #ffbd33;
+      }
+      .name {
+        padding: 10px 0 0;
+        height: 40px;
+        text-align: center;
+        font-size: 30px;
+        line-height: 1;
+      }
+      .desc {
+        margin-top: 10px;
+        height: 40px;
+        color: #88898d;
+        text-align: center;
+        // background-color: red;
+      }
+      .price {
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        height: 45px;
+        color: #88898d;
+        text-align: center;
+        .t1 {
+          color: #272727;
+          font-weight: 600;
+          font-size: 16px;
+        }
+        .t2 {
+          color: #272727;
+          font-size: 40px;
+          line-height: 36px;
+        }
+        .t3 {
+          color: #2c2c2c;
+          font-size: 16px;
+        }
+        // background-color: red;
+      }
+      .feat {
+        margin-top: 30px;
+        height: 200px;
+        .feat-item {
+          display: flex;
+          align-items: center;
+          margin-bottom: 10px;
+          &.tip {
+            color: #88898d;
+          }
+          .todo,
+          .done {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            text-align: center;
+          }
+          .todo {
+            position: relative;
+            &::after {
+              color: #ffc049;
+              content: '-';
+              text-align: center;
+              font-size: 16px;
+            }
+          }
+          .done {
+            @include setBackground('@/assets/img/check.png');
+          }
+        }
+      }
+      .btn {
+        margin: 0 auto;
+        padding: 8px 0;
+        width: 160px;
+        border: 1px solid $theme-color-gold;
+        border-radius: 4px;
+        color: $theme-color-gold;
+        text-align: center;
+        font-size: 16px;
+        cursor: pointer;
+        &:hover {
+          background-color: $theme-color-gold;
+          color: white;
+        }
       }
     }
   }
