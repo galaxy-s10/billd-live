@@ -13,17 +13,24 @@ class TerminalPrintPlugin {
       const port = stats.compilation.options.devServer!.port as number;
       console.log('  App running at:');
       console.log(
-        `- Local:    ${chalk.cyan(`http://localhost:${port}${publicPath}`)}`
+        `- Local:      ${chalk.cyan(`http://localhost:${port}${publicPath}`)}`
       );
       console.log(
-        `- Network:  ${chalk.cyan(`http://${localIPv4!}:${port}${publicPath}`)}`
+        `- Network:    ${chalk.cyan(
+          `http://${localIPv4!}:${port}${publicPath}`
+        )}`
       );
-      console.log(`- 作者微信: ${chalk.cyan(`shuisheng9905`)}`);
+      console.log(`- 作者微信:   ${chalk.cyan(`shuisheng9905`)}`);
       console.log(
-        `- 付费课程: ${chalk.cyan(`https://www.hsslive.cn/article/151`)}`
+        `- 付费课程:   ${chalk.cyan(`https://www.hsslive.cn/article/151`)}`
       );
       console.log(
-        `- 欢迎PR:   ${chalk.cyan(
+        `- 私有化部署: ${chalk.cyan(
+          `https://live.hsslive.cn/privatizationDeployment`
+        )}`
+      );
+      console.log(
+        `- 欢迎PR:     ${chalk.cyan(
           `billd-live目前只有作者一人开发，难免有不足的地方，欢迎提PR或Issue`
         )}`
       );
