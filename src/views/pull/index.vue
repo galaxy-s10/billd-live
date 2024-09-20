@@ -44,16 +44,37 @@
                 <div class="f-left">+关注</div>
                 <div class="f-right">666</div>
               </div>
-              <div class="rtt">延迟：{{ rtcRtt || '-' }}</div>
-              <div class="loss">丢包：{{ rtcLoss || '-' }}</div>
-              <div class="bitrate">码率：-</div>
+              <span v-if="NODE_ENV === 'development'">
+                {{ liveRoomTypeEnumMap[appStore.liveRoomInfo?.type!] }}：{{
+                  mySocketId
+                }}
+              </span>
+              <div
+                class="rtc-info"
+                v-if="
+                  [
+                    LiveRoomTypeEnum.wertc_live,
+                    LiveRoomTypeEnum.wertc_meeting_one,
+                    LiveRoomTypeEnum.wertc_meeting_two,
+                  ].includes(appStore.liveRoomInfo?.type!)
+                "
+              >
+                <div class="item">延迟：{{ rtcRtt || '-' }}</div>
+                <div class="item">丢包：{{ rtcLoss || '-' }}</div>
+                <div class="item">帧率：{{ rtcFps || '-' }}</div>
+                <div class="item">发送码率：{{ rtcBytesSent || '-' }}</div>
+                <div class="item">接收码率：{{ rtcBytesReceived || '-' }}</div>
+              </div>
             </div>
             <div class="bottom">
               <div
                 class="desc"
-                :title="appStore.liveRoomInfo?.desc"
+                v-if="appStore.liveRoomInfo?.desc?.length"
               >
-                {{ appStore.liveRoomInfo?.desc }}
+                <FloatTip
+                  :txt="appStore.liveRoomInfo?.desc"
+                  :max-len="20"
+                ></FloatTip>
               </div>
               <span
                 class="area"
@@ -66,10 +87,6 @@
               >
                 {{ appStore.liveRoomInfo?.areas?.[0]?.name }}
               </span>
-
-              <span v-if="NODE_ENV === 'development'">
-                socketId:{{ mySocketId }}
-              </span>
             </div>
           </div>
         </div>
@@ -78,12 +95,6 @@
           @click="handlePk"
         >
           <div class="top">
-            <div
-              class="item"
-              v-if="NODE_ENV === 'development'"
-            >
-              {{ liveRoomTypeEnumMap[appStore.liveRoomInfo?.type || ''] }}
-            </div>
             <div class="item">666人看过</div>
             <div class="item">666点赞</div>
             <div class="item">当前在线:{{ liveUserList.length }}人</div>
@@ -360,13 +371,12 @@
       >
         <div
           class="disableSpeaking"
-          v-if="appStore.disableSpeaking.get(appStore.liveRoomInfo?.id || -1)"
+          v-if="appStore.disableSpeaking.get(appStore.liveRoomInfo?.id!)"
         >
           <div class="bg"></div>
           <span class="txt">
             你被禁言了（{{
-              appStore.disableSpeaking.get(appStore.liveRoomInfo?.id || -1)
-                ?.label
+              appStore.disableSpeaking.get(appStore.liveRoomInfo?.id!)
             }}）
           </span>
         </div>
@@ -456,7 +466,7 @@ import {
 import { fetchGoodsList } from '@/api/goods';
 import { fetchLiveRoomOnlineUser } from '@/api/live';
 import { fetchGetWsMessageList } from '@/api/wsMessage';
-import { QINIU_RESOURCE, liveRoomTypeEnumMap } from '@/constant';
+import { liveRoomTypeEnumMap, QINIU_RESOURCE } from '@/constant';
 import { emojiArray } from '@/emoji';
 import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { useFullScreen, usePictureInPicture } from '@/hooks/use-play';
@@ -547,6 +557,28 @@ const rtcLoss = computed(() => {
   const arr: any[] = [];
   networkStore.rtcMap.forEach((rtc) => {
     arr.push(`${Number(rtc.loss.toFixed(2))}%`);
+  });
+  return arr.join();
+});
+
+const rtcFps = computed(() => {
+  const arr: any[] = [];
+  networkStore.rtcMap.forEach((rtc) => {
+    arr.push(`${Number(rtc.inboundFps.toFixed(2))}`);
+  });
+  return arr.join();
+});
+const rtcBytesSent = computed(() => {
+  const arr: any[] = [];
+  networkStore.rtcMap.forEach((rtc) => {
+    arr.push(`${Number(rtc.bytesSent.toFixed(0))}kb/s`);
+  });
+  return arr.join();
+});
+const rtcBytesReceived = computed(() => {
+  const arr: any[] = [];
+  networkStore.rtcMap.forEach((rtc) => {
+    arr.push(`${Number(rtc.bytesReceived.toFixed(0))}kb/s`);
   });
   return arr.join();
 });
@@ -1092,20 +1124,19 @@ function handleScrollTop() {
                 background-color: #e3e5e7;
               }
             }
-            .rtt,
-            .loss {
-              margin-right: 10px;
-              font-size: 14px;
+            .rtc-info {
+              display: flex;
+              align-items: center;
+              .item {
+                margin-right: 10px;
+                font-size: 14px;
+              }
             }
           }
           .bottom {
             display: flex;
             font-size: 14px;
             .desc {
-              width: 400px;
-              cursor: pointer;
-
-              @extend %singleEllipsis;
             }
             .area {
               margin: 0 10px;

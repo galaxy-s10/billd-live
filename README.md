@@ -37,10 +37,11 @@ billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://
 
 - [x] 原生 webrtc 推拉流
 - [x] srs webrtc 推流，`http-flv` 或 `hls`拉流
-- [x] msr 推流，ffmpeg转码，`http-flv` 或 `hls`拉流
-- [x] 一对一打PK
-- [x] 一对多打PK
-- [x] 多对多打PK
+- [x] msr 推流，ffmpeg 转码，`http-flv` 或 `hls`拉流
+- [x] 一对一打 PK
+- [x] 一对多打 PK
+- [x] 多对多打 PK
+- [x] 多平台转推（b 站、虎牙直播）
 - [x] 前端混流
 - [x] 推流鉴权
 - [x] 拉流鉴权
@@ -51,24 +52,27 @@ billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://
 - [x] 商品模块
 - [x] 适配移动端
 - [x] 在线后台
-- [x] 多平台转推（b站、虎牙直播）
 - [x] 接入腾讯云-云直播
-- [ ] 接入腾讯云-实时音视频TRTC
+- [ ] 接入腾讯云-实时音视频 TRTC
 
 ## 技术栈
 
-- 前端相关：[Vue3](https://vuejs.org) 以及相关技术栈、`Typescript`、`WebRTC`、`WebCodecs`、`Web Audio`、`Web Workder`、`Canvas`
+- 前端相关：[Vue3](https://vuejs.org) 以及相关技术栈、`Typescript`、`WebRTC`、`WebCodecs`、`Web Workder`、`Web Audio`、`Canvas`
 - 后端相关：[Nodejs](https://nodejs.org) 以及相关技术栈、`Koa2`、`Sequelize`、`Mysql`、`Redis`、`Socket.io`
 - 流媒体服务器相关：[SRS](https://ossrs.net)、 [FFmpeg](https://ffmpeg.org)、[Coturn](https://github.com/coturn/coturn)
 - Docker 相关：[Docker](https://www.docker.com)
 
+## 私有化部署
+
+[https://live.hsslive.cn/privatizationDeployment](https://live.hsslive.cn/privatizationDeployment)
+
 ## 接口文档
 
-apifox：[https://apifox.com/apidoc/shared-c7556b54-17b2-494e-a039-572d83f103ed](https://apifox.com/apidoc/shared-c7556b54-17b2-494e-a039-572d83f103ed)
+Apifox：[https://apifox.com/apidoc/shared-c7556b54-17b2-494e-a039-572d83f103ed](https://apifox.com/apidoc/shared-c7556b54-17b2-494e-a039-572d83f103ed)
 
-## 下载
+## 客户端下载
 
-[https://live.hsslive.cn/download](https://live.hsslive.cn/download)
+官网下载：[https://live.hsslive.cn/download/live](https://live.hsslive.cn/download/live)
 
 ## 预览
 
@@ -167,9 +171,9 @@ apifox：[https://apifox.com/apidoc/shared-c7556b54-17b2-494e-a039-572d83f103ed]
 
 ## 本地启动
 
-> b站教程：[从零搭建迷你版b站web直播间合集](https://space.bilibili.com/381307133/channel/collectiondetail?sid=1458070)，看里面带 `从零搭建迷你b站直播间` 封面的视频。
+> b 站教程：[从零搭建迷你版 b 站 web 直播间合集](https://space.bilibili.com/381307133/channel/collectiondetail?sid=1458070)，看里面带 `从零搭建迷你b站直播间` 封面的视频。
 >
-> billd-live付费课：[https://www.hsslive.cn/article/151](https://www.hsslive.cn/article/151)
+> billd-live 付费课：[https://www.hsslive.cn/article/151](https://www.hsslive.cn/article/151)
 
 ### billd-live
 
@@ -219,7 +223,10 @@ pnpm i billd-utils@latest billd-scss@latest billd-html-webpack-plugin@latest
 # 1.初始化docker容器
 pnpm run docker:dev
 
-# 2.运行（4300端口）
+# 2.初始化数据库（可选，只需要执行一次）
+pnpm run mysql:dev
+
+# 3.运行（4300端口）
 pnpm run dev
 ```
 

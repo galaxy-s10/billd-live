@@ -818,7 +818,7 @@ function startPull() {
       outline: none;
       border: 1px solid hsla(0, 0%, 60%, 0.2);
       border-radius: 4px;
-      background-color: #f1f2f3;
+      background-color: #f5f6f7;
       font-size: 14px;
     }
   }

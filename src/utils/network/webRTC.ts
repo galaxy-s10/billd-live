@@ -61,7 +61,19 @@ export class WebRTCClass {
 
   rtt = -1;
 
+  outboundFps = -1;
+  inboundFps = -1;
+
+  getStatsDelay = 1000;
   loopGetStatsTimer: any = null;
+
+  preBytesSent = 0;
+  /** 发送码率，单位kb/s */
+  bytesSent = 0;
+
+  preBytesReceived = 0;
+  /** 接收码率，单位kb/s */
+  bytesReceived = 0;
 
   constructor(data: {
     roomId: string;
@@ -94,63 +106,41 @@ export class WebRTCClass {
   }
 
   loopGetStats = () => {
-    const previousTimestamp = 0; // 初始化上一次获取码率信息的时间
-
     this.loopGetStatsTimer = setInterval(async () => {
       if (!this.peerConnection) return;
       try {
         const res = await this.peerConnection.getStats();
         // 总丢包率（音频丢包和视频丢包）
-        let loss = 0;
-        let rtt = 0;
+        const loss = 0;
+        const rtt = 0;
+        let bytesSent = 0;
+        let bytesReceived = 0;
         res.forEach((report: RTCInboundRtpStreamStats) => {
-          // @ts-ignore
-          const currentRoundTripTime = report?.currentRoundTripTime;
-          const packetsLost = report?.packetsLost;
-          const packetsReceived = report.packetsReceived;
-          if (currentRoundTripTime !== undefined) {
-            rtt = currentRoundTripTime * 1000;
-          }
-          if (report.type === 'inbound-rtp' && report.kind === 'audio') {
-            if (packetsReceived !== undefined && packetsLost !== undefined) {
-              if (packetsLost === 0 || packetsReceived === 0) {
-                loss += 0;
-              } else {
-                loss += packetsLost / packetsReceived;
-              }
-            }
+          if (report.type === 'outbound-rtp' && report.kind === 'video') {
+            this.outboundFps = report.framesPerSecond || 0;
           }
           if (report.type === 'inbound-rtp' && report.kind === 'video') {
-            if (packetsReceived !== undefined && packetsLost !== undefined) {
-              if (packetsLost === 0 || packetsReceived === 0) {
-                loss += 0;
-              } else {
-                loss += packetsLost / packetsReceived;
-              }
-            }
+            this.inboundFps = report.framesPerSecond || 0;
           }
 
-          // if (report.type === 'outbound-rtp') {
-          //   // @ts-ignore
-          //   const bytesSent = report.bytesSent;
-          //   const timestamp = report.timestamp;
-          //   // 计算发送码率
-          //   const sendBitrate =
-          //     (bytesSent / (timestamp - previousTimestamp)) * 8;
-          //   console.log(`发送码率: ${sendBitrate} kbps`);
-          //   // 更新上一次获取码率信息的时间
-          //   previousTimestamp = timestamp;
-          // } else if (report.type === 'inbound-rtp') {
-          //   const bytesReceived = report.bytesReceived || 0;
-          //   const timestamp = report.timestamp;
-          //   // 计算接收码率
-          //   const receiveBitrate =
-          //     (bytesReceived / (timestamp - previousTimestamp)) * 8;
-          //   console.log(`接收码率: ${receiveBitrate} kbps`);
-          //   // 更新上一次获取码率信息的时间
-          //   previousTimestamp = timestamp;
-          // }
+          // @ts-ignore
+          if (report.bytesSent) {
+            // @ts-ignore
+            bytesSent += report.bytesSent || 0;
+          }
+          if (report.bytesReceived) {
+            // @ts-ignore
+            bytesReceived += report.bytesReceived || 0;
+          }
         });
+        this.bytesSent =
+          (bytesSent - this.preBytesSent) / 1024 / (this.getStatsDelay / 1000);
+        this.bytesReceived =
+          (bytesReceived - this.preBytesReceived) /
+          1024 /
+          (this.getStatsDelay / 1000);
+        this.preBytesSent = bytesSent;
+        this.preBytesReceived = bytesReceived;
         this.loss = loss;
         this.rtt = rtt;
 
@@ -159,7 +149,7 @@ export class WebRTCClass {
         console.error('getStats错误');
         console.log(error);
       }
-    }, 1000);
+    }, this.getStatsDelay);
   };
 
   prettierLog = (data: {

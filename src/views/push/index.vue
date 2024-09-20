@@ -80,6 +80,16 @@
         ref="bottomRef"
         class="room-control"
       >
+        <span
+          v-if="NODE_ENV === 'development'"
+          class="debug-info"
+        >
+          <span>{{
+            liveRoomTypeEnumMap[appStore.liveRoomInfo?.type + '']
+          }}</span>
+          <span>：</span>
+          <span>{{ mySocketId }}</span>
+        </span>
         <div class="info">
           <div
             class="avatar"
@@ -106,18 +116,11 @@
                 </div>
                 <div class="item">延迟：{{ rtcRtt || '-' }}</div>
                 <div class="item">丢包：{{ rtcLoss || '-' }}</div>
+                <div class="item">帧率：{{ rtcFps || '-' }}</div>
+                <div class="item">发送码率：{{ rtcBytesSent || '-' }}</div>
+                <div class="item">接收码率：{{ rtcBytesReceived || '-' }}</div>
               </div>
               <div class="other">
-                <span
-                  v-if="NODE_ENV === 'development'"
-                  class="item"
-                >
-                  <span>{{ mySocketId }}</span>
-                  <span>---</span>
-                  <span>{{
-                    liveRoomTypeEnumMap[appStore.liveRoomInfo?.type || '']
-                  }}</span>
-                </span>
                 <span
                   class="item share"
                   @click="handleShare"
@@ -601,6 +604,27 @@ const rtcLoss = computed(() => {
   const arr: any[] = [];
   networkStore.rtcMap.forEach((rtc) => {
     arr.push(`${Number(rtc.loss.toFixed(2))}%`);
+  });
+  return arr.join();
+});
+const rtcFps = computed(() => {
+  const arr: any[] = [];
+  networkStore.rtcMap.forEach((rtc) => {
+    arr.push(`${Number(rtc.outboundFps.toFixed(2))}`);
+  });
+  return arr.join();
+});
+const rtcBytesSent = computed(() => {
+  const arr: any[] = [];
+  networkStore.rtcMap.forEach((rtc) => {
+    arr.push(`${Number(rtc.bytesSent.toFixed(0))}kb/s`);
+  });
+  return arr.join();
+});
+const rtcBytesReceived = computed(() => {
+  const arr: any[] = [];
+  networkStore.rtcMap.forEach((rtc) => {
+    arr.push(`${Number(rtc.bytesReceived.toFixed(0))}kb/s`);
   });
   return arr.join();
 });
@@ -2575,11 +2599,18 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
       }
     }
     .room-control {
+      position: relative;
       display: flex;
       justify-content: space-between;
       padding: 15px;
       border-radius: 0 0 6px 6px;
       background-color: papayawhip;
+      .debug-info {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        font-size: 14px;
+      }
       .info {
         display: flex;
         width: 100%;
@@ -2839,7 +2870,7 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
           outline: none;
           border: 1px solid hsla(0, 0%, 60%, 0.2);
           border-radius: 4px;
-          background-color: #f1f2f3;
+          background-color: #f5f6f7;
           font-size: 14px;
         }
         .btn {

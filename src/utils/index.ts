@@ -2,6 +2,16 @@
 import { computeBox, getRangeRandom } from 'billd-utils';
 import sparkMD5 from 'spark-md5';
 
+export function handleStrEllipsis(str: string, maxlen: number) {
+  const res = str || '';
+  const len = maxlen || 3;
+  if (res?.length > len) {
+    return `${res.slice(0, len)}...`;
+  } else {
+    return res;
+  }
+}
+
 export const googleAd = () => {
   const el = document.createElement('script');
   el.src =
