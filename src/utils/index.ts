@@ -1,6 +1,14 @@
 // TIP: ctrl+cmd+t,生成函数注释
-import { computeBox, getRangeRandom } from 'billd-utils';
+import { computeBox, getRangeRandom, judgeType } from 'billd-utils';
 import sparkMD5 from 'spark-md5';
+
+/**
+ * ios日期兼容
+ * 2022-01-19 15:28:00 转成 2022/01/19 15:28:00
+ */
+export function iosTimestamp(time: string) {
+  return time.replace(/-/g, '/');
+}
 
 export function handleStrEllipsis(str: string, maxlen: number) {
   const res = str || '';
@@ -121,11 +129,15 @@ export function formatMoney(money?: number) {
   return (money / 100).toFixed(2);
 }
 
-export const formatTimeHour = (timestamp: number) => {
+export const formatTimeHour = (time: number | string | Date) => {
   function addZero(num: number) {
     return num < 10 ? `0${num}` : num;
   }
-  const date = new Date(timestamp);
+  let time2 = time;
+  if (judgeType(time) === 'string') {
+    time2 = iosTimestamp(time as string);
+  }
+  const date = new Date(time2);
 
   // 获取小时
   const hours = date.getHours();

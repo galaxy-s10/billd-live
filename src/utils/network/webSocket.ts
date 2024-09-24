@@ -73,8 +73,9 @@ export class WebSocketClass {
       request_id: requestId,
       socket_id: this.socketIo.id,
       user_info: userStore.userInfo,
-      user_id: userStore.userInfo?.id || undefined,
       user_token: userStore.token || undefined,
+      user_agent: navigator.userAgent,
+      time: +new Date(),
       data: data || {},
     };
     // const binary = stringToArrayBuffer(JSON.stringify(sendData));

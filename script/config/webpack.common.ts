@@ -8,6 +8,7 @@ import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import { NaiveUiResolver } from 'unplugin-vue-components/resolvers';
 import ComponentsPlugin from 'unplugin-vue-components/webpack';
 import { VueLoaderPlugin } from 'vue-loader';
+// eslint-disable-next-line import/named
 import { Configuration, DefinePlugin } from 'webpack';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import { merge } from 'webpack-merge';

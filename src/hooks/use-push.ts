@@ -6,7 +6,11 @@ import {
   fetchCreateUserLiveRoom,
   fetchUserHasLiveRoom,
 } from '@/api/userLiveRoom';
-import { DanmuMsgTypeEnum, WsMessageMsgIsFileEnum } from '@/interface';
+import {
+  DanmuMsgTypeEnum,
+  WsMessageContentTypeEnum,
+  WsMessageMsgIsFileEnum,
+} from '@/interface';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
@@ -331,21 +335,18 @@ export function usePush() {
       return;
     }
     const instance = networkStore.wsMap.get(roomId.value);
-    if (!instance) {
-      window.$message.error('还没开播，不能发送弹幕！');
-      return;
-    }
-    instance.send<WsMessageType['data']>({
+    // if (!instance) {
+    //   window.$message.error('还没开播，不能发送弹幕！');
+    //   return;
+    // }
+    instance?.send<WsMessageType['data']>({
       requestId: getRandomString(8),
       msgType: WsMsgTypeEnum.message,
       data: {
-        socket_id: '',
-        msg: danmuStr.value,
-        msgType: DanmuMsgTypeEnum.danmu,
+        content: danmuStr.value,
+        content_type: WsMessageContentTypeEnum.txt,
+        msg_type: DanmuMsgTypeEnum.danmu,
         live_room_id: Number(roomId.value),
-        msgIsFile: msgIsFile.value,
-        send_msg_time: +new Date(),
-        user_agent: navigator.userAgent,
         isBilibili: false,
       },
     });

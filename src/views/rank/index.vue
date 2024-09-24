@@ -17,7 +17,11 @@
     >
       <div class="top">
         <div
-          v-for="(item, index) in [rankList[1], rankList[0], rankList[2]]"
+          v-for="(item, index) in [
+            rankList[1],
+            rankList[0],
+            rankList[2],
+          ].filter((v) => v !== undefined)"
           :key="currRankType + '-' + index"
           :class="{ item: 1, [`rank-${item.rank}`]: 1 }"
         >

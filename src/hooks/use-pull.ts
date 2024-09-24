@@ -9,6 +9,7 @@ import {
   DanmuMsgTypeEnum,
   LiveLineEnum,
   LiveRenderEnum,
+  WsMessageContentTypeEnum,
   WsMessageMsgIsFileEnum,
 } from '@/interface';
 import { useAppStore } from '@/store/app';
@@ -41,15 +42,8 @@ export function usePull(roomId: string) {
   const isRemoteDesk = ref(false);
   const videoElArr = ref<HTMLVideoElement[]>([]);
   const remoteVideo = ref<HTMLElement[]>([]);
-  const {
-    mySocketId,
-    initWs,
-    isBilibili,
-    roomLiving,
-    anchorInfo,
-    liveUserList,
-    damuList,
-  } = useWebsocket();
+  const { mySocketId, initWs, roomLiving, anchorInfo, liveUserList, damuList } =
+    useWebsocket();
   const { flvVideoEl, flvIsPlaying, startFlvPlay, destroyFlv } = useFlvPlay();
   const { hlsVideoEl, hlsIsPlaying, startHlsPlay, destroyHls } = useHlsPlay();
   const stopDrawingArr = ref<any[]>([]);
@@ -442,43 +436,63 @@ export function usePull(roomId: string) {
     const key = event.key.toLowerCase();
     if (key === 'enter') {
       event.preventDefault();
-      danmuMsgType.value = DanmuMsgTypeEnum.danmu;
-      sendDanmu();
+      sendDanmuTxt(danmuStr.value);
     }
   }
 
-  function sendDanmu() {
+  function sendDanmuTxt(txt: string) {
     if (!loginTip()) {
       return;
     }
     if (!commentAuthTip()) {
       return;
     }
-    if (!danmuStr.value.trim().length) {
+    if (!txt.trim().length) {
       window.$message.warning('请输入弹幕内容！');
       return;
     }
     const instance = networkStore.wsMap.get(roomId);
     if (!instance) return;
-    const requestId = getRandomString(8);
-    console.log(isBilibili.value, isBilibili, 'isBilibili');
     const messageData: WsMessageType['data'] = {
-      socket_id: '',
-      msg: danmuStr.value,
-      msgType: danmuMsgType.value,
+      content: txt,
+      content_type: WsMessageContentTypeEnum.txt,
+      msg_type: DanmuMsgTypeEnum.danmu,
       live_room_id: Number(roomId),
-      msgIsFile: msgIsFile.value,
-      send_msg_time: +new Date(),
-      user_agent: navigator.userAgent,
-      isBilibili: isBilibili.value,
+      isBilibili: false,
+    };
+    instance.send({
+      requestId: getRandomString(8),
+      msgType: WsMsgTypeEnum.message,
+      data: messageData,
+    });
+  }
+
+  function sendDanmuImg(url: string) {
+    if (!loginTip()) {
+      return;
+    }
+    if (!commentAuthTip()) {
+      return;
+    }
+    if (!url.trim().length) {
+      window.$message.warning('图片不能为空！');
+      return;
+    }
+    const instance = networkStore.wsMap.get(roomId);
+    if (!instance) return;
+    const requestId = getRandomString(8);
+    const messageData: WsMessageType['data'] = {
+      content: url,
+      content_type: WsMessageContentTypeEnum.img,
+      msg_type: DanmuMsgTypeEnum.danmu,
+      live_room_id: Number(roomId),
+      isBilibili: false,
     };
     instance.send({
       requestId,
       msgType: WsMsgTypeEnum.message,
       data: messageData,
     });
-
-    danmuStr.value = '';
   }
 
   return {
@@ -490,7 +504,8 @@ export function usePull(roomId: string) {
     closeWs,
     closeRtc,
     keydownDanmu,
-    sendDanmu,
+    sendDanmuTxt,
+    sendDanmuImg,
     showPlayBtn,
     danmuMsgType,
     isPlaying,

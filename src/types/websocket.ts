@@ -1,7 +1,7 @@
 import {
   DanmuMsgTypeEnum,
   ILiveUser,
-  WsMessageMsgIsFileEnum,
+  WsMessageContentTypeEnum,
 } from '@/interface';
 import { ILiveRoom, LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import { IUser } from '@/types/IUser';
@@ -89,10 +89,11 @@ export interface IWsFormat<T> {
   socket_id: string;
   /** 用户信息 */
   user_info?: IUser;
-  /** 用户id */
-  user_id?: number;
   /** 用户token */
   user_token?: string;
+  /** 消息时间戳 */
+  time: number;
+  user_agent: string;
   data: T;
 }
 
@@ -159,20 +160,17 @@ export type WsRemoteDeskBehaviorType = IWsFormat<{
 }>;
 
 export interface IDanmu {
-  msgType: DanmuMsgTypeEnum;
-  msgIsFile: WsMessageMsgIsFileEnum;
-  msg: string;
-  username?: string;
-  user_agent?: string;
-  send_msg_time: number;
+  /** 消息类型 */
+  msg_type: DanmuMsgTypeEnum;
+  /** 消息内容类型 */
+  content_type?: WsMessageContentTypeEnum;
+  /** 消息内容 */
+  content: string;
   live_room_id: number;
   redbag_send_id?: number;
+  /** 消息id */
   msg_id?: number;
   isBilibili?: boolean;
-
-  socket_id: string;
-  request_id?: string;
-  userInfo?: IUser;
 }
 
 /** ws消息 */

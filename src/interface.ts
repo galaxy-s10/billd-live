@@ -159,6 +159,12 @@ export enum WsMessageMsgIsFileEnum {
   no,
 }
 
+export enum WsMessageContentTypeEnum {
+  txt,
+  img,
+  video,
+}
+
 export enum WsMessageMsgIsShowEnum {
   yes,
   no,
@@ -173,18 +179,19 @@ export interface IWsMessage {
   id?: number;
   username?: string;
   origin_username?: string;
+  content_type?: WsMessageContentTypeEnum;
   content?: string;
   origin_content?: string;
   redbag_send_id?: number;
   live_room_id?: number;
   user_id?: number;
   ip?: string;
-  msg_is_file?: WsMessageMsgIsFileEnum;
   msg_type?: DanmuMsgTypeEnum;
   user_agent?: string;
   send_msg_time?: number;
   is_show?: WsMessageMsgIsShowEnum;
   is_verify?: WsMessageMsgIsVerifyEnum;
+  remark?: string;
 
   user?: IUser;
   redbag_send?: IRedbagSend;

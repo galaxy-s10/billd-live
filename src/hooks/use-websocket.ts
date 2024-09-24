@@ -15,7 +15,7 @@ import { useWebRtcTencentcloudCss } from '@/hooks/webrtc/tencentcloudCss';
 import {
   DanmuMsgTypeEnum,
   ILiveUser,
-  WsMessageMsgIsFileEnum,
+  WsMessageContentTypeEnum,
 } from '@/interface';
 import router, { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
@@ -24,7 +24,6 @@ import { useUserStore } from '@/store/user';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import { IUser } from '@/types/IUser';
 import {
-  IDanmu,
   WSGetRoomAllUserType,
   WSLivePkKeyType,
   WsAnswerType,
@@ -107,7 +106,7 @@ export const useWebsocket = () => {
   const currentVideoContentHint = ref(videoContentHint.value[3].value);
   const currentAudioContentHint = ref(audioContentHint.value[0].value);
   const timerObj = ref({});
-  const damuList = ref<IDanmu[]>([]);
+  const damuList = ref<WsMessageType[]>([]);
 
   onUnmounted(() => {
     clearInterval(loopHeartbeatTimer.value);
@@ -618,18 +617,7 @@ export const useWebsocket = () => {
     // 收到用户发送消息
     ws.socketIo.on(WsMsgTypeEnum.message, (data: WsMessageType) => {
       prettierReceiveWsMsg(WsMsgTypeEnum.message, data);
-      damuList.value.push({
-        user_agent: data.data.user_agent,
-        live_room_id: data.data.live_room_id,
-        request_id: data.request_id,
-        socket_id: data.socket_id,
-        msgType: data.data.msgType,
-        msg: data.data.msg,
-        userInfo: data.user_info,
-        msgIsFile: data.data.msgIsFile,
-        send_msg_time: data.data.send_msg_time,
-        isBilibili: data.data.isBilibili,
-      });
+      damuList.value.push(data);
     });
 
     // 收到disableSpeaking
@@ -804,16 +792,18 @@ export const useWebsocket = () => {
     // 其他用户加入房间
     ws.socketIo.on(WsMsgTypeEnum.otherJoin, (data: WsOtherJoinType['data']) => {
       prettierReceiveWsMsg(WsMsgTypeEnum.otherJoin, data);
-      const requestId = getRandomString(8);
-      const danmu: IDanmu = {
-        live_room_id: data.live_room.id!,
-        request_id: requestId,
-        msgType: DanmuMsgTypeEnum.otherJoin,
-        socket_id: data.join_socket_id,
-        userInfo: data.join_user_info,
-        msgIsFile: WsMessageMsgIsFileEnum.no,
-        msg: '',
-        send_msg_time: +new Date(),
+      const danmu: WsMessageType = {
+        request_id: '',
+        socket_id: '',
+        time: +new Date(),
+        user_agent: navigator.userAgent,
+        data: {
+          live_room_id: data.live_room.id!,
+          msg_id: -1,
+          content: '',
+          content_type: WsMessageContentTypeEnum.txt,
+          msg_type: DanmuMsgTypeEnum.otherJoin,
+        },
       };
       damuList.value.push(danmu);
       if (route.name === routerName.push) {
@@ -942,13 +932,17 @@ export const useWebsocket = () => {
       }
       networkStore.removeRtc(data.socket_id);
       damuList.value.push({
-        live_room_id: Number(roomId.value),
-        socket_id: data.socket_id,
-        msgType: DanmuMsgTypeEnum.userLeaved,
-        msgIsFile: WsMessageMsgIsFileEnum.no,
-        userInfo: data.user_info,
-        msg: '',
-        send_msg_time: +new Date(),
+        request_id: '',
+        socket_id: '',
+        time: +new Date(),
+        user_agent: navigator.userAgent,
+        data: {
+          live_room_id: Number(roomId.value),
+          msg_id: -1,
+          content: '',
+          content_type: WsMessageContentTypeEnum.txt,
+          msg_type: DanmuMsgTypeEnum.userLeaved,
+        },
       });
     });
   }

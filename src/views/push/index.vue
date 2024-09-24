@@ -313,14 +313,12 @@
               :key="index"
               class="item"
             >
-              <template v-if="item.msgType === DanmuMsgTypeEnum.danmu">
-                <span class="time">
-                  [{{ formatTimeHour(item.send_msg_time) }}]
-                </span>
+              <template v-if="item.data.msg_type === DanmuMsgTypeEnum.danmu">
+                <span class="time"> [{{ formatTimeHour(item.time) }}] </span>
                 <span class="name">
-                  <span v-if="item.userInfo">
-                    {{ item.userInfo.username }}[{{
-                      item.userInfo.roles?.map((v) => v.role_name).join()
+                  <span v-if="item.user_info">
+                    {{ item.user_info.username }}[{{
+                      item.user_info.roles?.map((v) => v.role_name).join()
                     }}]
                   </span>
                   <span v-else>{{ item.socket_id }}[游客]</span>
@@ -328,34 +326,36 @@
                 <span>：</span>
                 <span
                   class="msg"
-                  v-if="item.msgIsFile === WsMessageMsgIsFileEnum.no"
+                  v-if="item.data.content_type === WsMessageContentTypeEnum.txt"
                 >
-                  {{ item.msg }}
+                  {{ item.data.content }}
                 </span>
                 <div
                   class="msg img"
                   v-else
                 >
                   <img
-                    v-lazy="item.msg"
+                    v-lazy="item.data.content"
                     alt=""
                     @load="handleScrollTop"
                   />
                 </div>
               </template>
-              <template v-else-if="item.msgType === DanmuMsgTypeEnum.otherJoin">
+              <template
+                v-else-if="item.data.msg_type === DanmuMsgTypeEnum.otherJoin"
+              >
                 <span class="name system">系统通知：</span>
                 <span class="msg">
-                  <span>{{ item.userInfo?.username || item.socket_id }}</span>
+                  <span>{{ item.user_info?.username || item.socket_id }}</span>
                   <span>进入直播！</span>
                 </span>
               </template>
               <template
-                v-else-if="item.msgType === DanmuMsgTypeEnum.userLeaved"
+                v-else-if="item.data.msg_type === DanmuMsgTypeEnum.userLeaved"
               >
                 <span class="name system">系统通知：</span>
                 <span class="msg">
-                  <span>{{ item.userInfo?.username || item.socket_id }}</span>
+                  <span>{{ item.user_info?.username || item.socket_id }}</span>
                   <span>离开直播！</span>
                 </span>
               </template>
@@ -483,6 +483,7 @@ import { useQiniuJsUpload } from '@/hooks/use-upload';
 import {
   DanmuMsgTypeEnum,
   MediaTypeEnum,
+  WsMessageContentTypeEnum,
   WsMessageMsgIsFileEnum,
   WsMessageMsgIsShowEnum,
   WsMessageMsgIsVerifyEnum,
@@ -1141,17 +1142,19 @@ async function handleHistoryMsg() {
     if (res.code === 200) {
       res.data.rows.forEach((v) => {
         damuList.value.unshift({
-          ...v,
-          live_room_id: v.live_room_id!,
-          msg_id: v.id!,
+          request_id: '',
           socket_id: '',
-          msgType: v.msg_type!,
-          msgIsFile: v.msg_is_file!,
-          userInfo: v.user,
-          msg: v.content!,
-          username: v.username!,
-          send_msg_time: Number(v.send_msg_time),
-          redbag_send_id: v.redbag_send_id,
+          time: v.send_msg_time!,
+          user_agent: v.user_agent!,
+          user_info: v.user,
+          data: {
+            live_room_id: v.live_room_id!,
+            msg_id: v.id!,
+            content: v.content!,
+            content_type: v.content_type!,
+            msg_type: v.msg_type!,
+            redbag_send_id: v.redbag_send_id,
+          },
         });
       });
       if (
@@ -1159,12 +1162,17 @@ async function handleHistoryMsg() {
         appStore.liveRoomInfo?.system_msg !== ''
       ) {
         damuList.value.push({
-          live_room_id: Number(roomId.value),
+          request_id: '',
           socket_id: '',
-          msgType: DanmuMsgTypeEnum.system,
-          msgIsFile: WsMessageMsgIsFileEnum.no,
-          msg: appStore.liveRoomInfo.system_msg,
-          send_msg_time: Number(+new Date()),
+          time: +new Date(),
+          user_agent: navigator.userAgent,
+          data: {
+            live_room_id: Number(roomId.value),
+            msg_id: -1,
+            content: appStore.liveRoomInfo?.system_msg,
+            content_type: WsMessageContentTypeEnum.txt,
+            msg_type: DanmuMsgTypeEnum.system,
+          },
         });
       }
     }
