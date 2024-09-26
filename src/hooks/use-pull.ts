@@ -440,6 +440,33 @@ export function usePull(roomId: string) {
     }
   }
 
+  function sendDanmuReward(txt: string) {
+    if (!loginTip()) {
+      return;
+    }
+    if (!commentAuthTip()) {
+      return;
+    }
+    if (!txt.trim().length) {
+      window.$message.warning('请输入弹幕内容！');
+      return;
+    }
+    const instance = networkStore.wsMap.get(roomId);
+    if (!instance) return;
+    const messageData: WsMessageType['data'] = {
+      content: txt,
+      content_type: WsMessageContentTypeEnum.txt,
+      msg_type: DanmuMsgTypeEnum.reward,
+      live_room_id: Number(roomId),
+      isBilibili: false,
+    };
+    instance.send({
+      requestId: getRandomString(8),
+      msgType: WsMsgTypeEnum.message,
+      data: messageData,
+    });
+  }
+
   function sendDanmuTxt(txt: string) {
     if (!loginTip()) {
       return;
@@ -465,6 +492,7 @@ export function usePull(roomId: string) {
       msgType: WsMsgTypeEnum.message,
       data: messageData,
     });
+    danmuStr.value = '';
   }
 
   function sendDanmuImg(url: string) {
@@ -504,6 +532,7 @@ export function usePull(roomId: string) {
     closeWs,
     closeRtc,
     keydownDanmu,
+    sendDanmuReward,
     sendDanmuTxt,
     sendDanmuImg,
     showPlayBtn,

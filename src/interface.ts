@@ -277,6 +277,48 @@ export interface IGiftRecord {
   deleted_at?: string;
 }
 
+export enum LoginRecordEnum {
+  registerUsername,
+  registerId,
+  registerQq,
+  loginUsername,
+  loginId,
+  loginQq,
+}
+
+export interface ILoginRecord {
+  id?: number;
+  user_id?: number;
+  user_agent?: string;
+  type?: LoginRecordEnum;
+  ip?: string;
+  remark?: string;
+
+  user?: IUser;
+
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string;
+}
+
+export enum GlobalMsgTypeEnum {
+  system,
+}
+
+export interface IGlobalMsg {
+  id?: number;
+  user_id?: number;
+  type?: GlobalMsgTypeEnum;
+  content?: string;
+  remark?: string;
+
+  user?: IUser;
+
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string;
+}
+
 export interface ISigninStatistics {
   id?: number;
   user_id?: number;

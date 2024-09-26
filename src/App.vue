@@ -19,7 +19,7 @@ export default {
 <script lang="ts" setup>
 import { isMobile } from 'billd-utils';
 import { GlobalThemeOverrides, NConfigProvider } from 'naive-ui';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchSettingsList } from '@/api/settings';
@@ -31,6 +31,9 @@ import { useUserStore } from '@/store/user';
 import { getHostnameUrl } from '@/utils';
 import { getLastBuildDate, setLastBuildDate } from '@/utils/localStorage/app';
 import { getToken } from '@/utils/localStorage/user';
+
+import { fetchGlobalMsgMyList } from './api/globalMsg';
+import { useTip } from './hooks/use-tip';
 
 const { checkUpdate } = useCheckUpdate();
 const cacheStore = usePiniaCacheStore();
@@ -46,6 +49,18 @@ const themeOverrides: GlobalThemeOverrides = {
     primaryColorHover: THEME_COLOR,
   },
 };
+
+watch(
+  () => userStore.userInfo,
+  (newval) => {
+    if (newval) {
+      handleGlobalMsgMyList();
+    }
+  },
+  {
+    immediate: true,
+  }
+);
 
 onMounted(() => {
   initSettings();
@@ -76,6 +91,20 @@ onMounted(() => {
     );
   }
 });
+
+async function handleGlobalMsgMyList() {
+  const res = await fetchGlobalMsgMyList({});
+  if (res.code === 200) {
+    const data = res.data.rows[0];
+    if (data) {
+      useTip({
+        content: data.content!,
+        hiddenCancel: true,
+        hiddenClose: true,
+      });
+    }
+  }
+}
 
 function initSettings() {
   setTimeout(async () => {

@@ -533,11 +533,11 @@ const {
   closeWs,
   closeRtc,
   keydownDanmu,
+  sendDanmuReward,
   sendDanmuTxt,
   sendDanmuImg,
   handlePlay,
   videoWrapRef,
-  danmuMsgType,
   msgIsFile,
   mySocketId,
   videoResolution,
@@ -548,8 +548,6 @@ const {
   danmuStr,
   anchorInfo,
 } = usePull(roomId.value);
-
-// const { initWs } = useWebsocket();
 
 const rtcRtt = computed(() => {
   const arr: any[] = [];
@@ -930,12 +928,11 @@ async function handlePay(item: IGoods) {
     goodsId: item.id!,
     goodsNums: 1,
     liveRoomId: Number(roomId.value),
-    isBilibili: isBilibili.value,
+    isBilibili: false,
   });
   if (res.code === 200) {
     window.$message.success('打赏成功！');
-    danmuMsgType.value = DanmuMsgTypeEnum.reward;
-    sendDanmuTxt(item.name || '');
+    sendDanmuReward(item.name || '');
   }
   userStore.updateMyWallet();
   getGiftGroupList();
