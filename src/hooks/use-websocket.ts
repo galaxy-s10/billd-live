@@ -135,7 +135,7 @@ export const useWebsocket = () => {
     return networkStore.wsMap.get(roomId.value)?.socketIo?.id || '-1';
   });
 
-  function handleHeartbeat(socketId: string) {
+  function handleHeartbeat() {
     loopHeartbeatTimer.value = setInterval(() => {
       const ws = networkStore.wsMap.get(roomId.value);
       if (!ws) return;
@@ -143,7 +143,6 @@ export const useWebsocket = () => {
         requestId: getRandomString(8),
         msgType: WsMsgTypeEnum.heartbeat,
         data: {
-          socket_id: socketId,
           live_room_id: Number(roomId.value),
           roomLiving: isAnchor.value && roomLiving.value,
         },
@@ -319,7 +318,7 @@ export const useWebsocket = () => {
     // websocket连接成功
     ws.socketIo.on(WsConnectStatusEnum.connect, () => {
       prettierReceiveWsMsg(WsConnectStatusEnum.connect, ws.socketIo);
-      handleHeartbeat(ws.socketIo!.id!);
+      handleHeartbeat();
       if (!ws) return;
       connectStatus.value = WsConnectStatusEnum.connect;
       ws.status = WsConnectStatusEnum.connect;

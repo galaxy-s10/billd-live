@@ -245,7 +245,6 @@ export type WsLeavedType = IWsFormat<{
 
 /** 心跳检测 */
 export type WsHeartbeatType = IWsFormat<{
-  socket_id: string;
   live_room_id: number;
   roomLiving?: boolean;
 }>;
