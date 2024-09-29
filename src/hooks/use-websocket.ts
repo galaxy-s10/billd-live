@@ -15,6 +15,7 @@ import { useWebRtcTencentcloudCss } from '@/hooks/webrtc/tencentcloudCss';
 import {
   DanmuMsgTypeEnum,
   ILiveUser,
+  IWsMessage,
   WsMessageContentTypeEnum,
 } from '@/interface';
 import router, { routerName } from '@/router';
@@ -96,7 +97,6 @@ export const useWebsocket = () => {
   const isRemoteDesk = ref(false);
   const isBilibili = ref(false);
   const anchorInfo = ref<IUser>();
-  const anchorSocketId = ref('');
   const canvasVideoStream = ref<MediaStream>();
   const userStream = ref<MediaStream>();
   const lastCoverImg = ref('');
@@ -106,7 +106,7 @@ export const useWebsocket = () => {
   const currentVideoContentHint = ref(videoContentHint.value[3].value);
   const currentAudioContentHint = ref(audioContentHint.value[0].value);
   const timerObj = ref({});
-  const damuList = ref<WsMessageType[]>([]);
+  const damuList = ref<IWsMessage[]>([]);
 
   onUnmounted(() => {
     clearInterval(loopHeartbeatTimer.value);
@@ -144,7 +144,6 @@ export const useWebsocket = () => {
         msgType: WsMsgTypeEnum.heartbeat,
         data: {
           live_room_id: Number(roomId.value),
-          roomLiving: isAnchor.value && roomLiving.value,
         },
       });
     }, 1000 * 5);
@@ -305,9 +304,7 @@ export const useWebsocket = () => {
       data: {
         isBilibili: isBilibili.value,
         isRemoteDesk: isRemoteDesk.value,
-        socket_id: mySocketId.value,
         live_room_id: Number(roomId.value),
-        user_info: userStore.userInfo,
       },
     });
   }
@@ -579,9 +576,6 @@ export const useWebsocket = () => {
       async (data: WsRoomLivingType['data']) => {
         prettierReceiveWsMsg(WsMsgTypeEnum.roomLiving, data);
         roomLiving.value = true;
-        if (data.anchor_socket_id) {
-          anchorSocketId.value = data.anchor_socket_id;
-        }
         if (
           route.name === routerName.pull ||
           route.name === routerName.h5Room
@@ -616,7 +610,18 @@ export const useWebsocket = () => {
     // 收到用户发送消息
     ws.socketIo.on(WsMsgTypeEnum.message, (data: WsMessageType) => {
       prettierReceiveWsMsg(WsMsgTypeEnum.message, data);
-      damuList.value.push(data);
+      damuList.value.push({
+        /** 消息类型 */
+        msg_type: data.data.msg_type,
+        /** 消息内容类型 */
+        content_type: data.data.content_type,
+        /** 消息内容 */
+        content: data.data.content,
+        live_room_id: data.data.live_room_id,
+        redbag_send_id: data.data.redbag_send_id,
+        /** 消息id */
+        id: data.data.msg_id,
+      });
     });
 
     // 收到disableSpeaking
@@ -726,8 +731,6 @@ export const useWebsocket = () => {
     // 用户加入房间完成
     ws.socketIo.on(WsMsgTypeEnum.joined, async (data: WsJoinType['data']) => {
       prettierReceiveWsMsg(WsMsgTypeEnum.joined, data);
-      appStore.setLiveRoomInfo(data.live_room);
-      anchorInfo.value = data.anchor_info;
       if (route.name === routerName.pull || route.name === routerName.h5Room) {
         // 当前是拉流页面
         if (
@@ -791,18 +794,13 @@ export const useWebsocket = () => {
     // 其他用户加入房间
     ws.socketIo.on(WsMsgTypeEnum.otherJoin, (data: WsOtherJoinType['data']) => {
       prettierReceiveWsMsg(WsMsgTypeEnum.otherJoin, data);
-      const danmu: WsMessageType = {
-        request_id: '',
-        socket_id: '',
-        time: +new Date(),
-        user_agent: navigator.userAgent,
-        data: {
-          live_room_id: data.live_room.id!,
-          msg_id: -1,
-          content: '',
-          content_type: WsMessageContentTypeEnum.txt,
-          msg_type: DanmuMsgTypeEnum.otherJoin,
-        },
+      const danmu: IWsMessage = {
+        send_msg_time: +new Date(),
+        live_room_id: data.live_room.id!,
+        id: -1,
+        content: '',
+        content_type: WsMessageContentTypeEnum.txt,
+        msg_type: DanmuMsgTypeEnum.otherJoin,
       };
       damuList.value.push(danmu);
       if (route.name === routerName.push) {
@@ -926,22 +924,15 @@ export const useWebsocket = () => {
     // 用户离开房间完成
     ws.socketIo.on(WsMsgTypeEnum.leaved, (data: WsLeavedType['data']) => {
       prettierReceiveWsMsg(WsMsgTypeEnum.leaved, data);
-      if (anchorSocketId.value === data.socket_id) {
-        roomLiving.value = false;
-      }
+      console.log('用户离开房间完成', data);
       networkStore.removeRtc(data.socket_id);
       damuList.value.push({
-        request_id: '',
-        socket_id: '',
-        time: +new Date(),
-        user_agent: navigator.userAgent,
-        data: {
-          live_room_id: Number(roomId.value),
-          msg_id: -1,
-          content: '',
-          content_type: WsMessageContentTypeEnum.txt,
-          msg_type: DanmuMsgTypeEnum.userLeaved,
-        },
+        send_msg_time: +new Date(),
+        live_room_id: Number(roomId.value),
+        id: -1,
+        content: '',
+        content_type: WsMessageContentTypeEnum.txt,
+        msg_type: DanmuMsgTypeEnum.userLeaved,
       });
     });
   }

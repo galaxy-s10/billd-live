@@ -93,6 +93,7 @@ export const useWebRtcMeetingPk = () => {
         }
       } catch (error) {
         console.error('meetingPk的sendOffer错误');
+        console.log(error);
       }
     },
     /**

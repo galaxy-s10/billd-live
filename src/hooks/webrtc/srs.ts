@@ -118,6 +118,7 @@ export const useWebRtcSrs = () => {
         }
       } catch (error) {
         console.error('webRtcSrs的sendOffer错误');
+        console.log(error);
       }
     },
   };

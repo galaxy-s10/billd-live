@@ -23,14 +23,16 @@ import {
 import { WsMessageType, WsMsgTypeEnum } from '@/types/websocket';
 import { videoFullBox, videoToCanvas } from '@/utils';
 
-export function usePull(roomId: string) {
+export function usePull() {
   const route = useRoute();
   const networkStore = useNetworkStore();
   const cacheStore = usePiniaCacheStore();
   const appStore = useAppStore();
   const danmuStr = ref('');
+  const roomId = ref('');
   const msgIsFile = ref(WsMessageMsgIsFileEnum.no);
   const danmuMsgType = ref<DanmuMsgTypeEnum>(DanmuMsgTypeEnum.danmu);
+  const liveRoomInfo = ref<ILiveRoom>();
   const autoplayVal = ref(false);
   const videoLoading = ref(false);
   const isPlaying = ref(false);
@@ -403,19 +405,20 @@ export function usePull(roomId: string) {
     }
   );
 
-  function initPull(data: { autolay?: boolean; isRemoteDesk?: boolean }) {
+  function initPull(data: {
+    roomId: string;
+    autolay?: boolean;
+    isRemoteDesk?: boolean;
+  }) {
     if (data.autolay === undefined) {
       autoplayVal.value = true;
     } else {
       autoplayVal.value = data.autolay;
     }
-    if (autoplayVal.value) {
-      videoLoading.value = true;
-    }
     isRemoteDesk.value = !!data.isRemoteDesk;
     initWs({
       isRemoteDesk: data.isRemoteDesk,
-      roomId,
+      roomId: data.roomId,
       isAnchor: false,
     });
   }
@@ -478,6 +481,7 @@ export function usePull(roomId: string) {
       window.$message.warning('请输入弹幕内容！');
       return;
     }
+    console.log('sendDanmuTxt', roomId, txt);
     const instance = networkStore.wsMap.get(roomId);
     if (!instance) return;
     const messageData: WsMessageType['data'] = {
@@ -548,6 +552,7 @@ export function usePull(roomId: string) {
     damuList,
     liveUserList,
     danmuStr,
+    liveRoomInfo,
     anchorInfo,
   };
 }

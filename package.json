@@ -24,7 +24,8 @@
     "start:preview": "cross-env VUE_APP_RELEASE_PROJECT_ENV=preview VUE_APP_RELEASE_PROJECT_NAME=billd-live webpack serve --config ./script/config/webpack.common.ts --env development",
     "start:prod": "cross-env VUE_APP_RELEASE_PROJECT_ENV=prod VUE_APP_RELEASE_PROJECT_NAME=billd-live webpack serve --config ./script/config/webpack.common.ts --env production",
     "start:stats": "cross-env WEBPACK_ANALYZER_SWITCH=true webpack serve --config ./script/config/webpack.common.ts --env development",
-    "typecheck": "tsc -p ./tsconfig.json --noEmit"
+    "typecheck": "tsc -p ./tsconfig.json --noEmit",
+    "oxclint": "pnpm dlx oxlint@latest"
   },
   "config": {
     "commitizen": {
@@ -105,6 +106,7 @@
     "lint-staged": "^12.1.4",
     "mini-css-extract-plugin": "^2.6.0",
     "node-emoji": "^1.11.0",
+    "oxlint": "^0.9.9",
     "portfinder": "^1.0.28",
     "postcss": "^8.4.8",
     "postcss-loader": "^6.2.1",

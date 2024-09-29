@@ -48,7 +48,7 @@
               [
                 LiveRoomTypeEnum.tencent_css,
                 LiveRoomTypeEnum.tencent_css_pk,
-              ].includes(currentLiveRoom?.live_room?.type!)
+              ].includes(currentLiveRoom?.live_room!.type!)
             "
             class="cdn-ico"
           >
@@ -127,7 +127,7 @@
                     [
                       LiveRoomTypeEnum.tencent_css,
                       LiveRoomTypeEnum.tencent_css_pk,
-                    ].includes(item.live_room?.type!)
+                    ].includes(item.live_room!.type!)
                   "
                 >
                   <div class="txt">CDN</div>
@@ -184,7 +184,7 @@
                   [
                     LiveRoomTypeEnum.tencent_css,
                     LiveRoomTypeEnum.tencent_css_pk,
-                  ].includes(iten.live_room?.type!)
+                  ].includes(iten.live_room!.type!)
                 "
                 class="cdn-ico"
               >
@@ -229,7 +229,7 @@
                   [
                     LiveRoomTypeEnum.tencent_css,
                     LiveRoomTypeEnum.tencent_css_pk,
-                  ].includes(iten.live_room?.type!)
+                  ].includes(iten.live_room!.type!)
                 "
                 class="cdn-ico"
               >
@@ -445,7 +445,6 @@ function playLive(item: ILive) {
   canvasRef.value?.childNodes?.forEach((item) => {
     item.remove();
   });
-  appStore.setLiveRoomInfo(item.live_room!);
   roomLiving.value = true;
   handlePlay(item.live_room!);
 }
@@ -457,7 +456,7 @@ function changeLiveRoom(item: ILive) {
       LiveRoomTypeEnum.wertc_live,
       LiveRoomTypeEnum.wertc_meeting_one,
       LiveRoomTypeEnum.wertc_meeting_two,
-    ].includes(item.live_room?.type!)
+    ].includes(item.live_room!.type!)
   ) {
     appStore.setLiveLine(LiveLineEnum.hls);
   }
@@ -480,7 +479,6 @@ async function getLiveRoomList() {
       otherLiveRoomList.value = res.data.rows.slice(topNums.value);
       if (res.data.total) {
         currentLiveRoom.value = topLiveRoomList.value[0];
-        appStore.setLiveRoomInfo(currentLiveRoom.value.live_room!);
         roomLiving.value = true;
       }
     }
@@ -899,8 +897,6 @@ function joinRoom(data) {
             max-width: $w-900;
             max-height: calc($w-900 / $video-ratio);
           }
-        }
-        .right {
         }
       }
     }

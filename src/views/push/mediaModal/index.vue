@@ -162,20 +162,20 @@ function handleOk() {
     return;
   }
   if (props.mediaType === MediaTypeEnum.txt) {
-    if (txtInfo.value?.txt?.length! < 3 || txtInfo.value?.txt?.length! > 100) {
+    if (txtInfo.value!.txt!.length! < 3 || txtInfo.value!.txt!.length! > 100) {
       window.$message.info('内容要求3-100个字符！');
       return;
     }
   }
   if (!props.isEdit) {
     if (props.mediaType === MediaTypeEnum.img) {
-      if (imgInfo.value?.length! !== 1) {
+      if (imgInfo.value!.length! !== 1) {
         window.$message.info('请选择图片！');
         return;
       }
     }
     if (props.mediaType === MediaTypeEnum.media) {
-      if (mediaInfo.value?.length! !== 1) {
+      if (mediaInfo.value!.length! !== 1) {
         window.$message.info('请选择视频！');
         return;
       }

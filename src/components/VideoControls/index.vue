@@ -42,7 +42,7 @@
               :step="1"
               vertical
               :tooltip="false"
-              @update-value="(v) => cacheStore.setVolume(v)"
+              @update-value="(v) => (cacheStore.volume = v)"
             />
           </div>
         </n-popover>
@@ -270,7 +270,7 @@ function changeLiveLine(item: LiveLineEnum) {
       LiveRoomTypeEnum.wertc_live,
       LiveRoomTypeEnum.wertc_meeting_one,
       LiveRoomTypeEnum.wertc_meeting_two,
-    ].includes(appStore.liveRoomInfo?.type!) &&
+    ].includes(appStore.liveRoomInfo!.type!) &&
     item !== LiveLineEnum.rtc
   ) {
     window.$message.info('不支持该线路！');
@@ -280,7 +280,7 @@ function changeLiveLine(item: LiveLineEnum) {
       LiveRoomTypeEnum.wertc_live,
       LiveRoomTypeEnum.wertc_meeting_one,
       LiveRoomTypeEnum.wertc_meeting_two,
-    ].includes(appStore.liveRoomInfo?.type!) &&
+    ].includes(appStore.liveRoomInfo!.type!) &&
     item === LiveLineEnum.rtc
   ) {
     window.$message.info('不支持该线路！');

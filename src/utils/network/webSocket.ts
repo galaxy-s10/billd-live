@@ -74,7 +74,6 @@ export class WebSocketClass {
       socket_id: this.socketIo.id,
       user_info: userStore.userInfo,
       user_token: userStore.token || undefined,
-      user_agent: navigator.userAgent,
       time: +new Date(),
       data: data || {},
     };

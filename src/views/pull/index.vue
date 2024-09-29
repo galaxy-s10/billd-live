@@ -1,6 +1,13 @@
 <template>
   <div
     class="pull-wrap"
+    v-if="!appStore.liveRoomInfo"
+  >
+    暂无该直播间
+  </div>
+  <div
+    v-else
+    class="pull-wrap"
     :class="{ isPageFull: appStore.videoControlsValue.pageFullMode }"
   >
     <div class="bg-img-wrap">
@@ -90,10 +97,7 @@
             </div>
           </div>
         </div>
-        <div
-          class="other"
-          @click="handlePk"
-        >
+        <div class="other">
           <div class="top">
             <div class="item">666人看过</div>
             <div class="item">666点赞</div>
@@ -153,6 +157,7 @@
           ref="remoteVideoRef"
         ></div>
         <VideoControls
+          v-if="roomLiving"
           :resolution="videoResolution"
           @refresh="handleRefresh"
           @full-screen="handleFullScreen"
@@ -262,47 +267,44 @@
           :key="index"
           class="item"
         >
-          <template v-if="item.data.msg_type === DanmuMsgTypeEnum.reward">
+          <template v-if="item.msg_type === DanmuMsgTypeEnum.reward">
             <div class="reward">
-              <span>[{{ formatTimeHour(item.time) }}]</span>
+              <span>[{{ formatTimeHour(item.send_msg_time!) }}]</span>
               <span>
-                {{ item.user_info?.username }} 打赏了{{ item.data.content }}！
+                {{ item.user?.username }} 打赏了{{ item.content }}！
               </span>
             </div>
           </template>
-          <template v-if="item.data.msg_type === DanmuMsgTypeEnum.danmu">
-            <span class="time">[{{ formatTimeHour(item.time) }}]</span>
+          <template v-if="item.msg_type === DanmuMsgTypeEnum.danmu">
+            <span class="time"
+              >[{{ formatTimeHour(item.send_msg_time!) }}]</span
+            >
             <span class="name">
-              <span
-                v-if="
-                  item.user_info && userStore.userInfo?.id === item.user_info.id
-                "
-              >
-                <span>{{ item.user_info.username }}</span>
+              <span v-if="item.user && userStore.userInfo?.id === item.user.id">
+                <span>{{ item.user.username }}</span>
                 <span>
-                  [{{ item.user_info.roles?.map((v) => v.role_name).join() }}]
+                  [{{ item.user.roles?.map((v) => v.role_name).join() }}]
                 </span>
               </span>
               <Dropdown
                 trigger="click"
                 positon="left"
-                v-else-if="item.user_info"
+                v-else-if="item.user"
               >
                 <template #btn>
-                  <span>{{ item.user_info.username }}</span>
+                  <span>{{ item.user.username }}</span>
                   <span>
-                    [{{ item.user_info.roles?.map((v) => v.role_name).join() }}]
+                    [{{ item.user.roles?.map((v) => v.role_name).join() }}]
                   </span>
                 </template>
                 <template #list>
                   <div class="list">
-                    <div class="item">{{ item.user_info.username }}</div>
+                    <div class="item">{{ item.user.username }}</div>
                     <div
                       class="item operator"
                       @click="
                         handleDisableSpeakingUser({
-                          userId: item.user_info.id,
-                          socketId: item.socket_id,
+                          userId: item.user.id,
                         })
                       "
                     >
@@ -312,8 +314,7 @@
                       class="item operator"
                       @click="
                         handleRestoreSpeakingUser({
-                          userId: item.user_info.id,
-                          socketId: item.socket_id,
+                          userId: item.user.id,
                         })
                       "
                     >
@@ -329,43 +330,35 @@
                 </template>
               </Dropdown>
               <span v-else>
-                <span>{{ item.socket_id }}</span>
+                <span>{{ item }}</span>
                 <span>[游客]</span>
               </span>
             </span>
             <span>：</span>
             <span
               class="msg"
-              v-if="item.data.content_type === WsMessageContentTypeEnum.txt"
+              v-if="item.content_type === WsMessageContentTypeEnum.txt"
             >
-              {{ item.data.content }}
+              {{ item.content }}
             </span>
             <div
               class="msg img"
               v-else
             >
               <img
-                :src="item.data.content"
+                :src="item.content"
                 alt=""
                 @load="handleScrollTop"
               />
             </div>
           </template>
-          <template
-            v-else-if="item.data.msg_type === DanmuMsgTypeEnum.otherJoin"
-          >
+          <template v-else-if="item.msg_type === DanmuMsgTypeEnum.otherJoin">
             <span class="name system">系统通知：</span>
-            <span class="msg">
-              {{ item.user_info?.username || item.socket_id }}进入直播！
-            </span>
+            <span class="msg">{{ item.user?.username }}进入直播！ </span>
           </template>
-          <template
-            v-else-if="item.data.msg_type === DanmuMsgTypeEnum.userLeaved"
-          >
+          <template v-else-if="item.msg_type === DanmuMsgTypeEnum.userLeaved">
             <span class="name system">系统通知：</span>
-            <span class="msg">
-              {{ item.user_info?.username || item.socket_id }}离开直播！
-            </span>
+            <span class="msg">{{ item.user?.username }}离开直播！ </span>
           </template>
         </div>
       </div>
@@ -469,6 +462,7 @@ import {
 } from '@/api/giftRecord';
 import { fetchGoodsList } from '@/api/goods';
 import { fetchLiveRoomOnlineUser } from '@/api/live';
+import { fetchFindLiveRoom } from '@/api/liveRoom';
 import { fetchGetWsMessageList } from '@/api/wsMessage';
 import { liveRoomTypeEnumMap, QINIU_RESOURCE } from '@/constant';
 import { emojiArray } from '@/emoji';
@@ -494,8 +488,9 @@ import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
+import { IUser } from '@/types/IUser';
 import { WsDisableSpeakingType, WsMsgTypeEnum } from '@/types/websocket';
-import { formatMoney, formatTimeHour, handleUserMedia } from '@/utils';
+import { formatMoney, formatTimeHour } from '@/utils';
 import { initAdsbygoogle } from '@/utils/google-ad';
 import { NODE_ENV } from 'script/constant';
 
@@ -507,7 +502,8 @@ const appStore = useAppStore();
 const networkStore = useNetworkStore();
 const { t } = useI18n();
 
-const roomId = ref(route.params.roomId as string);
+const roomId = ref('-1');
+const anchorInfo = ref<IUser>();
 const configBg = ref();
 const configVideo = ref();
 const giftGoodsList = ref<IGoods[]>([]);
@@ -546,7 +542,6 @@ const {
   damuList,
   liveUserList,
   danmuStr,
-  anchorInfo,
 } = usePull(roomId.value);
 
 const rtcRtt = computed(() => {
@@ -587,8 +582,11 @@ const rtcBytesReceived = computed(() => {
   return arr.join();
 });
 
-onMounted(() => {
+onMounted(async () => {
+  roomId.value = route.params.roomId as string;
   initAdsbygoogle();
+  await handleFindLiveRoomInfo();
+  if (!appStore.liveRoomInfo) return;
   appStore.videoControls.fps = true;
   appStore.videoControls.fullMode = true;
   appStore.videoControls.kbs = true;
@@ -616,7 +614,7 @@ onMounted(() => {
   getBg();
   if (route.query.is_bilibili !== '1') {
     isBilibili.value = false;
-    initPull({});
+    initPull({ roomId: roomId.value });
   } else {
     initWs({
       roomId: roomId.value,
@@ -638,6 +636,25 @@ onUnmounted(() => {
   clearInterval(loopGetLiveUserTimer.value);
 });
 
+async function handleFindLiveRoomInfo() {
+  try {
+    const res = await fetchFindLiveRoom(Number(roomId.value));
+    if (res.code === 200) {
+      if (res.data) {
+        appStore.liveRoomInfo = res.data;
+        anchorInfo.value = res.data.user_live_room?.user;
+        if (res.data.live) {
+          roomLiving.value = true;
+        } else {
+          videoLoading.value = false;
+        }
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 async function handleBilibil() {
   if (route.query.is_bilibili === '1') {
     const flv = await fetchLiveBilibiliPlayUrl({
@@ -651,7 +668,6 @@ async function handleBilibil() {
     const roomInfo = await fetchLiveBilibiliRoomGetInfo({
       room_id: route.params.roomId,
     });
-    console.log('roomInfo', roomInfo);
     console.log(flv?.data?.data?.durl?.[0].url, 'flv');
     console.log(hls?.data?.data?.durl?.[0].url, 'hls');
     roomLiving.value = true;
@@ -731,19 +747,14 @@ async function handleHistoryMsg() {
     if (res.code === 200) {
       res.data.rows.forEach((v) => {
         damuList.value.unshift({
-          request_id: '',
-          socket_id: '',
-          time: v.send_msg_time!,
-          user_agent: v.user_agent!,
-          user_info: v.user,
-          data: {
-            live_room_id: v.live_room_id!,
-            msg_id: v.id!,
-            content: v.content!,
-            content_type: v.content_type!,
-            msg_type: v.msg_type!,
-            redbag_send_id: v.redbag_send_id,
-          },
+          send_msg_time: v.send_msg_time!,
+          user: v.user,
+          live_room_id: v.live_room_id!,
+          id: v.id!,
+          content: v.content!,
+          content_type: v.content_type!,
+          msg_type: v.msg_type!,
+          redbag_send_id: v.redbag_send_id,
         });
       });
       if (
@@ -751,35 +762,17 @@ async function handleHistoryMsg() {
         appStore.liveRoomInfo?.system_msg !== ''
       ) {
         damuList.value.push({
-          request_id: '',
-          socket_id: '',
-          time: +new Date(),
-          user_agent: navigator.userAgent,
-          data: {
-            live_room_id: Number(roomId.value),
-            msg_id: -1,
-            content: appStore.liveRoomInfo.system_msg,
-            content_type: WsMessageContentTypeEnum.txt,
-            msg_type: DanmuMsgTypeEnum.system,
-          },
+          send_msg_time: +new Date(),
+          live_room_id: Number(roomId.value),
+          id: -1,
+          content: appStore.liveRoomInfo.system_msg,
+          content_type: WsMessageContentTypeEnum.txt,
+          msg_type: DanmuMsgTypeEnum.system,
         });
       }
     }
   } catch (error) {
     console.log(error);
-  }
-}
-
-async function handlePk() {
-  const stream = await handleUserMedia({ video: true, audio: true });
-  const rtc = networkStore.rtcMap.get(`${roomId.value}`)!;
-  if (rtc?.peerConnection) {
-    rtc.peerConnection.onnegotiationneeded = () => {
-      console.log('onnegotiationneeded');
-    };
-    stream?.getTracks().forEach((track) => {
-      rtc.peerConnection?.addTrack(track, stream);
-    });
   }
 }
 
@@ -807,7 +800,13 @@ watch(
  * 主播开播了，可以禁言所有看自己直播的用户
  * 使用redis存储记录，key是主播直播间id，value是禁言用户id
  */
-function handleDisableSpeakingUser({ socketId, userId }) {
+function handleDisableSpeakingUser({
+  socketId,
+  userId,
+}: {
+  socketId?;
+  userId;
+}) {
   console.log('handleDisableSpeakingUser');
   const instance = networkStore.wsMap.get(roomId.value);
   if (instance) {
@@ -824,7 +823,13 @@ function handleDisableSpeakingUser({ socketId, userId }) {
   }
 }
 
-function handleRestoreSpeakingUser({ socketId, userId }) {
+function handleRestoreSpeakingUser({
+  socketId,
+  userId,
+}: {
+  socketId?;
+  userId;
+}) {
   console.log('handleRestoreSpeakingUser');
   const instance = networkStore.wsMap.get(roomId.value);
   if (instance) {

@@ -119,6 +119,7 @@ export const useForwardBilibili = () => {
         }
       } catch (error) {
         console.error('ForwardBilibili的sendOffer错误');
+        console.log(error);
       }
     },
   };

@@ -113,6 +113,7 @@ export const useForwardHuya = () => {
         }
       } catch (error) {
         console.error('ForwardHuya的sendOffer错误');
+        console.log(error);
       }
     },
   };

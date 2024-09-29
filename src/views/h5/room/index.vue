@@ -81,15 +81,15 @@
                 :key="index"
                 class="item"
               >
-                <template v-if="item.data.msg_type === DanmuMsgTypeEnum.danmu">
-                  <span class="time"> [{{ formatTimeHour(item.time) }}] </span>
+                <template v-if="item.msg_type === DanmuMsgTypeEnum.danmu">
+                  <span class="time">
+                    [{{ formatTimeHour(item.send_msg_time!) }}]
+                  </span>
                   <span class="name">
-                    <span v-if="item.user_info">
-                      <span>{{ item.user_info.username }}</span>
+                    <span v-if="item.user">
+                      <span>{{ item.user.username }}</span>
                       <span>
-                        [{{
-                          item.user_info.roles?.map((v) => v.role_name).join()
-                        }}]
+                        [{{ item.user.roles?.map((v) => v.role_name).join() }}]
                       </span>
                     </span>
                     <span v-else>
@@ -100,50 +100,46 @@
                   </span>
                   <span
                     class="msg"
-                    v-if="
-                      item.data.content_type === WsMessageContentTypeEnum.txt
-                    "
+                    v-if="item.content_type === WsMessageContentTypeEnum.txt"
                   >
-                    {{ item.data.content }}
+                    {{ item.content }}
                   </span>
                   <div
                     class="msg img"
                     v-else
                   >
                     <img
-                      v-lazy="item.data.content"
+                      v-lazy="item.content"
                       alt=""
                       @load="handleScrollTop"
                     />
                   </div>
                 </template>
                 <template
-                  v-else-if="item.data.msg_type === DanmuMsgTypeEnum.otherJoin"
+                  v-else-if="item.msg_type === DanmuMsgTypeEnum.otherJoin"
                 >
                   <span class="name system">系统通知：</span>
                   <span class="msg">
-                    {{ item.user_info?.username || item.socket_id }}进入直播！
+                    {{ item.user?.username || item.socket_id }}进入直播！
                   </span>
                 </template>
                 <template
-                  v-else-if="item.data.msg_type === DanmuMsgTypeEnum.userLeaved"
+                  v-else-if="item.msg_type === DanmuMsgTypeEnum.userLeaved"
                 >
                   <span class="name system">系统通知：</span>
                   <span class="msg">
-                    {{ item.user_info?.username || item.socket_id }}离开直播！
+                    {{ item.user?.username || item.socket_id }}离开直播！
                   </span>
                 </template>
-                <template
-                  v-else-if="item.data.msg_type === DanmuMsgTypeEnum.reward"
-                >
-                  <span class="time"> [{{ formatTimeHour(item.time) }}] </span>
+                <template v-else-if="item.msg_type === DanmuMsgTypeEnum.reward">
+                  <span class="time">
+                    [{{ formatTimeHour(item.send_msg_time!) }}]
+                  </span>
                   <span class="name">
-                    <span v-if="item.user_info">
-                      <span>{{ item.user_info.username }}</span>
+                    <span v-if="item.user">
+                      <span>{{ item.user.username }}</span>
                       <span>
-                        [{{
-                          item.user_info.roles?.map((v) => v.role_name).join()
-                        }}]
+                        [{{ item.user.roles?.map((v) => v.role_name).join() }}]
                       </span>
                     </span>
                     <span v-else>
@@ -152,7 +148,7 @@
                     </span>
                     <span>：</span>
                   </span>
-                  <span class="msg"> 打赏了：{{ item.data.content }} </span>
+                  <span class="msg"> 打赏了：{{ item.content }} </span>
                 </template>
               </div>
             </div>
@@ -408,19 +404,14 @@ async function handleHistoryMsg() {
     if (res.code === 200) {
       res.data.rows.forEach((v) => {
         damuList.value.unshift({
-          request_id: '',
-          socket_id: '',
-          time: v.send_msg_time!,
-          user_agent: v.user_agent!,
-          user_info: v.user,
-          data: {
-            live_room_id: v.live_room_id!,
-            msg_id: v.id!,
-            content: v.content!,
-            content_type: v.content_type!,
-            msg_type: v.msg_type!,
-            redbag_send_id: v.redbag_send_id,
-          },
+          send_msg_time: v.send_msg_time!,
+          user: v.user,
+          live_room_id: v.live_room_id!,
+          id: v.id!,
+          content: v.content!,
+          content_type: v.content_type!,
+          msg_type: v.msg_type!,
+          redbag_send_id: v.redbag_send_id,
         });
       });
       if (
@@ -428,17 +419,12 @@ async function handleHistoryMsg() {
         appStore.liveRoomInfo?.system_msg !== ''
       ) {
         damuList.value.push({
-          request_id: '',
-          socket_id: '',
-          time: +new Date(),
-          user_agent: navigator.userAgent,
-          data: {
-            live_room_id: Number(roomId.value),
-            msg_id: -1,
-            content: appStore.liveRoomInfo?.system_msg,
-            content_type: WsMessageContentTypeEnum.txt,
-            msg_type: DanmuMsgTypeEnum.system,
-          },
+          send_msg_time: +new Date(),
+          live_room_id: Number(roomId.value),
+          id: -1,
+          content: appStore.liveRoomInfo?.system_msg,
+          content_type: WsMessageContentTypeEnum.txt,
+          msg_type: DanmuMsgTypeEnum.system,
         });
       }
     }
@@ -507,16 +493,15 @@ function handleFullScreen() {
 async function getLiveRoomInfo() {
   try {
     videoLoading.value = true;
-    const res = await fetchFindLiveRoom(roomId.value);
+    const res = await fetchFindLiveRoom(Number(roomId.value));
     if (res.code === 200) {
-      appStore.setLiveRoomInfo(res.data);
-      if (res.data.type === LiveRoomTypeEnum.wertc_live) {
+      if (res.data?.type === LiveRoomTypeEnum.wertc_live) {
         autoplayVal.value = true;
         showPlayBtn.value = false;
       } else {
         showPlayBtn.value = true;
       }
-      initPull({ autolay: autoplayVal.value });
+      initPull({ roomId: roomId.value, autolay: autoplayVal.value });
     }
   } catch (error) {
     console.error(error);

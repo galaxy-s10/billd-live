@@ -113,6 +113,7 @@ export const useForwardAll = () => {
         }
       } catch (error) {
         console.error('ForwardAll的sendOffer错误');
+        console.log(error);
       }
     },
   };

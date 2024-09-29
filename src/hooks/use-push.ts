@@ -178,7 +178,7 @@ export function usePush() {
   );
 
   async function handleUserHasLiveRoom() {
-    const res = await fetchUserHasLiveRoom(userStore.userInfo?.id!);
+    const res = await fetchUserHasLiveRoom(userStore.userInfo!.id!);
     if (res.code === 200 && res.data) {
       liveRoomInfo.value = res.data.live_room;
       router.push({

@@ -93,7 +93,6 @@ export interface IWsFormat<T> {
   user_token?: string;
   /** 消息时间戳 */
   time: number;
-  user_agent: string;
   data: T;
 }
 
@@ -227,11 +226,9 @@ export type WsUpdateLiveRoomCoverImg = IWsFormat<{
 
 /** 用户加入直播间 */
 export type WsJoinType = IWsFormat<{
-  socket_id: string;
   live_room_id: number;
   live_room?: ILiveRoom;
   anchor_info?: IUser;
-  user_info?: IUser;
   isRemoteDesk?: boolean;
   isBilibili?: boolean;
   socket_list?: string[];
@@ -246,7 +243,6 @@ export type WsLeavedType = IWsFormat<{
 /** 心跳检测 */
 export type WsHeartbeatType = IWsFormat<{
   live_room_id: number;
-  roomLiving?: boolean;
 }>;
 
 /** msr直播发送blob */

@@ -52,6 +52,7 @@ export const useUserStore = defineStore('user', {
         return token;
       } catch (error: any) {
         // 错误返回401，全局的响应拦截会打印报错信息
+        console.log(error);
         return null;
       }
     },
