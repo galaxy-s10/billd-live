@@ -44,11 +44,11 @@
         >
           <div
             v-if="
-              currentLiveRoom?.live_room?.cdn === LiveRoomUseCDNEnum.yes &&
+              appStore.liveRoomInfo?.cdn === LiveRoomUseCDNEnum.yes &&
               [
                 LiveRoomTypeEnum.tencent_css,
                 LiveRoomTypeEnum.tencent_css_pk,
-              ].includes(currentLiveRoom?.live_room!.type!)
+              ].includes(appStore.liveRoomInfo!.type!)
             "
             class="cdn-ico"
           >
@@ -59,16 +59,16 @@
             class="cover"
             :style="{
               backgroundImage: `url(${
-                currentLiveRoom?.live_room?.cover_img ||
-                currentLiveRoom?.user?.avatar
+                appStore.liveRoomInfo?.cover_img ||
+                appStore.liveRoomInfo?.user?.avatar
               })`,
             }"
           ></div>
           <div
-            v-if="currentLiveRoom?.live_room?.flv_url"
+            v-if="appStore.liveRoomInfo?.flv_url"
             ref="remoteVideoRef"
           ></div>
-          <template v-if="currentLiveRoom">
+          <template v-if="appStore.liveRoomInfo">
             <div class="video-controls">
               <VideoControls
                 :resolution="videoResolution"
@@ -87,7 +87,7 @@
             >
               <div
                 class="btn"
-                @click="joinRoom(currentLiveRoom.live_room)"
+                @click="joinRoom(appStore.liveRoomInfo)"
               >
                 进入直播
               </div>
@@ -104,7 +104,7 @@
               :key="index"
               :class="{
                 item: 1,
-                active: item.live_room_id === currentLiveRoom?.live_room_id,
+                active: item.live_room_id === appStore.liveRoomInfo?.id,
               }"
               :style="{
                 backgroundImage: `url(${
@@ -137,11 +137,11 @@
                 class="border"
                 :style="{
                   opacity:
-                    item.live_room_id === currentLiveRoom?.live_room_id ? 1 : 0,
+                    item.live_room_id === appStore.liveRoomInfo?.id ? 1 : 0,
                 }"
               ></div>
               <div
-                v-if="item.live_room_id === currentLiveRoom?.live_room_id"
+                v-if="item.live_room_id === appStore.liveRoomInfo?.id"
                 class="triangle"
               ></div>
               <div class="txt">{{ item.live_room?.name }}</div>
@@ -281,7 +281,7 @@
 import { openToTarget } from 'billd-utils';
 import { onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 
 import { fetchLiveBilibiliGetUserRecommend } from '@/api/bilibili';
 import { fetchLiveList } from '@/api/live';
@@ -292,6 +292,7 @@ import { ILive, LiveLineEnum } from '@/interface';
 import { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
 import {
+  ILiveRoom,
   LiveRoomIsShowEnum,
   LiveRoomPullIsShouldAuthEnum,
   LiveRoomTypeEnum,
@@ -299,7 +300,6 @@ import {
 } from '@/types/ILiveRoom';
 import { initAdsbygoogle } from '@/utils/google-ad';
 
-const route = useRoute();
 const router = useRouter();
 const appStore = useAppStore();
 const canvasRef = ref<Element>();
@@ -314,7 +314,6 @@ const configVideo = ref();
 const topLiveRoomList = ref<ILive[]>([]);
 const otherLiveRoomList = ref<ILive[]>([]);
 const bilibiliLiveRoomList = ref<ILive[]>([]);
-const currentLiveRoom = ref<ILive>();
 const interactionList = ref<any[]>([]);
 const videoWrapTmpRef = ref<HTMLDivElement>();
 const remoteVideoRef = ref<HTMLDivElement>();
@@ -330,7 +329,7 @@ const {
   videoResolution,
   handleStopDrawing,
   handlePlay,
-} = usePull(route.params.roomId as string);
+} = usePull();
 const isBottom = ref(false);
 const rootMargin = {
   bottom: 600,
@@ -436,21 +435,21 @@ async function getBg() {
 }
 
 function handleRefresh() {
-  playLive(currentLiveRoom.value!);
+  playLive(appStore.liveRoomInfo!);
 }
 
-function playLive(item: ILive) {
+function playLive(item: ILiveRoom) {
   handleStopDrawing();
-  currentLiveRoom.value = item;
   canvasRef.value?.childNodes?.forEach((item) => {
     item.remove();
   });
-  roomLiving.value = true;
-  handlePlay(item.live_room!);
+  // roomLiving.value = true;
+  appStore.liveRoomInfo = item;
+  handlePlay(item);
 }
 
 function changeLiveRoom(item: ILive) {
-  if (item.id === currentLiveRoom.value?.id) return;
+  if (item.id === appStore.liveRoomInfo?.id) return;
   if (
     ![
       LiveRoomTypeEnum.wertc_live,
@@ -460,7 +459,7 @@ function changeLiveRoom(item: ILive) {
   ) {
     appStore.setLiveLine(LiveLineEnum.hls);
   }
-  playLive(item);
+  playLive(item.live_room!);
 }
 
 async function getLiveRoomList() {
@@ -478,8 +477,8 @@ async function getLiveRoomList() {
       topLiveRoomList.value = res.data.rows.slice(0, topNums.value);
       otherLiveRoomList.value = res.data.rows.slice(topNums.value);
       if (res.data.total) {
-        currentLiveRoom.value = topLiveRoomList.value[0];
         roomLiving.value = true;
+        appStore.liveRoomInfo = topLiveRoomList.value[0].live_room;
       }
     }
   } catch (error) {

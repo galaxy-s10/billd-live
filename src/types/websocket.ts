@@ -202,8 +202,7 @@ export type WsDisableSpeakingType = IWsFormat<{
 
 /** 其他用户加入直播间 */
 export type WsOtherJoinType = IWsFormat<{
-  live_room: ILiveRoom;
-  live_room_user_info: IUser;
+  live_room_id: number;
   join_user_info?: IUser;
   join_socket_id: string;
   socket_list: string[];

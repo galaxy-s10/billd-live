@@ -86,18 +86,12 @@
                     [{{ formatTimeHour(item.send_msg_time!) }}]
                   </span>
                   <span class="name">
-                    <span v-if="item.user">
-                      <span>{{ item.user.username }}</span>
-                      <span>
-                        [{{ item.user.roles?.map((v) => v.role_name).join() }}]
-                      </span>
+                    <span>{{ item.username }}</span>
+                    <span>
+                      [{{ item.user?.roles?.map((v) => v.role_name).join() }}]
                     </span>
-                    <span v-else>
-                      <span>{{ item.socket_id }}</span>
-                      <span>[游客]</span>
-                    </span>
-                    <span>：</span>
                   </span>
+                  <span>：</span>
                   <span
                     class="msg"
                     v-if="item.content_type === WsMessageContentTypeEnum.txt"
@@ -119,37 +113,28 @@
                   v-else-if="item.msg_type === DanmuMsgTypeEnum.otherJoin"
                 >
                   <span class="name system">系统通知：</span>
-                  <span class="msg">
-                    {{ item.user?.username || item.socket_id }}进入直播！
-                  </span>
+                  <span class="msg">{{ item.username }}进入直播！</span>
                 </template>
                 <template
                   v-else-if="item.msg_type === DanmuMsgTypeEnum.userLeaved"
                 >
                   <span class="name system">系统通知：</span>
-                  <span class="msg">
-                    {{ item.user?.username || item.socket_id }}离开直播！
-                  </span>
+                  <span class="msg">{{ item.username }}离开直播！</span>
                 </template>
-                <template v-else-if="item.msg_type === DanmuMsgTypeEnum.reward">
-                  <span class="time">
-                    [{{ formatTimeHour(item.send_msg_time!) }}]
-                  </span>
-                  <span class="name">
-                    <span v-if="item.user">
-                      <span>{{ item.user.username }}</span>
-                      <span>
-                        [{{ item.user.roles?.map((v) => v.role_name).join() }}]
-                      </span>
-                    </span>
-                    <span v-else>
-                      <span>{{ item.socket_id }}</span>
-                      <span>[游客]</span>
+                <div
+                  class="reward"
+                  v-else-if="item.msg_type === DanmuMsgTypeEnum.reward"
+                >
+                  <span> [{{ formatTimeHour(item.send_msg_time!) }}] </span>
+                  <span>
+                    <span>{{ item.username }}</span>
+                    <span>
+                      [{{ item.user?.roles?.map((v) => v.role_name).join() }}]
                     </span>
                     <span>：</span>
                   </span>
-                  <span class="msg"> 打赏了：{{ item.content }} </span>
-                </template>
+                  <span>打赏了{{ item.content }}！</span>
+                </div>
               </div>
             </div>
           </div>
@@ -315,6 +300,7 @@ import { useAppStore } from '@/store/app';
 import { usePiniaCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
+import { IUser } from '@/types/IUser';
 import { formatTimeHour } from '@/utils';
 
 const route = useRoute();
@@ -326,6 +312,7 @@ const bottomRef = ref<HTMLDivElement>();
 const danmuListRef = ref<HTMLDivElement>();
 const showEmoji = ref(false);
 
+const anchorInfo = ref<IUser>();
 const containerHeight = ref(0);
 const videoWrapHeight = ref(0);
 const remoteVideoRef = ref<HTMLDivElement>();
@@ -347,9 +334,9 @@ const {
   damuList,
   danmuStr,
   roomLiving,
-  anchorInfo,
   videoResolution,
-} = usePull(roomId.value);
+  initRoomId,
+} = usePull();
 
 onUnmounted(() => {
   closeWs();
@@ -359,6 +346,7 @@ onUnmounted(() => {
 });
 
 onMounted(() => {
+  initRoomId(roomId.value);
   showPlayBtn.value = true;
   videoWrapRef.value = remoteVideoRef.value;
   setTimeout(() => {
@@ -403,16 +391,7 @@ async function handleHistoryMsg() {
     });
     if (res.code === 200) {
       res.data.rows.forEach((v) => {
-        damuList.value.unshift({
-          send_msg_time: v.send_msg_time!,
-          user: v.user,
-          live_room_id: v.live_room_id!,
-          id: v.id!,
-          content: v.content!,
-          content_type: v.content_type!,
-          msg_type: v.msg_type!,
-          redbag_send_id: v.redbag_send_id,
-        });
+        damuList.value.unshift(v);
       });
       if (
         appStore.liveRoomInfo?.system_msg &&
@@ -495,13 +474,22 @@ async function getLiveRoomInfo() {
     videoLoading.value = true;
     const res = await fetchFindLiveRoom(Number(roomId.value));
     if (res.code === 200) {
-      if (res.data?.type === LiveRoomTypeEnum.wertc_live) {
-        autoplayVal.value = true;
-        showPlayBtn.value = false;
-      } else {
-        showPlayBtn.value = true;
+      if (res.data) {
+        appStore.liveRoomInfo = res.data;
+        anchorInfo.value = res.data.user_live_room?.user;
+        if (res.data.live) {
+          roomLiving.value = true;
+        } else {
+          videoLoading.value = false;
+        }
+        if (res.data?.type === LiveRoomTypeEnum.wertc_live) {
+          autoplayVal.value = true;
+          showPlayBtn.value = false;
+        } else {
+          showPlayBtn.value = true;
+        }
+        initPull({ autolay: autoplayVal.value });
       }
-      initPull({ roomId: roomId.value, autolay: autoplayVal.value });
     }
   } catch (error) {
     console.error(error);
@@ -691,6 +679,11 @@ function startPull() {
       white-space: normal;
       word-wrap: break-word;
       font-size: 13px;
+
+      .reward {
+        color: $theme-color-gold;
+        font-weight: bold;
+      }
 
       .name,
       .time {

@@ -405,11 +405,11 @@ export function usePull() {
     }
   );
 
-  function initPull(data: {
-    roomId: string;
-    autolay?: boolean;
-    isRemoteDesk?: boolean;
-  }) {
+  function initRoomId(id: string) {
+    roomId.value = id;
+  }
+
+  function initPull(data: { autolay?: boolean; isRemoteDesk?: boolean }) {
     if (data.autolay === undefined) {
       autoplayVal.value = true;
     } else {
@@ -418,7 +418,7 @@ export function usePull() {
     isRemoteDesk.value = !!data.isRemoteDesk;
     initWs({
       isRemoteDesk: data.isRemoteDesk,
-      roomId: data.roomId,
+      roomId: roomId.value,
       isAnchor: false,
     });
   }
@@ -454,13 +454,13 @@ export function usePull() {
       window.$message.warning('请输入弹幕内容！');
       return;
     }
-    const instance = networkStore.wsMap.get(roomId);
+    const instance = networkStore.wsMap.get(roomId.value);
     if (!instance) return;
     const messageData: WsMessageType['data'] = {
       content: txt,
       content_type: WsMessageContentTypeEnum.txt,
       msg_type: DanmuMsgTypeEnum.reward,
-      live_room_id: Number(roomId),
+      live_room_id: Number(roomId.value),
       isBilibili: false,
     };
     instance.send({
@@ -481,14 +481,13 @@ export function usePull() {
       window.$message.warning('请输入弹幕内容！');
       return;
     }
-    console.log('sendDanmuTxt', roomId, txt);
-    const instance = networkStore.wsMap.get(roomId);
+    const instance = networkStore.wsMap.get(roomId.value);
     if (!instance) return;
     const messageData: WsMessageType['data'] = {
       content: txt,
       content_type: WsMessageContentTypeEnum.txt,
       msg_type: DanmuMsgTypeEnum.danmu,
-      live_room_id: Number(roomId),
+      live_room_id: Number(roomId.value),
       isBilibili: false,
     };
     instance.send({
@@ -510,14 +509,14 @@ export function usePull() {
       window.$message.warning('图片不能为空！');
       return;
     }
-    const instance = networkStore.wsMap.get(roomId);
+    const instance = networkStore.wsMap.get(roomId.value);
     if (!instance) return;
     const requestId = getRandomString(8);
     const messageData: WsMessageType['data'] = {
       content: url,
       content_type: WsMessageContentTypeEnum.img,
       msg_type: DanmuMsgTypeEnum.danmu,
-      live_room_id: Number(roomId),
+      live_room_id: Number(roomId.value),
       isBilibili: false,
     };
     instance.send({
@@ -554,5 +553,6 @@ export function usePull() {
     danmuStr,
     liveRoomInfo,
     anchorInfo,
+    initRoomId,
   };
 }

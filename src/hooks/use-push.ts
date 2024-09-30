@@ -14,7 +14,6 @@ import {
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
-import { ILiveRoom } from '@/types/ILiveRoom';
 import {
   WsConnectStatusEnum,
   WsMessageType,
@@ -39,7 +38,6 @@ export function usePush() {
   const roomId = ref('');
   const roomName = ref('');
   const danmuStr = ref('');
-  const liveRoomInfo = ref<ILiveRoom>();
   const localStream = ref<MediaStream>();
   const videoElArr = ref<HTMLVideoElement[]>([]);
   const msgIsFile = ref<WsMessageMsgIsFileEnum>(WsMessageMsgIsFileEnum.no);
@@ -168,8 +166,8 @@ export function usePush() {
           });
           await handleCreateUserLiveRoom();
         } else {
-          roomName.value = liveRoomInfo.value?.name || '';
-          roomId.value = `${liveRoomInfo.value?.id || ''}`;
+          roomName.value = appStore.liveRoomInfo?.name || '';
+          roomId.value = `${appStore.liveRoomInfo?.id || ''}`;
           connectWs();
         }
       }
@@ -180,9 +178,9 @@ export function usePush() {
   async function handleUserHasLiveRoom() {
     const res = await fetchUserHasLiveRoom(userStore.userInfo!.id!);
     if (res.code === 200 && res.data) {
-      liveRoomInfo.value = res.data.live_room;
+      appStore.liveRoomInfo = res.data.live_room;
       router.push({
-        query: { ...route.query, roomId: liveRoomInfo.value?.id },
+        query: { ...route.query, roomId: appStore.liveRoomInfo?.id },
       });
       return true;
     }
@@ -376,6 +374,5 @@ export function usePush() {
     roomName,
     damuList,
     liveUserList,
-    liveRoomInfo,
   };
 }

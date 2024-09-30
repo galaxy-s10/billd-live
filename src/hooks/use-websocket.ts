@@ -611,6 +611,9 @@ export const useWebsocket = () => {
     ws.socketIo.on(WsMsgTypeEnum.message, (data: WsMessageType) => {
       prettierReceiveWsMsg(WsMsgTypeEnum.message, data);
       damuList.value.push({
+        send_msg_time: data.time,
+        user: data.user_info,
+        username: data.user_info?.username,
         /** 消息类型 */
         msg_type: data.data.msg_type,
         /** 消息内容类型 */
@@ -795,8 +798,9 @@ export const useWebsocket = () => {
     ws.socketIo.on(WsMsgTypeEnum.otherJoin, (data: WsOtherJoinType['data']) => {
       prettierReceiveWsMsg(WsMsgTypeEnum.otherJoin, data);
       const danmu: IWsMessage = {
+        username: data.join_user_info?.username,
         send_msg_time: +new Date(),
-        live_room_id: data.live_room.id!,
+        live_room_id: data.live_room_id!,
         id: -1,
         content: '',
         content_type: WsMessageContentTypeEnum.txt,
@@ -822,11 +826,11 @@ export const useWebsocket = () => {
             LiveRoomTypeEnum.system,
             LiveRoomTypeEnum.srs,
             LiveRoomTypeEnum.obs,
-          ].includes(data.live_room.type!)
+          ].includes(appStore.liveRoomInfo?.type!)
         ) {
           return;
         }
-        if (data.live_room.type === LiveRoomTypeEnum.wertc_live) {
+        if (appStore.liveRoomInfo?.type === LiveRoomTypeEnum.wertc_live) {
           updateWebRtcLiveConfig({
             roomId: roomId.value,
             canvasVideoStream: canvasVideoStream.value,
@@ -847,7 +851,9 @@ export const useWebsocket = () => {
               });
             }
           });
-        } else if (data.live_room.type === LiveRoomTypeEnum.wertc_meeting_one) {
+        } else if (
+          appStore.liveRoomInfo?.type === LiveRoomTypeEnum.wertc_meeting_one
+        ) {
           updateWebRtcMeetingOneConfig({
             roomId: roomId.value,
             anchorStream: canvasVideoStream.value,
@@ -868,7 +874,7 @@ export const useWebsocket = () => {
           //     });
           //   }
           // });
-        } else if (data.live_room.type === LiveRoomTypeEnum.pk) {
+        } else if (appStore.liveRoomInfo?.type === LiveRoomTypeEnum.pk) {
           updateWebRtcMeetingPkConfig({
             roomId: roomId.value,
             anchorStream: canvasVideoStream.value,
@@ -889,7 +895,9 @@ export const useWebsocket = () => {
           //     });
           //   }
           // });
-        } else if (data.live_room.type === LiveRoomTypeEnum.tencent_css_pk) {
+        } else if (
+          appStore.liveRoomInfo?.type === LiveRoomTypeEnum.tencent_css_pk
+        ) {
           updateWebRtcMeetingPkConfig({
             roomId: roomId.value,
             anchorStream: canvasVideoStream.value,
@@ -927,6 +935,7 @@ export const useWebsocket = () => {
       console.log('用户离开房间完成', data);
       networkStore.removeRtc(data.socket_id);
       damuList.value.push({
+        ...data,
         send_msg_time: +new Date(),
         live_room_id: Number(roomId.value),
         id: -1,

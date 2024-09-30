@@ -318,12 +318,9 @@
                   [{{ formatTimeHour(item.send_msg_time!) }}]
                 </span>
                 <span class="name">
-                  <span v-if="item.user">
-                    {{ item.user.username }}[{{
-                      item.user.roles?.map((v) => v.role_name).join()
-                    }}]
-                  </span>
-                  <span v-else>{{ item }}[游客]</span>
+                  {{ item.username }}[{{
+                    item.user?.roles?.map((v) => v.role_name).join()
+                  }}]
                 </span>
                 <span>：</span>
                 <span
@@ -347,19 +344,13 @@
                 v-else-if="item.msg_type === DanmuMsgTypeEnum.otherJoin"
               >
                 <span class="name system">系统通知：</span>
-                <span class="msg">
-                  <span>{{ item.user?.username }}</span>
-                  <span>进入直播！</span>
-                </span>
+                <span class="msg">{{ item.username }}进入直播！</span>
               </template>
               <template
                 v-else-if="item.msg_type === DanmuMsgTypeEnum.userLeaved"
               >
                 <span class="name system">系统通知：</span>
-                <span class="msg">
-                  <span>{{ item.user?.username }}</span>
-                  <span>离开直播！</span>
-                </span>
+                <span class="msg">{{ item.username }}离开直播！</span>
               </template>
             </div>
           </div>
@@ -1143,16 +1134,7 @@ async function handleHistoryMsg() {
     });
     if (res.code === 200) {
       res.data.rows.forEach((v) => {
-        damuList.value.unshift({
-          send_msg_time: v.send_msg_time!,
-          user: v.user,
-          live_room_id: v.live_room_id!,
-          id: v.id!,
-          content: v.content!,
-          content_type: v.content_type!,
-          msg_type: v.msg_type!,
-          redbag_send_id: v.redbag_send_id,
-        });
+        damuList.value.unshift(v);
       });
       if (
         appStore.liveRoomInfo?.system_msg &&

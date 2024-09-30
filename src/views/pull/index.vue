@@ -270,9 +270,7 @@
           <template v-if="item.msg_type === DanmuMsgTypeEnum.reward">
             <div class="reward">
               <span>[{{ formatTimeHour(item.send_msg_time!) }}]</span>
-              <span>
-                {{ item.user?.username }} 打赏了{{ item.content }}！
-              </span>
+              <span> {{ item.user?.username }}打赏了{{ item.content }}！</span>
             </div>
           </template>
           <template v-if="item.msg_type === DanmuMsgTypeEnum.danmu">
@@ -280,31 +278,21 @@
               >[{{ formatTimeHour(item.send_msg_time!) }}]</span
             >
             <span class="name">
-              <span v-if="item.user && userStore.userInfo?.id === item.user.id">
-                <span>{{ item.user.username }}</span>
-                <span>
-                  [{{ item.user.roles?.map((v) => v.role_name).join() }}]
-                </span>
-              </span>
               <Dropdown
-                trigger="click"
+                trigger="hover"
                 positon="left"
-                v-else-if="item.user"
               >
                 <template #btn>
-                  <span>{{ item.user.username }}</span>
-                  <span>
-                    [{{ item.user.roles?.map((v) => v.role_name).join() }}]
-                  </span>
+                  <span>{{ item.username }}</span>
                 </template>
                 <template #list>
                   <div class="list">
-                    <div class="item">{{ item.user.username }}</div>
+                    <div class="item">{{ item.username }}</div>
                     <div
                       class="item operator"
                       @click="
                         handleDisableSpeakingUser({
-                          userId: item.user.id,
+                          userId: item.user?.id,
                         })
                       "
                     >
@@ -314,7 +302,7 @@
                       class="item operator"
                       @click="
                         handleRestoreSpeakingUser({
-                          userId: item.user.id,
+                          userId: item.user?.id,
                         })
                       "
                     >
@@ -329,9 +317,8 @@
                   </div>
                 </template>
               </Dropdown>
-              <span v-else>
-                <span>{{ item }}</span>
-                <span>[游客]</span>
+              <span>
+                [{{ item.user?.roles?.map((v) => v.role_name).join() }}]
               </span>
             </span>
             <span>：</span>
@@ -354,11 +341,11 @@
           </template>
           <template v-else-if="item.msg_type === DanmuMsgTypeEnum.otherJoin">
             <span class="name system">系统通知：</span>
-            <span class="msg">{{ item.user?.username }}进入直播！ </span>
+            <span class="msg">{{ item.username }}进入直播！ </span>
           </template>
           <template v-else-if="item.msg_type === DanmuMsgTypeEnum.userLeaved">
             <span class="name system">系统通知：</span>
-            <span class="msg">{{ item.user?.username }}离开直播！ </span>
+            <span class="msg">{{ item.username }}离开直播！ </span>
           </template>
         </div>
       </div>
@@ -502,7 +489,7 @@ const appStore = useAppStore();
 const networkStore = useNetworkStore();
 const { t } = useI18n();
 
-const roomId = ref('-1');
+const roomId = ref('');
 const anchorInfo = ref<IUser>();
 const configBg = ref();
 const configVideo = ref();
@@ -542,7 +529,8 @@ const {
   damuList,
   liveUserList,
   danmuStr,
-} = usePull(roomId.value);
+  initRoomId,
+} = usePull();
 
 const rtcRtt = computed(() => {
   const arr: any[] = [];
@@ -584,6 +572,7 @@ const rtcBytesReceived = computed(() => {
 
 onMounted(async () => {
   roomId.value = route.params.roomId as string;
+  initRoomId(roomId.value);
   initAdsbygoogle();
   await handleFindLiveRoomInfo();
   if (!appStore.liveRoomInfo) return;
@@ -611,10 +600,9 @@ onMounted(async () => {
         topRef.value.getBoundingClientRect().height);
     height.value = res;
   }
-  getBg();
   if (route.query.is_bilibili !== '1') {
     isBilibili.value = false;
-    initPull({ roomId: roomId.value });
+    initPull({});
   } else {
     initWs({
       roomId: roomId.value,
@@ -746,16 +734,7 @@ async function handleHistoryMsg() {
     });
     if (res.code === 200) {
       res.data.rows.forEach((v) => {
-        damuList.value.unshift({
-          send_msg_time: v.send_msg_time!,
-          user: v.user,
-          live_room_id: v.live_room_id!,
-          id: v.id!,
-          content: v.content!,
-          content_type: v.content_type!,
-          msg_type: v.msg_type!,
-          redbag_send_id: v.redbag_send_id,
-        });
+        damuList.value.unshift(v);
       });
       if (
         appStore.liveRoomInfo?.system_msg &&
@@ -787,11 +766,14 @@ watch(
 
 watch(
   () => appStore.liveRoomInfo,
-  () => {
-    getBg();
+  (newval) => {
+    if (newval) {
+      getBg();
+    }
   },
   {
     deep: true,
+    immediate: true,
   }
 );
 
