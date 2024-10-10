@@ -449,7 +449,7 @@ import {
 } from '@/api/giftRecord';
 import { fetchGoodsList } from '@/api/goods';
 import { fetchLiveRoomOnlineUser } from '@/api/live';
-import { fetchFindLiveRoom } from '@/api/liveRoom';
+import { fetchFindLiveRoom, fetchLiveRoomBilibili } from '@/api/liveRoom';
 import { fetchGetWsMessageList } from '@/api/wsMessage';
 import { liveRoomTypeEnumMap, QINIU_RESOURCE } from '@/constant';
 import { emojiArray } from '@/emoji';
@@ -572,6 +572,11 @@ const rtcBytesReceived = computed(() => {
 
 onMounted(async () => {
   roomId.value = route.params.roomId as string;
+  if (route.query.is_bilibili === '1') {
+    isBilibili.value = true;
+    const res = await fetchLiveRoomBilibili();
+    roomId.value = `${res.data.id!}`;
+  }
   initRoomId(roomId.value);
   initAdsbygoogle();
   await handleFindLiveRoomInfo();
@@ -600,8 +605,7 @@ onMounted(async () => {
         topRef.value.getBoundingClientRect().height);
     height.value = res;
   }
-  if (route.query.is_bilibili !== '1') {
-    isBilibili.value = false;
+  if (isBilibili.value) {
     initPull({});
   } else {
     initWs({
@@ -610,8 +614,6 @@ onMounted(async () => {
       isBilibili: true,
       isAnchor: false,
     });
-    isBilibili.value = true;
-    handleBilibil();
   }
   getGiftRecord();
   getGiftGroupList();
@@ -636,6 +638,9 @@ async function handleFindLiveRoomInfo() {
         } else {
           videoLoading.value = false;
         }
+        if (isBilibili.value) {
+          handleBilibil();
+        }
       }
     }
   } catch (error) {
@@ -644,35 +649,33 @@ async function handleFindLiveRoomInfo() {
 }
 
 async function handleBilibil() {
-  if (route.query.is_bilibili === '1') {
-    const flv = await fetchLiveBilibiliPlayUrl({
-      cid: route.params.roomId,
-      platform: 'web',
-    });
-    const hls = await fetchLiveBilibiliPlayUrl({
-      cid: route.params.roomId,
-      platform: 'h5',
-    });
-    const roomInfo = await fetchLiveBilibiliRoomGetInfo({
-      room_id: route.params.roomId,
-    });
-    console.log(flv?.data?.data?.durl?.[0].url, 'flv');
-    console.log(hls?.data?.data?.durl?.[0].url, 'hls');
-    roomLiving.value = true;
-    appStore.liveLine = LiveLineEnum.hls;
-    anchorInfo.value = {
-      avatar: roomInfo?.data?.data?.user_cover,
-      username: roomInfo?.data?.data?.title,
-    };
-    appStore.liveRoomInfo = {
-      type: LiveRoomTypeEnum.system,
-      flv_url: flv?.data?.data?.durl?.[0].url,
-      hls_url: hls?.data?.data?.durl?.[0].url,
-      areas: [{ name: roomInfo?.data?.data?.area_name }],
-      desc: roomInfo?.data?.data?.description,
-    };
-    handleRefresh();
-  }
+  const flv = await fetchLiveBilibiliPlayUrl({
+    cid: route.params.roomId,
+    platform: 'web',
+  });
+  const hls = await fetchLiveBilibiliPlayUrl({
+    cid: route.params.roomId,
+    platform: 'h5',
+  });
+  const roomInfo = await fetchLiveBilibiliRoomGetInfo({
+    room_id: route.params.roomId,
+  });
+  console.log(flv?.data?.data?.durl?.[0].url, 'flv');
+  console.log(hls?.data?.data?.durl?.[0].url, 'hls');
+  roomLiving.value = true;
+  appStore.liveLine = LiveLineEnum.hls;
+  anchorInfo.value = {
+    avatar: roomInfo?.data?.data?.user_cover,
+    username: roomInfo?.data?.data?.title,
+  };
+  appStore.liveRoomInfo = {
+    type: LiveRoomTypeEnum.system,
+    flv_url: flv?.data?.data?.durl?.[0].url,
+    hls_url: hls?.data?.data?.durl?.[0].url,
+    areas: [{ name: roomInfo?.data?.data?.area_name }],
+    desc: roomInfo?.data?.data?.description,
+  };
+  handleRefresh();
 }
 
 function handleSendGetLiveUser(liveRoomId: number) {

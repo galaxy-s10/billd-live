@@ -127,7 +127,7 @@ async function getLiveRoomList() {
       orderBy: 'desc',
       nowPage: 1,
       pageSize: 10,
-      childPageSize: 40,
+      childPageSize: 4,
       childNowPage: 1,
       childOrderName: 'priority',
       childOrderBy: 'desc',

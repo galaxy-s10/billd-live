@@ -2,6 +2,10 @@ import { IList, IPaging } from '@/interface';
 import { ILiveRoom } from '@/types/ILiveRoom';
 import request from '@/utils/request';
 
+export function fetchLiveRoomBilibili() {
+  return request.get<ILiveRoom>('/live_room/bilibili');
+}
+
 export function fetchLiveRoomList(params: IList<ILiveRoom>) {
   return request.get<IPaging<ILiveRoom>>('/live_room/list', {
     params,
