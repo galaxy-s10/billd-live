@@ -2,8 +2,8 @@ import { IPaging } from '@/interface';
 import { ILiveRoom } from '@/types/ILiveRoom';
 import request from '@/utils/request';
 
-export function fetchAreaList() {
-  return request.get('/area/list');
+export function fetchAreaList(params) {
+  return request.get('/area/list', { params });
 }
 
 export function fetchAreaLiveRoomList(params) {

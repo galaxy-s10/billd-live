@@ -156,7 +156,7 @@ export interface ILiveRoom {
   /** 拉流是否需要鉴权 */
   pull_is_should_auth?: LiveRoomPullIsShouldAuthEnum;
   /** 权重 */
-  weight?: number;
+  priority?: number;
   /** 推流秘钥 */
   key?: string;
   /** 直播间类型 */

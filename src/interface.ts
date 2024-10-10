@@ -440,6 +440,11 @@ export type IList<T> = {
   orderBy?: string;
   orderName?: string;
   keyWord?: string;
+  childNowPage?: string;
+  childPageSize?: string;
+  childOrderBy?: string;
+  childOrderName?: string;
+  childKeyWord?: string;
   rangTimeType?: 'created_at' | 'updated_at' | 'deleted_at';
   rangTimeStart?: string;
   rangTimeEnd?: string;
@@ -650,8 +655,9 @@ export interface IArea {
   /** 备注 */
   remark?: string;
   /** 权重 */
-  weight?: number;
+  priority?: number;
   area_live_rooms?: IAreaLiveRoom[];
+  live_rooms?: ILiveRoom[];
   live_room_is_show?: LiveRoomIsShowEnum;
   live_room_status?: LiveRoomStatusEnum;
   created_at?: string;

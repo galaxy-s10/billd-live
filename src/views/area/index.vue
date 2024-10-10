@@ -28,7 +28,7 @@ function changeArea(item: IArea) {
 }
 
 async function getAreaList() {
-  const res = await fetchAreaList();
+  const res = await fetchAreaList({ orderName: 'priority', orderBy: 'desc' });
   if (res.code === 200) {
     areaList.value = res.data.rows;
     router.push({

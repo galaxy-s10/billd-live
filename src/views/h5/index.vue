@@ -30,47 +30,44 @@
         </div>
         <div class="live-room-list">
           <div
-            v-for="(iten, indey) in item.area_live_rooms"
+            v-for="(iten, indey) in item.live_rooms"
             :key="indey"
             class="live-room"
             @click="goRoom(iten)"
           >
             <div
               class="cover"
-              v-lazy:background-image="
-                iten.live_room?.cover_img || iten.live_room?.users?.[0]?.avatar
-              "
+              v-lazy:background-image="iten?.cover_img || iten?.user?.avatar"
             >
               <PullAuthTip
                 v-if="
-                  iten?.live_room?.pull_is_should_auth ===
-                  LiveRoomPullIsShouldAuthEnum.yes
+                  iten?.pull_is_should_auth === LiveRoomPullIsShouldAuthEnum.yes
                 "
               ></PullAuthTip>
               <div
-                v-if="iten?.live_room?.live"
+                v-if="iten?.live"
                 class="living-ico"
               >
                 直播中
               </div>
               <div
                 v-if="
-                  iten.live_room?.cdn === LiveRoomUseCDNEnum.yes ||
+                  iten?.cdn === LiveRoomUseCDNEnum.yes ||
                   [
                     LiveRoomTypeEnum.tencent_css,
                     LiveRoomTypeEnum.tencent_css_pk,
-                  ].includes(iten.live_room?.type!)
+                  ].includes(iten?.type!)
                 "
                 class="cdn-ico"
               >
                 <div class="txt">CDN</div>
               </div>
-              <div class="txt">{{ iten.live_room?.users?.[0].username }}</div>
+              <div class="txt">{{ iten?.users?.[0].username }}</div>
             </div>
-            <div class="desc">{{ iten.live_room?.name }}</div>
+            <div class="desc">{{ iten?.name }}</div>
           </div>
           <div
-            v-if="!item.area_live_rooms?.length"
+            v-if="!item.live_rooms?.length"
             class="null"
           >
             {{ t('common.nonedata') }}
@@ -88,12 +85,14 @@ import { useI18n } from 'vue-i18n';
 
 import { fetchAreaLiveRoomList } from '@/api/area';
 import { COMMON_URL } from '@/constant';
-import { IArea, IAreaLiveRoom } from '@/interface';
+import { IArea } from '@/interface';
 import router, { mobileRouterName, routerName } from '@/router';
 import { useAppStore } from '@/store/app';
 import {
+  ILiveRoom,
   LiveRoomIsShowEnum,
   LiveRoomPullIsShouldAuthEnum,
+  LiveRoomStatusEnum,
   LiveRoomTypeEnum,
   LiveRoomUseCDNEnum,
 } from '@/types/ILiveRoom';
@@ -123,8 +122,16 @@ async function getLiveRoomList() {
   try {
     const res = await fetchAreaLiveRoomList({
       live_room_is_show: LiveRoomIsShowEnum.yes,
-      orderName: 'created_at',
+      live_room_status: LiveRoomStatusEnum.normal,
+      orderName: 'priority',
       orderBy: 'desc',
+      nowPage: 1,
+      pageSize: 10,
+      childPageSize: 40,
+      childNowPage: 1,
+      childOrderName: 'priority',
+      childOrderBy: 'desc',
+      childKeyWord: '',
     });
     if (res.code === 200) {
       liveRoomList.value = res.data.rows;
@@ -141,14 +148,14 @@ function showAll(item: IArea) {
   });
 }
 
-function goRoom(item: IAreaLiveRoom) {
-  if (!item.live_room?.live) {
+function goRoom(item: ILiveRoom) {
+  if (!item.live) {
     window.$message.info('该直播间没在直播~');
     return;
   }
   router.push({
     name: routerName.h5Room,
-    params: { roomId: item.live_room_id },
+    params: { roomId: item.id },
   });
 }
 
