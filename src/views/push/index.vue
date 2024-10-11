@@ -97,23 +97,50 @@
           ></div>
           <div class="detail">
             <div class="top">
-              <div class="name">
-                <div class="ipt">
+              <div
+                class="name"
+                v-if="appStore.liveRoomInfo"
+              >
+                名称：
+                <div class="val">
                   <n-input-group>
                     <n-input
-                      v-model:value="roomName"
+                      v-model:value="appStore.liveRoomInfo.name"
                       size="small"
-                      placeholder="输入房间名"
+                      placeholder="请输入房间名"
                     />
                     <n-button
                       size="small"
                       type="primary"
-                      @click="confirmRoomName"
+                      @click="changeLiveRoomName"
                     >
                       确定
                     </n-button>
                   </n-input-group>
                 </div>
+              </div>
+              <div class="area">
+                分区：
+                <div class="val">
+                  <n-input-group>
+                    <n-select
+                      v-model:value="currentArea"
+                      :options="areaList"
+                      size="small"
+                      placeholder="请选择分区"
+                    />
+
+                    <n-button
+                      size="small"
+                      type="primary"
+                      @click="changeLiveRoomArea"
+                    >
+                      确定
+                    </n-button>
+                  </n-input-group>
+                </div>
+              </div>
+              <div class="rtc-info">
                 <div class="item">延迟：{{ rtcRtt || '-' }}</div>
                 <div class="item">丢包：{{ rtcLoss || '-' }}</div>
                 <div class="item">帧率：{{ rtcFps || '-' }}</div>
@@ -460,6 +487,7 @@ import {
 import { useRoute } from 'vue-router';
 
 import { fetchLiveRoomOnlineUser } from '@/api/live';
+import { fetchUpdateMyLiveRoom } from '@/api/liveRoom';
 import { fetchGetWsMessageList } from '@/api/wsMessage';
 import {
   QINIU_RESOURCE,
@@ -522,7 +550,6 @@ const {
 } = useRTCParams();
 
 const {
-  confirmRoomName,
   startLive,
   endLive,
   sendDanmu,
@@ -539,7 +566,6 @@ const {
   currentAudioContentHint,
   currentVideoContentHint,
   danmuStr,
-  roomName,
   damuList,
   liveUserList,
 } = usePush();
@@ -582,6 +608,8 @@ const msrDelay = ref(1000 * 1);
 const msrMaxDelay = ref(1000 * 5);
 const suggestedName = ref('');
 const recordVideoTimer = ref();
+const areaList = ref<{ label: string; value: number }[]>([]);
+const currentArea = ref(-1);
 const recordVideoTime = ref('00:00:00');
 let avRecorder: AVRecorder | null = null;
 const loopGetLiveUserTimer = ref();
@@ -755,6 +783,45 @@ watch(
   }
 );
 
+function roomNameIsOk() {
+  if (!appStore.liveRoomInfo) return;
+  if (!appStore.liveRoomInfo.name!.length) {
+    window.$message.warning('请输入房间名！');
+    return false;
+  }
+  if (
+    appStore.liveRoomInfo.name!.length < 3 ||
+    appStore.liveRoomInfo.name!.length > 20
+  ) {
+    window.$message.warning('房间名要求3-20个字符！');
+    return false;
+  }
+  return true;
+}
+
+async function changeLiveRoomName() {
+  if (!roomNameIsOk()) return;
+  if (appStore.liveRoomInfo) {
+    const res = await fetchUpdateMyLiveRoom(appStore.liveRoomInfo);
+    if (res.code === 200) {
+      window.$message.success('修改成功！');
+    }
+  }
+}
+
+async function changeLiveRoomArea() {
+  if (appStore.liveRoomInfo) {
+    appStore.liveRoomInfo.areas = appStore.areaList.filter(
+      (v) => v.id === currentArea.value
+    );
+    // @ts-ignore
+    const res = await fetchUpdateMyLiveRoom({ areas: [currentArea.value] });
+    if (res.code === 200) {
+      window.$message.success('修改成功！');
+    }
+  }
+}
+
 function handleSendDanmu() {
   sendDanmu();
 }
@@ -903,6 +970,39 @@ watch(
     if (newval) {
       handleHistoryMsg();
     }
+  }
+);
+
+watch(
+  () => appStore.areaList,
+  (newval) => {
+    if (newval) {
+      const res: any[] = [];
+      appStore.areaList.forEach((v) => {
+        res.push({ label: v.name, value: v.id });
+      });
+      areaList.value = res;
+    }
+  },
+  {
+    immediate: true,
+    deep: true,
+  }
+);
+
+watch(
+  () => appStore.liveRoomInfo,
+  (newval) => {
+    if (newval) {
+      const area = newval.areas?.[0];
+      if (area) {
+        currentArea.value = area.id!;
+      }
+    }
+  },
+  {
+    immediate: true,
+    deep: true,
   }
 );
 
@@ -2619,12 +2719,21 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
             .name {
               display: flex;
               align-items: center;
-              .ipt {
-                margin-right: 15px;
-                width: 200px;
+              margin-right: 15px;
+              .val {
+                width: 180px;
               }
-              .item {
-                padding-right: 10px;
+            }
+            .rtc-info {
+              display: flex;
+              flex: 1;
+            }
+            .area {
+              display: flex;
+              align-items: center;
+              margin-right: 15px;
+              .val {
+                width: 130px;
               }
             }
             .other {

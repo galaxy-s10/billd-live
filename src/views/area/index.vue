@@ -1,7 +1,7 @@
 <template>
   <div class="tab-list">
     <div
-      v-for="(item, index) in areaList"
+      v-for="(item, index) in appStore.areaList"
       :key="index"
       class="tab"
       :class="{ active: router.currentRoute.value.params.id === item.id + '' }"
@@ -9,38 +9,40 @@
     >
       {{ item.name }}
     </div>
+    <div v-if="!appStore.areaList.length">暂无分区</div>
   </div>
 
   <router-view></router-view>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
+import { watch } from 'vue';
 
-import { fetchAreaList } from '@/api/area';
 import { IArea } from '@/interface';
 import router, { routerName } from '@/router';
+import { useAppStore } from '@/store/app';
 
-const areaList = ref<IArea[]>([]);
+const appStore = useAppStore();
 
 function changeArea(item: IArea) {
   router.push({ name: routerName.areaDetail, params: { id: item.id } });
 }
 
-async function getAreaList() {
-  const res = await fetchAreaList({ orderName: 'priority', orderBy: 'desc' });
-  if (res.code === 200) {
-    areaList.value = res.data.rows;
-    router.push({
-      name: routerName.areaDetail,
-      params: { id: areaList.value[0].id },
-    });
+watch(
+  () => appStore.areaList,
+  (newval) => {
+    if (newval.length) {
+      router.push({
+        name: routerName.areaDetail,
+        params: { id: appStore.areaList[0].id },
+      });
+    }
+  },
+  {
+    immediate: true,
+    deep: true,
   }
-}
-
-onMounted(() => {
-  getAreaList();
-});
+);
 </script>
 
 <style lang="scss" scoped>

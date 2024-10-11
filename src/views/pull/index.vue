@@ -478,7 +478,6 @@ import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import { IUser } from '@/types/IUser';
 import { WsDisableSpeakingType, WsMsgTypeEnum } from '@/types/websocket';
 import { formatMoney, formatTimeHour } from '@/utils';
-import { initAdsbygoogle } from '@/utils/google-ad';
 import { NODE_ENV } from 'script/constant';
 
 import RechargeCpt from './recharge/index.vue';
@@ -578,7 +577,6 @@ onMounted(async () => {
     roomId.value = `${res.data.id!}`;
   }
   initRoomId(roomId.value);
-  initAdsbygoogle();
   await handleFindLiveRoomInfo();
   if (!appStore.liveRoomInfo) return;
   appStore.videoControls.fps = true;

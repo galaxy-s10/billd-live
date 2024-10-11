@@ -32,10 +32,14 @@ import { getHostnameUrl } from '@/utils';
 import { getLastBuildDate, setLastBuildDate } from '@/utils/localStorage/app';
 import { getToken } from '@/utils/localStorage/user';
 
+import { fetchAreaList } from './api/area';
 import { fetchGlobalMsgMyList } from './api/globalMsg';
 import { useTip } from './hooks/use-tip';
+import { useAppStore } from './store/app';
+import { initAdsbygoogle } from './utils/google-ad';
 
 const { checkUpdate } = useCheckUpdate();
+const appStore = useAppStore();
 const cacheStore = usePiniaCacheStore();
 const userStore = useUserStore();
 const route = useRoute();
@@ -63,7 +67,8 @@ watch(
 );
 
 onMounted(() => {
-  initSettings();
+  initAdsbygoogle();
+  initGlobalData();
   checkUpdate({
     htmlUrl: getHostnameUrl(),
   });
@@ -125,6 +130,18 @@ function initSettings() {
       }
     }
   }, 500);
+}
+
+async function getAreaList() {
+  const res = await fetchAreaList({ orderName: 'priority', orderBy: 'desc' });
+  if (res.code === 200) {
+    appStore.areaList = res.data.rows;
+  }
+}
+
+function initGlobalData() {
+  getAreaList();
+  initSettings();
 }
 
 function handleUpdate() {

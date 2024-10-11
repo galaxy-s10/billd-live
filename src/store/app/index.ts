@@ -1,11 +1,17 @@
 import { UploadFileInfo } from 'naive-ui';
 import { defineStore } from 'pinia';
 
-import { LiveLineEnum, LiveRenderEnum, MediaTypeEnum } from '@/interface';
+import {
+  IArea,
+  LiveLineEnum,
+  LiveRenderEnum,
+  MediaTypeEnum,
+} from '@/interface';
 import { mobileRouterName } from '@/router';
 import { ILiveRoom } from '@/types/ILiveRoom';
 
 export type AppRootState = {
+  areaList: IArea[];
   remoteDesk: {
     sender: string;
     startRemoteDesk: boolean;
@@ -72,6 +78,7 @@ export type AppRootState = {
 export const useAppStore = defineStore('app', {
   state: (): AppRootState => {
     return {
+      areaList: [],
       remoteDesk: {
         startRemoteDesk: false,
         sender: '',

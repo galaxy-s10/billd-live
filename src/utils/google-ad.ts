@@ -1,9 +1,14 @@
 export const initAdsbygoogle = () => {
-  // @ts-ignore
-  if (!window.adsbygoogle) {
+  try {
     // @ts-ignore
-    window.adsbygoogle = [];
+    if (!window.adsbygoogle) {
+      // @ts-ignore
+      window.adsbygoogle = [];
+    }
+    // @ts-ignore
+    window.adsbygoogle.push({});
+  } catch (error) {
+    console.error('initAdsbygoogle错误');
+    console.log(error);
   }
-  // @ts-ignore
-  window.adsbygoogle.push({});
 };

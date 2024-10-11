@@ -36,7 +36,6 @@ export function usePush() {
   const networkStore = useNetworkStore();
 
   const roomId = ref('');
-  const roomName = ref('');
   const danmuStr = ref('');
   const localStream = ref<MediaStream>();
   const videoElArr = ref<HTMLVideoElement[]>([]);
@@ -166,7 +165,6 @@ export function usePush() {
           });
           await handleCreateUserLiveRoom();
         } else {
-          roomName.value = appStore.liveRoomInfo?.name || '';
           roomId.value = `${appStore.liveRoomInfo?.id || ''}`;
           connectWs();
         }
@@ -223,9 +221,6 @@ export function usePush() {
       await handleCreateUserLiveRoom();
       return;
     }
-    if (!roomNameIsOk()) {
-      return;
-    }
     if (connectStatus.value !== WsConnectStatusEnum.connect) {
       window.$message.warning('websocket未连接');
       return;
@@ -256,7 +251,6 @@ export function usePush() {
       });
     }
     handleStartLive({
-      name: roomName.value,
       type,
       msrDelay,
       msrMaxDelay,
@@ -297,28 +291,12 @@ export function usePush() {
     }
   }
 
-  function roomNameIsOk() {
-    if (!roomName.value.length) {
-      window.$message.warning('请输入房间名！');
-      return false;
-    }
-    if (roomName.value.length < 3 || roomName.value.length > 20) {
-      window.$message.warning('房间名要求3-20个字符！');
-      return false;
-    }
-    return true;
-  }
-
   function keydownDanmu(event: KeyboardEvent) {
     const key = event.key.toLowerCase();
     if (key === 'enter') {
       event.preventDefault();
       sendDanmu();
     }
-  }
-
-  function confirmRoomName() {
-    if (!roomNameIsOk()) return;
   }
 
   function sendDanmu() {
@@ -352,7 +330,6 @@ export function usePush() {
   }
 
   return {
-    confirmRoomName,
     startLive,
     endLive,
     sendDanmu,
@@ -371,7 +348,6 @@ export function usePush() {
     currentAudioContentHint,
     currentVideoContentHint,
     danmuStr,
-    roomName,
     damuList,
     liveUserList,
   };
