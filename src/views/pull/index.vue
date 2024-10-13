@@ -912,18 +912,22 @@ async function handlePay(item: IGoods) {
   if (!loginTip()) {
     return;
   }
-  const res = await fetchGiftRecordCreate({
-    goodsId: item.id!,
-    goodsNums: 1,
-    liveRoomId: Number(roomId.value),
-    isBilibili: false,
-  });
-  if (res.code === 200) {
-    window.$message.success('打赏成功！');
-    sendDanmuReward(item.name || '');
+  try {
+    const res = await fetchGiftRecordCreate({
+      goodsId: item.id!,
+      goodsNums: 1,
+      liveRoomId: Number(roomId.value),
+      isBilibili: false,
+    });
+    if (res.code === 200) {
+      window.$message.success('打赏成功！');
+      sendDanmuReward(item.name || '');
+    }
+    userStore.updateMyWallet();
+    getGiftGroupList();
+  } catch (error) {
+    console.log(error);
   }
-  userStore.updateMyWallet();
-  getGiftGroupList();
 }
 
 function handleFullScreen() {

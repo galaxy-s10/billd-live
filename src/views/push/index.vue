@@ -472,7 +472,7 @@ import {
   VolumeMuteOutline,
 } from '@vicons/ionicons5';
 import { AVRecorder } from '@webav/av-recorder';
-import { copyToClipBoard, getRandomString } from 'billd-utils';
+import { copyToClipBoard } from 'billd-utils';
 import { fabric } from 'fabric';
 import {
   Raw,
@@ -514,7 +514,6 @@ import { usePiniaCacheStore } from '@/store/cache';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
-import { WsMsgTypeEnum, WsUpdateLiveRoomCoverImg } from '@/types/websocket';
 import {
   base64ToFile,
   createVideo,
@@ -555,6 +554,7 @@ const {
   sendDanmu,
   keydownDanmu,
   sendBlob,
+  sendRoomNoLive,
   roomId,
   msgIsFile,
   mySocketId,
@@ -655,7 +655,7 @@ watch(
   () => roomLiving.value,
   (newval) => {
     if (!newval) {
-      handleEndLive();
+      endLive();
       useTip({
         content: '直播已结束',
         hiddenCancel: true,
@@ -1213,12 +1213,17 @@ function handleMixedAudio() {
 }
 
 function handleEndLive() {
+  clearLoop();
+  endLive();
+  sendRoomNoLive();
+}
+
+function clearLoop() {
   worker.value?.postMessage({
     type: 'request-clear-loop',
     timer: workerMsrTimerId.value,
   });
   recorder.value?.removeEventListener('dataavailable', handleSendBlob);
-  endLive();
 }
 
 async function handleHistoryMsg() {
@@ -1323,15 +1328,7 @@ async function uploadLivePreview() {
     file,
   });
   if (uploadRes.flag && uploadRes.resultUrl) {
-    networkStore.wsMap
-      .get(roomId.value)
-      ?.send<WsUpdateLiveRoomCoverImg['data']>({
-        requestId: getRandomString(8),
-        msgType: WsMsgTypeEnum.updateLiveRoomCoverImg,
-        data: {
-          cover_img: uploadRes.resultUrl,
-        },
-      });
+    fetchUpdateMyLiveRoom({ cover_img: uploadRes.resultUrl });
   }
 }
 

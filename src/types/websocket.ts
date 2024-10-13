@@ -48,8 +48,6 @@ export enum WsMsgTypeEnum {
   getLiveUser = 'getLiveUser',
   /** 更新加入信息 */
   updateJoinInfo = 'updateJoinInfo',
-  /** 更新直播间预览图 */
-  updateLiveRoomCoverImg = 'updateLiveRoomCoverImg',
   /** 心跳 */
   heartbeat = 'heartbeat',
   /** 开始直播 */
@@ -80,6 +78,30 @@ export enum WsMsgTypeEnum {
 
   msrBlob = 'msrBlob',
   batchSendOffer = 'batchSendOffer',
+}
+
+/** 发送消息统一格式 */
+export interface IReqWsFormat<T> {
+  /** 消息id */
+  request_id: string;
+  /** 用户socket_id */
+  socket_id: string;
+  /** 用户信息 */
+  user_info?: IUser;
+  /** 用户token */
+  user_token?: string;
+  /** 消息时间戳 */
+  time: number;
+  data: T;
+}
+
+/** 接收消息统一格式 */
+export interface IResWsFormat<T> {
+  /** 消息id */
+  request_id: string;
+  /** 消息时间戳 */
+  time: number;
+  data: T;
 }
 
 export interface IWsFormat<T> {
@@ -125,9 +147,7 @@ export type WsRoomLivingType = IWsFormat<{
 }>;
 
 /** 直播间没在直播 */
-export type WsRoomNoLiveType = IWsFormat<{
-  live_room: ILiveRoom;
-}>;
+export type WsRoomNoLiveType = IResWsFormat<{ live_room_id: number }>;
 
 export enum RemoteDeskBehaviorEnum {
   move,
@@ -216,11 +236,6 @@ export type WsStartLiveType = IWsFormat<{
   msrDelay: number;
   /** 单位：毫秒 */
   msrMaxDelay: number;
-}>;
-
-/** 更新直播间预览图 */
-export type WsUpdateLiveRoomCoverImg = IWsFormat<{
-  cover_img: string;
 }>;
 
 /** 用户加入直播间 */

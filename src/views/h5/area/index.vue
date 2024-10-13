@@ -6,6 +6,7 @@
         :class="{
           list: 1,
         }"
+        :status="status"
         ref="longListRef"
         @get-list-data="getListData"
       >
@@ -46,19 +47,6 @@
           </div>
           <div class="desc">{{ iten?.name }}</div>
         </div>
-        <div v-if="loading"></div>
-        <div
-          v-else-if="!liveRoomList.length"
-          class="null"
-        >
-          {{ t('common.nonedata') }}
-        </div>
-        <div
-          v-else-if="!hasMore"
-          class="null"
-        >
-          {{ t('common.allLoaded') }}
-        </div>
       </LongList>
     </div>
   </div>
@@ -94,6 +82,7 @@ const height = ref(0);
 const loading = ref(false);
 const hasMore = ref(true);
 const longListRef = ref<InstanceType<typeof LongList>>();
+const status = ref<'loading' | 'nonedata' | 'allLoaded' | 'normal'>('loading');
 
 function goRoom(item: ILiveRoom) {
   if (!item.live) {
@@ -115,17 +104,28 @@ onMounted(() => {
   getData();
 });
 
+function handleStatus() {
+  if (loading.value) {
+    status.value = 'loading';
+  } else if (hasMore.value) {
+    status.value = 'normal';
+  } else {
+    status.value = 'allLoaded';
+  }
+  if (!liveRoomList.value?.length) {
+    status.value = 'nonedata';
+  }
+}
+
 async function getData() {
   try {
     if (loading.value) return;
     loading.value = true;
     pageParams.nowPage += 1;
-    if (longListRef.value) {
-      longListRef.value.loading = true;
-    }
+    status.value = 'loading';
     const res = await fetchLiveRoomList({
       id: Number(route.params.id),
-      live_room_is_show: LiveRoomIsShowEnum.yes,
+      is_show: LiveRoomIsShowEnum.yes,
       ...pageParams,
     });
     if (res.code === 200) {
@@ -137,9 +137,9 @@ async function getData() {
     console.log(error);
   }
   loading.value = false;
-  if (longListRef.value) {
-    longListRef.value.loading = false;
-  }
+  status.value = 'normal';
+  status.value = 'normal';
+  handleStatus();
 }
 function getListData() {
   if (!hasMore.value) return;

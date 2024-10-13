@@ -92,8 +92,8 @@ async function getGoodsList(type: GoodsTypeEnum) {
     loading.value = true;
     const res = await fetchGoodsList({
       type,
-      orderName: 'created_at',
-      orderBy: 'desc',
+      orderName: 'price,created_at',
+      orderBy: 'asc,desc',
     });
     if (res.code === 200) {
       list.value = res.data.rows;
@@ -213,8 +213,6 @@ function startPay(item: IGoods) {
       .right {
         .title {
           font-size: 22px;
-        }
-        .info {
         }
         .price-wrap {
           display: flex;

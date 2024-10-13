@@ -57,7 +57,7 @@ export const useUserStore = defineStore('user', {
       }
     },
     async updateMyWallet() {
-      const res = await fetchMyWallet();
+      const res = await fetchMyWallet({});
       if (res.code === 200) {
         if (this.userInfo?.wallet?.balance) {
           this.userInfo.wallet.balance = res.data.balance;

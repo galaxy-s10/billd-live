@@ -170,7 +170,7 @@ const mockDataNums = 4;
 
 const pageParams = reactive({
   nowPage: 1,
-  pageSize: 100,
+  pageSize: 50,
 });
 
 const currRankType = ref(RankTypeEnum.liveRoom);
@@ -271,7 +271,11 @@ function handleJoin(item) {
 async function getWalletList() {
   try {
     fullLoading({ loading: true });
-    const res = await fetchWalletList({ ...pageParams });
+    const res = await fetchWalletList({
+      ...pageParams,
+      orderName: 'balance',
+      orderBy: 'desc',
+    });
     if (res.code === 200) {
       const length = res.data.rows.length;
       rankList.value = res.data.rows.map((item, index) => {
@@ -381,9 +385,9 @@ async function getSigninList() {
   try {
     fullLoading({ loading: true });
     const res = await fetchSigninList({
-      orderName: 'sum_nums',
-      orderBy: 'desc',
       ...pageParams,
+      orderName: 'sum_nums,max_nums,recently_signin_time',
+      orderBy: 'desc,desc,desc',
     });
     if (res.code === 200) {
       const length = res.data.rows.length;

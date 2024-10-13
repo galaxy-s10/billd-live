@@ -265,7 +265,7 @@ const detail = ref({
         desc: '适用于个人/企业自建直播平台',
         price: {
           left: '￥',
-          center: '3999',
+          center: 'XXXX',
           right: '起',
         },
         tip: '涵盖Github全部/部分功能',
@@ -317,7 +317,7 @@ const detail = ref({
         },
       },
       {
-        color: 'blue',
+        color: 'green',
         name: '付费课程',
         desc: '适用于前端/音视频小白',
         price: {
@@ -360,7 +360,7 @@ const detail = ref({
         desc: '适用于个人/企业自建直播平台',
         price: {
           left: '￥',
-          center: '4999',
+          center: 'XXXX',
           right: '起',
         },
         tip: '',

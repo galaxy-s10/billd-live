@@ -99,17 +99,15 @@ watch(
 );
 
 function handleStatus() {
-  if (longListRef.value) {
-    if (loading.value) {
-      status.value = 'loading';
-    } else if (hasMore.value) {
-      status.value = 'normal';
-    } else {
-      status.value = 'allLoaded';
-    }
-    if (!liveRoomList.value?.length) {
-      status.value = 'nonedata';
-    }
+  if (loading.value) {
+    status.value = 'loading';
+  } else if (hasMore.value) {
+    status.value = 'normal';
+  } else {
+    status.value = 'allLoaded';
+  }
+  if (!liveRoomList.value?.length) {
+    status.value = 'nonedata';
   }
 }
 

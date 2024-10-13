@@ -20,12 +20,28 @@
           <p>提交哈希：{{ serverInfo?.billd.commitHash }}</p>
           <p>最后构建：{{ serverInfo?.billd.lastBuildDate }}</p>
         </div>
+        <div class="hr"></div>
+        <div
+          v-loading="loading"
+          class="item"
+        >
+          <h2>服务器信息</h2>
+          <p>操作系统：{{ serverInfo?.server.uname }}</p>
+          <p>Node版本：{{ serverInfo?.server.nodeVersion }}</p>
+          <p>Npm版本：{{ serverInfo?.server.npmVersion }}</p>
+          <p>Pnpm版本：{{ serverInfo?.server.pnpmVersion }}</p>
+          <p>Pm2版本：{{ serverInfo?.server.pm2Version }}</p>
+          <p>Docker版本：{{ serverInfo?.server.dockerVersion }}</p>
+          <p>Mysql版本：{{ serverInfo?.server.mysqlVersion }}</p>
+          <p>Redis版本：{{ serverInfo?.server.redisVersion }}</p>
+        </div>
       </div>
     </div>
     <div class="aside">
       <div class="title">本页目录</div>
       <div class="item">前端版本</div>
       <div class="item">后端版本</div>
+      <div class="item">服务器信息</div>
     </div>
   </div>
 </template>

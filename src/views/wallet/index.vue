@@ -95,7 +95,7 @@ onMounted(() => {
 });
 
 async function updateMyWallet() {
-  const res = await fetchMyWallet();
+  const res = await fetchMyWallet({});
   if (res.code === 200) {
     if (userStore.userInfo?.wallet?.balance !== undefined) {
       userStore.userInfo.wallet.balance = res.data.balance;
@@ -106,7 +106,10 @@ async function updateMyWallet() {
 async function getPayList() {
   try {
     fullLoading({ loading: true });
-    const res = await fetchWalletRecordMyList({});
+    const res = await fetchWalletRecordMyList({
+      orderName: 'created_at',
+      orderBy: 'desc',
+    });
     if (res.code === 200) {
       walletRecordList.value = res.data.rows;
     }

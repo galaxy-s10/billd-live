@@ -121,8 +121,11 @@ const currentSwiper = ref(swiperList.value[0]);
 async function getLiveRoomList() {
   try {
     const res = await fetchAreaLiveRoomList({
-      live_room_is_show: LiveRoomIsShowEnum.yes,
-      live_room_status: LiveRoomStatusEnum.normal,
+      is_show: LiveRoomIsShowEnum.yes,
+      status: LiveRoomStatusEnum.normal,
+      // is_fake: 2,
+      // cdn: LiveRoomUseCDNEnum.yes,
+      // id: 2,
       orderName: 'priority',
       orderBy: 'desc',
       nowPage: 1,
@@ -131,7 +134,7 @@ async function getLiveRoomList() {
       childNowPage: 1,
       childOrderName: 'priority',
       childOrderBy: 'desc',
-      childKeyWord: '',
+      // childKeyWord: '',
     });
     if (res.code === 200) {
       liveRoomList.value = res.data.rows;
@@ -237,8 +240,7 @@ onUnmounted(() => {
         align-items: center;
         justify-content: space-between;
         margin-bottom: 10px;
-        .left {
-        }
+
         .right {
           color: #999;
           font-size: 14px;

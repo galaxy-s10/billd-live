@@ -60,7 +60,7 @@
             :style="{
               backgroundImage: `url(${
                 appStore.liveRoomInfo?.cover_img ||
-                appStore.liveRoomInfo?.user?.avatar
+                appStore.liveRoomInfo?.users?.[0]?.avatar
               })`,
             }"
           ></div>
@@ -104,11 +104,12 @@
               :key="index"
               :class="{
                 item: 1,
-                active: item.live_room_id === appStore.liveRoomInfo?.id,
+                active: item.live_room?.id === appStore.liveRoomInfo?.id,
               }"
               :style="{
                 backgroundImage: `url(${
-                  item.live_room?.cover_img || item?.user?.avatar
+                  item.live_room?.cover_img ||
+                  item.live_room?.users?.[0]?.avatar
                 })`,
               }"
               @click="changeLiveRoom(item)"
@@ -137,11 +138,11 @@
                 class="border"
                 :style="{
                   opacity:
-                    item.live_room_id === appStore.liveRoomInfo?.id ? 1 : 0,
+                    item.live_room?.id === appStore.liveRoomInfo?.id ? 1 : 0,
                 }"
               ></div>
               <div
-                v-if="item.live_room_id === appStore.liveRoomInfo?.id"
+                v-if="item.live_room?.id === appStore.liveRoomInfo?.id"
                 class="triangle"
               ></div>
               <div class="txt">{{ item.live_room?.name }}</div>
@@ -169,7 +170,8 @@
             <div
               class="cover"
               v-lazy:background-image="
-                iten?.live_room?.cover_img || iten?.user?.avatar
+                iten?.live_room?.cover_img ||
+                iten?.live_room?.users?.[0]?.avatar
               "
             >
               <PullAuthTip
@@ -190,7 +192,7 @@
               >
                 <div class="txt">CDN</div>
               </div>
-              <div class="txt">{{ iten?.user?.username }}</div>
+              <div class="txt">{{ iten?.live_room?.users?.[0].username }}</div>
             </div>
             <div class="desc">{{ iten?.live_room?.name }}</div>
           </div>
@@ -214,7 +216,8 @@
             <div
               class="cover"
               v-lazy:background-image="
-                iten?.live_room?.cover_img || iten?.user?.avatar
+                iten?.live_room?.cover_img ||
+                iten?.live_room?.users?.[0]?.avatar
               "
             >
               <PullAuthTip
@@ -235,7 +238,7 @@
               >
                 <div class="txt">CDN</div>
               </div>
-              <div class="txt">{{ iten?.user?.username }}</div>
+              <div class="txt">{{ iten?.live_room?.users?.[0].username }}</div>
             </div>
             <div class="desc">{{ iten?.live_room?.name }}</div>
           </div>
@@ -293,7 +296,6 @@ import { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
 import {
   ILiveRoom,
-  LiveRoomIsShowEnum,
   LiveRoomPullIsShouldAuthEnum,
   LiveRoomTypeEnum,
   LiveRoomUseCDNEnum,
@@ -463,15 +465,17 @@ function changeLiveRoom(item: ILive) {
 async function getLiveRoomList() {
   try {
     const res = await fetchLiveList({
-      live_room_is_show: LiveRoomIsShowEnum.yes,
       orderName: 'created_at',
       orderBy: 'desc',
+      childOrderName: 'priority,name',
+      childOrderBy: 'desc,asc',
+      // status: 0,
+      // is_show: 0,
+      // cdn: 0,
+      // is_fake: 0,
+      // live_room_id: 1,
     });
     if (res.code === 200) {
-      // const arr: IBilibiliLiveUserRecommend[] = await handleBilibilData();
-      // first.value = false;
-      // @ts-ignore
-      // res.data.rows.push(...arr);
       topLiveRoomList.value = res.data.rows.slice(0, topNums.value);
       otherLiveRoomList.value = res.data.rows.slice(topNums.value);
       if (res.data.total) {
