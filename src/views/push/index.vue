@@ -510,7 +510,7 @@ import {
   WsMessageMsgIsVerifyEnum,
 } from '@/interface';
 import { AppRootState, useAppStore } from '@/store/app';
-import { usePiniaCacheStore } from '@/store/cache';
+import { useCacheStore } from '@/store/cache';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
@@ -538,7 +538,7 @@ const route = useRoute();
 const userStore = useUserStore();
 const appStore = useAppStore();
 const networkStore = useNetworkStore();
-const cacheStore = usePiniaCacheStore();
+const cacheStore = useCacheStore();
 const {
   maxBitrate,
   maxFramerate,

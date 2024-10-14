@@ -1,7 +1,6 @@
 import { MediaTypeEnum } from '@/interface';
 import { prodDomain } from '@/spec-config';
-
-import { LiveRoomTypeEnum } from './types/ILiveRoom';
+import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 
 export const QQ_CLIENT_ID = `101958191`;
 export const QQ_OAUTH_URL = `https://graph.qq.com/oauth2.0`;
@@ -15,6 +14,12 @@ export const WECHAT_REDIRECT_URI = `https://live.${prodDomain}/oauth/wechat_logi
 export const QRCODE_LOGIN_URI = `https://live.${prodDomain}/qrcodeLogin`;
 
 export const AUTHOR_GITHUB = `https://github.com/galaxy-s10`;
+
+export const AUTHOR_INFO = {
+  github: 'https://github.com/galaxy-s10',
+  wechat: 'shuisheng9905',
+  qq: '2274751790',
+};
 
 export const appBuildInfo =
   // @ts-ignore

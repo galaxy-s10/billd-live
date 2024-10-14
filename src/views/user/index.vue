@@ -12,13 +12,11 @@
         :border="!userInfo?.avatar?.length"
       ></Avatar>
     </div>
-    <div class="username">用户昵称：{{ userInfo?.username }}</div>
-    <div
-      class="username"
-      v-if="userStore.userInfo"
-    >
+    <div>用户昵称：{{ userInfo?.username }}</div>
+    <div>
       用户角色：{{ userInfo?.roles?.map((item) => item.role_name).join(',') }}
     </div>
+    <div>注册时间：{{ userInfo?.created_at }}</div>
     <br />
     <div class="pull-url">
       <span
@@ -54,6 +52,7 @@
             userInfo.live_rooms[0]?.areas?.[0]?.name || '暂无分区'
           }}
         </div>
+        <div>开通时间：{{ userInfo?.live_rooms?.[0]?.created_at }}</div>
       </div>
     </div>
   </div>

@@ -8,7 +8,7 @@ import { onMounted, onUnmounted, ref, watch } from 'vue';
 
 import { SRS_CB_URL_PARAMS } from '@/constant';
 import { useAppStore } from '@/store/app';
-import { usePiniaCacheStore } from '@/store/cache';
+import { useCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
 import { createVideo } from '@/utils';
 
@@ -93,7 +93,7 @@ export function useFullScreen(video) {
 }
 
 export function useFlvPlay() {
-  const cacheStore = usePiniaCacheStore();
+  const cacheStore = useCacheStore();
   const appStore = useAppStore();
   // const flvPlayer = ref<flvJs.Player>();
   const flvPlayer = ref<mpegts.Player>();
@@ -250,7 +250,7 @@ export function useFlvPlay() {
 }
 
 export function useHlsPlay() {
-  const cacheStore = usePiniaCacheStore();
+  const cacheStore = useCacheStore();
   const appStore = useAppStore();
   const hlsPlayer = ref<Player>();
   const hlsVideoEl = ref<HTMLVideoElement>();

@@ -99,26 +99,28 @@
       </p>
       <p>2. 闲聊勿扰。</p>
     </div>
-    <h1 class="title">🚀 作者微信</h1>
-
+    <h1 class="title">🚀 联系作者</h1>
+    <div>微信二维码：</div>
     <img
       src="@/assets/img/my-wechat.webp"
       alt=""
-      class="my-wechat"
+      style="width: 300px"
     />
+    <p>微信号：{{ AUTHOR_INFO.wechat }}</p>
+    <p>qq号：{{ AUTHOR_INFO.qq }}</p>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { openToTarget } from 'billd-utils';
 
-import { COMMON_URL } from '@/constant';
+import { AUTHOR_INFO, COMMON_URL } from '@/constant';
 import { getHostnameUrl } from '@/utils';
 </script>
 
 <style lang="scss" scoped>
 .group-wrap {
-  padding: 0 10px;
+  padding: 0 20px 10px;
   p {
     margin: 4px 0;
   }
@@ -133,9 +135,6 @@ import { getHostnameUrl } from '@/utils';
     cursor: pointer;
   }
   .wechat-group {
-    height: 500px;
-  }
-  .my-wechat {
     height: 500px;
   }
 }

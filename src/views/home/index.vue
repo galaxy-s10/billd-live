@@ -468,7 +468,7 @@ async function getLiveRoomList() {
       orderName: 'created_at',
       orderBy: 'desc',
       childOrderName: 'priority,name',
-      childOrderBy: 'desc,asc',
+      childOrderBy: 'asc,asc',
       // status: 0,
       // is_show: 0,
       // cdn: 0,

@@ -23,6 +23,9 @@ export const mobileRouterName = {
 export const routerName = {
   home: 'home',
   about: 'about',
+  doc: 'doc',
+  api: 'api',
+  guide: 'guide',
   area: 'area',
   areaDetail: 'areaDetail',
   rank: 'rank',
@@ -82,11 +85,6 @@ export const defaultRoutes: RouteRecordRaw[] = [
             component: () => import('@/views/about/group/index.vue'),
           },
           {
-            name: routerName.faq,
-            path: 'faq',
-            component: () => import('@/views/about/faq/index.vue'),
-          },
-          {
             name: routerName.team,
             path: 'team',
             component: () => import('@/views/about/team/index.vue'),
@@ -101,11 +99,37 @@ export const defaultRoutes: RouteRecordRaw[] = [
             path: 'author',
             component: () => import('@/views/about/author/index.vue'),
           },
+        ],
+      },
+      {
+        name: routerName.doc,
+        path: '/doc',
+        children: [
+          {
+            name: routerName.faq,
+            path: 'faq',
+            component: () => import('@/views/doc/faq/index.vue'),
+          },
+          {
+            name: routerName.ad,
+            path: 'ad',
+            component: () => import('@/views/doc/ad/index.vue'),
+          },
+          {
+            name: routerName.api,
+            path: 'api',
+            component: () => import('@/views/doc/api/index.vue'),
+          },
+          {
+            name: routerName.guide,
+            path: 'guide',
+            component: () => import('@/views/doc/guide/index.vue'),
+          },
           {
             name: routerName.pushStreamDifferent,
             path: 'pushStreamDifferent',
             component: () =>
-              import('@/views/about/pushStreamDifferent/index.vue'),
+              import('@/views/doc/pushStreamDifferent/index.vue'),
           },
         ],
       },
@@ -154,13 +178,12 @@ export const defaultRoutes: RouteRecordRaw[] = [
       {
         name: routerName.sponsors,
         path: '/sponsors',
-        component: () => import('@/views/doc/sponsors/index.vue'),
+        component: () => import('@/views/sponsors/index.vue'),
       },
       {
         name: routerName.privatizationDeployment,
         path: '/privatizationDeployment',
-        component: () =>
-          import('@/views/doc/privatizationDeployment/index.vue'),
+        component: () => import('@/views/privatizationDeployment/index.vue'),
       },
       {
         name: routerName.support,
@@ -193,11 +216,6 @@ export const defaultRoutes: RouteRecordRaw[] = [
         path: '/videoTools/frameScreenshotByWebcodec',
         component: () =>
           import('@/views/videoTools/frameScreenshot/webcodec/index.vue'),
-      },
-      {
-        name: routerName.ad,
-        path: '/ad',
-        component: () => import('@/views/doc/ad/index.vue'),
       },
       {
         name: routerName.pull,

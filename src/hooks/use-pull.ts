@@ -13,7 +13,7 @@ import {
   WsMessageMsgIsFileEnum,
 } from '@/interface';
 import { useAppStore } from '@/store/app';
-import { usePiniaCacheStore } from '@/store/cache';
+import { useCacheStore } from '@/store/cache';
 import { useNetworkStore } from '@/store/network';
 import {
   ILiveRoom,
@@ -26,7 +26,7 @@ import { videoFullBox, videoToCanvas } from '@/utils';
 export function usePull() {
   const route = useRoute();
   const networkStore = useNetworkStore();
-  const cacheStore = usePiniaCacheStore();
+  const cacheStore = useCacheStore();
   const appStore = useAppStore();
   const danmuStr = ref('');
   const roomId = ref('');

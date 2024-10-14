@@ -46,7 +46,7 @@
           <p>
             billd-live 是由
             <a
-              :href="AUTHOR_GITHUB"
+              :href="AUTHOR_INFO.github"
               target="_blank"
               class="link"
             >
@@ -118,7 +118,7 @@
 <script lang="ts" setup>
 import { openToTarget } from 'billd-utils';
 
-import { AUTHOR_GITHUB, COMMON_URL } from '@/constant';
+import { AUTHOR_INFO, COMMON_URL } from '@/constant';
 </script>
 
 <style lang="scss" scoped>

@@ -7,12 +7,6 @@
     </router-view>
     <SidebarCpt></SidebarCpt>
     <LoginModal v-if="appStore.showLoginModal"></LoginModal>
-    <!-- <img
-      class="pay-course"
-      src="@/assets/img/pay-course.webp"
-      alt=""
-      @click="openToTarget(COMMON_URL.payCoursesArticle)"
-    /> -->
     <PayCourse></PayCourse>
   </div>
 </template>

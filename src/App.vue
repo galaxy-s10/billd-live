@@ -26,7 +26,7 @@ import { fetchSettingsList } from '@/api/settings';
 import { THEME_COLOR, appBuildInfo } from '@/constant';
 import { useCheckUpdate } from '@/hooks/use-common';
 import { loginMessage } from '@/hooks/use-login';
-import { usePiniaCacheStore } from '@/store/cache';
+import { useCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
 import { getHostnameUrl } from '@/utils';
 import { getLastBuildDate, setLastBuildDate } from '@/utils/localStorage/app';
@@ -40,7 +40,7 @@ import { initAdsbygoogle } from './utils/google-ad';
 
 const { checkUpdate } = useCheckUpdate();
 const appStore = useAppStore();
-const cacheStore = usePiniaCacheStore();
+const cacheStore = useCacheStore();
 const userStore = useUserStore();
 const route = useRoute();
 

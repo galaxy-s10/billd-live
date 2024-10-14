@@ -201,7 +201,7 @@ import { onMounted, onUnmounted } from 'vue';
 import { handleTip } from '@/hooks/use-common';
 import { LiveLineEnum, LiveRenderEnum } from '@/interface';
 import { AppRootState, useAppStore } from '@/store/app';
-import { usePiniaCacheStore } from '@/store/cache';
+import { useCacheStore } from '@/store/cache';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 
 const props = withDefaults(
@@ -219,7 +219,7 @@ const emits = defineEmits([
   'pictureInPicture',
 ]);
 
-const cacheStore = usePiniaCacheStore();
+const cacheStore = useCacheStore();
 const appStore = useAppStore();
 
 const debounceRefresh = debounce(() => {

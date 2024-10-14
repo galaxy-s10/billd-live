@@ -297,14 +297,14 @@ import {
 } from '@/interface';
 import router, { mobileRouterName } from '@/router';
 import { useAppStore } from '@/store/app';
-import { usePiniaCacheStore } from '@/store/cache';
+import { useCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import { IUser } from '@/types/IUser';
 import { formatTimeHour } from '@/utils';
 
 const route = useRoute();
-const cacheStore = usePiniaCacheStore();
+const cacheStore = useCacheStore();
 const appStore = useAppStore();
 const userStore = useUserStore();
 

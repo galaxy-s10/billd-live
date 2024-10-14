@@ -30,6 +30,7 @@ const show = ref(true);
   right: 10px;
   bottom: 10px;
   z-index: 999;
+  overflow: hidden;
   border-radius: 10px;
   cursor: pointer;
   img {

@@ -238,7 +238,7 @@ pnpm run dev
 
 ## 常见问题
 
-[https://live.hsslive.cn/about/faq](https://live.hsslive.cn/about/faq)
+[https://live.hsslive.cn/doc/faq](https://live.hsslive.cn/doc/faq)
 
 ## 环境配置
 
