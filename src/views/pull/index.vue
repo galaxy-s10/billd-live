@@ -156,14 +156,16 @@
           class="remote-video"
           ref="remoteVideoRef"
         ></div>
-        <VideoControls
-          v-if="roomLiving"
-          :resolution="videoResolution"
-          @refresh="handleRefresh"
-          @full-screen="handleFullScreen"
-          @picture-in-picture="hanldePictureInPicture"
-          :control="appStore.videoControls"
-        ></VideoControls>
+        <div class="video-controls">
+          <VideoControls
+            v-if="roomLiving"
+            :resolution="videoResolution"
+            @refresh="handleRefresh"
+            @full-screen="handleFullScreen"
+            @picture-in-picture="hanldePictureInPicture"
+            :control="appStore.videoControls"
+          ></VideoControls>
+        </div>
       </div>
 
       <div
@@ -1200,6 +1202,15 @@ function handleScrollTop() {
           margin: 0 auto;
           height: calc(100% - 80px - 100px);
           transform: translate(-50%, -50%);
+        }
+      }
+      .video-controls {
+        display: none;
+      }
+
+      &:hover {
+        .video-controls {
+          display: block;
         }
       }
 

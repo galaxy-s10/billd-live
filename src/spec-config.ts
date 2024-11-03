@@ -1,7 +1,7 @@
 export const prodDomain = 'hsslive.cn';
 export const headTitle = prodDomain.split('.')[0];
 
-export const QQ_CLIENT_ID = '101934585';
+export const QQ_CLIENT_ID = 101958191;
 export const QQ_OAUTH_URL =
   'https://graph.qq.com/oauth2.0/authorize?response_type=code&';
 
