@@ -1,7 +1,9 @@
 <template>
   <div class="author-wrap">
     <h1 class="title">作者</h1>
-    <p class="desc">主业前端开发，兴趣使然，故业余时间开发了billd-live。</p>
+    <p class="desc">
+      主业前端开发，兴趣使然，故业余时间开发了{{ PROJECT_NAME }}。
+    </p>
     <div class="hr"></div>
     <div class="info">
       <div class="title">微信二维码</div>
@@ -17,7 +19,7 @@
 </template>
 
 <script lang="ts" setup>
-import { AUTHOR_INFO } from '@/constant';
+import { AUTHOR_INFO, PROJECT_NAME } from '@/constant';
 </script>
 
 <style lang="scss" scoped>

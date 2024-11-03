@@ -489,12 +489,7 @@ import { useRoute } from 'vue-router';
 import { fetchLiveRoomOnlineUser } from '@/api/live';
 import { fetchUpdateMyLiveRoom } from '@/api/liveRoom';
 import { fetchGetWsMessageList } from '@/api/wsMessage';
-import {
-  QINIU_RESOURCE,
-  THEME_COLOR,
-  liveRoomTypeEnumMap,
-  mediaTypeEnumMap,
-} from '@/constant';
+import { THEME_COLOR, liveRoomTypeEnumMap, mediaTypeEnumMap } from '@/constant';
 import { emojiArray } from '@/emoji';
 import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { usePush } from '@/hooks/use-push';
@@ -509,6 +504,7 @@ import {
   WsMessageMsgIsShowEnum,
   WsMessageMsgIsVerifyEnum,
 } from '@/interface';
+import { QINIU_KODO } from '@/spec-config';
 import { AppRootState, useAppStore } from '@/store/app';
 import { useCacheStore } from '@/store/cache';
 import { useNetworkStore } from '@/store/network';
@@ -876,7 +872,7 @@ async function uploadChange() {
       msgLoading.value = true;
       msgIsFile.value = WsMessageMsgIsFileEnum.yes;
       const res = await useQiniuJsUpload({
-        prefix: QINIU_RESOURCE.prefix['billd-live/msg-image/'],
+        prefix: QINIU_KODO.hssblog.prefix['billd-live/msg-image/'],
         file: fileList[0],
       });
       if (res?.resultUrl) {
@@ -1324,7 +1320,7 @@ async function uploadLivePreview() {
   const base64 = generateBase64(pushCanvasRef.value!);
   const file = base64ToFile(base64, `tmp.webp`);
   const uploadRes = await useQiniuJsUpload({
-    prefix: QINIU_RESOURCE.prefix['billd-live/live-preview/'],
+    prefix: QINIU_KODO.hssblog.prefix['billd-live/live-preview/'],
     file,
   });
   if (uploadRes.flag && uploadRes.resultUrl) {

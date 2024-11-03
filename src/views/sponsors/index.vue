@@ -1,22 +1,30 @@
 <template>
   <div class="sponsors-wrap">
     <div class="content">
-      <h1 class="title">成为billd-live的赞助者</h1>
+      <h1 class="title">成为{{ PROJECT_NAME }}的赞助者</h1>
       <div class="desc">
-        目前billd-live仅仅是作者业余时间开发以及维护，需要投入非常多时间以及精力，
-        你的赞助将会为billd-live提供经济支持。
+        目前{{
+          PROJECT_NAME
+        }}仅仅是作者业余时间开发以及维护，需要投入非常多时间以及精力，
+        你的赞助将会为{{ PROJECT_NAME }}提供经济支持。
       </div>
       <div class="hr"></div>
       <div class="list">
         <div class="item">
-          <h2>以企业名义赞助billd-live</h2>
-          <p>如果你是企业用户，并且从billd-live中受益，请考虑捐赠以示感谢。</p>
+          <h2>以企业名义赞助{{ PROJECT_NAME }}</h2>
+          <p>
+            如果你是企业用户，并且从{{
+              PROJECT_NAME
+            }}中受益，请考虑捐赠以示感谢。
+          </p>
         </div>
         <div class="hr"></div>
         <div class="item">
-          <h2>以个人名义赞助billd-live</h2>
+          <h2>以个人名义赞助{{ PROJECT_NAME }}</h2>
           <p>
-            如果你是个人用户，并且从billd-live中受益，请考虑捐赠以示感谢——就当是偶尔请我们喝杯咖啡。
+            如果你是个人用户，并且从{{
+              PROJECT_NAME
+            }}中受益，请考虑捐赠以示感谢——就当是偶尔请我们喝杯咖啡。
           </p>
         </div>
         <div class="hr"></div>
@@ -87,8 +95,8 @@
     </div>
     <div class="aside">
       <div class="title">本页目录</div>
-      <div class="item">以个人名义赞助billd-live</div>
-      <div class="item">以企业名义赞助billd-live</div>
+      <div class="item">以个人名义赞助{{ PROJECT_NAME }}</div>
+      <div class="item">以企业名义赞助{{ PROJECT_NAME }}</div>
       <div class="item">赞助等级</div>
       <div class="item">当前赞助商</div>
     </div>
@@ -98,6 +106,8 @@
 <script lang="ts" setup>
 import { openToTarget } from 'billd-utils';
 import { ref } from 'vue';
+
+import { PROJECT_NAME } from '@/constant';
 
 // 铂金赞助
 const platinumList = ref([

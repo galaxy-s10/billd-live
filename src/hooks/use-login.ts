@@ -8,12 +8,11 @@ import {
   QQ_CLIENT_ID,
   QQ_OAUTH_URL,
   QQ_REDIRECT_URI,
-  WECHAT_GZH_APPID,
-  WECHAT_GZH_OAUTH_URL,
   WECHAT_REDIRECT_URI,
 } from '@/constant';
 import LoginModalCpt from '@/hooks/loginModal/index.vue';
 import { PlatformEnum } from '@/interface';
+import { WECHAT_GZH_APPID, WECHAT_GZH_OAUTH_URL } from '@/spec-config';
 import { useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
 import { clearThirdLoginInfo, setThirdLoginInfo } from '@/utils/cookie';

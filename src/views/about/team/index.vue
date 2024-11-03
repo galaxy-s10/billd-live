@@ -2,14 +2,18 @@
   <div class="team-wrap">
     <h1 class="title">认识团队</h1>
     <p class="desc">
-      billd-live目前是个人开发，暂时没有贡献者，但以后可能会有，以下是目前部分团队成员的个人信息。
+      {{
+        PROJECT_NAME
+      }}目前是个人开发，暂时没有贡献者，但以后可能会有，以下是目前部分团队成员的个人信息。
     </p>
     <div class="hr"></div>
     <div class="core-team">
       <div class="info">
         <h2 class="title">核心团队成员</h2>
         <div class="desc">
-          核心团队成员是那些积极参与维护一个或多个核心项目的人。他们对billd-live
+          核心团队成员是那些积极参与维护一个或多个核心项目的人。他们对{{
+            PROJECT_NAME
+          }}
           的生态系统做出了重大贡献，并对项目及其用户的成功做出了长期的承诺。
         </div>
       </div>
@@ -129,7 +133,7 @@ import {
 import { openToTarget } from 'billd-utils';
 import { ref } from 'vue';
 
-import { URL_PARAMS } from '@/constant';
+import { PROJECT_NAME, URL_PARAMS } from '@/constant';
 import { GoodsTypeEnum } from '@/interface';
 import router, { routerName } from '@/router';
 import { prodDomain } from '@/spec-config';

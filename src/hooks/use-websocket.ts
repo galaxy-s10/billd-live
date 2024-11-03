@@ -4,7 +4,7 @@ import { computed, h, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchVerifyPkKey } from '@/api/liveRoom';
-import { THEME_COLOR, WEBSOCKET_URL } from '@/constant';
+import { THEME_COLOR } from '@/constant';
 import { useRTCParams } from '@/hooks/use-rtcParams';
 import { useTip } from '@/hooks/use-tip';
 import { useWebRtcLive } from '@/hooks/webrtc/live';
@@ -19,6 +19,7 @@ import {
   WsMessageContentTypeEnum,
 } from '@/interface';
 import router, { routerName } from '@/router';
+import { WEBSOCKET_URL } from '@/spec-config';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';

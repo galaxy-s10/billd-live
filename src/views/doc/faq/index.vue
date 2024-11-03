@@ -5,7 +5,7 @@
       <div class="hr"></div>
       <div class="list">
         <div class="item">
-          <h2>如何本地运行billd-live？</h2>
+          <h2>如何本地运行{{ PROJECT_NAME }}？</h2>
           <p>
             一： 仔细看完
             <span
@@ -14,7 +14,7 @@
                 openToTarget('https://github.com/galaxy-s10/billd-live#readme')
               "
             >
-              billd-live的README
+              {{ PROJECT_NAME }}的README
             </span>
           </p>
           <p>
@@ -29,9 +29,9 @@
         </div>
         <div class="hr"></div>
         <div class="item">
-          <h2>billd-live是什么？</h2>
+          <h2>{{ PROJECT_NAME }}是什么？</h2>
           <p>
-            billd-live
+            {{ PROJECT_NAME }}
             是一个web端的直播平台，目前支持使用WebRTC、SRS、腾讯云云直播进行直播：
           </p>
           <p>- 原生WebRTC一对多直播</p>
@@ -42,9 +42,9 @@
         </div>
         <div class="hr"></div>
         <div class="item">
-          <h2>谁在维护billd-live？</h2>
+          <h2>谁在维护{{ PROJECT_NAME }}？</h2>
           <p>
-            billd-live 是由
+            {{ PROJECT_NAME }}是由
             <a
               :href="AUTHOR_INFO.github"
               target="_blank"
@@ -57,8 +57,12 @@
         </div>
         <div class="hr"></div>
         <div class="item">
-          <h2>billd-live使用了什么技术栈？</h2>
-          <p>billd-live是一个偏前端的全栈项目，几乎所有技术栈都是前端相关。</p>
+          <h2>{{ PROJECT_NAME }}使用了什么技术栈？</h2>
+          <p>
+            {{
+              PROJECT_NAME
+            }}是一个偏前端的全栈项目，几乎所有技术栈都是前端相关。
+          </p>
           <p>
             前端相关：Typescript、Vue3、<a
               target="_blank"
@@ -91,7 +95,7 @@
         </div>
         <div class="hr"></div>
         <div class="item">
-          <h2>obs/ffmpeg推流到billd-live失败</h2>
+          <h2>obs/ffmpeg推流到{{ PROJECT_NAME }}失败</h2>
           <p>
             服务器性能有限，限制了推流码率为：<b>3000kbps</b>，超过则会导致推流失败！
           </p>
@@ -105,11 +109,11 @@
     </div>
     <div class="aside">
       <div class="title">本页目录</div>
-      <div class="item">如何本地运行billd-live？</div>
-      <div class="item">billd-live是什么？</div>
-      <div class="item">谁在维护billd-live？</div>
-      <div class="item">billd-live使用了什么技术栈？</div>
-      <div class="item">obs/ffmpeg推流到billd-live失败</div>
+      <div class="item">如何本地运行{{ PROJECT_NAME }}？</div>
+      <div class="item">{{ PROJECT_NAME }}是什么？</div>
+      <div class="item">谁在维护{{ PROJECT_NAME }}？</div>
+      <div class="item">{{ PROJECT_NAME }}使用了什么技术栈？</div>
+      <div class="item">obs/ffmpeg推流到{{ PROJECT_NAME }}失败</div>
       <div class="item">如何参与贡献？</div>
     </div>
   </div>
@@ -118,7 +122,7 @@
 <script lang="ts" setup>
 import { openToTarget } from 'billd-utils';
 
-import { AUTHOR_INFO, COMMON_URL } from '@/constant';
+import { AUTHOR_INFO, COMMON_URL, PROJECT_NAME } from '@/constant';
 </script>
 
 <style lang="scss" scoped>

@@ -1,3 +1,4 @@
+import { PROJECT_NAME } from '@/constant';
 import { nameSpaceWrap } from '@/locales/util';
 
 export default nameSpaceWrap('layout', {
@@ -33,7 +34,7 @@ export default nameSpaceWrap('layout', {
   guide: '快速上手',
   apiDoc: '接口文档',
   bilibiliTutorial: 'b站教程',
-  vipCourses: 'billd-live付费课',
+  vipCourses: `${PROJECT_NAME}付费课`,
 
   faq: '常见问题',
   team: '团队',

@@ -8,7 +8,7 @@ import {
   fetchUploadMergeChunk,
   fetchUploadProgress,
 } from '@/api/qiniuData';
-import { QINIU_RESOURCE } from '@/constant';
+import { QINIU_KODO } from '@/spec-config';
 import { getHash, splitFile } from '@/utils';
 
 export async function useUpload({
@@ -147,7 +147,7 @@ export async function useQiniuJsUpload({
             console.log('complete', res);
             resolve({
               flag: true,
-              resultUrl: `${QINIU_RESOURCE.url}/${res.key as string}`,
+              resultUrl: `${QINIU_KODO.hssblog.url}/${res.key as string}`,
             });
           },
         });

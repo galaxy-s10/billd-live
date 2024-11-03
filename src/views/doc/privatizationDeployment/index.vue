@@ -66,20 +66,20 @@
   <n-modal v-model:show="showContach">
     <n-card
       style="width: 400px"
-      title="联系作者"
+      title="联系方式"
       role="dialog"
       closable
       @close="showContach = false"
     >
       <div>
-        <div>微信二维码：</div>
+        <div>微信：</div>
         <img
           src="@/assets/img/my-wechat.webp"
           alt=""
           style="width: 300px"
         />
-        <p>微信号：{{ AUTHOR_INFO.wechat }}</p>
-        <p>qq号：{{ AUTHOR_INFO.qq }}</p>
+        <div>微信号: {{ AUTHOR_INFO.wechat }}</div>
+        <div>qq：{{ AUTHOR_INFO.qq }}</div>
         <p>添加时请备注：私有化部署+用途</p>
       </div>
     </n-card>
@@ -555,7 +555,6 @@ function handleClick(item) {
         text-align: center;
         font-size: 16px;
         cursor: pointer;
-        transition: all 00.3s ease;
         &:hover {
           background-color: $theme-color-gold;
           color: white;

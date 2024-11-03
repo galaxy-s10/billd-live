@@ -1,6 +1,6 @@
 import axios, { Axios, AxiosRequestConfig } from 'axios';
 
-import { AXIOS_BASEURL } from '@/constant';
+import { AXIOS_BASEURL } from '@/spec-config';
 import { useUserStore } from '@/store/user';
 import { getToken } from '@/utils/localStorage/user';
 

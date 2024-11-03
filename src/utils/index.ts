@@ -20,16 +20,6 @@ export function handleStrEllipsis(str: string, maxlen: number) {
   }
 }
 
-export const googleAd = () => {
-  const el = document.createElement('script');
-  el.src =
-    'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6064454674933772';
-  const head = document.getElementsByTagName('head')[0];
-  el.async = true;
-  el.crossOrigin = 'anonymous';
-  head.appendChild(el);
-};
-
 /**
  * music，该曲目应被视为包含音乐。设置该值时 MediaStreamTrack.kind的值必须为"audio"。
  * speech，该轨道应被视为包含语音数据。设置该值时 MediaStreamTrack.kind的值必须为"audio"。

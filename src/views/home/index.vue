@@ -465,10 +465,10 @@ function changeLiveRoom(item: ILive) {
 async function getLiveRoomList() {
   try {
     const res = await fetchLiveList({
-      orderName: 'created_at',
-      orderBy: 'desc',
+      // orderName: 'created_at',
+      // orderBy: 'desc',
       childOrderName: 'priority,name',
-      childOrderBy: 'asc,asc',
+      childOrderBy: 'desc,asc',
       // status: 0,
       // is_show: 0,
       // cdn: 0,

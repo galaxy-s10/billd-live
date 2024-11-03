@@ -8,7 +8,7 @@
     <div class="content">
       <p class="red">进群硬性门槛</p>
       <p>
-        1. 本地运行billd-live项目的前台：
+        1. 本地运行{{ PROJECT_NAME }}项目的前台：
         <span
           class="link"
           @click="openToTarget('https://github.com/galaxy-s10/billd-live')"
@@ -17,7 +17,7 @@
         </span>
       </p>
       <p>
-        2. 本地运行billd-live项目的后台：
+        2. 本地运行{{ PROJECT_NAME }}项目的后台：
         <span
           class="link"
           @click="
@@ -28,7 +28,7 @@
         </span>
       </p>
       <p>
-        3. 本地运行billd-live项目的后端：
+        3. 本地运行{{ PROJECT_NAME }}项目的后端：
         <span
           class="link"
           @click="
@@ -51,7 +51,9 @@
       <p>
         5.
         如果你想进群，那就先运行起来项目，不要求正常的运行起来，但起码要运行。然后截图发我确认。
-        微信群的初衷是希望让对billd-live感兴趣且热衷开源的人有个交流的地方，
+        微信群的初衷是希望让对{{
+          PROJECT_NAME
+        }}感兴趣且热衷开源的人有个交流的地方，
         如果连运行都懒得运行，那么很抱歉，道不同不相为谋。
       </p>
     </div>
@@ -74,7 +76,7 @@
         </span>
       </p>
       <p>
-        2. 付费：考虑billd-live付费课：
+        2. 付费：考虑{{ PROJECT_NAME }}付费课：
         <span
           class="link"
           @click="openToTarget(COMMON_URL.payCoursesArticle)"
@@ -114,7 +116,7 @@
 <script lang="ts" setup>
 import { openToTarget } from 'billd-utils';
 
-import { AUTHOR_INFO, COMMON_URL } from '@/constant';
+import { AUTHOR_INFO, COMMON_URL, PROJECT_NAME } from '@/constant';
 import { getHostnameUrl } from '@/utils';
 </script>
 

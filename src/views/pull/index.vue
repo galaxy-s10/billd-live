@@ -451,7 +451,7 @@ import { fetchGoodsList } from '@/api/goods';
 import { fetchLiveRoomOnlineUser } from '@/api/live';
 import { fetchFindLiveRoom, fetchLiveRoomBilibili } from '@/api/liveRoom';
 import { fetchGetWsMessageList } from '@/api/wsMessage';
-import { liveRoomTypeEnumMap, QINIU_RESOURCE } from '@/constant';
+import { liveRoomTypeEnumMap } from '@/constant';
 import { emojiArray } from '@/emoji';
 import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { useFullScreen, usePictureInPicture } from '@/hooks/use-play';
@@ -471,6 +471,7 @@ import {
   WsMessageMsgIsVerifyEnum,
 } from '@/interface';
 import router, { routerName } from '@/router';
+import { QINIU_KODO } from '@/spec-config';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
@@ -890,7 +891,7 @@ async function uploadChange() {
       msgLoading.value = true;
       msgIsFile.value = WsMessageMsgIsFileEnum.yes;
       const res = await useQiniuJsUpload({
-        prefix: QINIU_RESOURCE.prefix['billd-live/msg-image/'],
+        prefix: QINIU_KODO.hssblog.prefix['billd-live/msg-image/'],
         file: fileList[0],
       });
       if (res?.resultUrl) {
