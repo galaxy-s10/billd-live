@@ -11,6 +11,7 @@ import { mobileRouterName } from '@/router';
 import { ILiveRoom } from '@/types/ILiveRoom';
 
 export type AppRootState = {
+  useGoogleAd: boolean;
   areaList: IArea[];
   remoteDesk: {
     sender: string;
@@ -78,6 +79,7 @@ export type AppRootState = {
 export const useAppStore = defineStore('app', {
   state: (): AppRootState => {
     return {
+      useGoogleAd: false,
       areaList: [],
       remoteDesk: {
         startRemoteDesk: false,
@@ -110,9 +112,6 @@ export const useAppStore = defineStore('app', {
   actions: {
     setLiveRoomInfo(res: AppRootState['liveRoomInfo']) {
       this.liveRoomInfo = res;
-    },
-    setLiveLine(res: AppRootState['liveLine']) {
-      this.liveLine = res;
     },
     setAllTrack(res: AppRootState['allTrack']) {
       this.allTrack = res;

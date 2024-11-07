@@ -207,7 +207,10 @@
           <div class="price">立即充值</div>
         </div>
       </div>
-      <div class="ad-wrap-b">
+      <div
+        class="ad-wrap-b"
+        v-if="appStore.useGoogleAd"
+      >
         <!-- live-拉流页面广告位2 -->
         <ins
           class="adsbygoogle"
@@ -415,7 +418,10 @@
       </div>
     </div>
 
-    <div class="ad-wrap-a">
+    <div
+      class="ad-wrap-a"
+      v-if="appStore.useGoogleAd"
+    >
       <!-- live-拉流页面广告位1 -->
       <ins
         class="adsbygoogle"

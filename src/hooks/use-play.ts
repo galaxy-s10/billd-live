@@ -172,15 +172,6 @@ export function useFlvPlay() {
     }
   );
 
-  watch(
-    () => appStore.playing,
-    (newVal) => {
-      if (newVal) {
-        setPlay();
-      }
-    }
-  );
-
   function startFlvPlay(data: { flvurl: string }) {
     return new Promise((resolve) => {
       function main() {
@@ -196,7 +187,12 @@ export function useFlvPlay() {
             isLive: true,
             url: handlePlayUrl(data.flvurl),
           });
-          const videoEl = createVideo({});
+          const videoEl = createVideo({
+            appendChild: true,
+            muted: cacheStore.muted,
+            autoplay: true,
+          });
+          // const videoEl = createVideo({});
           videoEl.addEventListener('play', () => {
             console.log('flv-play');
           });
@@ -331,24 +327,20 @@ export function useHlsPlay() {
     }
   );
 
-  watch(
-    () => appStore.playing,
-    (newVal) => {
-      if (newVal) {
-        setPlay();
-      }
-    }
-  );
-
   function startHlsPlay(data: { hlsurl: string }) {
     return new Promise((resolve) => {
       function main() {
         console.log('startHlsPlay', data.hlsurl);
         destroyHls();
         const videoEl = createVideo({
+          appendChild: true,
           muted: cacheStore.muted,
           autoplay: true,
         });
+        // const videoEl = createVideo({
+        //   muted: cacheStore.muted,
+        //   autoplay: true,
+        // });
         hlsPlayer.value = videoJs(
           videoEl,
           {

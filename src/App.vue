@@ -25,6 +25,7 @@ import { useRoute } from 'vue-router';
 import { fetchSettingsList } from '@/api/settings';
 import { THEME_COLOR, appBuildInfo } from '@/constant';
 import { useCheckUpdate } from '@/hooks/use-common';
+import { useGoogleAd } from '@/hooks/use-google-ad';
 import { loginMessage } from '@/hooks/use-login';
 import { useCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
@@ -36,7 +37,6 @@ import { fetchAreaList } from './api/area';
 import { fetchGlobalMsgMyList } from './api/globalMsg';
 import { useTip } from './hooks/use-tip';
 import { useAppStore } from './store/app';
-import { initAdsbygoogle } from './utils/google-ad';
 
 const { checkUpdate } = useCheckUpdate();
 const appStore = useAppStore();
@@ -67,7 +67,7 @@ watch(
 );
 
 onMounted(() => {
-  initAdsbygoogle();
+  useGoogleAd();
   initGlobalData();
   checkUpdate({
     htmlUrl: getHostnameUrl(),

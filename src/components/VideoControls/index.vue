@@ -286,7 +286,7 @@ function changeLiveLine(item: LiveLineEnum) {
     window.$message.info('不支持该线路！');
     return;
   }
-  appStore.setLiveLine(item);
+  appStore.liveLine = item;
 }
 </script>
 
@@ -379,6 +379,11 @@ function changeLiveLine(item: LiveLineEnum) {
             cursor: pointer;
           }
         }
+      }
+    }
+    .line {
+      .list {
+        width: 75px;
       }
     }
 

@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router';
 import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { useFlvPlay, useHlsPlay } from '@/hooks/use-play';
 import { useWebsocket } from '@/hooks/use-websocket';
+import { useWebRtcRtmpToRtc } from '@/hooks/webrtc/rtmpToRtc';
 import {
   DanmuMsgTypeEnum,
   LiveLineEnum,
@@ -21,7 +22,7 @@ import {
   LiveRoomUseCDNEnum,
 } from '@/types/ILiveRoom';
 import { WsMessageType, WsMsgTypeEnum } from '@/types/websocket';
-import { videoFullBox, videoToCanvas } from '@/utils';
+import { createVideo, videoFullBox, videoToCanvas } from '@/utils';
 
 export function usePull() {
   const route = useRoute();
@@ -44,28 +45,30 @@ export function usePull() {
   const isRemoteDesk = ref(false);
   const videoElArr = ref<HTMLVideoElement[]>([]);
   const remoteVideo = ref<HTMLElement[]>([]);
+  const remoteStream = ref<MediaStream[]>([]);
   const { mySocketId, initWs, roomLiving, anchorInfo, liveUserList, damuList } =
     useWebsocket();
+  const { updateWebRtcRtmpToRtcConfig, webRtcRtmpToRtc } = useWebRtcRtmpToRtc();
+
   const { flvVideoEl, flvIsPlaying, startFlvPlay, destroyFlv } = useFlvPlay();
   const { hlsVideoEl, hlsIsPlaying, startHlsPlay, destroyHls } = useHlsPlay();
   const stopDrawingArr = ref<any[]>([]);
+  const rtmpToRtcVido = ref<HTMLVideoElement>();
+
   let changeWrapSizeFn;
 
   onUnmounted(() => {
     handleStopDrawing();
+    destroyFlv();
+    destroyHls();
   });
 
   function handleStopDrawing() {
-    destroyFlv();
-    destroyHls();
     changeWrapSizeFn = undefined;
     stopDrawingArr.value.forEach((cb) => cb());
     stopDrawingArr.value = [];
     remoteVideo.value.forEach((el) => el.remove());
     remoteVideo.value = [];
-    if (isRemoteDesk.value && videoWrapRef.value) {
-      videoWrapRef.value.removeAttribute('style');
-    }
   }
 
   function handleVideoWrapResize() {
@@ -78,8 +81,8 @@ export function usePull() {
   }
 
   function videoPlay(videoEl: HTMLVideoElement) {
-    stopDrawingArr.value = [];
     stopDrawingArr.value.forEach((cb) => cb());
+    stopDrawingArr.value = [];
     if (appStore.videoControls.renderMode === LiveRenderEnum.canvas) {
       if (videoEl && videoWrapRef.value) {
         const rect = videoWrapRef.value.getBoundingClientRect();
@@ -120,17 +123,25 @@ export function usePull() {
     }
   }
 
-  watch(hlsVideoEl, (newval) => {
-    if (newval) {
-      videoPlay(newval);
+  watch(
+    () => hlsVideoEl.value,
+    (newval) => {
+      if (newval) {
+        // @ts-ignore
+        remoteStream.value.push(newval.captureStream());
+      }
     }
-  });
+  );
 
-  watch(flvVideoEl, (newval) => {
-    if (newval) {
-      videoPlay(newval);
+  watch(
+    () => flvVideoEl.value,
+    (newval) => {
+      if (newval) {
+        // @ts-ignore
+        remoteStream.value.push(newval.captureStream());
+      }
     }
-  });
+  );
 
   watch(
     () => appStore.videoControlsValue.pageFullMode,
@@ -140,64 +151,17 @@ export function usePull() {
   );
 
   watch(
-    () => appStore.videoControls.renderMode,
+    [() => appStore.videoControls.renderMode, () => remoteStream.value],
     () => {
-      if (appStore.liveRoomInfo) {
-        handlePlay(appStore.liveRoomInfo);
-      }
-    }
-  );
-
-  watch(
-    () => networkStore.rtcMap,
-    (newVal) => {
-      if (newVal.size) {
-        roomLiving.value = true;
-        videoLoading.value = false;
-        appStore.playing = true;
-        // cacheStore.muted = false;
-      }
-      if (
-        isRemoteDesk.value ||
-        appStore.liveRoomInfo?.type === LiveRoomTypeEnum.wertc_meeting_one ||
-        appStore.liveRoomInfo?.type === LiveRoomTypeEnum.wertc_live ||
-        appStore.liveRoomInfo?.type === LiveRoomTypeEnum.pk ||
-        appStore.liveRoomInfo?.type === LiveRoomTypeEnum.tencent_css_pk
-      ) {
-        newVal.forEach((item) => {
-          if (appStore.allTrack.find((v) => v.mediaName === item.receiver)) {
-            return;
-          }
-          const rect = videoWrapRef.value?.getBoundingClientRect();
-          if (rect) {
-            videoFullBox({
-              wrapSize: {
-                width: rect.width,
-                height: rect.height,
-              },
-              videoEl: item.videoEl,
-              videoResize: ({ w, h }) => {
-                videoResolution.value = `${w}x${h}`;
-              },
-            });
-            remoteVideo.value.push(item.videoEl);
-            videoElArr.value.push(item.videoEl);
-          }
-        });
-        nextTick(() => {
-          if (isRemoteDesk.value && videoWrapRef.value) {
-            if (newVal.size) {
-              videoWrapRef.value.style.display = 'inline-block';
-            } else {
-              videoWrapRef.value.style.removeProperty('display');
-            }
-          }
-        });
-      }
+      handleStopDrawing();
+      remoteStream.value.forEach((v) => {
+        const el = createVideo({});
+        el.srcObject = v;
+        videoPlay(el);
+      });
     },
     {
       deep: true,
-      immediate: true,
     }
   );
 
@@ -214,11 +178,34 @@ export function usePull() {
     }
   );
 
+  function handleRtmpToRtcPlay() {
+    console.log('handleRtmpToRtcPlay');
+    handleStopDrawing();
+    videoLoading.value = true;
+    appStore.liveLine = LiveLineEnum['rtmp-rtc'];
+    updateWebRtcRtmpToRtcConfig({
+      isPk: false,
+      roomId: roomId.value,
+    });
+    webRtcRtmpToRtc.newWebRtc({
+      sender: mySocketId.value,
+      receiver: 'rtmpToRtc',
+      videoEl: createVideo({}),
+      sucessCb: (stream) => {
+        remoteStream.value.push(stream);
+      },
+    });
+    webRtcRtmpToRtc.sendOffer({
+      sender: mySocketId.value,
+      receiver: 'rtmpToRtc',
+    });
+  }
+
   function handleHlsPlay() {
     console.log('handleHlsPlay', hlsurl.value);
     handleStopDrawing();
     videoLoading.value = true;
-    appStore.setLiveLine(LiveLineEnum.hls);
+    appStore.liveLine = LiveLineEnum.hls;
     startHlsPlay({
       hlsurl: hlsurl.value,
     });
@@ -228,7 +215,7 @@ export function usePull() {
     console.log('handleFlvPlay', flvurl.value);
     handleStopDrawing();
     videoLoading.value = true;
-    appStore.setLiveLine(LiveLineEnum.flv);
+    appStore.liveLine = LiveLineEnum.flv;
     startFlvPlay({
       flvurl: flvurl.value,
     });
@@ -281,7 +268,7 @@ export function usePull() {
         LiveRoomTypeEnum.wertc_meeting_two,
       ].includes(data.type!)
     ) {
-      appStore.setLiveLine(LiveLineEnum.rtc);
+      appStore.liveLine = LiveLineEnum.rtc;
     }
   }
 
@@ -325,6 +312,11 @@ export function usePull() {
     () => appStore.liveLine,
     (newVal) => {
       console.log('liveLine变了', newVal);
+      handleStopDrawing();
+      destroyFlv();
+      destroyHls();
+      remoteStream.value = [];
+
       if (!roomLiving.value) {
         return;
       }
@@ -336,6 +328,9 @@ export function usePull() {
           handleHlsPlay();
           break;
         case LiveLineEnum.rtc:
+          break;
+        case LiveLineEnum['rtmp-rtc']:
+          handleRtmpToRtcPlay();
           break;
       }
     }
@@ -393,15 +388,6 @@ export function usePull() {
     () => flvIsPlaying.value,
     (newVal) => {
       isPlaying.value = newVal;
-    }
-  );
-
-  watch(
-    () => appStore.remoteDesk.isClose,
-    (newval) => {
-      if (newval) {
-        handleStopDrawing();
-      }
     }
   );
 
@@ -554,5 +540,6 @@ export function usePull() {
     liveRoomInfo,
     anchorInfo,
     initRoomId,
+    rtmpToRtcVido,
   };
 }

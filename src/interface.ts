@@ -360,6 +360,7 @@ export interface ISigninRecord {
 }
 
 export enum LiveLineEnum {
+  'rtmp-rtc' = 'rtmp-rtc',
   rtc = 'rtc',
   hls = 'hls',
   flv = 'flv',
@@ -747,4 +748,16 @@ export interface ILiveUser {
     joinRoomId: number;
     userInfo?: IUser;
   };
+}
+
+export interface ICredential {
+  expiredTime: number;
+  expiration: string;
+  credentials: {
+    sessionToken: string;
+    tmpSecretId: string;
+    tmpSecretKey: string;
+  };
+  requestId: string;
+  startTime: number;
 }

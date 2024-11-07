@@ -44,6 +44,7 @@
     "billd-html-webpack-plugin": "^1.0.6",
     "billd-scss": "^0.0.8",
     "billd-utils": "^0.0.22",
+    "cos-js-sdk-v5": "^1.8.6",
     "fabric": "^5.3.0",
     "flv.js": "^1.6.2",
     "js-cookie": "^3.0.5",

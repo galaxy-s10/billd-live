@@ -1,14 +1,12 @@
 import { ref } from 'vue';
 
-import { fetchRtcV1Publish } from '@/api/srs';
-import { SRS_CB_URL_PARAMS } from '@/constant';
+import { fetchRtcV1Whep } from '@/api/srs';
 import { useRTCParams } from '@/hooks/use-rtcParams';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
-import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import { WebRTCClass } from '@/utils/network/webRTC';
 
-export const useForwardAll = () => {
+export const useWebRtcRtmpToRtc = () => {
   const userStore = useUserStore();
   const networkStore = useNetworkStore();
 
@@ -18,20 +16,24 @@ export const useForwardAll = () => {
   const currentResolutionRatio = ref(resolutionRatio.value[3].value);
   const isPk = ref(false);
   const roomId = ref('');
-  const canvasVideoStream = ref<MediaStream>();
 
-  function updateForwardAllConfig(data: { isPk; roomId; canvasVideoStream }) {
+  function updateWebRtcRtmpToRtcConfig(data: { isPk; roomId }) {
     isPk.value = data.isPk;
     roomId.value = data.roomId;
-    canvasVideoStream.value = data.canvasVideoStream;
   }
 
-  const forwardAll = {
+  const webRtcRtmpToRtc = {
     newWebRtc: (data: {
       sender: string;
       receiver: string;
       videoEl: HTMLVideoElement;
+      sucessCb: (stream) => void;
     }) => {
+      console.log({
+        maxBitrate: currentMaxBitrate.value,
+        maxFramerate: currentMaxFramerate.value,
+        resolutionRatio: currentResolutionRatio.value,
+      });
       return new WebRTCClass({
         maxBitrate: currentMaxBitrate.value,
         maxFramerate: currentMaxFramerate.value,
@@ -41,6 +43,7 @@ export const useForwardAll = () => {
         videoEl: data.videoEl,
         sender: data.sender,
         receiver: data.receiver,
+        sucessCb: data.sucessCb,
       });
     },
     /**
@@ -53,7 +56,7 @@ export const useForwardAll = () => {
       sender: string;
       receiver: string;
     }) => {
-      console.log('开始ForwardAll的sendOffer', {
+      console.log('开始webRtcRtmpToRtc的sendOffer', {
         sender,
         receiver,
       });
@@ -62,20 +65,16 @@ export const useForwardAll = () => {
         if (!ws) return;
         const rtc = networkStore.rtcMap.get(receiver);
         if (rtc) {
-          canvasVideoStream.value?.getTracks().forEach((track) => {
-            if (canvasVideoStream.value) {
-              console.log(
-                'ForwardAll的canvasVideoStream插入track',
-                track.kind,
-                track
-              );
-              rtc.peerConnection?.addTrack(track, canvasVideoStream.value);
-            }
+          rtc.peerConnection?.addTransceiver('audio', {
+            direction: 'recvonly',
+          });
+          rtc.peerConnection?.addTransceiver('video', {
+            direction: 'recvonly',
           });
           const offerSdp = await rtc.createOffer();
           if (!offerSdp) {
-            console.error('ForwardAll的offerSdp为空');
-            window.$message.error('ForwardAll的offerSdp为空');
+            console.error('webRtcRtmpToRtc的offerSdp为空');
+            window.$message.error('webRtcRtmpToRtc的offerSdp为空');
             return;
           }
           await rtc.setLocalDescription(offerSdp!);
@@ -85,34 +84,46 @@ export const useForwardAll = () => {
             window.$message.error('你没有开通直播间');
             return;
           }
-          const answerRes = await fetchRtcV1Publish({
+          const answerRes = await fetchRtcV1Whep({
             sdp: offerSdp.sdp!,
-            streamurl: `${myLiveRoom.rtmp_url!}?${
-              SRS_CB_URL_PARAMS.publishKey
-            }=${myLiveRoom.key!}&${SRS_CB_URL_PARAMS.publishType}=${
-              isPk.value ? LiveRoomTypeEnum.pk : LiveRoomTypeEnum.forward_all
-            }`,
+            stream: `roomId___${roomId.value}`,
+            app: 'livestream',
           });
-          if (answerRes.data.code !== 0) {
-            console.error('/rtc/v1/publish/拿不到sdp');
-            window.$message.error('/rtc/v1/publish/拿不到sdp');
+          if (!answerRes.data.answer) {
+            console.error('/rtc/v1/play/拿不到sdp');
+            window.$message.error('/rtc/v1/play/拿不到sdp');
             return;
           }
           await rtc.setRemoteDescription(
             new RTCSessionDescription({
               type: 'answer',
-              sdp: answerRes.data.sdp,
+              sdp: answerRes.data.answer,
             })
           );
+          // const answerRes = await fetchRtcV1Play({
+          //   sdp: offerSdp.sdp!,
+          //   streamurl: `${myLiveRoom.rtmp_url!}`,
+          // });
+          // if (answerRes.data.code !== 0) {
+          //   console.error('/rtc/v1/play/拿不到sdp');
+          //   window.$message.error('/rtc/v1/play/拿不到sdp');
+          //   return;
+          // }
+          // await rtc.setRemoteDescription(
+          //   new RTCSessionDescription({
+          //     type: 'answer',
+          //     sdp: answerRes.data.sdp,
+          //   })
+          // );
         } else {
           console.error('rtc不存在');
         }
       } catch (error) {
-        console.error('ForwardAll的sendOffer错误');
+        console.error('webRtcRtmpToRtc的sendOffer错误');
         console.log(error);
       }
     },
   };
 
-  return { updateForwardAllConfig, forwardAll };
+  return { updateWebRtcRtmpToRtcConfig, webRtcRtmpToRtc };
 };

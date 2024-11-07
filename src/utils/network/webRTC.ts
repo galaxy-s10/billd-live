@@ -1,6 +1,5 @@
 import { getRandomString } from 'billd-utils';
 
-import { LiveLineEnum } from '@/interface';
 import { prodDomain } from '@/spec-config';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
@@ -39,6 +38,7 @@ export class WebRTCClass {
   roomId = '-1';
   sender = '';
   receiver = '';
+  sucessCb;
 
   videoEl: HTMLVideoElement;
 
@@ -84,12 +84,14 @@ export class WebRTCClass {
     isSRS: boolean;
     sender: string;
     receiver: string;
+    sucessCb?: any;
   }) {
     this.roomId = data.roomId;
     this.videoEl = data.videoEl;
     // document.body.appendChild(this.videoEl);
     this.sender = data.sender;
     this.receiver = data.receiver;
+    this.sucessCb = data.sucessCb;
     if (data.maxBitrate) {
       this.maxBitrate = data.maxBitrate;
     }
@@ -298,14 +300,13 @@ export class WebRTCClass {
       stream.onremovetrack = () => {
         this.prettierLog({ msg: 'onremovetrack事件', type: 'warn' });
       };
-      this.localStream = stream;
+      this.localStream = event.streams[0];
       this.videoEl.srcObject = event.streams[0];
     });
   };
 
   handleConnectionEvent = () => {
     if (!this.peerConnection) return;
-    const appStore = useAppStore();
 
     this.prettierLog({ msg: '开始监听pc的icecandidate事件', type: 'warn' });
     this.peerConnection.addEventListener('icecandidate', (event) => {
@@ -348,12 +349,6 @@ export class WebRTCClass {
             msg: 'iceConnectionState:connected',
             type: 'warn',
           });
-          this.prettierLog({
-            msg: 'webrtc连接成功！',
-            type: 'success',
-          });
-          appStore.remoteDesk.isRemoteing = true;
-          console.log('sender', this.sender, 'receiver', this.receiver);
           this.update();
         }
         if (iceConnectionState === 'completed') {
@@ -407,7 +402,13 @@ export class WebRTCClass {
             msg: 'connectionState:connected',
             type: 'warn',
           });
-          appStore.setLiveLine(LiveLineEnum.rtc);
+          this.prettierLog({
+            msg: 'webrtc连接成功！',
+            type: 'success',
+          });
+          console.log('sender', this.sender, 'receiver', this.receiver);
+          this.sucessCb?.(this.localStream);
+          // appStore.liveLine = LiveLineEnum.rtc;
           if (this.maxBitrate !== -1) {
             this.setMaxBitrate(this.maxBitrate);
           }

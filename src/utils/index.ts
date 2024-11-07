@@ -596,6 +596,9 @@ export function videoToCanvas(data: {
     throw new Error('videoEl不能为空！');
   }
   const canvas = document.createElement('canvas');
+  canvas.oncontextmenu = (e) => {
+    e.preventDefault();
+  };
   const ctx = canvas.getContext('2d')!;
 
   let timer;

@@ -1,4 +1,8 @@
-export const initAdsbygoogle = () => {
+import { useAppStore } from '@/store/app';
+
+export const useGoogleAd = () => {
+  const appStore = useAppStore();
+  if (!appStore.useGoogleAd) return;
   try {
     window.onload = () => {
       // @ts-ignore

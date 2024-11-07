@@ -267,7 +267,10 @@
     <div ref="loadMoreRef"></div>
     <div class="foot">*{{ t('home.copyrightTip') }}~</div>
   </div>
-  <div class="ad-wrap-a">
+  <div
+    class="ad-wrap-a"
+    v-if="appStore.useGoogleAd"
+  >
     <!-- live-首页广告位1 -->
     <ins
       class="adsbygoogle"
@@ -457,7 +460,7 @@ function changeLiveRoom(item: ILive) {
       LiveRoomTypeEnum.wertc_meeting_two,
     ].includes(item.live_room!.type!)
   ) {
-    appStore.setLiveLine(LiveLineEnum.hls);
+    appStore.liveLine = LiveLineEnum.hls;
   }
   playLive(item.live_room!);
 }

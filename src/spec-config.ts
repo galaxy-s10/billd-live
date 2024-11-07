@@ -11,12 +11,12 @@ export const GITHUB_OAUTH_URL = 'https://github.com/login/oauth/authorize?';
 export const WECHAT_GZH_APPID = `wxbd243c01ac5ad1b7`; // 公众号
 export const WECHAT_GZH_OAUTH_URL = `https://open.weixin.qq.com/connect/oauth2/authorize?`;
 
-export const TENCENTCLOUD_APPID = 1324073273; // 腾讯云APPID
+export const TENCENTCLOUD_APPID = 1305322458; // 腾讯云APPID
 export const TENCENTCLOUD_COS = {
   [`res-${TENCENTCLOUD_APPID}`]: {
     url: `https://res.${prodDomain}`,
     Bucket: `res-${TENCENTCLOUD_APPID}`,
-    Region: 'ap-mumbai',
+    Region: 'ap-guangzhou',
     StorageClass: 'STANDARD',
     prefix: {
       'common/': 'common/',

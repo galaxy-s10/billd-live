@@ -1,4 +1,3 @@
-import { getRandomString } from 'billd-utils';
 import { ref } from 'vue';
 
 import { fetchRtcV1Publish } from '@/api/srs';
@@ -87,15 +86,12 @@ export const useForwardHuya = () => {
             return;
           }
           const answerRes = await fetchRtcV1Publish({
-            api: `/rtc/v1/publish/`,
-            clientip: null,
             sdp: offerSdp.sdp!,
             streamurl: `${myLiveRoom.rtmp_url!}?${
               SRS_CB_URL_PARAMS.publishKey
             }=${myLiveRoom.key!}&${SRS_CB_URL_PARAMS.publishType}=${
               isPk.value ? LiveRoomTypeEnum.pk : LiveRoomTypeEnum.forward_huya
             }`,
-            tid: getRandomString(10),
           });
           if (answerRes.data.code !== 0) {
             console.error('/rtc/v1/publish/拿不到sdp');
