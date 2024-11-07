@@ -617,7 +617,6 @@ onMounted(async () => {
   } else {
     initWs({
       roomId: roomId.value,
-      isRemoteDesk: false,
       isBilibili: true,
       isAnchor: false,
     });

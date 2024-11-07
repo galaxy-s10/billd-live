@@ -11,14 +11,9 @@ import { mobileRouterName } from '@/router';
 import { ILiveRoom } from '@/types/ILiveRoom';
 
 export type AppRootState = {
+  pageIsClick: boolean;
   useGoogleAd: boolean;
   areaList: IArea[];
-  remoteDesk: {
-    sender: string;
-    startRemoteDesk: boolean;
-    isRemoteing?: boolean;
-    isClose?: boolean;
-  };
   playing: boolean;
   videoRatio: number;
   normalVolume: number;
@@ -79,14 +74,9 @@ export type AppRootState = {
 export const useAppStore = defineStore('app', {
   state: (): AppRootState => {
     return {
+      pageIsClick: false,
       useGoogleAd: false,
       areaList: [],
-      remoteDesk: {
-        startRemoteDesk: false,
-        sender: '',
-        isRemoteing: false,
-        isClose: undefined,
-      },
       playing: false,
       videoRatio: 16 / 9,
       videoControls: {

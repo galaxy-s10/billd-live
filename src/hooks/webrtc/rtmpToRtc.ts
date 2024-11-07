@@ -78,12 +78,6 @@ export const useWebRtcRtmpToRtc = () => {
             return;
           }
           await rtc.setLocalDescription(offerSdp!);
-          const liveRooms = userStore.userInfo?.live_rooms;
-          const myLiveRoom = liveRooms?.[0];
-          if (!myLiveRoom) {
-            window.$message.error('你没有开通直播间');
-            return;
-          }
           const answerRes = await fetchRtcV1Whep({
             sdp: offerSdp.sdp!,
             stream: `roomId___${roomId.value}`,

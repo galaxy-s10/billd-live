@@ -42,9 +42,7 @@ export function usePull() {
   const hlsurl = ref('');
   const videoWrapRef = ref<HTMLDivElement>();
   const videoResolution = ref();
-  const isRemoteDesk = ref(false);
-  const videoElArr = ref<HTMLVideoElement[]>([]);
-  const remoteVideo = ref<HTMLElement[]>([]);
+  const remoteVideo = ref<Array<HTMLVideoElement | HTMLCanvasElement>>([]);
   const remoteStream = ref<MediaStream[]>([]);
   const { mySocketId, initWs, roomLiving, anchorInfo, liveUserList, damuList } =
     useWebsocket();
@@ -53,7 +51,7 @@ export function usePull() {
   const { flvVideoEl, flvIsPlaying, startFlvPlay, destroyFlv } = useFlvPlay();
   const { hlsVideoEl, hlsIsPlaying, startHlsPlay, destroyHls } = useHlsPlay();
   const stopDrawingArr = ref<any[]>([]);
-  const rtmpToRtcVido = ref<HTMLVideoElement>();
+  const rtcVideo = ref<HTMLVideoElement[]>([]);
 
   let changeWrapSizeFn;
 
@@ -99,7 +97,6 @@ export function usePull() {
         changeWrapSizeFn = changeWrapSize;
         stopDrawingArr.value.push(stopDrawing);
         remoteVideo.value.push(canvas);
-        videoElArr.value.push(videoEl);
         videoLoading.value = false;
       }
     } else if (appStore.videoControls.renderMode === LiveRenderEnum.video) {
@@ -117,7 +114,6 @@ export function usePull() {
         });
         changeWrapSizeFn = changeWrapSize;
         remoteVideo.value.push(videoEl);
-        videoElArr.value.push(videoEl);
         videoLoading.value = false;
       }
     }
@@ -178,6 +174,38 @@ export function usePull() {
     }
   );
 
+  watch(
+    () => cacheStore.muted,
+    (newVal) => {
+      appStore.pageIsClick = true;
+      rtcVideo.value.forEach((v) => {
+        v.muted = newVal;
+      });
+      if (!newVal) {
+        cacheStore.volume = cacheStore.volume || appStore.normalVolume;
+      } else {
+        cacheStore.volume = 0;
+      }
+    }
+  );
+
+  watch(
+    () => cacheStore.volume,
+    (newVal) => {
+      rtcVideo.value.forEach((v) => {
+        v.volume = newVal / 100;
+      });
+      if (!newVal) {
+        cacheStore.muted = true;
+      } else {
+        cacheStore.muted = false;
+      }
+    },
+    {
+      immediate: true,
+    }
+  );
+
   function handleRtmpToRtcPlay() {
     console.log('handleRtmpToRtcPlay');
     handleStopDrawing();
@@ -187,10 +215,15 @@ export function usePull() {
       isPk: false,
       roomId: roomId.value,
     });
+    const videoEl = createVideo({
+      appendChild: true,
+      muted: appStore.pageIsClick ? cacheStore.muted : true,
+    });
+    rtcVideo.value.push(videoEl);
     webRtcRtmpToRtc.newWebRtc({
       sender: mySocketId.value,
       receiver: 'rtmpToRtc',
-      videoEl: createVideo({}),
+      videoEl,
       sucessCb: (stream) => {
         remoteStream.value.push(stream);
       },
@@ -316,7 +349,6 @@ export function usePull() {
       destroyFlv();
       destroyHls();
       remoteStream.value = [];
-
       if (!roomLiving.value) {
         return;
       }
@@ -333,47 +365,6 @@ export function usePull() {
           handleRtmpToRtcPlay();
           break;
       }
-    }
-  );
-
-  watch(
-    () => cacheStore.muted,
-    (newVal) => {
-      videoElArr.value.forEach((el) => {
-        el.muted = newVal;
-      });
-      if (!newVal) {
-        cacheStore.volume = cacheStore.volume || appStore.normalVolume;
-      } else {
-        cacheStore.volume = 0;
-      }
-    }
-  );
-
-  watch(
-    () => cacheStore.volume,
-    (newVal) => {
-      videoElArr.value.forEach((el) => {
-        el.volume = newVal / 100;
-      });
-      if (!newVal) {
-        cacheStore.muted = true;
-      } else {
-        cacheStore.muted = false;
-      }
-    }
-  );
-
-  watch(
-    () => appStore.playing,
-    (newVal) => {
-      videoElArr.value.forEach((el) => {
-        if (newVal) {
-          el.play();
-        } else {
-          el.pause();
-        }
-      });
     }
   );
 
@@ -395,15 +386,13 @@ export function usePull() {
     roomId.value = id;
   }
 
-  function initPull(data: { autolay?: boolean; isRemoteDesk?: boolean }) {
+  function initPull(data: { autolay?: boolean }) {
     if (data.autolay === undefined) {
       autoplayVal.value = true;
     } else {
       autoplayVal.value = data.autolay;
     }
-    isRemoteDesk.value = !!data.isRemoteDesk;
     initWs({
-      isRemoteDesk: data.isRemoteDesk,
       roomId: roomId.value,
       isAnchor: false,
     });
@@ -540,6 +529,5 @@ export function usePull() {
     liveRoomInfo,
     anchorInfo,
     initRoomId,
-    rtmpToRtcVido,
   };
 }

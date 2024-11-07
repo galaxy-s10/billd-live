@@ -1683,7 +1683,7 @@ async function handleCache() {
     obj.type = item.type;
     obj.hidden = item.hidden;
     obj.mediaName = item.mediaName;
-    obj.muted = item.muted;
+    obj.muted = true;
     obj.volume = item.volume;
     obj.rect = item.rect;
     obj.scaleInfo = item.scaleInfo;
@@ -1695,7 +1695,7 @@ async function handleCache() {
         const { videoEl, stream, canvasDom } = await autoCreateVideo({
           file,
           id: obj.id,
-          muted: item.muted,
+          muted: true,
           rect: item.rect,
           scaleInfo: item.scaleInfo,
         });

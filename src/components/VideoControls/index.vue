@@ -265,26 +265,43 @@ function handlePageFull() {
 }
 
 function changeLiveLine(item: LiveLineEnum) {
-  if (
-    [
-      LiveRoomTypeEnum.wertc_live,
-      LiveRoomTypeEnum.wertc_meeting_one,
-      LiveRoomTypeEnum.wertc_meeting_two,
-    ].includes(appStore.liveRoomInfo!.type!) &&
-    item !== LiveLineEnum.rtc
-  ) {
-    window.$message.info('不支持该线路！');
-    return;
-  } else if (
-    ![
-      LiveRoomTypeEnum.wertc_live,
-      LiveRoomTypeEnum.wertc_meeting_one,
-      LiveRoomTypeEnum.wertc_meeting_two,
-    ].includes(appStore.liveRoomInfo!.type!) &&
-    item === LiveLineEnum.rtc
-  ) {
-    window.$message.info('不支持该线路！');
-    return;
+  const type = appStore.liveRoomInfo?.type;
+  if (type === undefined) return;
+  if (item === LiveLineEnum['rtmp-rtc']) {
+    if (
+      [
+        LiveRoomTypeEnum.wertc_live,
+        LiveRoomTypeEnum.wertc_meeting_one,
+        LiveRoomTypeEnum.wertc_meeting_two,
+        LiveRoomTypeEnum.tencent_css,
+        LiveRoomTypeEnum.tencent_css_pk,
+      ].includes(type)
+    ) {
+      window.$message.info('不支持该线路！');
+      return;
+    }
+  } else if (item === LiveLineEnum.flv || item === LiveLineEnum.hls) {
+    if (
+      [
+        LiveRoomTypeEnum.wertc_live,
+        LiveRoomTypeEnum.wertc_meeting_one,
+        LiveRoomTypeEnum.wertc_meeting_two,
+      ].includes(type)
+    ) {
+      window.$message.info('不支持该线路！');
+      return;
+    }
+  } else if (item === LiveLineEnum.rtc) {
+    if (
+      ![
+        LiveRoomTypeEnum.wertc_live,
+        LiveRoomTypeEnum.wertc_meeting_one,
+        LiveRoomTypeEnum.wertc_meeting_two,
+      ].includes(type)
+    ) {
+      window.$message.info('不支持该线路！');
+      return;
+    }
   }
   appStore.liveLine = item;
 }

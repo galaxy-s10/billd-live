@@ -1,7 +1,6 @@
 import { getRandomString } from 'billd-utils';
 
 import { prodDomain } from '@/spec-config';
-import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { WsCandidateType, WsMsgTypeEnum } from '@/types/websocket';
 
@@ -558,10 +557,6 @@ export class WebRTCClass {
       this.peerConnection = null;
       this.dataChannel = null;
       this.videoEl.remove();
-      const appStore = useAppStore();
-      appStore.remoteDesk.isClose = true;
-      appStore.remoteDesk.isRemoteing = false;
-      appStore.remoteDesk.startRemoteDesk = false;
     } catch (error) {
       this.prettierLog({ msg: '手动关闭webrtc连接失败', type: 'error' });
       console.error(error);

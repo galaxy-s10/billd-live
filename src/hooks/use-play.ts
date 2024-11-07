@@ -124,25 +124,9 @@ export function useFlvPlay() {
     retryMax.value = initRetryMax;
   }
 
-  function setMuted(val) {
-    if (flvVideoEl.value) {
-      flvVideoEl.value.muted = val;
-    }
-    if (flvPlayer.value) {
-      flvPlayer.value.muted = val;
-    }
-  }
-  function setVolume(val: number) {
-    if (flvVideoEl.value) {
-      flvVideoEl.value.volume = val / 100;
-    }
-    if (flvPlayer.value) {
-      flvPlayer.value.volume = val / 100;
-    }
-  }
   function setPlay() {
     try {
-      console.log(`开始播放flv，muted:${cacheStore.muted}`);
+      console.log(`开始播放flv`);
       flvVideoEl.value?.play();
       flvPlayer.value?.play();
     } catch (error) {
@@ -150,6 +134,19 @@ export function useFlvPlay() {
       console.log(error);
     }
   }
+
+  watch(
+    () => appStore.playing,
+    (newVal) => {
+      if (flvVideoEl.value) {
+        if (newVal) {
+          flvVideoEl.value.play();
+        } else {
+          flvVideoEl.value.pause();
+        }
+      }
+    }
+  );
 
   watch(
     () => flvIsPlaying.value,
@@ -161,14 +158,32 @@ export function useFlvPlay() {
   watch(
     () => cacheStore.muted,
     (newVal) => {
-      setMuted(newVal);
+      appStore.pageIsClick = true;
+      if (flvVideoEl.value) {
+        flvVideoEl.value.muted = newVal;
+      }
+      if (!newVal) {
+        cacheStore.volume = cacheStore.volume || appStore.normalVolume;
+      } else {
+        cacheStore.volume = 0;
+      }
     }
   );
 
   watch(
     () => cacheStore.volume,
     (newVal) => {
-      setVolume(newVal);
+      if (flvVideoEl.value) {
+        flvVideoEl.value.volume = newVal / 100;
+      }
+      if (!newVal) {
+        cacheStore.muted = true;
+      } else {
+        cacheStore.muted = false;
+      }
+    },
+    {
+      immediate: true,
     }
   );
 
@@ -189,10 +204,9 @@ export function useFlvPlay() {
           });
           const videoEl = createVideo({
             appendChild: true,
-            muted: cacheStore.muted,
+            muted: appStore.pageIsClick ? cacheStore.muted : true,
             autoplay: true,
           });
-          // const videoEl = createVideo({});
           videoEl.addEventListener('play', () => {
             console.log('flv-play');
           });
@@ -200,8 +214,6 @@ export function useFlvPlay() {
             console.log('flv-playing');
             flvIsPlaying.value = true;
             retry.value = 0;
-            setMuted(cacheStore.muted);
-            setVolume(cacheStore.volume);
             flvVideoEl.value = videoEl;
             resolve('');
           });
@@ -278,26 +290,9 @@ export function useHlsPlay() {
     retryMax.value = initRetryMax;
   }
 
-  function setMuted(val: boolean) {
-    if (hlsVideoEl.value) {
-      hlsVideoEl.value.muted = val;
-    }
-    if (hlsPlayer.value) {
-      hlsPlayer.value.muted(val);
-    }
-  }
-  function setVolume(val: number) {
-    if (hlsVideoEl.value) {
-      hlsVideoEl.value.volume = val / 100;
-    }
-    if (hlsPlayer.value) {
-      hlsPlayer.value.volume(val / 100);
-    }
-  }
-
   function setPlay() {
     try {
-      console.log(`开始播放hls，muted:${cacheStore.muted}`);
+      console.log(`开始播放hls`);
       hlsVideoEl.value?.play();
       hlsPlayer.value?.play();
     } catch (error) {
@@ -305,6 +300,19 @@ export function useHlsPlay() {
       console.log(error);
     }
   }
+
+  watch(
+    () => appStore.playing,
+    (newVal) => {
+      if (hlsVideoEl.value) {
+        if (newVal) {
+          hlsVideoEl.value.play();
+        } else {
+          hlsVideoEl.value.pause();
+        }
+      }
+    }
+  );
 
   watch(
     () => hlsIsPlaying.value,
@@ -316,14 +324,32 @@ export function useHlsPlay() {
   watch(
     () => cacheStore.muted,
     (newVal) => {
-      setMuted(newVal);
+      appStore.pageIsClick = true;
+      if (hlsVideoEl.value) {
+        hlsVideoEl.value.muted = newVal;
+      }
+      if (!newVal) {
+        cacheStore.volume = cacheStore.volume || appStore.normalVolume;
+      } else {
+        cacheStore.volume = 0;
+      }
     }
   );
 
   watch(
     () => cacheStore.volume,
     (newVal) => {
-      setVolume(newVal);
+      if (hlsVideoEl.value) {
+        hlsVideoEl.value.volume = newVal / 100;
+      }
+      if (!newVal) {
+        cacheStore.muted = true;
+      } else {
+        cacheStore.muted = false;
+      }
+    },
+    {
+      immediate: true,
     }
   );
 
@@ -334,13 +360,9 @@ export function useHlsPlay() {
         destroyHls();
         const videoEl = createVideo({
           appendChild: true,
-          muted: cacheStore.muted,
+          muted: appStore.pageIsClick ? cacheStore.muted : true,
           autoplay: true,
         });
-        // const videoEl = createVideo({
-        //   muted: cacheStore.muted,
-        //   autoplay: true,
-        // });
         hlsPlayer.value = videoJs(
           videoEl,
           {
@@ -377,8 +399,6 @@ export function useHlsPlay() {
         hlsPlayer.value?.on('playing', () => {
           console.log('hls-playing');
           hlsIsPlaying.value = true;
-          setMuted(cacheStore.muted);
-          setVolume(cacheStore.volume);
           retry.value = 0;
           // console.log(hlsPlayer.value?.videoHeight()); // 获取到的是正确的！
           const childNodes = hlsPlayer.value?.el().childNodes;

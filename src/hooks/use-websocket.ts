@@ -40,10 +40,8 @@ import {
   WsMsgTypeEnum,
   WsOfferType,
   WsOtherJoinType,
-  WsRemoteDeskBehaviorType,
   WsRoomLivingType,
   WsStartLiveType,
-  WsStartRemoteDesk,
   WsUpdateJoinInfoType,
 } from '@/types/websocket';
 import {
@@ -60,7 +58,6 @@ import {
 import { useForwardAll } from './webrtc/forwardAll';
 import { useForwardBilibili } from './webrtc/forwardBilibili';
 import { useForwardHuya } from './webrtc/forwardHuya';
-import { useWebRtcRemoteDesk } from './webrtc/remoteDesk';
 
 export const useWebsocket = () => {
   const route = useRoute();
@@ -75,8 +72,6 @@ export const useWebsocket = () => {
     videoContentHint,
     audioContentHint,
   } = useRTCParams();
-  const { updateWebRtcRemoteDeskConfig, webRtcRemoteDesk } =
-    useWebRtcRemoteDesk();
   const { updateWebRtcMeetingPkConfig, webRtcMeetingPk } = useWebRtcMeetingPk();
   const { updateWebRtcSrsConfig, webRtcSrs } = useWebRtcSrs();
   const { updateForwardBilibiliConfig, forwardBilibili } = useForwardBilibili();
@@ -95,7 +90,6 @@ export const useWebsocket = () => {
   const roomId = ref('');
   const roomLiving = ref(false);
   const isAnchor = ref(false);
-  const isRemoteDesk = ref(false);
   const isBilibili = ref(false);
   const anchorInfo = ref<IUser>();
   const canvasVideoStream = ref<MediaStream>();
@@ -304,7 +298,6 @@ export const useWebsocket = () => {
       msgType: WsMsgTypeEnum.join,
       data: {
         isBilibili: isBilibili.value,
-        isRemoteDesk: isRemoteDesk.value,
         live_room_id: Number(roomId.value),
       },
     });
@@ -368,15 +361,6 @@ export const useWebsocket = () => {
       }).catch(() => {});
     });
 
-    // 收到startRemoteDesk
-    ws.socketIo.on(WsMsgTypeEnum.startRemoteDesk, (data: WsStartRemoteDesk) => {
-      console.log('收到startRemoteDesk', data);
-      if (data.data.receiver === mySocketId.value) {
-        appStore.remoteDesk.startRemoteDesk = true;
-        appStore.remoteDesk.sender = data.data.sender;
-      }
-    });
-
     // 收到srsOffer
     ws.socketIo.on(WsMsgTypeEnum.srsOffer, (data: WsOfferType['data']) => {
       console.log('收到srsOffer', data);
@@ -407,35 +391,7 @@ export const useWebsocket = () => {
       WsMsgTypeEnum.nativeWebRtcOffer,
       async (data: WsOfferType['data']) => {
         console.log('收到nativeWebRtcOffer', data);
-        if (data.isRemoteDesk) {
-          if (data.receiver === mySocketId.value) {
-            console.warn('是发给我的nativeWebRtcOffer-isRemoteDesk');
-            if (networkStore.rtcMap.get(data.sender)) {
-              return;
-            }
-            updateWebRtcRemoteDeskConfig({
-              roomId: roomId.value,
-              userStream: userStream.value,
-              anchorStream: canvasVideoStream.value,
-            });
-            webRtcRemoteDesk.newWebRtc({
-              // 因为这里是收到offer，而offer是房主发的，所以此时的data.data.sender是房主；data.data.receiver是接收者；
-              // 但是这里的nativeWebRtc的sender，得是自己，不能是data.data.sender，不要混淆
-              sender: mySocketId.value,
-              receiver: data.sender,
-              videoEl: createNullVideo(),
-            });
-            await webRtcRemoteDesk.sendAnswer({
-              sender: mySocketId.value,
-              // data.data.receiver是接收者；我们现在new pc，发送者是自己，接收者肯定是房主，不能是data.data.receiver，因为data.data.receiver是自己
-              receiver: data.sender,
-              sdp: data.sdp,
-            });
-          } else {
-            console.error('不是发给我的nativeWebRtcOffer-isRemoteDesk');
-          }
-          return;
-        }
+
         if (
           data.live_room.type === LiveRoomTypeEnum.pk ||
           data.live_room.type === LiveRoomTypeEnum.tencent_css_pk
@@ -560,14 +516,6 @@ export const useWebsocket = () => {
         } else {
           console.error('不是发给我的nativeWebRtcCandidate');
         }
-      }
-    );
-
-    // 收到remoteDeskBehavior
-    ws.socketIo.on(
-      WsMsgTypeEnum.remoteDeskBehavior,
-      (data: WsRemoteDeskBehaviorType['data']) => {
-        console.log('收到remoteDeskBehavior', data);
       }
     );
 
@@ -951,16 +899,13 @@ export const useWebsocket = () => {
     isAnchor: boolean;
     roomId: string;
     isBilibili?: boolean;
-    isRemoteDesk?: boolean;
     currentResolutionRatio?: number;
     currentMaxFramerate?: number;
     currentMaxBitrate?: number;
   }) {
     roomId.value = data.roomId;
     isAnchor.value = data.isAnchor;
-    if (data.isRemoteDesk !== undefined) {
-      isRemoteDesk.value = data.isRemoteDesk;
-    }
+
     if (data.isBilibili !== undefined) {
       isBilibili.value = data.isBilibili;
     }

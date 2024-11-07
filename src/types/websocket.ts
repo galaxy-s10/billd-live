@@ -65,13 +65,6 @@ export enum WsMsgTypeEnum {
   srsAnswer = 'srsAnswer',
   srsCandidate = 'srsCandidate',
 
-  startRemoteDesk = 'startRemoteDesk',
-  remoteDeskBehavior = 'remoteDeskBehavior',
-
-  remoteDeskOffer = 'remoteDeskOffer',
-  remoteDeskAnswer = 'remoteDeskAnswer',
-  remoteDeskCandidate = 'remoteDeskCandidate',
-
   nativeWebRtcOffer = 'nativeWebRtcOffer',
   nativeWebRtcAnswer = 'nativeWebRtcAnswer',
   nativeWebRtcCandidate = 'nativeWebRtcCandidate',
@@ -243,7 +236,6 @@ export type WsJoinType = IWsFormat<{
   live_room_id: number;
   live_room?: ILiveRoom;
   anchor_info?: IUser;
-  isRemoteDesk?: boolean;
   isBilibili?: boolean;
   socket_list?: string[];
 }>;
@@ -287,7 +279,6 @@ export type WsOfferType = IWsFormat<{
   sender: string;
   receiver: string;
   live_room_id: number;
-  isRemoteDesk?: boolean;
 }>;
 
 export type WsAnswerType = IWsFormat<{
