@@ -6,7 +6,7 @@ import videoJs from 'video.js';
 import Player from 'video.js/dist/types/player';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 
-import { SRS_CB_URL_PARAMS } from '@/constant';
+import { SRS_CB_URL_QUERY } from '@/constant';
 import { useAppStore } from '@/store/app';
 import { useCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
@@ -19,10 +19,10 @@ function handlePlayUrl(url: string) {
   const userInfo = userStore.userInfo;
   const userToken = md5(userStore.token) as string;
   return !userInfo
-    ? `${url}?${SRS_CB_URL_PARAMS.randomId}=${getRandomString(8)}`
-    : `${url}?${SRS_CB_URL_PARAMS.userToken}=${userToken}&${
-        SRS_CB_URL_PARAMS.userId
-      }=${userInfo.id!}&${SRS_CB_URL_PARAMS.randomId}=${getRandomString(8)}`;
+    ? `${url}?${SRS_CB_URL_QUERY.randomId}=${getRandomString(8)}`
+    : `${url}?${SRS_CB_URL_QUERY.userToken}=${userToken}&${
+        SRS_CB_URL_QUERY.userId
+      }=${userInfo.id!}&${SRS_CB_URL_QUERY.randomId}=${getRandomString(8)}`;
 }
 
 let pipVideo;

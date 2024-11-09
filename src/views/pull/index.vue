@@ -459,7 +459,7 @@ import { fetchGoodsList } from '@/api/goods';
 import { fetchLiveRoomOnlineUser } from '@/api/live';
 import { fetchFindLiveRoom, fetchLiveRoomBilibili } from '@/api/liveRoom';
 import { fetchGetWsMessageList } from '@/api/wsMessage';
-import { liveRoomTypeEnumMap } from '@/constant';
+import { liveRoomTypeEnumMap, URL_QUERY } from '@/constant';
 import { emojiArray } from '@/emoji';
 import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { useFullScreen, usePictureInPicture } from '@/hooks/use-play';
@@ -520,6 +520,7 @@ const isBilibili = ref(false);
 
 const {
   initWs,
+  initRtcReceive,
   initPull,
   closeWs,
   closeRtc,
@@ -580,7 +581,7 @@ const rtcBytesReceived = computed(() => {
 
 onMounted(async () => {
   roomId.value = route.params.roomId as string;
-  if (route.query.is_bilibili === '1') {
+  if (route.query[URL_QUERY.isBilibili] === '1') {
     isBilibili.value = true;
     const res = await fetchLiveRoomBilibili();
     roomId.value = `${res.data.id!}`;
@@ -620,6 +621,7 @@ onMounted(async () => {
       isBilibili: true,
       isAnchor: false,
     });
+    initRtcReceive();
   }
   getGiftRecord();
   getGiftGroupList();

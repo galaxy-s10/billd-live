@@ -292,7 +292,7 @@ import { useRouter } from 'vue-router';
 import { fetchLiveBilibiliGetUserRecommend } from '@/api/bilibili';
 import { fetchLiveList } from '@/api/live';
 import { fetchFindLiveConfigByKey } from '@/api/liveConfig';
-import { sliderList } from '@/constant';
+import { sliderList, URL_QUERY } from '@/constant';
 import { usePull } from '@/hooks/use-pull';
 import { ILive, LiveLineEnum } from '@/interface';
 import { routerName } from '@/router';
@@ -495,7 +495,7 @@ function joinRoom(data) {
   const url = router.resolve({
     name: routerName.pull,
     params: { roomId: data.id },
-    query: { is_bilibili: data.is_bilibili },
+    query: { [URL_QUERY.isBilibili]: data.is_bilibili },
   });
   openToTarget(url.href);
 }

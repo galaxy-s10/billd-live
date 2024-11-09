@@ -417,7 +417,7 @@ import { fetchCreateSignin, fetchTodayIsSignin } from '@/api/signin';
 import Dropdown from '@/components/Dropdown/index.vue';
 import VPIconChevronDown from '@/components/icons/VPIconChevronDown.vue';
 import VPIconExternalLink from '@/components/icons/VPIconExternalLink.vue';
-import { COMMON_URL, DEFAULT_AUTH_INFO } from '@/constant';
+import { COMMON_URL, DEFAULT_AUTH_INFO, URL_QUERY } from '@/constant';
 import { handleTip } from '@/hooks/use-common';
 import { loginTip } from '@/hooks/use-login';
 import { routerName } from '@/router';
@@ -685,7 +685,7 @@ function handleStartLive(key: LiveRoomTypeEnum) {
   }
   const url = router.resolve({
     name: routerName.push,
-    query: { liveType: key },
+    query: { [URL_QUERY.liveType]: key },
   });
   openToTarget(url.href);
 }

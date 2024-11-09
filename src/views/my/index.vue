@@ -437,7 +437,7 @@ import { ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { fetchUpdateLiveRoomKey, fetchUpdateMyLiveRoom } from '@/api/liveRoom';
-import { DEFAULT_AUTH_INFO } from '@/constant';
+import { DEFAULT_AUTH_INFO, URL_QUERY } from '@/constant';
 import { loginTip } from '@/hooks/use-login';
 import { routerName } from '@/router';
 import { useUserStore } from '@/store/user';
@@ -480,7 +480,7 @@ function openLiveRoom() {
   }
   const url = router.resolve({
     name: routerName.push,
-    query: { liveType: LiveRoomTypeEnum.srs },
+    query: { [URL_QUERY.liveType]: LiveRoomTypeEnum.srs },
   });
   openToTarget(url.href);
 }

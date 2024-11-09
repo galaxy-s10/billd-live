@@ -489,7 +489,12 @@ import { useRoute } from 'vue-router';
 import { fetchLiveRoomOnlineUser } from '@/api/live';
 import { fetchUpdateMyLiveRoom } from '@/api/liveRoom';
 import { fetchGetWsMessageList } from '@/api/wsMessage';
-import { THEME_COLOR, liveRoomTypeEnumMap, mediaTypeEnumMap } from '@/constant';
+import {
+  THEME_COLOR,
+  URL_QUERY,
+  liveRoomTypeEnumMap,
+  mediaTypeEnumMap,
+} from '@/constant';
 import { emojiArray } from '@/emoji';
 import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { usePush } from '@/hooks/use-push';
@@ -597,7 +602,7 @@ const wrapSize = reactive({
   height: 0,
 });
 const bodyAppendChildElArr = ref<HTMLElement[]>([]);
-const liveType = Number(route.query.liveType);
+const liveType = Number(route.query[URL_QUERY.liveType]);
 const recorder = ref<MediaRecorder>();
 const bolbId = ref(0);
 const msrDelay = ref(1000 * 1);
@@ -767,7 +772,7 @@ watch(
 );
 
 watch(
-  () => route.query.roomId,
+  () => route.query[URL_QUERY.roomId],
   (newval) => {
     if (newval) {
       handleSendGetLiveUser(Number(newval));

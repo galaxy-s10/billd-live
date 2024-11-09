@@ -4,7 +4,7 @@ import { computed, h, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchVerifyPkKey } from '@/api/liveRoom';
-import { THEME_COLOR } from '@/constant';
+import { THEME_COLOR, URL_QUERY } from '@/constant';
 import { useRTCParams } from '@/hooks/use-rtcParams';
 import { useTip } from '@/hooks/use-tip';
 import { useWebRtcLive } from '@/hooks/webrtc/live';
@@ -333,7 +333,7 @@ export const useWebsocket = () => {
         name: routerName.pull,
         params: { roomId: data.live_room_id },
         query: {
-          pkKey: data.key,
+          [URL_QUERY.pkKey]: data.key,
         },
       });
       const pkurl = `${window.location.origin}${url.href}`;
@@ -396,7 +396,7 @@ export const useWebsocket = () => {
           data.live_room.type === LiveRoomTypeEnum.pk ||
           data.live_room.type === LiveRoomTypeEnum.tencent_css_pk
         ) {
-          if (!route.query.pkKey) {
+          if (!route.query[URL_QUERY.pkKey]) {
             return;
           }
           if (data.receiver === mySocketId.value) {
@@ -427,62 +427,7 @@ export const useWebsocket = () => {
             console.error('不是发给我的nativeWebRtcOffer');
           }
         } else if (data.live_room.type === LiveRoomTypeEnum.wertc_live) {
-          if (data.receiver === mySocketId.value) {
-            console.warn('是发给我的nativeWebRtcOffer-wertc_live');
-            if (networkStore.rtcMap.get(data.sender)) {
-              return;
-            }
-            updateWebRtcLiveConfig({
-              roomId: roomId.value,
-              canvasVideoStream: canvasVideoStream.value,
-            });
-            webRtcLive.newWebRtc({
-              // 因为这里是收到offer，而offer是房主发的，所以此时的data.data.sender是房主；data.data.receiver是接收者；
-              // 但是这里的nativeWebRtc的sender，得是自己，不能是data.data.sender，不要混淆
-              sender: mySocketId.value,
-              receiver: data.sender,
-              videoEl: createNullVideo(),
-            });
-            await webRtcLive.sendAnswer({
-              sender: mySocketId.value,
-              // data.data.receiver是接收者；我们现在new pc，发送者是自己，接收者肯定是房主，不能是data.data.receiver，因为data.data.receiver是自己
-              receiver: data.sender,
-              sdp: data.sdp,
-            });
-          } else {
-            console.error('不是发给我的nativeWebRtcOffer');
-          }
         } else if (data.live_room.type === LiveRoomTypeEnum.wertc_meeting_one) {
-          if (data.receiver === mySocketId.value) {
-            console.warn('是发给我的nativeWebRtcOffer-wertc_meeting_one');
-            updateWebRtcMeetingOneConfig({
-              roomId: roomId.value,
-              // userStream: userStream.value,
-              anchorStream: canvasVideoStream.value,
-            });
-            if (networkStore.rtcMap.get(data.sender)) {
-              return;
-            }
-            webRtcMeetingOne.newWebRtc({
-              // 因为这里是收到offer，而offer是房主发的，所以此时的data.data.sender是房主；data.data.receiver是接收者；
-              // 但是这里的nativeWebRtc的sender，得是自己，不能是data.data.sender，不要混淆
-              sender: mySocketId.value,
-              receiver: data.sender,
-              videoEl: createNullVideo(),
-            });
-            webRtcMeetingOne.addTrack({
-              stream: userStream.value,
-              receiver: data.sender,
-            });
-            await webRtcMeetingOne.sendAnswer({
-              sender: mySocketId.value,
-              // data.data.receiver是接收者；我们现在new pc，发送者是自己，接收者肯定是房主，不能是data.data.receiver，因为data.data.receiver是自己
-              receiver: data.sender,
-              sdp: data.sdp,
-            });
-          } else {
-            console.error('不是发给我的nativeWebRtcOffer');
-          }
         }
       }
     );
@@ -647,13 +592,14 @@ export const useWebsocket = () => {
         },
       });
     }
+
     async function handlePk() {
-      if (!route.query.pkKey) {
+      if (!route.query[URL_QUERY.pkKey]) {
         return;
       }
       const res = await fetchVerifyPkKey({
         liveRoomId: Number(roomId.value),
-        key: route.query.pkKey,
+        key: route.query[URL_QUERY.pkKey],
       });
       if (res.code === 200 && res.data === true) {
         await useTip({
@@ -715,6 +661,7 @@ export const useWebsocket = () => {
                 sender: mySocketId.value,
                 receiver: item,
                 videoEl: createNullVideo(),
+                sucessCb: () => {},
               });
               webRtcMeetingOne.sendOffer({
                 sender: mySocketId.value,
@@ -770,16 +717,8 @@ export const useWebsocket = () => {
           console.error('自己进入直播间，退出');
           return;
         }
-        if (
-          [
-            LiveRoomTypeEnum.system,
-            LiveRoomTypeEnum.srs,
-            LiveRoomTypeEnum.obs,
-          ].includes(appStore.liveRoomInfo?.type!)
-        ) {
-          return;
-        }
-        if (appStore.liveRoomInfo?.type === LiveRoomTypeEnum.wertc_live) {
+        const liveRoomType = appStore.liveRoomInfo?.type;
+        if (liveRoomType === LiveRoomTypeEnum.wertc_live) {
           updateWebRtcLiveConfig({
             roomId: roomId.value,
             canvasVideoStream: canvasVideoStream.value,
@@ -793,6 +732,7 @@ export const useWebsocket = () => {
                 sender: mySocketId.value,
                 receiver: item,
                 videoEl: createNullVideo(),
+                sucessCb: () => {},
               });
               webRtcLive.sendOffer({
                 sender: mySocketId.value,
@@ -800,30 +740,29 @@ export const useWebsocket = () => {
               });
             }
           });
-        } else if (
-          appStore.liveRoomInfo?.type === LiveRoomTypeEnum.wertc_meeting_one
-        ) {
+        } else if (liveRoomType === LiveRoomTypeEnum.wertc_meeting_one) {
           updateWebRtcMeetingOneConfig({
             roomId: roomId.value,
             anchorStream: canvasVideoStream.value,
           });
-          // data.socket_list?.forEach((item) => {
-          //   if (item !== mySocketId.value) {
-          //     if (networkStore.rtcMap.get(item)) {
-          //       return;
-          //     }
-          //     webRtcMeetingOne.newWebRtc({
-          //       sender: mySocketId.value,
-          //       receiver: item,
-          //       videoEl: createNullVideo(),
-          //     });
-          //     webRtcMeetingOne.sendOffer({
-          //       sender: mySocketId.value,
-          //       receiver: item,
-          //     });
-          //   }
-          // });
-        } else if (appStore.liveRoomInfo?.type === LiveRoomTypeEnum.pk) {
+          data.socket_list?.forEach((item) => {
+            if (item !== mySocketId.value) {
+              if (networkStore.rtcMap.get(item)) {
+                return;
+              }
+              webRtcMeetingOne.newWebRtc({
+                sender: mySocketId.value,
+                receiver: item,
+                videoEl: createNullVideo(),
+                sucessCb: () => {},
+              });
+              webRtcMeetingOne.sendOffer({
+                sender: mySocketId.value,
+                receiver: item,
+              });
+            }
+          });
+        } else if (liveRoomType === LiveRoomTypeEnum.pk) {
           updateWebRtcMeetingPkConfig({
             roomId: roomId.value,
             anchorStream: canvasVideoStream.value,
@@ -844,9 +783,7 @@ export const useWebsocket = () => {
           //     });
           //   }
           // });
-        } else if (
-          appStore.liveRoomInfo?.type === LiveRoomTypeEnum.tencent_css_pk
-        ) {
+        } else if (liveRoomType === LiveRoomTypeEnum.tencent_css_pk) {
           updateWebRtcMeetingPkConfig({
             roomId: roomId.value,
             anchorStream: canvasVideoStream.value,

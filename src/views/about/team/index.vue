@@ -103,7 +103,7 @@
             @click="
               router.push({
                 name: routerName.shop,
-                query: { [URL_PARAMS.goodsType]: GoodsTypeEnum.sponsors },
+                query: { [URL_QUERY.goodsType]: GoodsTypeEnum.sponsors },
               })
             "
           >
@@ -133,7 +133,7 @@ import {
 import { openToTarget } from 'billd-utils';
 import { ref } from 'vue';
 
-import { PROJECT_NAME, URL_PARAMS } from '@/constant';
+import { PROJECT_NAME, URL_QUERY } from '@/constant';
 import { GoodsTypeEnum } from '@/interface';
 import router, { routerName } from '@/router';
 import { prodDomain } from '@/spec-config';

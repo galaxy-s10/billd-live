@@ -1,7 +1,7 @@
 import { ref } from 'vue';
 
 import { fetchRtcV1Publish } from '@/api/srs';
-import { SRS_CB_URL_PARAMS } from '@/constant';
+import { SRS_CB_URL_QUERY } from '@/constant';
 import { useRTCParams } from '@/hooks/use-rtcParams';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
@@ -93,8 +93,8 @@ export const useWebRtcSrs = () => {
           const answerRes = await fetchRtcV1Publish({
             sdp: offerSdp.sdp!,
             streamurl: `${myLiveRoom.rtmp_url!}?${
-              SRS_CB_URL_PARAMS.publishKey
-            }=${myLiveRoom.key!}&${SRS_CB_URL_PARAMS.publishType}=${
+              SRS_CB_URL_QUERY.publishKey
+            }=${myLiveRoom.key!}&${SRS_CB_URL_QUERY.publishType}=${
               isPk.value ? LiveRoomTypeEnum.pk : LiveRoomTypeEnum.srs
             }`,
           });

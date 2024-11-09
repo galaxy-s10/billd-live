@@ -29,15 +29,19 @@ export const COOKIE_DOMAIN =
 
 export const THEME_COLOR = '#ffd700';
 
-export const SRS_CB_URL_PARAMS = {
+export const SRS_CB_URL_QUERY = {
   publishKey: 'pushkey',
   publishType: 'pushtype',
   userToken: 'usertoken',
   userId: 'userid',
   randomId: 'randomid',
 };
-export const URL_PARAMS = {
+export const URL_QUERY = {
   goodsType: 'goodsType',
+  pkKey: 'pkKey',
+  roomId: 'roomId',
+  liveType: 'liveType',
+  isBilibili: 'isBilibili',
 };
 
 export const COMMON_URL = {

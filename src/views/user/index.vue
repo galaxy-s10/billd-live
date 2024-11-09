@@ -64,6 +64,7 @@ import { ref, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { fetchFindUser } from '@/api/user';
+import { URL_QUERY } from '@/constant';
 import { loginTip } from '@/hooks/use-login';
 import { routerName } from '@/router';
 import { useUserStore } from '@/store/user';
@@ -106,7 +107,7 @@ function openLiveRoom() {
   }
   const url = router.resolve({
     name: routerName.push,
-    query: { liveType: LiveRoomTypeEnum.srs },
+    query: { [URL_QUERY.liveType]: LiveRoomTypeEnum.srs },
   });
   openToTarget(url.href);
 }
