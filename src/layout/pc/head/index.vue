@@ -264,7 +264,7 @@
               </a>
               <a
                 class="item"
-                @click.prevent="handleStartLive(LiveRoomTypeEnum.pk)"
+                @click.prevent="handleTip2()"
               >
                 <div class="txt">{{ t('layout.pkLive') }}</div>
               </a>
@@ -623,6 +623,10 @@ onMounted(() => {
   githubStar.value =
     'https://img.shields.io/github/stars/galaxy-s10/billd-live?label=Star&logo=GitHub&labelColor=white&logoColor=black&style=social&cacheSeconds=3600';
 });
+
+function handleTip2() {
+  window.$message.warning('重构中，暂不开放');
+}
 
 function handleStartLive(key: LiveRoomTypeEnum) {
   if (!loginTip()) {
