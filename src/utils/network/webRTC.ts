@@ -337,11 +337,12 @@ export class WebRTCClass {
       'iceconnectionstatechange',
       (event: any) => {
         this.prettierLog({
-          msg: 'pc收到iceconnectionstatechange:connected',
+          msg: 'pc收到iceconnectionstatechange',
           type: 'warn',
         });
         // https://developer.mozilla.org/zh-CN/docs/Web/API/RTCPeerConnection/connectionState
         const iceConnectionState = event.currentTarget.iceConnectionState;
+        console.log('iceconnectionstatechange', iceConnectionState);
         if (iceConnectionState === 'connected') {
           // ICE 代理至少对每个候选发现了一个可用的连接，此时仍然会继续测试远程候选以便发现更优的连接。同时可能在继续收集候选。
           this.prettierLog({
@@ -392,9 +393,10 @@ export class WebRTCClass {
       (event: any) => {
         const connectionState = event.currentTarget.connectionState;
         this.prettierLog({
-          msg: 'pc收到connectionstatechange:connected',
+          msg: 'pc收到connectionstatechange',
           type: 'warn',
         });
+        console.log('connectionstatechange', connectionState);
         if (connectionState === 'connected') {
           // 表示每一个 ICE 连接要么正在使用（connected 或 completed 状态），要么已被关闭（closed 状态）；并且，至少有一个连接处于 connected 或 completed 状态。
           this.prettierLog({

@@ -3,11 +3,9 @@ import { ref } from 'vue';
 import { fetchRtcV1Whep } from '@/api/srs';
 import { useRTCParams } from '@/hooks/use-rtcParams';
 import { useNetworkStore } from '@/store/network';
-import { useUserStore } from '@/store/user';
 import { WebRTCClass } from '@/utils/network/webRTC';
 
 export const useWebRtcRtmpToRtc = () => {
-  const userStore = useUserStore();
   const networkStore = useNetworkStore();
 
   const { maxBitrate, maxFramerate, resolutionRatio } = useRTCParams();
@@ -38,7 +36,7 @@ export const useWebRtcRtmpToRtc = () => {
         maxBitrate: currentMaxBitrate.value,
         maxFramerate: currentMaxFramerate.value,
         resolutionRatio: currentResolutionRatio.value,
-        isSRS: true,
+        isSRS: false,
         roomId: roomId.value,
         videoEl: data.videoEl,
         sender: data.sender,
@@ -88,10 +86,24 @@ export const useWebRtcRtmpToRtc = () => {
             window.$message.error('/rtc/v1/play/拿不到sdp');
             return;
           }
+          const arr = answerRes.data.answer.split('\r\n') as string[];
+          for (let i = 0; i < arr.length; i += 1) {
+            if (arr[i].match('candidate')) {
+              const mkcdd = arr[i].split(' ');
+              mkcdd[4] = '8.218.5.78';
+              arr[i] = mkcdd.join(' ');
+            }
+          }
+          const newSdp = arr.join('\r\n');
+          const sdpres =
+            process.env.NODE_ENV === 'development'
+              ? answerRes.data.answer
+              : newSdp;
+          console.log('sdpres', sdpres);
           await rtc.setRemoteDescription(
             new RTCSessionDescription({
               type: 'answer',
-              sdp: answerRes.data.answer,
+              sdp: sdpres,
             })
           );
           // const answerRes = await fetchRtcV1Play({

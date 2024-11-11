@@ -27,7 +27,6 @@ billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://
 | 直播间前台   | [billd-live](https://github.com/galaxy-s10/billd-live)                           | [![github](https://img.shields.io/github/stars/galaxy-s10/billd-live?label=star&logo=GitHub)](https://github.com/galaxy-s10/billd-live) [![github](https://img.shields.io/github/forks/galaxy-s10/billd-live?label=fork&logo=GitHub)](https://github.com/galaxy-s10/billd-live)                                                     | [https://live.hsslive.cn](https://live.hsslive.cn)                   |
 | 直播间后端   | [billd-live-server](https://github.com/galaxy-s10/billd-live-server)             | [![github](https://img.shields.io/github/stars/galaxy-s10/billd-live-server?label=star&logo=GitHub)](https://github.com/galaxy-s10/billd-live-server) [![github](https://img.shields.io/github/forks/galaxy-s10/billd-live-server?label=fork&logo=GitHub)](https://github.com/galaxy-s10/billd-live-server)                         | [https://live-api.hsslive.cn](https://live-api.hsslive.cn)           |
 | 直播间后台   | [billd-live-admin](https://github.com/galaxy-s10/billd-live-admin)               | [![github](https://img.shields.io/github/stars/galaxy-s10/billd-live-admin?label=star&logo=GitHub)](https://github.com/galaxy-s10/billd-live-admin) [![github](https://img.shields.io/github/forks/galaxy-s10/billd-live-admin?label=fork&logo=GitHub)](https://github.com/galaxy-s10/billd-live-admin)                             | [https://live-admin.hsslive.cn](https://live-admin.hsslive.cn)       |
-| 远程桌面     | [billd-desk](https://github.com/galaxy-s10/billd-desk)                           | [![github](https://img.shields.io/github/stars/galaxy-s10/billd-desk?label=star&logo=GitHub)](https://github.com/galaxy-s10/billd-desk) [![github](https://img.shields.io/github/forks/galaxy-s10/billd-desk?label=fork&logo=GitHub)](https://github.com/galaxy-s10/billd-desk)                                                     | [https://desk.hsslive.cn](https://desk.hsslive.cn)                   |
 | 直播间移动端 | [billd-live-flutter](https://github.com/galaxy-s10/billd-live-flutter)           | [![github](https://img.shields.io/github/stars/galaxy-s10/billd-live-flutter?label=star&logo=GitHub)](https://github.com/galaxy-s10/billd-live-flutter) [![github](https://img.shields.io/github/forks/galaxy-s10/billd-live-flutter?label=fork&logo=GitHub)](https://github.com/galaxy-s10/billd-live-flutter)                     | [https://live.hsslive.cn/download](https://live.hsslive.cn/download) |
 | 直播间移动端 | [billd-live-react-native](https://github.com/galaxy-s10/billd-live-react-native) | [![github](https://img.shields.io/github/stars/galaxy-s10/billd-live-react-native?label=star&logo=GitHub)](https://github.com/galaxy-s10/billd-live-react-native) [![github](https://img.shields.io/github/forks/galaxy-s10/billd-live-react-native?label=fork&logo=GitHub)](https://github.com/galaxy-s10/billd-live-react-native) | [https://live.hsslive.cn/download](https://live.hsslive.cn/download) |
 | 直播间客户端 | [billd-live-electron](https://github.com/galaxy-s10/billd-live-electron)         | [![github](https://img.shields.io/github/stars/galaxy-s10/billd-live-electron?label=star&logo=GitHub)](https://github.com/galaxy-s10/billd-live-flutter) [![github](https://img.shields.io/github/forks/galaxy-s10/billd-live-electron?label=fork&logo=GitHub)](https://github.com/galaxy-s10/billd-live-electron)                  | [https://live.hsslive.cn/download](https://live.hsslive.cn/download) |
@@ -36,8 +35,8 @@ billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://
 ## 功能
 
 - [x] 原生 webrtc 推拉流
-- [x] srs webrtc 推流，`http-flv` 或 `hls`拉流
-- [x] msr 推流，ffmpeg 转码，`http-flv` 或 `hls`拉流
+- [x] srs webrtc 推流，支持 `http-flv`、`hls`、`webrtc`、`rtmp`拉流
+- [x] msr 推流，ffmpeg 转码，支持 `http-flv`、`hls`、`webrtc`、`rtmp`拉流
 - [x] 一对一打 PK
 - [x] 一对多打 PK
 - [x] 多对多打 PK
@@ -50,10 +49,16 @@ billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://
 - [x] 支付模块（支付宝当面付）
 - [x] 订单模块
 - [x] 商品模块
-- [x] 适配移动端
-- [x] 在线后台
-- [x] 接入腾讯云-云直播
-- [ ] 接入腾讯云-实时音视频 TRTC
+- [x] 礼物模块
+- [x] 直播后台
+- [x] 响应式页面
+- [x] 适配多语言（i18n）
+- [x] 移动端App（Flutter）
+- [ ] 客户端App（Electron）
+- [x] 接入bilibili直播
+- [x] 接入腾讯云（云直播）
+- [ ] 接入腾讯云（实时音视频 TRTC）
+- [x] 私有化部署
 
 ## 技术栈
 
@@ -239,6 +244,10 @@ pnpm run dev
 ## 常见问题
 
 [https://live.hsslive.cn/doc/faq](https://live.hsslive.cn/doc/faq)
+
+## 技术支持
+
+[https://live.hsslive.cn/support](https://live.hsslive.cn/support)
 
 ## 环境配置
 
