@@ -1,6 +1,7 @@
 <template>
   <n-config-provider :theme-overrides="themeOverrides">
     <n-dialog-provider>
+      <RenderMarkdown :md="modalContent"></RenderMarkdown>
       <router-view></router-view>
       <HomeModal
         :show="showModal"
@@ -45,7 +46,7 @@ const userStore = useUserStore();
 const route = useRoute();
 
 const showModal = ref(false);
-const modalContent = ref('');
+const modalContent = ref('2');
 
 const themeOverrides: GlobalThemeOverrides = {
   common: {

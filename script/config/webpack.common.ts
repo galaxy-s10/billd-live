@@ -210,7 +210,7 @@ const commonConfig = (isProduction) => {
         },
         {
           test: /\.css$/,
-          exclude: /node_modules/,
+          // exclude: /node_modules/,
           oneOf: [
             {
               resourceQuery: /module/,
@@ -232,7 +232,7 @@ const commonConfig = (isProduction) => {
         },
         {
           test: /\.(sass|scss)$/,
-          exclude: /node_modules/,
+          // exclude: /node_modules/,
           oneOf: [
             {
               resourceQuery: /module/,
