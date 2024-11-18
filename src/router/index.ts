@@ -17,6 +17,10 @@ export const mobileRouterName = {
   h5Area: 'h5Area',
   h5Rank: 'h5Rank',
   h5My: 'h5My',
+  h5Shop: 'h5Shop',
+  h5ShopDetail: 'h5ShopDetail',
+  h5Store: 'h5Store',
+  h5StoreDetail: 'h5StoreDetail',
   ...commonRouterName,
 };
 
@@ -56,6 +60,7 @@ export const routerName = {
 
   pull: 'pull',
   push: 'push',
+  store: 'store',
   ...mobileRouterName,
 };
 
@@ -230,6 +235,11 @@ export const defaultRoutes: RouteRecordRaw[] = [
     ],
   },
   {
+    name: routerName.store,
+    path: '/store',
+    component: () => import('@/views/store/index.vue'),
+  },
+  {
     path: '/h5',
     component: MobileLayout,
     children: [
@@ -253,6 +263,16 @@ export const defaultRoutes: RouteRecordRaw[] = [
         path: 'my',
         component: () => import('@/views/h5/my/index.vue'),
       },
+      {
+        name: mobileRouterName.h5Shop,
+        path: 'shop',
+        component: () => import('@/views/h5/shop/index.vue'),
+      },
+      {
+        name: mobileRouterName.h5ShopDetail,
+        path: 'shop/:id',
+        component: () => import('@/views/h5/shopDetail/index.vue'),
+      },
     ],
   },
   {
@@ -260,6 +280,21 @@ export const defaultRoutes: RouteRecordRaw[] = [
     path: '/h5/:roomId',
     component: () => import('@/views/h5/room/index.vue'),
   },
+  {
+    name: mobileRouterName.h5Store,
+    path: '/h5/store',
+    component: () => import('@/views/h5/store/index.vue'),
+  },
+  {
+    name: mobileRouterName.h5StoreDetail,
+    path: '/h5/store/:id',
+    component: () => import('@/views/h5/storeDetail/index.vue'),
+  },
+  // {
+  //   name: mobileRouterName.h5Shop,
+  //   path: '/h5/shop',
+  //   component: () => import('@/views/h5/shop/index.vue'),
+  // },
 ];
 
 const router = createRouter({
@@ -278,10 +313,22 @@ router.beforeEach((to, from, next) => {
   if (to.name === routerName.oauth) {
     return next();
   }
+  if (to.name === routerName.store) {
+    return next({
+      name: routerName.h5Store,
+    });
+  }
+  if (to.name === routerName.h5Store) {
+    return next();
+  }
+  if (to.name === routerName.h5StoreDetail) {
+    return next();
+  }
   if (Object.keys(commonRouterName).includes(to.name as string)) {
     // 跳转通用路由
     return next();
   } else if (isMobile() && !isIPad()) {
+    console.log('当前是移动端');
     if (!Object.keys(mobileRouterName).includes(to.name as string)) {
       // 当前移动端，但是跳转了非移动端路由
       console.log('当前移动端，但是跳转了非移动端路由', to, from);
@@ -291,20 +338,37 @@ router.beforeEach((to, from, next) => {
           params: { roomId: to.params.roomId },
           query: { ...to.query },
         });
+      } else if (to.name === routerName.shop) {
+        return next({
+          name: mobileRouterName.h5Shop,
+          query: { ...to.query },
+        });
+      } else if (to.name === routerName.store) {
+        return next({
+          name: mobileRouterName.h5Store,
+          query: { ...to.query },
+        });
       } else {
         return next({
           name: mobileRouterName.h5,
         });
       }
     } else {
+      if (to.name === routerName.h5Room) {
+        if (!Number(to.params.roomId)) {
+          return next({
+            name: mobileRouterName.h5,
+          });
+        }
+      }
       return next();
     }
   } else {
+    console.log('当前是电脑/ipad端');
     if (Object.keys(mobileRouterName).includes(to.name as string)) {
       // 当前非移动端，但是跳转了移动端路由
       console.log('当前非移动端，但是跳转了移动端路由');
-      if (to.name === mobileRouterName.h5Room) {
-        // 有可能是原生webrtc或srs-webrtc
+      if (to.name === routerName.h5Room) {
         return next({
           name: routerName.home,
         });

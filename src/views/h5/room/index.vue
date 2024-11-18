@@ -289,11 +289,12 @@ import { THEME_COLOR } from '@/constant';
 import { emojiArray } from '@/emoji';
 import { useFullScreen, usePictureInPicture } from '@/hooks/use-play';
 import { usePull } from '@/hooks/use-pull';
+import { useWebsocket } from '@/hooks/use-websocket';
 import {
   DanmuMsgTypeEnum,
   WsMessageContentTypeEnum,
-  WsMessageMsgIsShowEnum,
-  WsMessageMsgIsVerifyEnum,
+  WsMessageIsShowEnum,
+  WsMessageIsVerifyEnum,
 } from '@/interface';
 import router, { mobileRouterName } from '@/router';
 import { useAppStore } from '@/store/app';
@@ -323,8 +324,8 @@ const {
   videoWrapRef,
   handlePlay,
   initPull,
+  initWs,
   keydownDanmu,
-  sendDanmuTxt,
   closeRtc,
   closeWs,
   liveUserList,
@@ -335,8 +336,9 @@ const {
   danmuStr,
   roomLiving,
   videoResolution,
-  initRoomId,
 } = usePull();
+
+const { sendDanmuTxt } = useWebsocket();
 
 onUnmounted(() => {
   closeWs();
@@ -346,7 +348,10 @@ onUnmounted(() => {
 });
 
 onMounted(() => {
-  initRoomId(roomId.value);
+  if (!Number(roomId.value)) {
+    return;
+  }
+  initPull({ roomId: roomId.value, autolay: true });
   showPlayBtn.value = true;
   videoWrapRef.value = remoteVideoRef.value;
   setTimeout(() => {
@@ -369,6 +374,7 @@ onMounted(() => {
 
 function handleSendDanmu() {
   sendDanmuTxt(danmuStr.value);
+  danmuStr.value = '';
 }
 
 function handleLogout() {
@@ -386,8 +392,8 @@ async function handleHistoryMsg() {
       orderName: 'created_at',
       orderBy: 'desc',
       live_room_id: Number(roomId.value),
-      is_show: WsMessageMsgIsShowEnum.yes,
-      is_verify: WsMessageMsgIsVerifyEnum.yes,
+      is_show: WsMessageIsShowEnum.yes,
+      is_verify: WsMessageIsVerifyEnum.yes,
     });
     if (res.code === 200) {
       res.data.rows.forEach((v) => {
@@ -488,7 +494,7 @@ async function getLiveRoomInfo() {
         } else {
           showPlayBtn.value = true;
         }
-        initPull({ autolay: autoplayVal.value });
+        initWs({ roomId: roomId.value, isAnchor: false });
       }
     }
   } catch (error) {

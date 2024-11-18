@@ -1,7 +1,10 @@
 <template>
-  <div class="qr-pay-wrap">
+  <div
+    class="qr-pay-wrap"
+    :class="{ mobile }"
+  >
     <div class="money">
-      {{ t('common.payMoney', { money: formatMoney(props.money) }) }}
+      {{ t('common.payMoney', { money: formatMoney(props.money!) }) }}
     </div>
     <div
       class="qrcode-wrap"
@@ -92,6 +95,7 @@ const downTimeStart = ref();
 const downTimeEnd = ref();
 const loading = ref(false);
 const isExpired = ref(false);
+const mobile = ref(false);
 
 const currentPayStatus = ref(PayStatusEnum.wait);
 const { t } = useI18n();
@@ -115,6 +119,7 @@ onUnmounted(() => {
 
 onMounted(() => {
   handleStartPay();
+  mobile.value = isMobile();
 });
 
 async function generateQR(text) {
@@ -200,7 +205,6 @@ function getPayStatus(outTradeNo: string) {
 
 <style lang="scss" scoped>
 .qr-pay-wrap {
-  padding: 10px;
   .money {
     text-align: center;
     font-size: 20px;

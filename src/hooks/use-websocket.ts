@@ -5,8 +5,12 @@ import { useRoute } from 'vue-router';
 
 import { fetchVerifyPkKey } from '@/api/liveRoom';
 import { THEME_COLOR, URL_QUERY } from '@/constant';
+import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { useRTCParams } from '@/hooks/use-rtcParams';
 import { useTip } from '@/hooks/use-tip';
+import { useForwardAll } from '@/hooks/webrtc/forwardAll';
+import { useForwardBilibili } from '@/hooks/webrtc/forwardBilibili';
+import { useForwardHuya } from '@/hooks/webrtc/forwardHuya';
 import { useWebRtcLive } from '@/hooks/webrtc/live';
 import { useWebRtcMeetingOne } from '@/hooks/webrtc/meetingOne';
 import { useWebRtcMeetingPk } from '@/hooks/webrtc/meetingPk';
@@ -17,6 +21,7 @@ import {
   ILiveUser,
   IWsMessage,
   WsMessageContentTypeEnum,
+  WsMessageIsBilibiliEnum,
 } from '@/interface';
 import router, { routerName } from '@/router';
 import { WEBSOCKET_URL } from '@/spec-config';
@@ -54,10 +59,6 @@ import {
   WebSocketClass,
   prettierReceiveWsMsg,
 } from '@/utils/network/webSocket';
-
-import { useForwardAll } from './webrtc/forwardAll';
-import { useForwardBilibili } from './webrtc/forwardBilibili';
-import { useForwardHuya } from './webrtc/forwardHuya';
 
 export const useWebsocket = () => {
   const route = useRoute();
@@ -129,6 +130,95 @@ export const useWebsocket = () => {
   const mySocketId = computed(() => {
     return networkStore.wsMap.get(roomId.value)?.socketIo?.id || '-1';
   });
+
+  function sendDanmuTxt(txt: string) {
+    if (!loginTip()) {
+      return;
+    }
+    if (!commentAuthTip()) {
+      return;
+    }
+    if (!txt.trim().length) {
+      window.$message.warning('请输入弹幕内容！');
+      return;
+    }
+    const instance = networkStore.wsMap.get(roomId.value);
+
+    if (!instance) return;
+    const messageData: WsMessageType['data'] = {
+      content: txt,
+      content_type: WsMessageContentTypeEnum.txt,
+      msg_type: DanmuMsgTypeEnum.danmu,
+      live_room_id: Number(roomId.value),
+      is_bilibili: isBilibili.value
+        ? WsMessageIsBilibiliEnum.yes
+        : WsMessageIsBilibiliEnum.no,
+    };
+    instance.send({
+      requestId: getRandomString(8),
+      msgType: WsMsgTypeEnum.message,
+      data: messageData,
+    });
+  }
+
+  function sendDanmuImg(url: string) {
+    if (!loginTip()) {
+      return;
+    }
+    if (!commentAuthTip()) {
+      return;
+    }
+    if (!url.trim().length) {
+      window.$message.warning('图片不能为空！');
+      return;
+    }
+    const instance = networkStore.wsMap.get(roomId.value);
+    if (!instance) return;
+    const requestId = getRandomString(8);
+    const messageData: WsMessageType['data'] = {
+      content: url,
+      content_type: WsMessageContentTypeEnum.img,
+      msg_type: DanmuMsgTypeEnum.danmu,
+      live_room_id: Number(roomId.value),
+      is_bilibili: isBilibili.value
+        ? WsMessageIsBilibiliEnum.yes
+        : WsMessageIsBilibiliEnum.no,
+    };
+    instance.send({
+      requestId,
+      msgType: WsMsgTypeEnum.message,
+      data: messageData,
+    });
+  }
+
+  function sendDanmuReward(txt: string) {
+    if (!loginTip()) {
+      return;
+    }
+    if (!commentAuthTip()) {
+      return;
+    }
+    if (!txt.trim().length) {
+      window.$message.warning('请输入弹幕内容！');
+      return;
+    }
+    const instance = networkStore.wsMap.get(roomId.value);
+    if (!instance) return;
+    const messageData: WsMessageType['data'] = {
+      content: txt,
+      content_type: WsMessageContentTypeEnum.txt,
+      msg_type: DanmuMsgTypeEnum.reward,
+      live_room_id: Number(roomId.value),
+      is_bilibili: isBilibili.value
+        ? WsMessageIsBilibiliEnum.yes
+        : WsMessageIsBilibiliEnum.no,
+    };
+    instance.send({
+      requestId: getRandomString(8),
+      msgType: WsMsgTypeEnum.message,
+      data: messageData,
+    });
+  }
 
   function handleHeartbeat() {
     loopHeartbeatTimer.value = setInterval(() => {
@@ -504,21 +594,11 @@ export const useWebsocket = () => {
     // 收到用户发送消息
     ws.socketIo.on(WsMsgTypeEnum.message, (data: WsMessageType) => {
       prettierReceiveWsMsg(WsMsgTypeEnum.message, data);
-      damuList.value.push({
-        send_msg_time: data.time,
-        user: data.user_info,
-        username: data.user_info?.username,
-        /** 消息类型 */
-        msg_type: data.data.msg_type,
-        /** 消息内容类型 */
-        content_type: data.data.content_type,
-        /** 消息内容 */
-        content: data.data.content,
-        live_room_id: data.data.live_room_id,
-        redbag_send_id: data.data.redbag_send_id,
-        /** 消息id */
-        id: data.data.msg_id,
-      });
+      // @ts-ignore
+      data.data.send_msg_time = new Date(
+        data.data.send_msg_time!
+      ).toLocaleString();
+      damuList.value.push(data.data);
     });
 
     // 收到disableSpeaking
@@ -832,6 +912,10 @@ export const useWebsocket = () => {
     });
   }
 
+  function initRoomId(id: string) {
+    roomId.value = id;
+  }
+
   function initWs(data: {
     isAnchor: boolean;
     roomId: string;
@@ -840,7 +924,7 @@ export const useWebsocket = () => {
     currentMaxFramerate?: number;
     currentMaxBitrate?: number;
   }) {
-    roomId.value = data.roomId;
+    initRoomId(data.roomId);
     isAnchor.value = data.isAnchor;
 
     if (data.isBilibili !== undefined) {
@@ -864,8 +948,12 @@ export const useWebsocket = () => {
   }
 
   return {
+    initRoomId,
     initWs,
     handleStartLive,
+    sendDanmuTxt,
+    sendDanmuImg,
+    sendDanmuReward,
     isBilibili,
     connectStatus,
     mySocketId,

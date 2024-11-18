@@ -112,11 +112,29 @@ export async function handleUserMedia({ video, audio }) {
   }
 }
 
-export function formatMoney(money?: number) {
-  if (!money) {
-    return '0.00';
+export function formatPayNum(num: number) {
+  if (num > 10000) {
+    return `${Math.floor(num / 10000)}万+`;
+  } else if (num > 1000) {
+    return `${Math.floor(num / 1000) * 1000}+`;
+  } else if (num > 100) {
+    return `${Math.floor(num / 100) * 100}+`;
+  } else {
+    return num;
   }
-  return (money / 100).toFixed(2);
+}
+
+export function formatMoney(money: number, hideZeroCent?: boolean) {
+  if (!money) {
+    return hideZeroCent ? '0' : '0.00';
+  }
+  const res = (money / 100).toFixed(2);
+  const res1 = res.split('.');
+  if (hideZeroCent && res1[1] === '00') {
+    return res1[0];
+  } else {
+    return res;
+  }
 }
 
 export const formatTimeHour = (time: number | string | Date) => {

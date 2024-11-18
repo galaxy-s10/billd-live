@@ -1,16 +1,5 @@
 <template>
   <div class="shop-wrap">
-    <div class="tab-list">
-      <div
-        v-for="(item, index) in tabList"
-        :key="index"
-        class="tab"
-        :class="{ active: item.key === pageParams.type }"
-        @click="changeTab(item.key)"
-      >
-        {{ item.label }}
-      </div>
-    </div>
     <div
       ref="topRef"
       :style="{ height: height + 'px' }"
@@ -32,7 +21,7 @@
           v-for="(item, index) in list"
           :key="index"
           class="goods"
-          @click="handleBuy(item)"
+          @click="startPay(item)"
         >
           <div
             class="top"
@@ -50,18 +39,12 @@
             <div class="title">
               <FloatTip
                 :txt="item.name"
-                :max-len="18"
+                :max-len="9"
               ></FloatTip>
             </div>
             <div class="price-wrap">
               <span class="rmb">￥</span>
               <span class="price">{{ formatMoney(item.price!, true) }}</span>
-              <span
-                class="original-price"
-                v-if="item.original_price !== item.price"
-              >
-                <del>￥{{ formatMoney(item.original_price!, true) }}</del>
-              </span>
               <span class="pay-num">
                 {{ formatPayNum(item.pay_nums!) }}人付款
               </span>
@@ -70,57 +53,52 @@
         </div>
       </LongList>
     </div>
-    <Modal
+    <QrPayCpt
       v-if="showQrPay"
-      title="支付"
-      @close="showQrPay = !showQrPay"
-    >
-      <QrPay
-        :money="qrcodeInfo.money"
-        :goods-id="qrcodeInfo.goodsId"
-        :live-room-id="qrcodeInfo.liveRoomId"
-      ></QrPay>
-      <template v-slot:footer></template>
-    </Modal>
+      :money="goodsInfo.money"
+      :goods-id="goodsInfo.goodsId"
+      :live-room-id="goodsInfo.liveRoomId"
+    ></QrPayCpt>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { nextTick, onMounted, onUnmounted, reactive, ref } from 'vue';
+import { onMounted, onUnmounted, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchGoodsList } from '@/api/goods';
+import QrPayCpt from '@/components/QrPay/index.vue';
 import { URL_QUERY } from '@/constant';
 import { GoodsTypeEnum, IGoods } from '@/interface';
-import router from '@/router';
+import router, { routerName } from '@/router';
 import { formatMoney, formatPayNum } from '@/utils';
 
 const route = useRoute();
 const list = ref<IGoods[]>([]);
 const topRef = ref<HTMLDivElement>();
 const loading = ref(false);
-
-const tabList = ref([
-  // { label: '逸鹏的商品', key: GoodsTypeEnum.qypShop },
-  { label: '礼物', key: GoodsTypeEnum.gift },
-  { label: '赞助', key: GoodsTypeEnum.sponsors },
-  { label: '服务', key: GoodsTypeEnum.support },
-]);
-
-const height = ref(-1);
-const hasMore = ref(true);
-
 const showQrPay = ref(false);
-const qrcodeInfo = reactive({
+const goodsInfo = reactive({
   money: 0,
   goodsId: -1,
   liveRoomId: -1,
 });
 
+// const tabList = ref([
+//   { label: '逸鹏的商品', key: GoodsTypeEnum.qypShop },
+//   { label: '礼物', key: GoodsTypeEnum.gift },
+//   { label: '赞助', key: GoodsTypeEnum.sponsors },
+//   { label: '服务', key: GoodsTypeEnum.support },
+// ]);
+
+const height = ref(-1);
+const hasMore = ref(true);
+
 const pageParams = reactive({
   nowPage: 0,
-  pageSize: 100,
-  type: tabList.value[0].key,
+  pageSize: 50,
+  // type: tabList.value[0].key,
+  type: GoodsTypeEnum.qypShop,
   orderName: 'price,created_at',
   orderBy: 'asc,desc',
 });
@@ -138,20 +116,6 @@ function handleStatus() {
   if (!list.value?.length) {
     status.value = 'nonedata';
   }
-}
-
-function handleBuy(item: IGoods) {
-  console.log('i', item);
-  if (item.price! <= 0) {
-    window.$message.info('该商品是免费的，不需要购买！');
-    return;
-  }
-  showQrPay.value = false;
-  nextTick(() => {
-    qrcodeInfo.money = item.price!;
-    qrcodeInfo.goodsId = item.id!;
-    showQrPay.value = true;
-  });
 }
 
 function getHeight() {
@@ -207,60 +171,48 @@ onUnmounted(() => {
   window.removeEventListener('resize', getHeight);
 });
 
-function changeTab(type: GoodsTypeEnum) {
-  pageParams.type = type;
-  pageParams.nowPage = 0;
-  getData(true);
+// function changeTab(type: GoodsTypeEnum) {
+//   showQrPay.value = false;
+//   pageParams.type = type;
+//   pageParams.nowPage = 0;
+//   getData(true);
+// }
+
+function startPay(item: IGoods) {
+  router.push({ name: routerName.h5StoreDetail, params: { id: item.id } });
+  // if (item.price! <= 0) {
+  //   window.$message.info('该商品是免费的，不需要购买！');
+  //   return;
+  // }
+  // showQrPay.value = false;
+  // nextTick(() => {
+  //   goodsInfo.money = item.price!;
+  //   goodsInfo.goodsId = item.id!;
+  //   showQrPay.value = true;
+  // });
 }
 </script>
 
 <style lang="scss" scoped>
 .shop-wrap {
-  padding: 0 30px;
-  .tab-list {
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
-    height: 40px;
-    font-size: 14px;
-
-    user-select: none;
-    .tab {
-      position: relative;
-      margin-right: 20px;
-      cursor: pointer;
-      &.active {
-        color: $theme-color-gold;
-        font-size: 16px;
-
-        &::after {
-          position: absolute;
-          bottom: -6px;
-          left: 50%;
-          width: 20px;
-          height: 2px;
-          border-radius: 10px;
-          background-color: $theme-color-gold;
-          content: '';
-          transform: translateX(-50%);
-        }
-      }
-    }
-  }
+  box-sizing: border-box;
+  padding: 0 10px;
+  background-color: #f9f9f9;
   .goods-list {
+    position: relative;
     display: flex;
-    flex-wrap: wrap;
     align-content: baseline;
+    flex-wrap: wrap;
     justify-content: space-between;
+    padding-top: 10px;
+    width: calc(100% + 4px);
     .goods {
-      display: flex;
       box-sizing: border-box;
-      margin-right: 10px;
-      margin-bottom: 15px;
-      padding: 18px 10px 10px;
-      width: 400px;
+      margin-bottom: 3%;
+      width: 48.5%;
       border-radius: 6px;
-      box-shadow: 0 4px 30px 0 rgba(238, 242, 245, 0.8);
+      background-color: #fff;
+      box-shadow: 0 4px 10px 0 rgba(238, 242, 245, 0.8);
       cursor: pointer;
       transition: box-shadow 0.2s linear;
       &:hover {
@@ -268,50 +220,47 @@ function changeTab(type: GoodsTypeEnum) {
       }
       .top {
         position: relative;
-        margin-right: 20px;
-        width: 100px;
-        height: 100px;
-        flex-shrink: 0;
+        overflow: hidden;
+        width: 100%;
+        height: 130px;
+
         @extend %containBg;
         .badge {
           position: absolute;
-          top: -10px;
-          right: -10px;
+          top: 0px;
+          right: 0px;
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 2px;
-          border-radius: 2px;
+          padding: 3px 6px;
+          border-radius: 4px;
           color: white;
           .txt {
             display: inline-block;
             line-height: 1;
             transform-origin: center !important;
 
-            @include minFont(10);
+            @include minFont(12);
           }
         }
       }
       .bottom {
+        padding: 10px;
         .title {
-          margin-top: 10px;
-          font-size: 22px;
+          font-weight: 500;
+          font-size: 16px;
         }
         .price-wrap {
           display: flex;
           align-items: baseline;
           margin-top: 8px;
-          color: $theme-color-gold;
+          color: #ff5000;
           .rmb {
             font-size: 16px;
           }
           .price {
             font-weight: 500;
             font-size: 28px;
-          }
-          .original-price {
-            color: #999;
-            font-size: 14px;
           }
           .pay-num {
             margin-left: 5px;

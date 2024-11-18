@@ -13,6 +13,7 @@ import { ILiveRoom } from '@/types/ILiveRoom';
 export type AppRootState = {
   pageIsClick: boolean;
   useGoogleAd: boolean;
+  usePayCourse: boolean;
   areaList: IArea[];
   playing: boolean;
   videoRatio: number;
@@ -76,6 +77,7 @@ export const useAppStore = defineStore('app', {
     return {
       pageIsClick: false,
       useGoogleAd: false,
+      usePayCourse: false,
       areaList: [],
       playing: false,
       videoRatio: 16 / 9,
@@ -88,6 +90,7 @@ export const useAppStore = defineStore('app', {
       normalVolume: 80,
       navList: [
         { routeName: mobileRouterName.h5, name: '频道' },
+        { routeName: mobileRouterName.h5Shop, name: '商店' },
         { routeName: mobileRouterName.h5Rank, name: '排行' },
         { routeName: mobileRouterName.h5My, name: '我的' },
       ],

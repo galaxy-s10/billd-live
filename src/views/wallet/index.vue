@@ -2,7 +2,7 @@
   <div class="order-wrap">
     <h2 class="title">
       我的钱包：<span class="val">{{
-        formatMoney(userStore.userInfo?.wallet?.balance)
+        formatMoney(userStore.userInfo?.wallet?.balance!)
       }}</span>
       元
     </h2>
@@ -29,7 +29,7 @@
           <span>{{
             item.amount_status === WalletRecordAmountStatusEnum.add ? '+' : '-'
           }}</span>
-          <span>{{ formatMoney(item.amount) }}元</span>
+          <span>{{ formatMoney(item.amount!) }}元</span>
         </div>
       </div>
       <div v-if="!walletRecordList.length">{{ t('common.nonedata') }}</div>

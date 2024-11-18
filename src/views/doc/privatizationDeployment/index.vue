@@ -27,7 +27,7 @@
         :key="index"
       >
         <div class="name">{{ item.name }}</div>
-        <div class="desc">{{ item.desc }}</div>
+        <div class="desc">{{ item.short_desc }}</div>
         <div class="price">
           <span class="t1">{{ item.price.left }}</span>
           <span class="t2">{{ item.price.center }}</span>

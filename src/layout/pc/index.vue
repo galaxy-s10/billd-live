@@ -7,7 +7,7 @@
     </router-view>
     <SidebarCpt></SidebarCpt>
     <LoginModal v-if="appStore.showLoginModal"></LoginModal>
-    <PayCourse></PayCourse>
+    <PayCourse v-if="appStore.usePayCourse"></PayCourse>
   </div>
 </template>
 

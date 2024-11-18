@@ -3,17 +3,6 @@
     ref="longListRef"
     class="long-list-wrap"
   >
-    <!-- <div
-      style="
-        position: fixed;
-        bottom: 10px;
-        left: 10px;
-        z-index: 999;
-        color: red;
-      "
-    >
-      {{ status }}
-    </div> -->
     <slot></slot>
     <div
       v-if="status === 'loading'"
@@ -33,7 +22,10 @@
     >
       {{ t('common.allLoaded') }}
     </div>
-    <div ref="bottomRef"></div>
+    <div
+      class="bottom-ref"
+      ref="bottomRef"
+    ></div>
   </div>
 </template>
 
@@ -82,10 +74,10 @@ function monitTouchBottom() {
     (entries) => {
       entries.forEach((item) => {
         if (item.isIntersecting) {
-          // console.log('到底了');
+          console.log('到底了');
           emits('getListData');
         } else {
-          // console.log('隐藏了');
+          console.log('隐藏了');
         }
       });
     },
@@ -117,6 +109,15 @@ onUnmounted(() => {
   .loading {
     width: 100%;
     text-align: center;
+  }
+  .bottom-ref {
+    // width: 10px;
+    // height: 10px;
+    // background-color: red;
+    // position: absolute;
+    // bottom: 0;
+    // left: 0;
+    // display: none;
   }
 }
 </style>

@@ -1,7 +1,6 @@
 <template>
   <n-config-provider :theme-overrides="themeOverrides">
     <n-dialog-provider>
-      <RenderMarkdown :md="modalContent"></RenderMarkdown>
       <router-view></router-view>
       <HomeModal
         :show="showModal"

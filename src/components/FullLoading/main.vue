@@ -2,30 +2,51 @@
   <div
     v-show="loading"
     :class="{ 'full-loading-wrap': 1, [isFixed ? 'fixed' : 'absolute']: 1 }"
+    :style="{ zIndex: zindex || normalZindex }"
   >
-    <div :style="style">
+    <div>
       <div
-        v-if="showMask"
+        v-if="mask"
         class="mask"
       ></div>
-      <div class="container"></div>
-      <div class="txt">{{ content }}</div>
+      <div
+        class="container"
+        :style="{ '--loading-size': loadingSize + 'px' }"
+      ></div>
+      <div
+        v-if="content && content !== ''"
+        class="txt"
+        :style="{ color: contentColor }"
+      >
+        {{ content }}
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { StyleValue, defineComponent, ref } from 'vue';
+import { defineComponent, ref } from 'vue';
 
 export default defineComponent({
-  name: 'fullLoading',
   setup() {
     const isFixed = ref(false);
     const loading = ref(false);
-    const showMask = ref(false);
+    const mask = ref(false);
+    const normalZindex = ref(10);
+    const loadingSize = ref(30);
+    const zindex = ref(normalZindex);
     const content = ref('');
-    const style = ref<StyleValue>();
-    return { content, style, loading, showMask, isFixed };
+    const contentColor = ref('#999');
+    return {
+      content,
+      contentColor,
+      loading,
+      isFixed,
+      mask,
+      zindex,
+      normalZindex,
+      loadingSize,
+    };
   },
 });
 </script>
@@ -34,8 +55,6 @@ export default defineComponent({
 @import 'billd-scss/src/animate/loading-size.scss';
 
 .full-loading-wrap {
-  z-index: 10;
-
   @extend %flexCenter;
   &.fixed {
     @include full(fixed);
@@ -44,13 +63,15 @@ export default defineComponent({
     @include full(absolute);
   }
   .mask {
+    position: absolute !important;
+    background-color: rgba($color: #000000, $alpha: 0.2) !important;
+
     @extend %maskBg;
   }
   .container {
-    @include loadingSizeChange(30px, rgba($theme-color-gold, 0.5));
+    @include loadingSizeChange(var(--loading-size), $theme-color-gold);
   }
   .txt {
-    position: relative;
     margin-top: 10px;
     font-size: 14px;
   }

@@ -500,14 +500,15 @@ import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { usePush } from '@/hooks/use-push';
 import { useRTCParams } from '@/hooks/use-rtcParams';
 import { useTip } from '@/hooks/use-tip';
-import { useQiniuJsUpload } from '@/hooks/use-upload';
+import { useUpload } from '@/hooks/use-upload';
+import { useWebsocket } from '@/hooks/use-websocket';
 import {
   DanmuMsgTypeEnum,
   MediaTypeEnum,
   WsMessageContentTypeEnum,
-  WsMessageMsgIsFileEnum,
-  WsMessageMsgIsShowEnum,
-  WsMessageMsgIsVerifyEnum,
+  WsMessageIsFileEnum,
+  WsMessageIsShowEnum,
+  WsMessageIsVerifyEnum,
 } from '@/interface';
 import { QINIU_KODO } from '@/spec-config';
 import { AppRootState, useAppStore } from '@/store/app';
@@ -552,7 +553,6 @@ const {
 const {
   startLive,
   endLive,
-  sendDanmu,
   keydownDanmu,
   sendBlob,
   sendRoomNoLive,
@@ -570,6 +570,8 @@ const {
   damuList,
   liveUserList,
 } = usePush();
+
+const { sendDanmuTxt, sendDanmuImg } = useWebsocket();
 
 const addMediaOkMap = ref(new Map());
 const currentMediaType = ref(MediaTypeEnum.camera);
@@ -824,7 +826,8 @@ async function changeLiveRoomArea() {
 }
 
 function handleSendDanmu() {
-  sendDanmu();
+  sendDanmuTxt(danmuStr.value);
+  danmuStr.value = '';
 }
 
 function handlePushStr(str) {
@@ -875,19 +878,18 @@ async function uploadChange() {
   if (fileList?.length) {
     try {
       msgLoading.value = true;
-      msgIsFile.value = WsMessageMsgIsFileEnum.yes;
-      const res = await useQiniuJsUpload({
+      msgIsFile.value = WsMessageIsFileEnum.yes;
+      const res = await useUpload({
         prefix: QINIU_KODO.hssblog.prefix['billd-live/msg-image/'],
         file: fileList[0],
       });
       if (res?.resultUrl) {
-        danmuStr.value = res.resultUrl || '错误图片';
-        sendDanmu();
+        sendDanmuImg(res.resultUrl || '错误图片');
       }
     } catch (error) {
       console.log(error);
     } finally {
-      msgIsFile.value = WsMessageMsgIsFileEnum.no;
+      msgIsFile.value = WsMessageIsFileEnum.no;
       msgLoading.value = false;
       if (uploadRef.value) {
         uploadRef.value.value = '';
@@ -1235,8 +1237,8 @@ async function handleHistoryMsg() {
       orderName: 'created_at',
       orderBy: 'desc',
       live_room_id: Number(roomId.value),
-      is_show: WsMessageMsgIsShowEnum.yes,
-      is_verify: WsMessageMsgIsVerifyEnum.yes,
+      is_show: WsMessageIsShowEnum.yes,
+      is_verify: WsMessageIsVerifyEnum.yes,
     });
     if (res.code === 200) {
       res.data.rows.forEach((v) => {
@@ -1324,7 +1326,7 @@ function initAudio() {
 async function uploadLivePreview() {
   const base64 = generateBase64(pushCanvasRef.value!);
   const file = base64ToFile(base64, `tmp.webp`);
-  const uploadRes = await useQiniuJsUpload({
+  const uploadRes = await useUpload({
     prefix: QINIU_KODO.hssblog.prefix['billd-live/live-preview/'],
     file,
   });

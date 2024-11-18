@@ -29,7 +29,7 @@ export const TENCENTCLOUD_COS = {
 export const QINIU_KODO = {
   hssblog: {
     domain: `resource.${prodDomain}`,
-    url: `http://resource.${prodDomain}/`,
+    url: `https://resource.${prodDomain}`,
     bucket: 'hssblog',
     prefix: {
       'billd-live/image/': 'billd-live/image/',

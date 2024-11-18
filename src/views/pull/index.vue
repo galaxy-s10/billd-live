@@ -194,7 +194,7 @@
             </div>
           </div>
           <div class="name">{{ item.name }}</div>
-          <div class="price">￥{{ formatMoney(item.price) }}</div>
+          <div class="price">￥{{ formatMoney(item.price!) }}</div>
         </div>
         <div
           class="item"
@@ -202,7 +202,7 @@
         >
           <div class="ico wallet"></div>
           <div class="name">
-            余额:{{ formatMoney(userStore.userInfo?.wallet?.balance) }}元
+            余额:{{ formatMoney(userStore.userInfo?.wallet?.balance!) }}元
           </div>
           <div class="price">立即充值</div>
         </div>
@@ -464,7 +464,8 @@ import { emojiArray } from '@/emoji';
 import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { useFullScreen, usePictureInPicture } from '@/hooks/use-play';
 import { usePull } from '@/hooks/use-pull';
-import { useQiniuJsUpload } from '@/hooks/use-upload';
+import { useUpload } from '@/hooks/use-upload';
+import { useWebsocket } from '@/hooks/use-websocket';
 import {
   DanmuMsgTypeEnum,
   GiftRecordStatusEnum,
@@ -474,9 +475,9 @@ import {
   LiveLineEnum,
   LiveRenderEnum,
   WsMessageContentTypeEnum,
-  WsMessageMsgIsFileEnum,
-  WsMessageMsgIsShowEnum,
-  WsMessageMsgIsVerifyEnum,
+  WsMessageIsFileEnum,
+  WsMessageIsShowEnum,
+  WsMessageIsVerifyEnum,
 } from '@/interface';
 import router, { routerName } from '@/router';
 import { QINIU_KODO } from '@/spec-config';
@@ -525,9 +526,6 @@ const {
   closeWs,
   closeRtc,
   keydownDanmu,
-  sendDanmuReward,
-  sendDanmuTxt,
-  sendDanmuImg,
   handlePlay,
   videoWrapRef,
   msgIsFile,
@@ -538,8 +536,10 @@ const {
   damuList,
   liveUserList,
   danmuStr,
-  initRoomId,
 } = usePull();
+
+const { initRoomId, sendDanmuTxt, sendDanmuImg, sendDanmuReward } =
+  useWebsocket();
 
 const rtcRtt = computed(() => {
   const arr: any[] = [];
@@ -581,6 +581,7 @@ const rtcBytesReceived = computed(() => {
 
 onMounted(async () => {
   roomId.value = route.params.roomId as string;
+  initPull({ roomId: roomId.value, autolay: true });
   if (route.query[URL_QUERY.isBilibili] === '1') {
     isBilibili.value = true;
     const res = await fetchLiveRoomBilibili();
@@ -614,11 +615,11 @@ onMounted(async () => {
     height.value = res;
   }
   if (isBilibili.value) {
-    initPull({});
+    initWs({ roomId: roomId.value, isBilibili: true, isAnchor: false });
   } else {
     initWs({
       roomId: roomId.value,
-      isBilibili: true,
+      isBilibili: false,
       isAnchor: false,
     });
     initRtcReceive();
@@ -701,6 +702,7 @@ function handleSendGetLiveUser(liveRoomId: number) {
 
 function handleSendDanmu() {
   sendDanmuTxt(danmuStr.value);
+  danmuStr.value = '';
 }
 
 async function getGiftGroupList() {
@@ -740,8 +742,8 @@ async function handleHistoryMsg() {
       orderName: 'created_at',
       orderBy: 'desc',
       live_room_id: Number(roomId.value),
-      is_show: WsMessageMsgIsShowEnum.yes,
-      is_verify: WsMessageMsgIsVerifyEnum.yes,
+      is_show: WsMessageIsShowEnum.yes,
+      is_verify: WsMessageIsVerifyEnum.yes,
     });
     if (res.code === 200) {
       res.data.rows.forEach((v) => {
@@ -898,8 +900,8 @@ async function uploadChange() {
   if (fileList?.length) {
     try {
       msgLoading.value = true;
-      msgIsFile.value = WsMessageMsgIsFileEnum.yes;
-      const res = await useQiniuJsUpload({
+      msgIsFile.value = WsMessageIsFileEnum.yes;
+      const res = await useUpload({
         prefix: QINIU_KODO.hssblog.prefix['billd-live/msg-image/'],
         file: fileList[0],
       });
@@ -909,7 +911,7 @@ async function uploadChange() {
     } catch (error) {
       console.log(error);
     } finally {
-      msgIsFile.value = WsMessageMsgIsFileEnum.no;
+      msgIsFile.value = WsMessageIsFileEnum.no;
       msgLoading.value = false;
       if (uploadRef.value) {
         uploadRef.value.value = '';

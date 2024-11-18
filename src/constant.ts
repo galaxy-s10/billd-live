@@ -1,4 +1,4 @@
-import { MediaTypeEnum } from '@/interface';
+import { GoodsTypeEnum, MediaTypeEnum } from '@/interface';
 import { prodDomain, QINIU_KODO } from '@/spec-config';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 
@@ -182,6 +182,14 @@ export const lsKeyPrefix = 'billd_live___';
 export const lsKey = {
   lastBuildDate: 'lastBuildDate',
   token: 'token',
+};
+
+export const goodsTypeEnumMap = {
+  [GoodsTypeEnum.recharge]: '充值',
+  [GoodsTypeEnum.gift]: '礼物',
+  [GoodsTypeEnum.sponsors]: '赞助',
+  [GoodsTypeEnum.support]: '服务',
+  [GoodsTypeEnum.qypShop]: '逸鹏的商品',
 };
 
 export const mediaTypeEnumMap = {

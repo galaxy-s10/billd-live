@@ -72,7 +72,6 @@ export class WebSocketClass {
     const sendData: IReqWsFormat<any> = {
       request_id: requestId,
       socket_id: this.socketIo.id || '',
-      user_info: userStore.userInfo || {},
       user_token: userStore.token || '',
       time: +new Date(),
       data: data || {},

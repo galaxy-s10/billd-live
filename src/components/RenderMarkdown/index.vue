@@ -1,5 +1,8 @@
 <template>
-  <div class="mardown-wrap">
+  <div
+    class="mardown-wrap"
+    :style="{ height: height ? height + 'px' : 'auto' }"
+  >
     <MdPreview :modelValue="text" />
   </div>
 </template>
@@ -13,9 +16,11 @@ import 'md-editor-v3/lib/preview.css';
 const props = withDefaults(
   defineProps<{
     md: string;
+    height: number;
   }>(),
   {
     md: '',
+    height: 0,
   }
 );
 const text = ref('');
@@ -35,9 +40,8 @@ watch(
 .mardown-wrap {
   overflow: scroll;
   width: 100%;
-  height: 400px;
 
-  @extend %customScrollbar;
+  @extend %customScrollbarHide;
 
   :deep(.md-editor-preview-wrapper) {
     padding: 0;

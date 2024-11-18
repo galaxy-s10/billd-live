@@ -11,7 +11,7 @@
       {{ handleStrEllipsis(txt, maxLen) }}
     </div>
     <div
-      v-if="show"
+      v-if="show && txt.length > maxLen"
       ref="floatTxtRef"
       class="float-txt"
     >
@@ -72,6 +72,7 @@ function handleMouseleave() {
 <style lang="scss" scoped>
 .float-tip-wrap {
   display: inline-block;
+  line-height: 1;
   .float-txt {
     position: fixed;
     top: 0;

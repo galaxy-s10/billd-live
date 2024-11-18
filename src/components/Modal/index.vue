@@ -18,7 +18,6 @@
       </div>
       <div class="footer">
         <slot name="footer"></slot>
-
         <div
           v-if="!slots.footer"
           class="btn"

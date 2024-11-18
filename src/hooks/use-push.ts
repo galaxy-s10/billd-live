@@ -2,27 +2,21 @@ import { getRandomString, windowReload } from 'billd-utils';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 
 import { fetchCreateUserLiveRoom } from '@/api/userLiveRoom';
-import {
-  DanmuMsgTypeEnum,
-  WsMessageContentTypeEnum,
-  WsMessageMsgIsFileEnum,
-} from '@/interface';
+import { loginTip } from '@/hooks/use-login';
+import { useTip } from '@/hooks/use-tip';
+import { useWebsocket } from '@/hooks/use-websocket';
+import { WsMessageIsFileEnum } from '@/interface';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 import {
   WsConnectStatusEnum,
-  WsMessageType,
   WsMsgTypeEnum,
   WsMsrBlobType,
   WsRoomNoLiveType,
 } from '@/types/websocket';
 import { createVideo, generateBase64 } from '@/utils';
 import { handlConstraints } from '@/utils/network/webRTC';
-
-import { commentAuthTip, loginTip } from './use-login';
-import { useTip } from './use-tip';
-import { useWebsocket } from './use-websocket';
 
 export function usePush() {
   const appStore = useAppStore();
@@ -33,12 +27,13 @@ export function usePush() {
   const danmuStr = ref('');
   const localStream = ref<MediaStream>();
   const videoElArr = ref<HTMLVideoElement[]>([]);
-  const msgIsFile = ref<WsMessageMsgIsFileEnum>(WsMessageMsgIsFileEnum.no);
+  const msgIsFile = ref<WsMessageIsFileEnum>(WsMessageIsFileEnum.no);
 
   const {
     roomLiving,
     initWs,
     handleStartLive,
+    sendDanmuTxt,
     connectStatus,
     mySocketId,
     canvasVideoStream,
@@ -284,44 +279,13 @@ export function usePush() {
     const key = event.key.toLowerCase();
     if (key === 'enter') {
       event.preventDefault();
-      sendDanmu();
+      sendDanmuTxt(danmuStr.value);
     }
-  }
-
-  function sendDanmu() {
-    if (!loginTip()) {
-      return;
-    }
-    if (!commentAuthTip()) {
-      return;
-    }
-    if (!danmuStr.value.length) {
-      window.$message.warning('请输入弹幕内容！');
-      return;
-    }
-    const instance = networkStore.wsMap.get(roomId.value);
-    // if (!instance) {
-    //   window.$message.error('还没开播，不能发送弹幕！');
-    //   return;
-    // }
-    instance?.send<WsMessageType['data']>({
-      requestId: getRandomString(8),
-      msgType: WsMsgTypeEnum.message,
-      data: {
-        content: danmuStr.value,
-        content_type: WsMessageContentTypeEnum.txt,
-        msg_type: DanmuMsgTypeEnum.danmu,
-        live_room_id: Number(roomId.value),
-        isBilibili: false,
-      },
-    });
-    danmuStr.value = '';
   }
 
   return {
     startLive,
     endLive,
-    sendDanmu,
     keydownDanmu,
     sendBlob,
     sendRoomNoLive,

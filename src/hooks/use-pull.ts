@@ -3,7 +3,6 @@ import { nextTick, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { URL_QUERY } from '@/constant';
-import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { useFlvPlay, useHlsPlay } from '@/hooks/use-play';
 import { useWebsocket } from '@/hooks/use-websocket';
 import { useWebRtcRtmpToRtc } from '@/hooks/webrtc/rtmpToRtc';
@@ -11,8 +10,7 @@ import {
   DanmuMsgTypeEnum,
   LiveLineEnum,
   LiveRenderEnum,
-  WsMessageContentTypeEnum,
-  WsMessageMsgIsFileEnum,
+  WsMessageIsFileEnum,
 } from '@/interface';
 import { useAppStore } from '@/store/app';
 import { useCacheStore } from '@/store/cache';
@@ -20,7 +18,6 @@ import { useNetworkStore } from '@/store/network';
 import { ILiveRoom, LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import {
   WsBatchSendOffer,
-  WsMessageType,
   WsMsgTypeEnum,
   WsOfferType,
 } from '@/types/websocket';
@@ -42,7 +39,7 @@ export function usePull() {
   const appStore = useAppStore();
   const danmuStr = ref('');
   const roomId = ref('');
-  const msgIsFile = ref(WsMessageMsgIsFileEnum.no);
+  const msgIsFile = ref(WsMessageIsFileEnum.no);
   const danmuMsgType = ref<DanmuMsgTypeEnum>(DanmuMsgTypeEnum.danmu);
   const liveRoomInfo = ref<ILiveRoom>();
   const autoplayVal = ref(false);
@@ -55,8 +52,15 @@ export function usePull() {
   const videoResolution = ref();
   const remoteVideo = ref<Array<HTMLVideoElement | HTMLCanvasElement>>([]);
   const remoteStream = ref<MediaStream[]>([]);
-  const { mySocketId, initWs, roomLiving, anchorInfo, liveUserList, damuList } =
-    useWebsocket();
+  const {
+    mySocketId,
+    initWs,
+    roomLiving,
+    anchorInfo,
+    liveUserList,
+    damuList,
+    sendDanmuTxt,
+  } = useWebsocket();
   const { updateWebRtcRtmpToRtcConfig, webRtcRtmpToRtc } = useWebRtcRtmpToRtc();
   const { updateWebRtcLiveConfig, webRtcLive } = useWebRtcLive();
   const { updateWebRtcMeetingOneConfig, webRtcMeetingOne } =
@@ -519,20 +523,17 @@ export function usePull() {
     }
   );
 
-  function initRoomId(id: string) {
-    roomId.value = id;
-  }
-
-  function initPull(data: { autolay?: boolean }) {
+  function initPull(data: { autolay?: boolean; roomId: string }) {
+    roomId.value = data.roomId;
     if (data.autolay === undefined) {
       autoplayVal.value = true;
     } else {
       autoplayVal.value = data.autolay;
     }
-    initWs({
-      roomId: roomId.value,
-      isAnchor: false,
-    });
+    // initWs({
+    //   roomId: roomId.value,
+    //   isAnchor: false,
+    // });
   }
 
   function closeWs() {
@@ -555,89 +556,6 @@ export function usePull() {
     }
   }
 
-  function sendDanmuReward(txt: string) {
-    if (!loginTip()) {
-      return;
-    }
-    if (!commentAuthTip()) {
-      return;
-    }
-    if (!txt.trim().length) {
-      window.$message.warning('请输入弹幕内容！');
-      return;
-    }
-    const instance = networkStore.wsMap.get(roomId.value);
-    if (!instance) return;
-    const messageData: WsMessageType['data'] = {
-      content: txt,
-      content_type: WsMessageContentTypeEnum.txt,
-      msg_type: DanmuMsgTypeEnum.reward,
-      live_room_id: Number(roomId.value),
-      isBilibili: false,
-    };
-    instance.send({
-      requestId: getRandomString(8),
-      msgType: WsMsgTypeEnum.message,
-      data: messageData,
-    });
-  }
-
-  function sendDanmuTxt(txt: string) {
-    if (!loginTip()) {
-      return;
-    }
-    if (!commentAuthTip()) {
-      return;
-    }
-    if (!txt.trim().length) {
-      window.$message.warning('请输入弹幕内容！');
-      return;
-    }
-    const instance = networkStore.wsMap.get(roomId.value);
-    if (!instance) return;
-    const messageData: WsMessageType['data'] = {
-      content: txt,
-      content_type: WsMessageContentTypeEnum.txt,
-      msg_type: DanmuMsgTypeEnum.danmu,
-      live_room_id: Number(roomId.value),
-      isBilibili: false,
-    };
-    instance.send({
-      requestId: getRandomString(8),
-      msgType: WsMsgTypeEnum.message,
-      data: messageData,
-    });
-    danmuStr.value = '';
-  }
-
-  function sendDanmuImg(url: string) {
-    if (!loginTip()) {
-      return;
-    }
-    if (!commentAuthTip()) {
-      return;
-    }
-    if (!url.trim().length) {
-      window.$message.warning('图片不能为空！');
-      return;
-    }
-    const instance = networkStore.wsMap.get(roomId.value);
-    if (!instance) return;
-    const requestId = getRandomString(8);
-    const messageData: WsMessageType['data'] = {
-      content: url,
-      content_type: WsMessageContentTypeEnum.img,
-      msg_type: DanmuMsgTypeEnum.danmu,
-      live_room_id: Number(roomId.value),
-      isBilibili: false,
-    };
-    instance.send({
-      requestId,
-      msgType: WsMsgTypeEnum.message,
-      data: messageData,
-    });
-  }
-
   return {
     initWs,
     initRtcReceive,
@@ -648,9 +566,6 @@ export function usePull() {
     closeWs,
     closeRtc,
     keydownDanmu,
-    sendDanmuReward,
-    sendDanmuTxt,
-    sendDanmuImg,
     showPlayBtn,
     danmuMsgType,
     isPlaying,
@@ -666,6 +581,5 @@ export function usePull() {
     danmuStr,
     liveRoomInfo,
     anchorInfo,
-    initRoomId,
   };
 }
