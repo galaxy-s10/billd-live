@@ -285,7 +285,7 @@ export function usePull() {
 
   async function handleWebRtcMeetingOnePlay(data) {
     await handleMeeting();
-    console.log('handleWebRtcLivePlay');
+    console.log('handleWebRtcMeetingOnePlay');
     handleStopDrawing();
     videoLoading.value = true;
     appStore.liveLine = LiveLineEnum.rtc;
@@ -378,6 +378,7 @@ export function usePull() {
 
   function handleHlsPlay() {
     console.log('handleHlsPlay', hlsurl.value);
+    destroyFlv();
     handleStopDrawing();
     videoLoading.value = true;
     appStore.liveLine = LiveLineEnum.hls;
@@ -388,6 +389,7 @@ export function usePull() {
 
   function handleFlvPlay() {
     console.log('handleFlvPlay', flvurl.value);
+    destroyHls();
     handleStopDrawing();
     videoLoading.value = true;
     appStore.liveLine = LiveLineEnum.flv;
@@ -486,8 +488,6 @@ export function usePull() {
     (newVal) => {
       console.log('liveLine变了', newVal);
       handleStopDrawing();
-      destroyFlv();
-      destroyHls();
       remoteStream.value = [];
       if (!roomLiving.value) {
         return;

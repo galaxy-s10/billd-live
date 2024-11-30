@@ -5,9 +5,13 @@
   >
     <div class="cycle-wrap">
       <div
+        v-if="url && url !== ''"
         class="avatar"
-        :class="{ border }"
-        v-lazy:background-image="avatar"
+        v-lazy:background-image="url"
+      ></div>
+      <div
+        class="avatar default"
+        v-else
       ></div>
       <template v-if="living && !disableLiving">
         <div class="cycle cycle-1"></div>
@@ -22,17 +26,17 @@
 <script lang="ts" setup>
 withDefaults(
   defineProps<{
-    avatar?: string;
+    url?: string;
+    name?: string;
     size: number;
     living?: boolean;
-    border?: boolean;
     disableLiving?: boolean;
   }>(),
   {
-    avatar: '',
+    url: '',
+    name: '',
     size: 100,
     living: false,
-    border: false,
     disableLiving: false,
   }
 );
@@ -65,8 +69,11 @@ withDefaults(
       cursor: pointer;
 
       @extend %coverBg;
-      &.border {
+      &.default {
+        background-color: white;
         border: 1px solid $theme-color-gold;
+        background-image: url('@/assets/img/default-avatar.png');
+        background-size: 70% !important;
       }
     }
     .cycle {

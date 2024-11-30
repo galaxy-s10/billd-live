@@ -4,9 +4,9 @@
     <div class="avatar">
       <span class="txt">用户头像：</span>
       <Avatar
-        :avatar="userStore.userInfo?.avatar"
+        :url="userStore.userInfo?.avatar"
+        :name="userStore.userInfo?.username"
         :size="30"
-        :border="!userStore.userInfo?.avatar?.length"
       ></Avatar>
     </div>
     <div>用户昵称：{{ userStore.userInfo?.username }}</div>

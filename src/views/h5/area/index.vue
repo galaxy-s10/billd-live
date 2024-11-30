@@ -153,8 +153,8 @@ function getListData() {
 
   .list {
     display: flex;
-    flex-wrap: wrap;
     align-content: flex-start;
+    flex-wrap: wrap;
     justify-content: space-between;
     .item {
       display: inline-block;
@@ -166,8 +166,9 @@ function getListData() {
         width: 100%;
         height: 100px;
         border-radius: 8px;
-        background-position: center center;
-        background-size: cover;
+
+        @extend %containBg;
+
         .living-ico {
           position: absolute;
           top: 0px;

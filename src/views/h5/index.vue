@@ -263,8 +263,9 @@ onUnmounted(() => {
             width: 100%;
             height: 100px;
             border-radius: 8px;
-            background-position: center center;
-            background-size: cover;
+
+            @extend %containBg;
+
             .living-ico {
               position: absolute;
               top: 0px;

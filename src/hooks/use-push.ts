@@ -30,6 +30,7 @@ export function usePush() {
   const msgIsFile = ref<WsMessageIsFileEnum>(WsMessageIsFileEnum.no);
 
   const {
+    keepRtcLivingTimer,
     roomLiving,
     initWs,
     handleStartLive,
@@ -243,6 +244,7 @@ export function usePush() {
     roomLiving.value = false;
     localStream.value = undefined;
     closeRtc();
+    clearInterval(keepRtcLivingTimer.value);
   }
 
   function sendRoomNoLive() {

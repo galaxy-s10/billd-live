@@ -533,10 +533,9 @@ function startPull() {
     .cover {
       position: absolute;
       z-index: -1;
-      background-position: center center;
-      background-size: cover;
       filter: blur(10px);
 
+      @extend %containBg;
       inset: 0;
     }
     .no-live {

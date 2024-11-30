@@ -560,10 +560,10 @@ function joinRoom(data) {
           top: 10px;
           left: 10px;
           z-index: 2;
-          line-height: 1;
           color: rgba($color: #fff, $alpha: 0.5);
           font-weight: bold;
           font-size: 30px;
+          line-height: 1;
         }
 
         .cover {
@@ -790,8 +790,9 @@ function joinRoom(data) {
             width: 100%;
             height: 150px;
             border-radius: 8px;
-            background-position: center center;
-            background-size: cover;
+
+            @extend %containBg;
+
             .cdn-ico {
               position: absolute;
               top: -10px;

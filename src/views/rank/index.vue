@@ -14,6 +14,7 @@
     <div
       v-if="rankList.length"
       class="rank-list"
+      v-loading="loading"
     >
       <div class="top">
         <div
@@ -33,9 +34,9 @@
           >
             <Avatar
               :size="100"
-              :avatar="item.users[0]?.avatar"
+              :url="item.users[0]?.avatar"
+              :name="item.users[0]?.username"
               :living="!!item.live?.live"
-              :border="!item.users[0]?.avatar?.length"
             ></Avatar>
           </div>
           <div class="username">{{ item.users[0]?.username }}</div>
@@ -83,9 +84,9 @@
           >
             <Avatar
               :size="28"
-              :avatar="item.users[0]?.avatar"
+              :url="item.users[0]?.avatar"
+              :name="item.users[0]?.username"
               :living="!!item.live?.live"
-              :border="!item.users[0]?.avatar?.length"
               disableLiving
             ></Avatar>
             <div class="username">{{ item.users[0]?.username }}</div>
@@ -118,6 +119,12 @@
         </div>
       </div>
     </div>
+    <div
+      class="null"
+      v-if="!rankList.length && !loading"
+    >
+      暂无数据
+    </div>
   </div>
 </template>
 
@@ -130,7 +137,6 @@ import { fetchLiveRoomList } from '@/api/liveRoom';
 import { fetchSigninList } from '@/api/signin';
 import { fetchUserList } from '@/api/user';
 import { fetchWalletList } from '@/api/wallet';
-import { fullLoading } from '@/components/FullLoading';
 import { RankTypeEnum } from '@/interface';
 import router, { routerName } from '@/router';
 import { useUserStore } from '@/store/user';
@@ -175,6 +181,7 @@ const pageParams = reactive({
 
 const currRankType = ref(RankTypeEnum.liveRoom);
 const { t } = useI18n();
+const loading = ref(true);
 const mockRank: {
   users: { id; username; avatar }[];
   rank: number;
@@ -270,7 +277,7 @@ function handleJoin(item) {
 
 async function getWalletList() {
   try {
-    fullLoading({ loading: true });
+    loading.value = true;
     const res = await fetchWalletList({
       ...pageParams,
       orderName: 'balance',
@@ -300,14 +307,13 @@ async function getWalletList() {
     }
   } catch (error) {
     console.log(error);
-  } finally {
-    fullLoading({ loading: false });
   }
+  loading.value = false;
 }
 
 async function getLiveRoomList() {
   try {
-    fullLoading({ loading: true });
+    loading.value = true;
     const res = await fetchLiveRoomList({
       is_show: LiveRoomIsShowEnum.yes,
       orderName: 'updated_at',
@@ -339,14 +345,13 @@ async function getLiveRoomList() {
     }
   } catch (error) {
     console.log(error);
-  } finally {
-    fullLoading({ loading: false });
   }
+  loading.value = false;
 }
 
 async function getUserList() {
   try {
-    fullLoading({ loading: true });
+    loading.value = true;
     const res = await fetchUserList({
       orderName: 'updated_at',
       orderBy: 'desc',
@@ -376,14 +381,13 @@ async function getUserList() {
     }
   } catch (error) {
     console.log(error);
-  } finally {
-    fullLoading({ loading: false });
   }
+  loading.value = false;
 }
 
 async function getSigninList() {
   try {
-    fullLoading({ loading: true });
+    loading.value = true;
     const res = await fetchSigninList({
       ...pageParams,
       orderName: 'sum_nums,max_nums,recently_signin_time',
@@ -413,9 +417,8 @@ async function getSigninList() {
     }
   } catch (error) {
     console.log(error);
-  } finally {
-    fullLoading({ loading: false });
   }
+  loading.value = false;
 }
 
 function changeCurrRankType(type: RankTypeEnum) {
@@ -616,6 +619,10 @@ onMounted(() => {
         }
       }
     }
+  }
+  .null {
+    width: 100%;
+    text-align: center;
   }
 }
 </style>

@@ -6,8 +6,8 @@ import 'webrtc-adapter';
 import { createApp } from 'vue';
 import VueLazyLoad from 'vue-lazyload';
 
-import lazyErrorWebp from '@/assets/img/lazy_error.webp';
-import lazyLoadingWebp from '@/assets/img/lazy_loading.webp';
+import lazyErrorPng from '@/assets/img/lazy_error.png';
+import lazyLoadingPng from '@/assets/img/lazy_loading.png';
 import Message from '@/components/Message/index.vue';
 import registerDirectives from '@/directives';
 import { i18n } from '@/hooks/use-i18n';
@@ -23,8 +23,8 @@ app.use(store);
 app.use(router);
 app.use(VueLazyLoad, {
   preLoad: 1,
-  error: lazyErrorWebp,
-  loading: lazyLoadingWebp,
+  error: lazyErrorPng,
+  loading: lazyLoadingPng,
   attempt: 2,
 });
 

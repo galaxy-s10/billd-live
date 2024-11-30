@@ -31,7 +31,6 @@ import { useUserStore } from '@/store/user';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import { IUser } from '@/types/IUser';
 import {
-  WSLivePkKeyType,
   WsAnswerType,
   WsBatchSendOffer,
   WsCandidateType,
@@ -39,13 +38,13 @@ import {
   WsDisableSpeakingType,
   WsJoinType,
   WsLeavedType,
+  WsLivePkKeyType,
   WsMessageType,
   WsMsgTypeEnum,
   WsOfferType,
   WsOtherJoinType,
   WsRoomLivingType,
   WsStartLiveType,
-  WsUpdateJoinInfoType,
 } from '@/types/websocket';
 import {
   createNullVideo,
@@ -100,31 +99,29 @@ export const useWebsocket = () => {
   const currentVideoContentHint = ref(videoContentHint.value[3].value);
   const currentAudioContentHint = ref(audioContentHint.value[0].value);
   const timerObj = ref({});
+  const keepRtcLivingTimer = ref();
   const damuList = ref<IWsMessage[]>([]);
   const joinedDelay = 5000;
+  const keepRtcLivingDelay = 5000;
+
+  watch(
+    () => roomLiving.value,
+    (newval) => {
+      if (newval) {
+        appStore.playing = true;
+      } else {
+        appStore.playing = false;
+      }
+    },
+    {
+      immediate: true,
+    }
+  );
 
   onUnmounted(() => {
     clearInterval(loopHeartbeatTimer.value);
     clearInterval(loopGetLiveUserTimer.value);
   });
-
-  watch(
-    [() => userStore.userInfo?.id, () => connectStatus.value],
-    ([userInfo, status]) => {
-      if (userInfo && status === WsConnectStatusEnum.connect) {
-        const ws = networkStore.wsMap.get(roomId.value);
-        if (!ws) return;
-        ws.send<WsUpdateJoinInfoType['data']>({
-          requestId: getRandomString(8),
-          msgType: WsMsgTypeEnum.updateJoinInfo,
-          data: {
-            live_room_id: Number(roomId.value),
-          },
-        });
-      }
-    },
-    { immediate: true }
-  );
 
   const mySocketId = computed(() => {
     return networkStore.wsMap.get(roomId.value)?.socketIo?.id || '-1';
@@ -364,6 +361,31 @@ export const useWebsocket = () => {
         sender: mySocketId.value,
         receiver: 'tencentcloud_css',
       });
+    } else if (
+      [
+        LiveRoomTypeEnum.wertc_live,
+        LiveRoomTypeEnum.wertc_meeting_one,
+        LiveRoomTypeEnum.wertc_meeting_two,
+      ].includes(type)
+    ) {
+      const main = () => {
+        networkStore.wsMap.get(roomId.value)?.send<WsJoinType['data']>({
+          requestId: getRandomString(8),
+          msgType: WsMsgTypeEnum.keepRtcLiving,
+          data: {
+            live_room_id: Number(roomId.value),
+            duration: keepRtcLivingDelay / 1000,
+          },
+        });
+      };
+      main();
+      keepRtcLivingTimer.value = setInterval(() => {
+        if (!roomLiving.value) {
+          clearInterval(keepRtcLivingTimer.value);
+          return;
+        }
+        main();
+      }, keepRtcLivingDelay);
     }
   }
 
@@ -404,7 +426,7 @@ export const useWebsocket = () => {
     });
 
     // 收到livePkKey
-    ws.socketIo.on(WsMsgTypeEnum.livePkKey, (data: WSLivePkKeyType['data']) => {
+    ws.socketIo.on(WsMsgTypeEnum.livePkKey, (data: WsLivePkKeyType['data']) => {
       console.log('收到livePkKey', data);
       const url = router.resolve({
         name: routerName.pull,
@@ -547,14 +569,19 @@ export const useWebsocket = () => {
       async (data: WsRoomLivingType['data']) => {
         prettierReceiveWsMsg(WsMsgTypeEnum.roomLiving, data);
         roomLiving.value = true;
+        if (data.live_room_id !== Number(roomId.value)) {
+          return;
+        }
         if (
           route.name === routerName.pull ||
           route.name === routerName.h5Room
         ) {
           // 当前是拉流页面
-          if (data.live_room?.type === LiveRoomTypeEnum.wertc_meeting_one) {
+          if (
+            appStore.liveRoomInfo?.type === LiveRoomTypeEnum.wertc_meeting_one
+          ) {
             await handleMeeting();
-          } else if (data.live_room?.type === LiveRoomTypeEnum.pk) {
+          } else if (appStore.liveRoomInfo?.type === LiveRoomTypeEnum.pk) {
             await handlePk();
           }
         } else if (route.name === routerName.push) {
@@ -942,6 +969,7 @@ export const useWebsocket = () => {
     sendDanmuTxt,
     sendDanmuImg,
     sendDanmuReward,
+    keepRtcLivingTimer,
     isBilibili,
     connectStatus,
     mySocketId,

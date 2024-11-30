@@ -348,10 +348,11 @@
           class="qqlogin"
         >
           <template #btn>
-            <div
-              class="btn"
-              v-lazy:background-image="userStore.userInfo.avatar"
-            ></div>
+            <Avatar
+              :url="userStore.userInfo.avatar"
+              :name="userStore.userInfo.username"
+              :size="35"
+            ></Avatar>
           </template>
           <template #list>
             <div class="list">
@@ -981,20 +982,6 @@ function handleWebsiteJump() {
       .qqlogin {
         margin-right: 20px;
 
-        .btn {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-sizing: border-box;
-          width: 35px;
-          height: 35px;
-          border-radius: 50%;
-          background-color: papayawhip;
-          font-size: 12px;
-          cursor: pointer;
-
-          @extend %containBg;
-        }
         .list {
           padding: 10px 0;
           width: 90px;

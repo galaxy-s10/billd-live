@@ -6,6 +6,7 @@ declare module '*.vue' {
 }
 
 declare module '*.webp';
+declare module '*.png';
 
 interface Window {
   $message: import('naive-ui/es/message/src/MessageProvider').MessageApiInjection;

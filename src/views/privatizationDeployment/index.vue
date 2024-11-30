@@ -216,7 +216,7 @@ const detail = ref({
     ],
   },
   openSource: {
-    slogan: ['billd直播开源至今，累计收获1k+ star', '值得信赖，欢迎部署~'],
+    slogan: ['billd直播开源至今，累计收获1.3k+ star', '值得信赖，欢迎部署~'],
     list: [
       {
         color: 'blue',

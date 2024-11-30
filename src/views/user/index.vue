@@ -7,9 +7,9 @@
     <div class="avatar">
       <span class="txt">用户头像：</span>
       <Avatar
-        :avatar="userInfo?.avatar"
+        :url="userInfo?.avatar"
+        :name="userInfo?.username"
         :size="30"
-        :border="!userInfo?.avatar?.length"
       ></Avatar>
     </div>
     <div>用户昵称：{{ userInfo?.username }}</div>
