@@ -470,7 +470,6 @@ export function usePull() {
           }
         }
       }
-      console.log('kkkkk', val, liveRoomInfo?.type);
       if (!roomLiving.value) {
         closeRtc();
         handleStopDrawing();
@@ -553,6 +552,7 @@ export function usePull() {
     if (key === 'enter') {
       event.preventDefault();
       sendDanmuTxt(danmuStr.value);
+      danmuStr.value = '';
     }
   }
 

@@ -773,19 +773,6 @@ watch(
   }
 );
 
-watch(
-  () => route.query[URL_QUERY.roomId],
-  (newval) => {
-    if (newval) {
-      handleSendGetLiveUser(Number(newval));
-    }
-  },
-  {
-    deep: true,
-    immediate: true,
-  }
-);
-
 function roomNameIsOk() {
   if (!appStore.liveRoomInfo) return;
   if (!appStore.liveRoomInfo.name!.length) {
@@ -968,15 +955,6 @@ function handleMsr(stream: MediaStream) {
 }
 
 watch(
-  () => roomId.value,
-  (newval) => {
-    if (newval) {
-      handleHistoryMsg();
-    }
-  }
-);
-
-watch(
   () => appStore.areaList,
   (newval) => {
     if (newval) {
@@ -997,6 +975,8 @@ watch(
   () => appStore.liveRoomInfo,
   (newval) => {
     if (newval) {
+      handleSendGetLiveUser(appStore.liveRoomInfo?.id!);
+      handleHistoryMsg();
       const area = newval.areas?.[0];
       if (area) {
         currentArea.value = area.id!;
@@ -1049,7 +1029,9 @@ function handleSendGetLiveUser(liveRoomId: number) {
       liveUserList.value = res.data;
     }
   }
-  main();
+  setTimeout(() => {
+    main();
+  }, 500);
   loopGetLiveUserTimer.value = setInterval(() => {
     main();
   }, 1000 * 3);

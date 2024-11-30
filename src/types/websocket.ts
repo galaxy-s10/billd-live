@@ -1,4 +1,4 @@
-import { ILiveUser, IWsMessage } from '@/interface';
+import { IWsMessage } from '@/interface';
 import { ILiveRoom, LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import { IUser } from '@/types/IUser';
 
@@ -26,6 +26,8 @@ export enum WsMsgTypeEnum {
   join = 'join',
   /** 用户进入聊天完成 */
   joined = 'joined',
+  /** 用户进入聊天完成 */
+  keepJoined = 'keepJoined',
   /** 用户进入聊天 */
   otherJoin = 'otherJoin',
   /** 用户退出聊天 */
@@ -114,11 +116,6 @@ export type WsUpdateJoinInfoType = IWsFormat<{
 export type WSLivePkKeyType = IWsFormat<{
   live_room_id: number;
   key: string;
-}>;
-
-/** 获取在线用户 */
-export type WSGetRoomAllUserType = IWsFormat<{
-  liveUser: ILiveUser[];
 }>;
 
 /** 获取在线用户 */
@@ -215,9 +212,8 @@ export type WsStartLiveType = IWsFormat<{
 export type WsJoinType = IWsFormat<{
   live_room_id: number;
   live_room?: ILiveRoom;
-  anchor_info?: IUser;
-  isBilibili?: boolean;
   socket_list?: string[];
+  duration: number;
 }>;
 
 /** 用户离开直播间 */

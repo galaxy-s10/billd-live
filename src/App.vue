@@ -22,7 +22,6 @@ import { GlobalThemeOverrides, NConfigProvider } from 'naive-ui';
 import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
-import { fetchSettingsList } from '@/api/settings';
 import { THEME_COLOR, appBuildInfo } from '@/constant';
 import { useCheckUpdate } from '@/hooks/use-common';
 import { useGoogleAd } from '@/hooks/use-google-ad';
@@ -111,27 +110,6 @@ async function handleGlobalMsgMyList() {
   }
 }
 
-function initSettings() {
-  setTimeout(async () => {
-    if (route.path !== '/') {
-      return;
-    }
-    const res = await fetchSettingsList({});
-    if (res.code === 200) {
-      const allowHomeModal = res.data.rows.find(
-        (v) => v.key === 'allow_home_modal'
-      );
-      const homeModalContent = res.data.rows.find(
-        (v) => v.key === 'home_modal_content'
-      );
-      if (allowHomeModal?.value === '1' && homeModalContent?.value) {
-        showModal.value = true;
-        modalContent.value = homeModalContent.value;
-      }
-    }
-  }, 500);
-}
-
 async function getAreaList() {
   const res = await fetchAreaList({ orderName: 'priority', orderBy: 'desc' });
   if (res.code === 200) {
@@ -141,7 +119,6 @@ async function getAreaList() {
 
 function initGlobalData() {
   getAreaList();
-  initSettings();
 }
 
 function handleUpdate() {

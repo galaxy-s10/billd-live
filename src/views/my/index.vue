@@ -501,7 +501,7 @@ async function handleUpdateKey() {
       userStore.userInfo.live_rooms[0].push_webrtc_url =
         res.data.srsPushRes.push_webrtc_url;
       userStore.userInfo.live_rooms[0].cdn_push_obs_server =
-        res.data.srsPushRes.push_obs_server;
+        res.data.cdnPushRes.push_obs_server;
       userStore.userInfo.live_rooms[0].cdn_push_obs_stream_key =
         res.data.cdnPushRes.push_obs_stream_key;
       userStore.userInfo.live_rooms[0].cdn_push_rtmp_url =

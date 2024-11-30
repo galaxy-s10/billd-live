@@ -481,17 +481,6 @@ export enum FormTypeEnum {
   'datePicker' = 'datePicker',
 }
 
-export interface ILiveConfig {
-  id?: number;
-  key?: string;
-  value?: string;
-  desc?: string;
-  type?: FormTypeEnum;
-  created_at?: string;
-  updated_at?: string;
-  deleted_at?: string;
-}
-
 export enum WalletRecordEnum {
   reward,
   recharge,
@@ -749,14 +738,14 @@ export enum DanmuMsgTypeEnum {
 }
 
 export interface ILiveUser {
-  // id: string;
-  // rooms?: string[];
-  // userInfo?: IUser;
-  created_at: string;
+  created_at: number;
+  client_ip: string;
   value: {
-    socketId: string;
-    joinRoomId: number;
-    userInfo?: IUser;
+    live_room_id: number;
+    live_room_name: string;
+    user_id: number;
+    user_username: string;
+    user_avatar: string;
   };
 }
 

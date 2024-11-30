@@ -31,14 +31,12 @@ import { useUserStore } from '@/store/user';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import { IUser } from '@/types/IUser';
 import {
-  WSGetRoomAllUserType,
   WSLivePkKeyType,
   WsAnswerType,
   WsBatchSendOffer,
   WsCandidateType,
   WsConnectStatusEnum,
   WsDisableSpeakingType,
-  WsHeartbeatType,
   WsJoinType,
   WsLeavedType,
   WsMessageType,
@@ -103,6 +101,7 @@ export const useWebsocket = () => {
   const currentAudioContentHint = ref(audioContentHint.value[0].value);
   const timerObj = ref({});
   const damuList = ref<IWsMessage[]>([]);
+  const joinedDelay = 5000;
 
   onUnmounted(() => {
     clearInterval(loopHeartbeatTimer.value);
@@ -220,19 +219,7 @@ export const useWebsocket = () => {
     });
   }
 
-  function handleHeartbeat() {
-    loopHeartbeatTimer.value = setInterval(() => {
-      const ws = networkStore.wsMap.get(roomId.value);
-      if (!ws) return;
-      ws.send<WsHeartbeatType['data']>({
-        requestId: getRandomString(8),
-        msgType: WsMsgTypeEnum.heartbeat,
-        data: {
-          live_room_id: Number(roomId.value),
-        },
-      });
-    }, 1000 * 5);
-  }
+  function handleHeartbeat() {}
 
   function handleStartLive({
     name,
@@ -387,8 +374,8 @@ export const useWebsocket = () => {
       requestId: getRandomString(8),
       msgType: WsMsgTypeEnum.join,
       data: {
-        isBilibili: isBilibili.value,
         live_room_id: Number(roomId.value),
+        duration: joinedDelay / 1000,
       },
     });
   }
@@ -582,15 +569,6 @@ export const useWebsocket = () => {
       roomLiving.value = false;
     });
 
-    // 当前所有在线用户
-    ws.socketIo.on(
-      WsMsgTypeEnum.liveUser,
-      (data: WSGetRoomAllUserType['data']) => {
-        prettierReceiveWsMsg(WsMsgTypeEnum.liveUser, data);
-        liveUserList.value = data.liveUser;
-      }
-    );
-
     // 收到用户发送消息
     ws.socketIo.on(WsMsgTypeEnum.message, (data: WsMessageType) => {
       prettierReceiveWsMsg(WsMsgTypeEnum.message, data);
@@ -709,6 +687,16 @@ export const useWebsocket = () => {
     // 用户加入房间完成
     ws.socketIo.on(WsMsgTypeEnum.joined, async (data: WsJoinType['data']) => {
       prettierReceiveWsMsg(WsMsgTypeEnum.joined, data);
+      setInterval(() => {
+        networkStore.wsMap.get(roomId.value)?.send<WsJoinType['data']>({
+          requestId: getRandomString(8),
+          msgType: WsMsgTypeEnum.keepJoined,
+          data: {
+            live_room_id: Number(roomId.value),
+            duration: joinedDelay / 1000,
+          },
+        });
+      }, joinedDelay);
       if (route.name === routerName.pull || route.name === routerName.h5Room) {
         // 当前是拉流页面
         if (

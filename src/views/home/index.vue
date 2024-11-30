@@ -54,7 +54,7 @@
           >
             <div class="txt">CDN</div>
           </div>
-          <div class="billd-logo">Billd直播</div>
+          <div class="logo-watermark">Billd直播</div>
           <div
             class="cover"
             :style="{
@@ -291,7 +291,6 @@ import { useRouter } from 'vue-router';
 
 import { fetchLiveBilibiliGetUserRecommend } from '@/api/bilibili';
 import { fetchLiveList } from '@/api/live';
-import { fetchFindLiveConfigByKey } from '@/api/liveConfig';
 import { sliderList, URL_QUERY } from '@/constant';
 import { usePull } from '@/hooks/use-pull';
 import { ILive, LiveLineEnum } from '@/interface';
@@ -361,7 +360,6 @@ onMounted(() => {
   intersectionObserver.observe(loadMoreRef.value!);
   handleSlideList();
   getLiveRoomList();
-  getBg();
   videoWrapRef.value = videoWrapTmpRef.value;
 });
 
@@ -418,23 +416,6 @@ function handleSlideList() {
     res.push([...item]);
   }
   interactionList.value = res;
-}
-
-async function getBg() {
-  try {
-    const res = await fetchFindLiveConfigByKey('frontend_live_home_bg');
-    if (res.code === 200) {
-      const reg = /.+\.mp4$/g;
-      const url = res.data.value as string;
-      if (reg.exec(url)) {
-        configVideo.value = res.data.value;
-      } else {
-        configBg.value = res.data.value;
-      }
-    }
-  } catch (error) {
-    console.log(error);
-  }
 }
 
 function handleRefresh() {
@@ -574,12 +555,13 @@ function joinRoom(data) {
             font-size: 14px;
           }
         }
-        .billd-logo {
+        .logo-watermark {
           position: absolute;
           top: 10px;
           left: 10px;
           z-index: 2;
-          color: rgba($color: #fff, $alpha: 0.4);
+          line-height: 1;
+          color: rgba($color: #fff, $alpha: 0.5);
           font-weight: bold;
           font-size: 30px;
         }

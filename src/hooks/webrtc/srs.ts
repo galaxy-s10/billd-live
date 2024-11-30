@@ -96,7 +96,7 @@ export const useWebRtcSrs = () => {
               SRS_CB_URL_QUERY.publishKey
             }=${myLiveRoom.key!}&${SRS_CB_URL_QUERY.publishType}=${
               isPk.value ? LiveRoomTypeEnum.pk : LiveRoomTypeEnum.srs
-            }`,
+            }&${SRS_CB_URL_QUERY.userId}=${userStore.userInfo?.id!}`,
           });
           if (answerRes.data.code !== 0) {
             console.error('/rtc/v1/publish/拿不到sdp');

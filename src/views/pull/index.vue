@@ -235,28 +235,13 @@
             :key="index"
             class="item"
           >
-            <div
-              class="info"
-              v-if="item.value?.userInfo"
-              @click="jumpProfile(item.value.userInfo.id!)"
-            >
+            <div class="info">
               <div
                 class="avatar"
-                :style="{
-                  backgroundImage: `url(${item.value?.userInfo?.avatar})`,
-                }"
+                v-lazy:background-image="item.value.user_avatar"
               ></div>
               <div class="username">
-                {{ item.value.userInfo.username }}
-              </div>
-            </div>
-            <div
-              class="info"
-              v-else
-            >
-              <div class="avatar"></div>
-              <div class="username">
-                {{ item.value?.socketId }}
+                {{ item.value.user_username }}
               </div>
             </div>
           </div>
@@ -580,6 +565,9 @@ const rtcBytesReceived = computed(() => {
 });
 
 onMounted(async () => {
+  setTimeout(() => {
+    scrollTo(0, 0);
+  }, 100);
   roomId.value = route.params.roomId as string;
   initPull({ roomId: roomId.value, autolay: true });
   if (route.query[URL_QUERY.isBilibili] === '1') {
@@ -602,9 +590,7 @@ onMounted(async () => {
   appStore.videoControls.speed = true;
 
   videoWrapRef.value = remoteVideoRef.value;
-  setTimeout(() => {
-    scrollTo(0, 0);
-  }, 100);
+
   handleHistoryMsg();
   getGoodsList();
   if (topRef.value && bottomRef.value && remoteVideoRef.value) {
@@ -688,13 +674,16 @@ async function handleBilibil() {
 }
 
 function handleSendGetLiveUser(liveRoomId: number) {
+  clearInterval(loopGetLiveUserTimer.value);
   async function main() {
     const res = await fetchLiveRoomOnlineUser({ live_room_id: liveRoomId });
     if (res.code === 200) {
       liveUserList.value = res.data;
     }
   }
-  main();
+  setTimeout(() => {
+    main();
+  }, 500);
   loopGetLiveUserTimer.value = setInterval(() => {
     main();
   }, 1000 * 3);
@@ -1361,7 +1350,7 @@ function handleScrollTop() {
             align-items: center;
             cursor: pointer;
             .avatar {
-              margin-right: 5px;
+              margin-right: 10px;
               width: 25px;
               height: 25px;
               border-radius: 50%;

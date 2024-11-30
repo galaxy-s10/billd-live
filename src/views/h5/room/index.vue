@@ -167,25 +167,13 @@
               :key="index"
               class="item"
             >
-              <div
-                class="info"
-                v-if="item.value?.userInfo"
-              >
+              <div class="info">
                 <div
                   class="avatar"
-                  v-lazy:background-image="item.value.userInfo.avatar"
+                  v-lazy:background-image="item.value.user_avatar"
                 ></div>
                 <div class="username">
-                  {{ item.value.userInfo.username }}
-                </div>
-              </div>
-              <div
-                class="info"
-                v-else
-              >
-                <div class="avatar"></div>
-                <div class="username">
-                  {{ item.value?.socketId }}
+                  {{ item.value.user_username }}
                 </div>
               </div>
             </div>
@@ -300,7 +288,6 @@ import router, { mobileRouterName } from '@/router';
 import { useAppStore } from '@/store/app';
 import { useCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
-import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import { IUser } from '@/types/IUser';
 import { formatTimeHour } from '@/utils';
 
@@ -321,6 +308,7 @@ const roomId = ref(route.params.roomId as string);
 const loopGetLiveUserTimer = ref();
 
 const {
+  initRtcReceive,
   videoWrapRef,
   handlePlay,
   initPull,
@@ -330,7 +318,6 @@ const {
   closeWs,
   liveUserList,
   showPlayBtn,
-  autoplayVal,
   videoLoading,
   damuList,
   danmuStr,
@@ -347,16 +334,16 @@ onUnmounted(() => {
   clearInterval(loopGetLiveUserTimer.value);
 });
 
-onMounted(() => {
+onMounted(async () => {
+  setTimeout(() => {
+    scrollTo(0, 0);
+  }, 100);
   if (!Number(roomId.value)) {
     return;
   }
   initPull({ roomId: roomId.value, autolay: true });
   showPlayBtn.value = true;
   videoWrapRef.value = remoteVideoRef.value;
-  setTimeout(() => {
-    scrollTo(0, 0);
-  }, 100);
   videoWrapHeight.value =
     document.documentElement.clientWidth / appStore.videoRatio;
   nextTick(() => {
@@ -367,9 +354,15 @@ onMounted(() => {
       containerHeight.value = res;
     }
   });
-  getLiveRoomInfo();
+  await handleFindLiveRoomInfo();
   handleSendGetLiveUser(Number(roomId.value));
   handleHistoryMsg();
+  initWs({
+    roomId: roomId.value,
+    isBilibili: false,
+    isAnchor: false,
+  });
+  initRtcReceive();
 });
 
 function handleSendDanmu() {
@@ -419,13 +412,16 @@ async function handleHistoryMsg() {
 }
 
 function handleSendGetLiveUser(liveRoomId: number) {
+  clearInterval(loopGetLiveUserTimer.value);
   async function main() {
     const res = await fetchLiveRoomOnlineUser({ live_room_id: liveRoomId });
     if (res.code === 200) {
       liveUserList.value = res.data;
     }
   }
-  main();
+  setTimeout(() => {
+    main();
+  }, 500);
   loopGetLiveUserTimer.value = setInterval(() => {
     main();
   }, 1000 * 3);
@@ -475,9 +471,8 @@ function handleFullScreen() {
   }
 }
 
-async function getLiveRoomInfo() {
+async function handleFindLiveRoomInfo() {
   try {
-    videoLoading.value = true;
     const res = await fetchFindLiveRoom(Number(roomId.value));
     if (res.code === 200) {
       if (res.data) {
@@ -488,19 +483,10 @@ async function getLiveRoomInfo() {
         } else {
           videoLoading.value = false;
         }
-        if (res.data?.type === LiveRoomTypeEnum.wertc_live) {
-          autoplayVal.value = true;
-          showPlayBtn.value = false;
-        } else {
-          showPlayBtn.value = true;
-        }
-        initWs({ roomId: roomId.value, isAnchor: false });
       }
     }
   } catch (error) {
-    console.error(error);
-  } finally {
-    videoLoading.value = false;
+    console.log(error);
   }
 }
 

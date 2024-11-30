@@ -39,7 +39,7 @@ export const QINIU_KODO = {
   },
   'hss-backup': {
     domain: `backup.${prodDomain}`,
-    url: `http://backup.${prodDomain}/`,
+    url: `http://backup.${prodDomain}`,
     bucket: 'hss-backup',
     prefix: {
       'billd-live/mysql/': 'billd-live/mysql/',

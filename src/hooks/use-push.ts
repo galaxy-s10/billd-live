@@ -280,6 +280,7 @@ export function usePush() {
     if (key === 'enter') {
       event.preventDefault();
       sendDanmuTxt(danmuStr.value);
+      danmuStr.value = '';
     }
   }
 

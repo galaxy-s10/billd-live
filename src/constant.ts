@@ -35,7 +35,10 @@ export const SRS_CB_URL_QUERY = {
   userToken: 'usertoken',
   userId: 'userid',
   randomId: 'randomid',
+  roomId: 'roomid',
+  isdev: 'isdev',
 };
+
 export const URL_QUERY = {
   goodsType: 'goodsType',
   pkKey: 'pkKey',
