@@ -29,7 +29,6 @@ import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
-import { IUser } from '@/types/IUser';
 import {
   WsAnswerType,
   WsBatchSendOffer,
@@ -89,7 +88,6 @@ export const useWebsocket = () => {
   const roomLiving = ref(false);
   const isAnchor = ref(false);
   const isBilibili = ref(false);
-  const anchorInfo = ref<IUser>();
   const canvasVideoStream = ref<MediaStream>();
   const userStream = ref<MediaStream>();
   const lastCoverImg = ref('');
@@ -976,7 +974,6 @@ export const useWebsocket = () => {
     canvasVideoStream,
     lastCoverImg,
     roomLiving,
-    anchorInfo,
     liveUserList,
     damuList,
     currentMaxFramerate,

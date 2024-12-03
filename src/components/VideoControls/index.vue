@@ -84,7 +84,7 @@
               <div
                 class="iten"
                 :class="{ active: appStore.liveLine === item }"
-                v-for="item in LiveLineEnum"
+                v-for="item in lineList"
                 :key="item"
                 @click="changeLiveLine(item)"
               >
@@ -196,20 +196,24 @@ import {
   VolumeMuteOutline,
 } from '@vicons/ionicons5';
 import { debounce, isSafari } from 'billd-utils';
-import { onMounted, onUnmounted } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 
 import { handleTip } from '@/hooks/use-common';
 import { LiveLineEnum, LiveRenderEnum } from '@/interface';
 import { AppRootState, useAppStore } from '@/store/app';
 import { useCacheStore } from '@/store/cache';
-import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
+import { ILiveRoom, LiveRoomTypeEnum } from '@/types/ILiveRoom';
 
 const props = withDefaults(
   defineProps<{
+    liveLineList?: string[];
+    liveRoom: ILiveRoom;
     resolution?: string;
     control?: AppRootState['videoControls'];
   }>(),
-  {}
+  {
+    liveRoom: undefined,
+  }
 );
 
 const emits = defineEmits([
@@ -222,12 +226,21 @@ const emits = defineEmits([
 const cacheStore = useCacheStore();
 const appStore = useAppStore();
 
+const lineList = ref<any[]>([]);
+
 const debounceRefresh = debounce(() => {
   emits('refresh');
 }, 500);
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown);
+  if (props.liveLineList) {
+    lineList.value = props.liveLineList;
+  } else {
+    Object.keys(LiveLineEnum).forEach((v) => {
+      lineList.value.push(v);
+    });
+  }
 });
 
 onUnmounted(() => {
@@ -265,8 +278,7 @@ function handlePageFull() {
 }
 
 function changeLiveLine(item: LiveLineEnum) {
-  const type = appStore.liveRoomInfo?.type;
-  if (type === undefined) return;
+  const type = props.liveRoom.type!;
   if (item === LiveLineEnum['rtmp-rtc']) {
     if (
       [

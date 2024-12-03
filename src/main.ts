@@ -8,7 +8,6 @@ import VueLazyLoad from 'vue-lazyload';
 
 import lazyErrorPng from '@/assets/img/lazy_error.png';
 import lazyLoadingPng from '@/assets/img/lazy_loading.png';
-import Message from '@/components/Message/index.vue';
 import registerDirectives from '@/directives';
 import { i18n } from '@/hooks/use-i18n';
 import router from '@/router';
@@ -28,9 +27,4 @@ app.use(VueLazyLoad, {
   attempt: 2,
 });
 
-const message = createApp(Message);
-const messageEle = document.createElement('div');
-const appEl = document.getElementById('app');
-appEl?.appendChild(messageEle);
-message.mount(messageEle);
 app.mount('#app');

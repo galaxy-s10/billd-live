@@ -53,7 +53,7 @@
     "md-editor-v3": "^4.21.3",
     "mp4box": "^0.5.2",
     "mpegts.js": "^1.7.3",
-    "naive-ui": "^2.34.4",
+    "naive-ui": "^2.40.2",
     "pinia": "^2.0.33",
     "pinia-plugin-persistedstate": "^3.2.0",
     "qiniu-js": "^3.4.2",

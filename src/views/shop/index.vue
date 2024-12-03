@@ -141,7 +141,6 @@ function handleStatus() {
 }
 
 function handleBuy(item: IGoods) {
-  console.log('i', item);
   if (item.price! <= 0) {
     window.$message.info('该商品是免费的，不需要购买！');
     return;

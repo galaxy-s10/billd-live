@@ -142,7 +142,7 @@
           >
             <img
               class="logo"
-              src="@/assets/img/qq_logo.webp"
+              src="@/assets/img/qq_logo.png"
             />
           </div>
           <div
@@ -151,7 +151,7 @@
           >
             <img
               class="logo"
-              src="@/assets/img/github_logo.webp"
+              src="@/assets/img/github_logo.png"
             />
           </div>
         </div>

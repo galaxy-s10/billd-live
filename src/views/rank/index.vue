@@ -137,10 +137,10 @@ import { fetchLiveRoomList } from '@/api/liveRoom';
 import { fetchSigninList } from '@/api/signin';
 import { fetchUserList } from '@/api/user';
 import { fetchWalletList } from '@/api/wallet';
-import { RankTypeEnum } from '@/interface';
+import { RankTypeEnum, SwitchEnum } from '@/interface';
 import router, { routerName } from '@/router';
 import { useUserStore } from '@/store/user';
-import { ILiveRoom, LiveRoomIsShowEnum } from '@/types/ILiveRoom';
+import { ILiveRoom } from '@/types/ILiveRoom';
 import { formatMoney } from '@/utils';
 
 const userStore = useUserStore();
@@ -315,7 +315,7 @@ async function getLiveRoomList() {
   try {
     loading.value = true;
     const res = await fetchLiveRoomList({
-      is_show: LiveRoomIsShowEnum.yes,
+      is_show: SwitchEnum.yes,
       orderName: 'updated_at',
       orderBy: 'desc',
       ...pageParams,

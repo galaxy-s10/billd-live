@@ -2926,10 +2926,10 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
               opacity: 0;
             }
             &.face {
-              @include setBackground('@/assets/img/msg-face.webp');
+              @include setBackground('@/assets/img/msg-face.png');
             }
             &.img {
-              @include setBackground('@/assets/img/msg-img.webp');
+              @include setBackground('@/assets/img/msg-img.png');
             }
           }
         }

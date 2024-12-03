@@ -4,12 +4,16 @@ import { useRoute } from 'vue-router';
 
 import { URL_QUERY } from '@/constant';
 import { useFlvPlay, useHlsPlay } from '@/hooks/use-play';
+import { useTip } from '@/hooks/use-tip';
 import { useWebsocket } from '@/hooks/use-websocket';
+import { useWebRtcLive } from '@/hooks/webrtc/live';
+import { useWebRtcMeetingOne } from '@/hooks/webrtc/meetingOne';
 import { useWebRtcRtmpToRtc } from '@/hooks/webrtc/rtmpToRtc';
 import {
   DanmuMsgTypeEnum,
   LiveLineEnum,
   LiveRenderEnum,
+  SwitchEnum,
   WsMessageIsFileEnum,
 } from '@/interface';
 import { useAppStore } from '@/store/app';
@@ -27,10 +31,6 @@ import {
   videoFullBox,
   videoToCanvas,
 } from '@/utils';
-
-import { useTip } from './use-tip';
-import { useWebRtcLive } from './webrtc/live';
-import { useWebRtcMeetingOne } from './webrtc/meetingOne';
 
 export function usePull() {
   const route = useRoute();
@@ -56,7 +56,6 @@ export function usePull() {
     mySocketId,
     initWs,
     roomLiving,
-    anchorInfo,
     liveUserList,
     damuList,
     sendDanmuTxt,
@@ -400,18 +399,10 @@ export function usePull() {
 
   function handlePlay(data: ILiveRoom) {
     roomLiving.value = true;
-    flvurl.value = [
-      LiveRoomTypeEnum.tencent_css,
-      LiveRoomTypeEnum.tencent_css_pk,
-    ].includes(data.type!)
-      ? data.cdn_flv_url!
-      : data.flv_url!;
-    hlsurl.value = [
-      LiveRoomTypeEnum.tencent_css,
-      LiveRoomTypeEnum.tencent_css_pk,
-    ].includes(data.type!)
-      ? data.cdn_hls_url!
-      : data.hls_url!;
+    flvurl.value =
+      data.cdn === SwitchEnum.yes ? data.pull_cdn_flv_url! : data.pull_flv_url!;
+    hlsurl.value =
+      data.cdn === SwitchEnum.yes ? data.pull_cdn_hls_url! : data.pull_hls_url!;
     function play() {
       if (appStore.liveLine === LiveLineEnum.flv) {
         handleFlvPlay();
@@ -580,6 +571,5 @@ export function usePull() {
     liveUserList,
     danmuStr,
     liveRoomInfo,
-    anchorInfo,
   };
 }

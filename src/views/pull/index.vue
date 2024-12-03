@@ -1,7 +1,7 @@
 <template>
   <div
     class="pull-wrap"
-    v-if="!appStore.liveRoomInfo"
+    v-if="!liveRoomInfo"
   >
     暂无该直播间
   </div>
@@ -32,18 +32,17 @@
         class="head"
       >
         <div class="info">
-          <div
-            class="avatar"
-            :style="{
-              backgroundImage: `url(${anchorInfo?.avatar})`,
-            }"
+          <Avatar
+            :url="anchorInfo?.avatar"
+            :name="anchorInfo?.username"
+            :size="55"
             @click="
               router.push({
                 name: routerName.my,
                 params: { userId: anchorInfo?.id },
               })
             "
-          ></div>
+          ></Avatar>
           <div class="detail">
             <div class="top">
               <div class="name">{{ anchorInfo?.username }}</div>
@@ -52,9 +51,7 @@
                 <div class="f-right">666</div>
               </div>
               <span v-if="NODE_ENV === 'development'">
-                {{ liveRoomTypeEnumMap[appStore.liveRoomInfo?.type!] }}：{{
-                  mySocketId
-                }}
+                {{ liveRoomTypeEnumMap[liveRoomInfo?.type!] }}：{{ mySocketId }}
               </span>
               <div
                 class="rtc-info"
@@ -63,7 +60,7 @@
                     LiveRoomTypeEnum.wertc_live,
                     LiveRoomTypeEnum.wertc_meeting_one,
                     LiveRoomTypeEnum.wertc_meeting_two,
-                  ].includes(appStore.liveRoomInfo?.type!)
+                  ].includes(liveRoomInfo?.type!)
                 "
               >
                 <div class="item">延迟：{{ rtcRtt || '-' }}</div>
@@ -76,10 +73,10 @@
             <div class="bottom">
               <div
                 class="desc"
-                v-if="appStore.liveRoomInfo?.desc?.length"
+                v-if="liveRoomInfo?.desc?.length"
               >
                 <FloatTip
-                  :txt="appStore.liveRoomInfo?.desc"
+                  :txt="liveRoomInfo?.desc"
                   :max-len="20"
                 ></FloatTip>
               </div>
@@ -88,11 +85,11 @@
                 @click="
                   router.push({
                     name: routerName.area,
-                    query: { id: appStore.liveRoomInfo?.areas?.[0]?.id },
+                    query: { id: liveRoomInfo?.areas?.[0]?.id },
                   })
                 "
               >
-                {{ appStore.liveRoomInfo?.areas?.[0]?.name }}
+                {{ liveRoomInfo?.areas?.[0]?.name }}
               </span>
             </div>
           </div>
@@ -148,7 +145,7 @@
           class="cover"
           :style="{
             backgroundImage: `url(${
-              appStore.liveRoomInfo?.cover_img || anchorInfo?.avatar
+              liveRoomInfo?.cover_img || anchorInfo?.avatar
             })`,
           }"
         ></div>
@@ -164,6 +161,7 @@
             @full-screen="handleFullScreen"
             @picture-in-picture="hanldePictureInPicture"
             :control="appStore.videoControls"
+            :liveRoom="liveRoomInfo"
           ></VideoControls>
         </div>
       </div>
@@ -236,10 +234,11 @@
             class="item"
           >
             <div class="info">
-              <div
-                class="avatar"
-                v-lazy:background-image="item.value.user_avatar"
-              ></div>
+              <Avatar
+                :url="item.value.user_avatar"
+                :name="item.value.user_username"
+                :size="25"
+              ></Avatar>
               <div class="username">
                 {{ item.value.user_username }}
               </div>
@@ -264,52 +263,38 @@
             </div>
           </template>
           <template v-if="item.msg_type === DanmuMsgTypeEnum.danmu">
-            <span class="time"
-              >[{{ formatTimeHour(item.send_msg_time!) }}]</span
-            >
             <span class="name">
               <Dropdown
                 trigger="hover"
                 positon="left"
               >
                 <template #btn>
-                  <span>{{ item.username }}</span>
+                  <span class="time">
+                    [{{ formatTimeHour(item.send_msg_time!) }}]
+                  </span>
+                  <span class="username">{{ item.username }}</span>
+                  <span class="role">
+                    [{{ item.user?.roles?.map((v) => v.role_name).join() }}]
+                  </span>
                 </template>
                 <template #list>
                   <div class="list">
                     <div class="item">{{ item.username }}</div>
                     <div
                       class="item operator"
-                      @click="
-                        handleDisableSpeakingUser({
-                          userId: item.user?.id,
-                        })
-                      "
+                      @click="handleDisableSpeakingUser()"
                     >
-                      禁言该用户
+                      禁言
                     </div>
                     <div
                       class="item operator"
-                      @click="
-                        handleRestoreSpeakingUser({
-                          userId: item.user?.id,
-                        })
-                      "
+                      @click="handleCancelDisableSpeakingUser()"
                     >
-                      解除禁言该用户
-                    </div>
-                    <div
-                      class="item operator"
-                      @click="handleKickUser"
-                    >
-                      踢掉该用户
+                      解除禁言
                     </div>
                   </div>
                 </template>
               </Dropdown>
-              <span>
-                [{{ item.user?.roles?.map((v) => v.role_name).join() }}]
-              </span>
             </span>
             <span>：</span>
             <span
@@ -345,13 +330,11 @@
       >
         <div
           class="disableSpeaking"
-          v-if="appStore.disableSpeaking.get(appStore.liveRoomInfo?.id!)"
+          v-if="appStore.disableSpeaking.get(liveRoomInfo?.id!)"
         >
           <div class="bg"></div>
           <span class="txt">
-            你被禁言了（{{
-              appStore.disableSpeaking.get(appStore.liveRoomInfo?.id!)
-            }}）
+            你被禁言了（{{ appStore.disableSpeaking.get(liveRoomInfo?.id!) }}）
           </span>
         </div>
         <div class="control">
@@ -426,7 +409,6 @@
 </template>
 
 <script lang="ts" setup>
-import { getRandomString, openToTarget } from 'billd-utils';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
@@ -469,9 +451,8 @@ import { QINIU_KODO } from '@/spec-config';
 import { useAppStore } from '@/store/app';
 import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
-import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
+import { ILiveRoom, LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import { IUser } from '@/types/IUser';
-import { WsDisableSpeakingType, WsMsgTypeEnum } from '@/types/websocket';
 import { formatMoney, formatTimeHour } from '@/utils';
 import { NODE_ENV } from 'script/constant';
 
@@ -484,6 +465,7 @@ const networkStore = useNetworkStore();
 const { t } = useI18n();
 
 const roomId = ref('');
+const liveRoomInfo = ref<ILiveRoom>();
 const anchorInfo = ref<IUser>();
 const configBg = ref();
 const configVideo = ref();
@@ -577,7 +559,8 @@ onMounted(async () => {
   }
   initRoomId(roomId.value);
   await handleFindLiveRoomInfo();
-  if (!appStore.liveRoomInfo) return;
+  if (!liveRoomInfo.value) return;
+  handleRefresh();
   appStore.videoControls.fps = true;
   appStore.videoControls.fullMode = true;
   appStore.videoControls.kbs = true;
@@ -626,12 +609,12 @@ async function handleFindLiveRoomInfo() {
     const res = await fetchFindLiveRoom(Number(roomId.value));
     if (res.code === 200) {
       if (res.data) {
-        appStore.liveRoomInfo = res.data;
-        anchorInfo.value = res.data.user_live_room?.user;
+        liveRoomInfo.value = res.data;
+        anchorInfo.value = res.data?.users?.[0];
         if (res.data.live) {
           roomLiving.value = true;
         } else {
-          videoLoading.value = false;
+          roomLiving.value = false;
         }
         if (isBilibili.value) {
           handleBilibil();
@@ -663,10 +646,10 @@ async function handleBilibil() {
     avatar: roomInfo?.data?.data?.user_cover,
     username: roomInfo?.data?.data?.title,
   };
-  appStore.liveRoomInfo = {
+  liveRoomInfo.value = {
     type: LiveRoomTypeEnum.system,
-    flv_url: flv?.data?.data?.durl?.[0].url,
-    hls_url: hls?.data?.data?.durl?.[0].url,
+    pull_flv_url: flv?.data?.data?.durl?.[0].url,
+    pull_hls_url: hls?.data?.data?.durl?.[0].url,
     areas: [{ name: roomInfo?.data?.data?.area_name }],
     desc: roomInfo?.data?.data?.description,
   };
@@ -727,7 +710,7 @@ async function handleHistoryMsg() {
   try {
     const res = await fetchGetWsMessageList({
       nowPage: 1,
-      pageSize: appStore.liveRoomInfo?.history_msg_total || 10,
+      pageSize: liveRoomInfo.value?.history_msg_total || 10,
       orderName: 'created_at',
       orderBy: 'desc',
       live_room_id: Number(roomId.value),
@@ -739,14 +722,14 @@ async function handleHistoryMsg() {
         damuList.value.unshift(v);
       });
       if (
-        appStore.liveRoomInfo?.system_msg &&
-        appStore.liveRoomInfo?.system_msg !== ''
+        liveRoomInfo.value?.system_msg &&
+        liveRoomInfo.value?.system_msg !== ''
       ) {
         damuList.value.push({
           send_msg_time: +new Date(),
           live_room_id: Number(roomId.value),
           id: -1,
-          content: appStore.liveRoomInfo.system_msg,
+          content: liveRoomInfo.value.system_msg,
           content_type: WsMessageContentTypeEnum.txt,
           msg_type: DanmuMsgTypeEnum.system,
         });
@@ -767,7 +750,7 @@ watch(
 );
 
 watch(
-  () => appStore.liveRoomInfo,
+  () => liveRoomInfo.value,
   (newval) => {
     if (newval) {
       getBg();
@@ -784,68 +767,18 @@ watch(
  * 主播开播了，可以禁言所有看自己直播的用户
  * 使用redis存储记录，key是主播直播间id，value是禁言用户id
  */
-function handleDisableSpeakingUser({
-  socketId,
-  userId,
-}: {
-  socketId?;
-  userId;
-}) {
+function handleDisableSpeakingUser() {
   console.log('handleDisableSpeakingUser');
-  const instance = networkStore.wsMap.get(roomId.value);
-  if (instance) {
-    instance.send<WsDisableSpeakingType['data']>({
-      requestId: getRandomString(8),
-      msgType: WsMsgTypeEnum.disableSpeaking,
-      data: {
-        socket_id: socketId,
-        user_id: userId,
-        live_room_id: Number(roomId.value),
-        duration: 60 * 5,
-      },
-    });
-  }
 }
 
-function handleRestoreSpeakingUser({
-  socketId,
-  userId,
-}: {
-  socketId?;
-  userId;
-}) {
-  console.log('handleRestoreSpeakingUser');
-  const instance = networkStore.wsMap.get(roomId.value);
-  if (instance) {
-    instance.send<WsDisableSpeakingType['data']>({
-      requestId: getRandomString(8),
-      msgType: WsMsgTypeEnum.disableSpeaking,
-      data: {
-        socket_id: socketId,
-        user_id: userId,
-        live_room_id: Number(roomId.value),
-        restore: true,
-      },
-    });
-  }
-}
-
-function jumpProfile(userId: number) {
-  const url = router.resolve({
-    name: routerName.my,
-    params: { userId },
-  });
-  openToTarget(url.href);
-}
-
-function handleKickUser() {
-  console.log('handleKickUser');
+function handleCancelDisableSpeakingUser() {
+  console.log('handleCancelDisableSpeakingUser');
 }
 
 function getBg() {
   try {
     const reg = /.+\.mp4$/g;
-    const url = appStore.liveRoomInfo?.bg_img;
+    const url = liveRoomInfo.value?.bg_img;
     if (url) {
       if (reg.exec(url)) {
         configVideo.value = url;
@@ -865,12 +798,6 @@ function handlePushStr(str) {
 }
 
 function handleEmoji() {
-  if (!loginTip()) {
-    return;
-  }
-  if (!commentAuthTip()) {
-    return;
-  }
   showEmoji.value = !showEmoji.value;
 }
 
@@ -950,8 +877,8 @@ async function hanldePictureInPicture() {
 }
 
 function handleRefresh() {
-  if (appStore.liveRoomInfo) {
-    handlePlay(appStore.liveRoomInfo);
+  if (liveRoomInfo.value) {
+    handlePlay(liveRoomInfo.value);
   }
 }
 
@@ -1083,19 +1010,12 @@ function handleScrollTop() {
         align-items: center;
         text-align: initial;
 
-        .avatar {
-          margin-right: 20px;
-          width: 50px;
-          height: 50px;
-          border-radius: 50%;
-          cursor: pointer;
-
-          @extend %containBg;
-        }
         .detail {
+          margin-left: 15px;
+
           .top {
             display: flex;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
 
             .follow {
               display: flex;
@@ -1343,21 +1263,15 @@ function handleScrollTop() {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-bottom: 10px;
+          margin-bottom: 5px;
           font-size: 12px;
           .info {
             display: flex;
             align-items: center;
             cursor: pointer;
-            .avatar {
-              margin-right: 10px;
-              width: 25px;
-              height: 25px;
-              border-radius: 50%;
 
-              @extend %containBg;
-            }
             .username {
+              margin-left: 10px;
               color: black;
             }
           }
@@ -1485,10 +1399,10 @@ function handleScrollTop() {
             opacity: 0;
           }
           &.face {
-            @include setBackground('@/assets/img/msg-face.webp');
+            @include setBackground('@/assets/img/msg-face.png');
           }
           &.img {
-            @include setBackground('@/assets/img/msg-img.webp');
+            @include setBackground('@/assets/img/msg-img.png');
           }
         }
       }

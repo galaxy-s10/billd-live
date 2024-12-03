@@ -1,12 +1,14 @@
 <template>
   <n-config-provider :theme-overrides="themeOverrides">
-    <n-dialog-provider>
-      <router-view></router-view>
-      <HomeModal
-        :show="showModal"
-        :content="modalContent"
-      ></HomeModal>
-    </n-dialog-provider>
+    <n-message-provider :max="3">
+      <n-modal-provider>
+        <n-dialog-provider>
+          <router-view></router-view>
+          <NaiveModal />
+          <NaiveMessage />
+        </n-dialog-provider>
+      </n-modal-provider>
+    </n-message-provider>
   </n-config-provider>
 </template>
 
@@ -19,32 +21,27 @@ export default {
 <script lang="ts" setup>
 import { isMobile } from 'billd-utils';
 import { GlobalThemeOverrides, NConfigProvider } from 'naive-ui';
-import { onMounted, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { onMounted } from 'vue';
 
+import { fetchAreaList } from '@/api/area';
+import { fetchGlobalMsgMyList } from '@/api/globalMsg';
+import NaiveMessage from '@/components/NaiveMessage/index.vue';
+import NaiveModal from '@/components/NaiveModal/index.vue';
 import { THEME_COLOR, appBuildInfo } from '@/constant';
 import { useCheckUpdate } from '@/hooks/use-common';
 import { useGoogleAd } from '@/hooks/use-google-ad';
 import { loginMessage } from '@/hooks/use-login';
+import { useAppStore } from '@/store/app';
 import { useCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
 import { getHostnameUrl } from '@/utils';
 import { getLastBuildDate, setLastBuildDate } from '@/utils/localStorage/app';
 import { getToken } from '@/utils/localStorage/user';
 
-import { fetchAreaList } from './api/area';
-import { fetchGlobalMsgMyList } from './api/globalMsg';
-import { useTip } from './hooks/use-tip';
-import { useAppStore } from './store/app';
-
 const { checkUpdate } = useCheckUpdate();
 const appStore = useAppStore();
 const cacheStore = useCacheStore();
 const userStore = useUserStore();
-const route = useRoute();
-
-const showModal = ref(false);
-const modalContent = ref('2');
 
 const themeOverrides: GlobalThemeOverrides = {
   common: {
@@ -53,19 +50,8 @@ const themeOverrides: GlobalThemeOverrides = {
   },
 };
 
-watch(
-  () => userStore.userInfo,
-  (newval) => {
-    if (newval) {
-      handleGlobalMsgMyList();
-    }
-  },
-  {
-    immediate: true,
-  }
-);
-
 onMounted(() => {
+  handleGlobalMsgMyList();
   useGoogleAd();
   initGlobalData();
   checkUpdate({
@@ -97,16 +83,18 @@ onMounted(() => {
 });
 
 async function handleGlobalMsgMyList() {
-  const res = await fetchGlobalMsgMyList({});
+  const res = await fetchGlobalMsgMyList({
+    orderName: 'priority',
+    orderBy: 'desc',
+  });
   if (res.code === 200) {
-    const data = res.data.rows[0];
-    if (data) {
-      useTip({
-        content: data.content!,
-        hiddenCancel: true,
-        hiddenClose: true,
+    res.data.rows.forEach((item) => {
+      window.$modal.create({
+        title: '提示',
+        preset: 'dialog',
+        content: item.content || '',
       });
-    }
+    });
   }
 }
 

@@ -27,11 +27,6 @@
           class="cover"
           v-lazy:background-image="item?.cover_img || item?.users?.[0]?.avatar"
         >
-          <PullAuthTip
-            v-if="
-              item?.pull_is_should_auth === LiveRoomPullIsShouldAuthEnum.yes
-            "
-          ></PullAuthTip>
           <div
             v-if="item?.live"
             class="living-ico"
@@ -40,7 +35,7 @@
           </div>
           <div
             v-if="
-              item?.cdn === LiveRoomUseCDNEnum.yes ||
+              item?.cdn === SwitchEnum.yes ||
               [
                 LiveRoomTypeEnum.tencent_css,
                 LiveRoomTypeEnum.tencent_css_pk,
@@ -65,14 +60,9 @@ import { useRoute } from 'vue-router';
 
 import { fetchLiveRoomList } from '@/api/area';
 import LongList from '@/components/LongList/index.vue';
+import { SwitchEnum } from '@/interface';
 import router, { routerName } from '@/router';
-import {
-  ILiveRoom,
-  LiveRoomIsShowEnum,
-  LiveRoomPullIsShouldAuthEnum,
-  LiveRoomTypeEnum,
-  LiveRoomUseCDNEnum,
-} from '@/types/ILiveRoom';
+import { ILiveRoom, LiveRoomTypeEnum } from '@/types/ILiveRoom';
 
 const liveRoomList = ref<ILiveRoom[]>([]);
 const route = useRoute();
@@ -145,7 +135,7 @@ async function getData() {
     pageParams.nowPage += 1;
     const res = await fetchLiveRoomList({
       id: Number(route.params.id),
-      live_room_is_show: LiveRoomIsShowEnum.yes,
+      live_room_is_show: SwitchEnum.yes,
       nowPage: pageParams.nowPage,
       pageSize: pageParams.pageSize,
     });

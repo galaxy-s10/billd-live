@@ -129,7 +129,7 @@ export async function useUploadServer({
       let flag = false;
       timer.value = setInterval(async () => {
         try {
-          const { code, data, message } = await fetchUploadProgress({
+          const { code, data, msg } = await fetchUploadProgress({
             hash,
             prefix,
             ext,
@@ -145,7 +145,7 @@ export async function useUploadServer({
             }
           } else {
             clearInterval(timer.value);
-            console.error(code, data, message);
+            console.error(code, data, msg);
           }
         } catch (error) {
           console.error(error);

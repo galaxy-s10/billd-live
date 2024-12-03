@@ -138,14 +138,14 @@
               <div>
                 <span>
                   RTMP推流地址（CDN）：{{
-                    userStore.userInfo?.live_rooms?.[0]?.cdn_push_rtmp_url!
+                    userStore.userInfo?.live_rooms?.[0]?.push_cdn_rtmp_url!
                   }}，
                 </span>
                 <span
                   class="link"
                   @click="
                     handleCopy(
-                      userStore.userInfo?.live_rooms?.[0]?.cdn_push_rtmp_url!
+                      userStore.userInfo?.live_rooms?.[0]?.push_cdn_rtmp_url!
                     )
                   "
                 >
@@ -155,14 +155,14 @@
               <div>
                 <span>
                   OBS服务器（CDN）：{{
-                    userStore.userInfo?.live_rooms?.[0]?.cdn_push_obs_server!
+                    userStore.userInfo?.live_rooms?.[0]?.push_cdn_obs_server!
                   }}，
                 </span>
                 <span
                   class="link"
                   @click="
                     handleCopy(
-                      userStore.userInfo?.live_rooms?.[0]?.cdn_push_obs_server!
+                      userStore.userInfo?.live_rooms?.[0]?.push_cdn_obs_server!
                     )
                   "
                 >
@@ -173,7 +173,7 @@
                 <span>
                   OBS推流码（CDN）：{{
                     userStore.userInfo?.live_rooms?.[0]
-                      ?.cdn_push_obs_stream_key!
+                      ?.push_cdn_obs_stream_key!
                   }}，
                 </span>
                 <span
@@ -181,7 +181,7 @@
                   @click="
                     handleCopy(
                       userStore.userInfo?.live_rooms?.[0]
-                        ?.cdn_push_obs_stream_key!
+                        ?.push_cdn_obs_stream_key!
                     )
                   "
                 >
@@ -491,25 +491,25 @@ async function handleUpdateKey() {
     const res = await fetchUpdateLiveRoomKey();
     if (res.code === 200 && userStore.userInfo?.live_rooms?.[0]) {
       userStore.userInfo.live_rooms[0].push_obs_server =
-        res.data.srsPushRes.push_obs_server;
+        res.data.srsPushRes.obs_server;
       userStore.userInfo.live_rooms[0].push_obs_stream_key =
-        res.data.srsPushRes.push_obs_stream_key;
+        res.data.srsPushRes.obs_stream_key;
       userStore.userInfo.live_rooms[0].push_rtmp_url =
-        res.data.srsPushRes.push_rtmp_url;
+        res.data.srsPushRes.rtmp_url;
       userStore.userInfo.live_rooms[0].push_srt_url =
-        res.data.srsPushRes.push_srt_url;
+        res.data.srsPushRes.srt_url;
       userStore.userInfo.live_rooms[0].push_webrtc_url =
-        res.data.srsPushRes.push_webrtc_url;
-      userStore.userInfo.live_rooms[0].cdn_push_obs_server =
-        res.data.cdnPushRes.push_obs_server;
-      userStore.userInfo.live_rooms[0].cdn_push_obs_stream_key =
-        res.data.cdnPushRes.push_obs_stream_key;
-      userStore.userInfo.live_rooms[0].cdn_push_rtmp_url =
-        res.data.cdnPushRes.push_rtmp_url;
-      userStore.userInfo.live_rooms[0].cdn_push_srt_url =
-        res.data.cdnPushRes.push_srt_url;
-      userStore.userInfo.live_rooms[0].cdn_push_webrtc_url =
-        res.data.cdnPushRes.push_webrtc_url;
+        res.data.srsPushRes.webrtc_url;
+      userStore.userInfo.live_rooms[0].push_cdn_obs_server =
+        res.data.cdnPushRes.obs_server;
+      userStore.userInfo.live_rooms[0].push_cdn_obs_stream_key =
+        res.data.cdnPushRes.obs_stream_key;
+      userStore.userInfo.live_rooms[0].push_cdn_rtmp_url =
+        res.data.cdnPushRes.rtmp_url;
+      userStore.userInfo.live_rooms[0].push_cdn_srt_url =
+        res.data.cdnPushRes.srt_url;
+      userStore.userInfo.live_rooms[0].push_cdn_webrtc_url =
+        res.data.cdnPushRes.webrtc_url;
     }
   } catch (error) {
     console.error(error);

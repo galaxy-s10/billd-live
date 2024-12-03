@@ -1,8 +1,7 @@
 import { windowReload } from 'billd-utils';
 
+import { useTip } from '@/hooks/use-tip';
 import { getLastBuildDate } from '@/utils/localStorage/app';
-
-import { useTip } from './use-tip';
 
 export function handleTip() {
   window.$message.info('敬请期待！');

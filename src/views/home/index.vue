@@ -43,13 +43,7 @@
           @click="showJoinBtn = !showJoinBtn"
         >
           <div
-            v-if="
-              appStore.liveRoomInfo?.cdn === LiveRoomUseCDNEnum.yes &&
-              [
-                LiveRoomTypeEnum.tencent_css,
-                LiveRoomTypeEnum.tencent_css_pk,
-              ].includes(appStore.liveRoomInfo!.type!)
-            "
+            v-if="currentLive?.live_room?.cdn === SwitchEnum.yes"
             class="cdn-ico"
           >
             <div class="txt">CDN</div>
@@ -59,16 +53,15 @@
             class="cover"
             :style="{
               backgroundImage: `url(${
-                appStore.liveRoomInfo?.cover_img ||
-                appStore.liveRoomInfo?.users?.[0]?.avatar
+                currentLive?.live_room?.cover_img || currentLive?.user?.avatar
               })`,
             }"
           ></div>
           <div
-            v-if="appStore.liveRoomInfo?.flv_url"
+            v-if="currentLive?.live_room"
             ref="remoteVideoRef"
           ></div>
-          <template v-if="appStore.liveRoomInfo">
+          <template v-if="currentLive?.live_room">
             <div class="video-controls">
               <VideoControls
                 :resolution="videoResolution"
@@ -76,6 +69,8 @@
                 :control="{
                   line: true,
                 }"
+                :liveRoom="currentLive?.live_room"
+                :liveLineList="[LiveLineEnum.flv, LiveLineEnum.hls]"
               ></VideoControls>
             </div>
 
@@ -87,7 +82,7 @@
             >
               <div
                 class="btn"
-                @click="joinRoom(appStore.liveRoomInfo)"
+                @click="joinRoom(currentLive?.live_room, 2)"
               >
                 进入直播
               </div>
@@ -104,32 +99,19 @@
               :key="index"
               :class="{
                 item: 1,
-                active: item.live_room?.id === appStore.liveRoomInfo?.id,
+                active: item.live_room?.id === currentLive?.live_room?.id,
               }"
               :style="{
                 backgroundImage: `url(${
-                  item.live_room?.cover_img ||
-                  item.live_room?.users?.[0]?.avatar
+                  item.live_room?.cover_img || item.user?.avatar
                 })`,
               }"
-              @click="changeLiveRoom(item)"
+              @click="changeLive(item)"
             >
-              <PullAuthTip
-                v-if="
-                  item.live_room?.pull_is_should_auth ===
-                  LiveRoomPullIsShouldAuthEnum.yes
-                "
-              ></PullAuthTip>
               <div class="hidden">
                 <div
                   class="cdn-ico"
-                  v-if="
-                    item?.live_room?.cdn === LiveRoomUseCDNEnum.yes &&
-                    [
-                      LiveRoomTypeEnum.tencent_css,
-                      LiveRoomTypeEnum.tencent_css_pk,
-                    ].includes(item.live_room!.type!)
-                  "
+                  v-if="item?.live_room?.cdn === SwitchEnum.yes"
                 >
                   <div class="txt">CDN</div>
                 </div>
@@ -138,11 +120,11 @@
                 class="border"
                 :style="{
                   opacity:
-                    item.live_room?.id === appStore.liveRoomInfo?.id ? 1 : 0,
+                    item.live_room?.id === currentLive?.live_room?.id ? 1 : 0,
                 }"
               ></div>
               <div
-                v-if="item.live_room?.id === appStore.liveRoomInfo?.id"
+                v-if="item.live_room?.id === currentLive?.live_room?.id"
                 class="triangle"
               ></div>
               <div class="txt">{{ item.live_room?.name }}</div>
@@ -162,39 +144,26 @@
         <div class="title">{{ t('home.recommendLive') }}</div>
         <div class="live-room-list">
           <div
-            v-for="(iten, indey) in otherLiveRoomList"
+            v-for="(item, indey) in otherLiveRoomList"
             :key="indey"
             class="live-room"
-            @click="joinRoom(iten.live_room)"
+            @click="joinRoom(item.live_room, 2)"
           >
             <div
               class="cover"
               v-lazy:background-image="
-                iten?.live_room?.cover_img ||
-                iten?.live_room?.users?.[0]?.avatar
+                item?.live_room?.cover_img || item?.user?.avatar
               "
             >
-              <PullAuthTip
-                v-if="
-                  iten.live_room?.pull_is_should_auth ===
-                  LiveRoomPullIsShouldAuthEnum.yes
-                "
-              ></PullAuthTip>
               <div
-                v-if="
-                  iten?.live_room?.cdn === LiveRoomUseCDNEnum.yes &&
-                  [
-                    LiveRoomTypeEnum.tencent_css,
-                    LiveRoomTypeEnum.tencent_css_pk,
-                  ].includes(iten.live_room!.type!)
-                "
+                v-if="item?.live_room?.cdn === SwitchEnum.yes"
                 class="cdn-ico"
               >
                 <div class="txt">CDN</div>
               </div>
-              <div class="txt">{{ iten?.live_room?.users?.[0].username }}</div>
+              <div class="txt">{{ item?.live_room?.users?.[0].username }}</div>
             </div>
-            <div class="desc">{{ iten?.live_room?.name }}</div>
+            <div class="desc">{{ item?.live_room?.name }}</div>
           </div>
           <div
             v-if="!otherLiveRoomList.length"
@@ -204,6 +173,7 @@
           </div>
         </div>
       </div>
+
       <div class="area-item">
         <div class="title">{{ t('home.bilibiliLive') }}</div>
         <div class="live-room-list">
@@ -211,29 +181,14 @@
             v-for="(iten, indey) in bilibiliLiveRoomList"
             :key="indey"
             class="live-room"
-            @click="joinRoom(iten.live_room)"
+            @click="joinRoom(iten.live_room, 1)"
           >
             <div
               class="cover"
-              v-lazy:background-image="
-                iten?.live_room?.cover_img ||
-                iten?.live_room?.users?.[0]?.avatar
-              "
+              v-lazy:background-image="iten?.live_room?.cover_img"
             >
-              <PullAuthTip
-                v-if="
-                  iten.live_room?.pull_is_should_auth ===
-                  LiveRoomPullIsShouldAuthEnum.yes
-                "
-              ></PullAuthTip>
               <div
-                v-if="
-                  iten?.live_room?.cdn === LiveRoomUseCDNEnum.yes &&
-                  [
-                    LiveRoomTypeEnum.tencent_css,
-                    LiveRoomTypeEnum.tencent_css_pk,
-                  ].includes(iten.live_room!.type!)
-                "
+                v-if="iten?.live_room?.cdn === SwitchEnum.yes"
                 class="cdn-ico"
               >
                 <div class="txt">CDN</div>
@@ -293,15 +248,10 @@ import { fetchLiveBilibiliGetUserRecommend } from '@/api/bilibili';
 import { fetchLiveList } from '@/api/live';
 import { sliderList, URL_QUERY } from '@/constant';
 import { usePull } from '@/hooks/use-pull';
-import { ILive, LiveLineEnum } from '@/interface';
+import { ILive, LiveLineEnum, SwitchEnum } from '@/interface';
 import { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
-import {
-  ILiveRoom,
-  LiveRoomPullIsShouldAuthEnum,
-  LiveRoomTypeEnum,
-  LiveRoomUseCDNEnum,
-} from '@/types/ILiveRoom';
+import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 
 const router = useRouter();
 const appStore = useAppStore();
@@ -314,6 +264,7 @@ const configVideo = ref();
 // const configVideo = ref(
 //   'https://www.xdyun.com/resldmnqcom/ldq_website/all_ldy/cloudphone_xdyun_ldy_mobile/mobile/assets/xd-video-6c9bcd.mp4'
 // );
+const currentLive = ref<ILive>();
 const topLiveRoomList = ref<ILive[]>([]);
 const otherLiveRoomList = ref<ILive[]>([]);
 const bilibiliLiveRoomList = ref<ILive[]>([]);
@@ -328,7 +279,6 @@ const { t } = useI18n();
 const {
   videoWrapRef,
   videoLoading,
-  roomLiving,
   videoResolution,
   handleStopDrawing,
   handlePlay,
@@ -394,7 +344,6 @@ async function handleBilibilData() {
             id: item.roomid,
             name: item.title,
             cover_img: item.cover,
-            is_bilibili: 1,
           },
         };
       });
@@ -419,21 +368,22 @@ function handleSlideList() {
 }
 
 function handleRefresh() {
-  playLive(appStore.liveRoomInfo!);
+  if (currentLive.value) {
+    playLive(currentLive.value);
+  }
 }
 
-function playLive(item: ILiveRoom) {
+function playLive(item: ILive) {
   handleStopDrawing();
   canvasRef.value?.childNodes?.forEach((item) => {
     item.remove();
   });
-  // roomLiving.value = true;
-  appStore.liveRoomInfo = item;
-  handlePlay(item);
+  currentLive.value = item;
+  handlePlay(item.live_room!);
 }
 
-function changeLiveRoom(item: ILive) {
-  if (item.id === appStore.liveRoomInfo?.id) return;
+function changeLive(item: ILive) {
+  if (item.id === currentLive.value?.id) return;
   if (
     ![
       LiveRoomTypeEnum.wertc_live,
@@ -443,7 +393,7 @@ function changeLiveRoom(item: ILive) {
   ) {
     appStore.liveLine = LiveLineEnum.hls;
   }
-  playLive(item.live_room!);
+  playLive(item);
 }
 
 async function getLiveRoomList() {
@@ -463,8 +413,7 @@ async function getLiveRoomList() {
       topLiveRoomList.value = res.data.rows.slice(0, topNums.value);
       otherLiveRoomList.value = res.data.rows.slice(topNums.value);
       if (res.data.total) {
-        roomLiving.value = true;
-        appStore.liveRoomInfo = topLiveRoomList.value[0].live_room;
+        changeLive(topLiveRoomList.value[0]);
       }
     }
   } catch (error) {
@@ -472,11 +421,11 @@ async function getLiveRoomList() {
   }
 }
 
-function joinRoom(data) {
+function joinRoom(data, isBilibili) {
   const url = router.resolve({
     name: routerName.pull,
     params: { roomId: data.id },
-    query: { [URL_QUERY.isBilibili]: data.is_bilibili },
+    query: { [URL_QUERY.isBilibili]: isBilibili },
   });
   openToTarget(url.href);
 }

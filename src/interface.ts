@@ -1,9 +1,5 @@
-import {
-  ILiveRoom,
-  LiveRoomIsShowEnum,
-  LiveRoomStatusEnum,
-} from './types/ILiveRoom';
-import { IUser } from './types/IUser';
+import { ILiveRoom, LiveRoomStatusEnum } from '@/types/ILiveRoom';
+import { IUser } from '@/types/IUser';
 
 export interface IBilibiliLiveUserRecommend {
   roomid: number;
@@ -308,13 +304,18 @@ export interface ILoginRecord {
 }
 
 export enum GlobalMsgTypeEnum {
-  system,
+  user = 'user',
+  system = 'system',
+  activity = 'activity',
 }
 
 export interface IGlobalMsg {
   id?: number;
   user_id?: number;
+  client_ip?: string;
   type?: GlobalMsgTypeEnum;
+  show?: SwitchEnum;
+  priority?: number;
   content?: string;
   remark?: string;
 
@@ -324,7 +325,6 @@ export interface IGlobalMsg {
   updated_at?: string;
   deleted_at?: string;
 }
-
 export interface ISigninStatistics {
   id?: number;
   user_id?: number;
@@ -561,17 +561,6 @@ export enum GoodsTypeEnum {
   qypShop = 'qypShop',
 }
 
-export interface ISettings {
-  id?: number;
-  key?: string;
-  value?: string;
-  desc?: string;
-  type?: string;
-  created_at?: string;
-  updated_at?: string;
-  deleted_at?: string;
-}
-
 export interface IGoods {
   id?: number;
   type?: GoodsTypeEnum;
@@ -660,7 +649,7 @@ export interface IArea {
   priority?: number;
   area_live_rooms?: IAreaLiveRoom[];
   live_rooms?: ILiveRoom[];
-  live_room_is_show?: LiveRoomIsShowEnum;
+  live_room_is_show?: SwitchEnum;
   live_room_status?: LiveRoomStatusEnum;
   created_at?: string;
   updated_at?: string;
@@ -698,21 +687,35 @@ export interface ISrsPublishStream {
 
 export type ILive = {
   id?: number;
-
-  socket_id?: string;
+  /** 直播平台 */
+  platform?: LivePlatformEnum;
+  /** 直播流名称 */
+  stream_name?: string;
+  /** 直播流id */
+  stream_id?: string;
+  /** 用户id */
+  user_id?: number;
+  /** 直播间id */
   live_room_id?: number;
-  /** 1开启;2关闭 */
-  track_video?: number;
-  /** 1开启;2关闭 */
-  track_audio?: number;
+  /** 备注 */
+  remark?: string;
+
+  /** 直播间信息 */
+  live_room?: ILiveRoom;
+  /** 用户信息 */
+  user?: IUser;
 
   created_at?: string;
   updated_at?: string;
   deleted_at?: string;
-} & ISrsPublishStream & {
-    /** 直播间信息 */
-    live_room?: ILiveRoom;
-  };
+};
+
+/** 直播平台 */
+export enum LivePlatformEnum {
+  rtc,
+  srs,
+  tencentcloud_css,
+}
 
 export enum MediaTypeEnum {
   camera,
@@ -759,4 +762,22 @@ export interface ICredential {
   };
   requestId: string;
   startTime: number;
+}
+
+export enum SwitchEnum {
+  yes,
+  no,
+}
+
+export interface IStreamKey {
+  rtmp_url: string;
+  obs_server: string;
+  obs_stream_key: string;
+  webrtc_url: string;
+  srt_url: string;
+}
+
+export interface IPushRes {
+  srsPushRes: IStreamKey;
+  cdnPushRes: IStreamKey;
 }

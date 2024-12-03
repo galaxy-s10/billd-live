@@ -1,6 +1,5 @@
 import { IAuth, IRole, IWallet } from '@/interface';
-
-import { ILiveRoom } from './ILiveRoom';
+import { ILiveRoom } from '@/types/ILiveRoom';
 
 export interface IQqUser {
   id?: number;

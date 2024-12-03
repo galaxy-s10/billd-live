@@ -1,5 +1,4 @@
 import { hrefToTarget, isMobile } from 'billd-utils';
-import { createApp } from 'vue';
 
 import { fetchQQLogin } from '@/api/qqUser';
 import { fullLoading } from '@/components/FullLoading';
@@ -10,21 +9,12 @@ import {
   QQ_REDIRECT_URI,
   WECHAT_REDIRECT_URI,
 } from '@/constant';
-import LoginModalCpt from '@/hooks/loginModal/index.vue';
 import { PlatformEnum } from '@/interface';
 import { WECHAT_GZH_APPID, WECHAT_GZH_OAUTH_URL } from '@/spec-config';
 import { useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
 import { clearThirdLoginInfo, setThirdLoginInfo } from '@/utils/cookie';
 import { getToken } from '@/utils/localStorage/user';
-
-const app = createApp(LoginModalCpt);
-const container = document.createElement('div');
-// @ts-ignore
-const instance: ComponentPublicInstance<InstanceType<typeof LoginModalCpt>> =
-  app.mount(container);
-
-document.body.appendChild(container);
 
 const POSTMESSAGE_TYPE = [PlatformEnum.qqLogin];
 
@@ -60,13 +50,11 @@ export async function handleQQLogin(e) {
   return flag;
 }
 
-export function loginTip(show = false) {
+export function loginTip() {
   const token = getToken();
-  instance.show = show;
   const appStore = useAppStore();
   if (!token) {
     window.$message.warning('请先登录！');
-    // instance.show = true;
     appStore.showLoginModal = true;
     return false;
   }

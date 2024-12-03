@@ -87,7 +87,7 @@ export const useForwardAll = () => {
           }
           const answerRes = await fetchRtcV1Publish({
             sdp: offerSdp.sdp!,
-            streamurl: `${myLiveRoom.rtmp_url!}?${
+            streamurl: `${myLiveRoom.pull_rtmp_url!}?${
               SRS_CB_URL_QUERY.publishKey
             }=${myLiveRoom.key!}&${SRS_CB_URL_QUERY.publishType}=${
               isPk.value ? LiveRoomTypeEnum.pk : LiveRoomTypeEnum.forward_all

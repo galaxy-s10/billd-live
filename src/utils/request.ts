@@ -8,7 +8,7 @@ export interface MyAxiosPromise<T = any>
   extends Promise<{
     code: number;
     data: T;
-    message: string;
+    msg: string;
   }> {}
 
 interface MyAxiosInstance extends Axios {
@@ -66,25 +66,25 @@ class MyAxios {
             return Promise.reject(error.message);
           }
           if (statusCode === 400) {
-            console.error(errorResponseData.message);
-            window.$message.error(errorResponseData.message);
+            console.error(errorResponseData.msg);
+            window.$message.error(errorResponseData.msg);
             return Promise.reject(errorResponseData);
           }
           if (statusCode === 401) {
-            console.error(errorResponseData.message);
-            window.$message.error(errorResponseData.message);
+            console.error(errorResponseData.msg);
+            window.$message.error(errorResponseData.msg);
             const userStore = useUserStore();
             userStore.logout();
             return Promise.reject(errorResponseData);
           }
           if (statusCode === 403) {
-            console.error(errorResponseData.message);
-            window.$message.error(errorResponseData.message);
+            console.error(errorResponseData.msg);
+            window.$message.error(errorResponseData.msg);
             return Promise.reject(errorResponseData);
           }
           if (statusCode === 404) {
-            console.error(errorResponseData.message);
-            window.$message.error(errorResponseData.message);
+            console.error(errorResponseData.msg);
+            window.$message.error(errorResponseData.msg);
             return Promise.reject(errorResponseData);
           }
           if (statusCode === 500) {

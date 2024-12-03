@@ -1,4 +1,4 @@
-import { IList, IPaging } from '@/interface';
+import { IList, IPaging, IPushRes } from '@/interface';
 import { ILiveRoom } from '@/types/ILiveRoom';
 import request from '@/utils/request';
 
@@ -19,10 +19,7 @@ export function fetchVerifyPkKey(data: { liveRoomId: number; key }) {
 }
 
 export function fetchUpdateLiveRoomKey() {
-  return request.instance({
-    url: '/live_room/update_key',
-    method: 'put',
-  });
+  return request.put<IPushRes>('/live_room/update_key');
 }
 
 export function fetchUpdateMyLiveRoom(data: ILiveRoom) {

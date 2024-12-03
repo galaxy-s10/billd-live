@@ -981,7 +981,9 @@ function handleWebsiteJump() {
       }
       .qqlogin {
         margin-right: 20px;
-
+        .btn {
+          cursor: pointer;
+        }
         .list {
           padding: 10px 0;
           width: 90px;

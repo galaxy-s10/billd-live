@@ -2,10 +2,11 @@
   <div class="h5-room-wrap">
     <div class="head">
       <div class="left">
-        <div
-          class="avatar"
-          v-lazy:background-image="anchorInfo?.avatar"
-        ></div>
+        <Avatar
+          :url="anchorInfo?.avatar"
+          :name="anchorInfo?.username"
+          :size="40"
+        ></Avatar>
         <div class="username">
           {{ anchorInfo?.username }}
         </div>
@@ -29,7 +30,7 @@
     >
       <div
         class="cover"
-        v-lazy:background-image="appStore.liveRoomInfo?.cover_img"
+        v-lazy:background-image="liveRoomInfo?.cover_img"
       ></div>
       <div
         v-if="!roomLiving"
@@ -42,7 +43,7 @@
         ref="remoteVideoRef"
       ></div>
       <div
-        v-if="showPlayBtn && roomLiving && appStore.liveRoomInfo"
+        v-if="showPlayBtn"
         class="tip-btn"
         @click="startPull"
       >
@@ -54,6 +55,7 @@
         @refresh="handleRefresh"
         @full-screen="handleFullScreen"
         @picture-in-picture="hanldePictureInPicture"
+        :liveRoom="liveRoomInfo"
         :control="{
           line: true,
           fullMode: true,
@@ -147,11 +149,9 @@
             class="liveRoomInfo-wrap"
             :style="{ height: containerHeight + 'px' }"
           >
-            <div>名称：{{ appStore.liveRoomInfo?.name }}</div>
-            <div>简介：{{ appStore.liveRoomInfo?.desc }}</div>
-            <div>
-              分区：{{ appStore.liveRoomInfo?.areas?.[0]?.name || '暂无分区' }}
-            </div>
+            <div>名称：{{ liveRoomInfo?.name }}</div>
+            <div>简介：{{ liveRoomInfo?.desc }}</div>
+            <div>分区：{{ liveRoomInfo?.areas?.[0]?.name || '暂无分区' }}</div>
           </div>
         </n-tab-pane>
         <n-tab-pane
@@ -168,10 +168,11 @@
               class="item"
             >
               <div class="info">
-                <div
-                  class="avatar"
-                  v-lazy:background-image="item.value.user_avatar"
-                ></div>
+                <Avatar
+                  :url="item.value.user_avatar"
+                  :name="item.value.user_username"
+                  :size="25"
+                ></Avatar>
                 <div class="username">
                   {{ item.value.user_username }}
                 </div>
@@ -288,6 +289,7 @@ import router, { mobileRouterName } from '@/router';
 import { useAppStore } from '@/store/app';
 import { useCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
+import { ILiveRoom } from '@/types/ILiveRoom';
 import { IUser } from '@/types/IUser';
 import { formatTimeHour } from '@/utils';
 
@@ -299,12 +301,14 @@ const userStore = useUserStore();
 const bottomRef = ref<HTMLDivElement>();
 const danmuListRef = ref<HTMLDivElement>();
 const showEmoji = ref(false);
+const showPlayBtn = ref(true);
 
+const liveRoomInfo = ref<ILiveRoom>();
 const anchorInfo = ref<IUser>();
 const containerHeight = ref(0);
 const videoWrapHeight = ref(0);
 const remoteVideoRef = ref<HTMLDivElement>();
-const roomId = ref(route.params.roomId as string);
+const roomId = ref();
 const loopGetLiveUserTimer = ref();
 
 const {
@@ -317,7 +321,6 @@ const {
   closeRtc,
   closeWs,
   liveUserList,
-  showPlayBtn,
   videoLoading,
   damuList,
   danmuStr,
@@ -338,11 +341,12 @@ onMounted(async () => {
   setTimeout(() => {
     scrollTo(0, 0);
   }, 100);
-  if (!Number(roomId.value)) {
-    return;
-  }
+
+  roomId.value = route.params.roomId as string;
   initPull({ roomId: roomId.value, autolay: true });
-  showPlayBtn.value = true;
+  await handleFindLiveRoomInfo();
+  if (!liveRoomInfo.value) return;
+  handleRefresh();
   videoWrapRef.value = remoteVideoRef.value;
   videoWrapHeight.value =
     document.documentElement.clientWidth / appStore.videoRatio;
@@ -365,6 +369,15 @@ onMounted(async () => {
   initRtcReceive();
 });
 
+watch(
+  () => roomLiving.value,
+  (newval) => {
+    if (newval) {
+      showPlayBtn.value = false;
+    }
+  }
+);
+
 function handleSendDanmu() {
   sendDanmuTxt(danmuStr.value);
   danmuStr.value = '';
@@ -381,7 +394,7 @@ async function handleHistoryMsg() {
   try {
     const res = await fetchGetWsMessageList({
       nowPage: 1,
-      pageSize: appStore.liveRoomInfo?.history_msg_total || 10,
+      pageSize: liveRoomInfo.value?.history_msg_total || 10,
       orderName: 'created_at',
       orderBy: 'desc',
       live_room_id: Number(roomId.value),
@@ -393,14 +406,14 @@ async function handleHistoryMsg() {
         damuList.value.unshift(v);
       });
       if (
-        appStore.liveRoomInfo?.system_msg &&
-        appStore.liveRoomInfo?.system_msg !== ''
+        liveRoomInfo.value?.system_msg &&
+        liveRoomInfo.value?.system_msg !== ''
       ) {
         damuList.value.push({
           send_msg_time: +new Date(),
           live_room_id: Number(roomId.value),
           id: -1,
-          content: appStore.liveRoomInfo?.system_msg,
+          content: liveRoomInfo.value?.system_msg,
           content_type: WsMessageContentTypeEnum.txt,
           msg_type: DanmuMsgTypeEnum.system,
         });
@@ -459,8 +472,8 @@ function handleScrollTop() {
 }
 
 function handleRefresh() {
-  if (appStore.liveRoomInfo) {
-    handlePlay(appStore.liveRoomInfo);
+  if (liveRoomInfo.value) {
+    handlePlay(liveRoomInfo.value);
   }
 }
 
@@ -476,12 +489,12 @@ async function handleFindLiveRoomInfo() {
     const res = await fetchFindLiveRoom(Number(roomId.value));
     if (res.code === 200) {
       if (res.data) {
-        appStore.liveRoomInfo = res.data;
-        anchorInfo.value = res.data.user_live_room?.user;
+        liveRoomInfo.value = res.data;
+        anchorInfo.value = res.data.users?.[0];
         if (res.data.live) {
           roomLiving.value = true;
         } else {
-          videoLoading.value = false;
+          roomLiving.value = false;
         }
       }
     }
@@ -491,9 +504,9 @@ async function handleFindLiveRoomInfo() {
 }
 
 function startPull() {
-  cacheStore.muted = false;
   showPlayBtn.value = false;
-  handlePlay(appStore.liveRoomInfo!);
+  cacheStore.muted = false;
+  handlePlay(liveRoomInfo.value!);
 }
 </script>
 
@@ -514,13 +527,7 @@ function startPull() {
     .left {
       display: flex;
       align-items: center;
-      .avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
 
-        @extend %containBg;
-      }
       .username {
         margin-left: 10px;
       }
@@ -728,15 +735,9 @@ function startPull() {
         display: flex;
         align-items: center;
         cursor: pointer;
-        .avatar {
-          margin-right: 5px;
-          width: 25px;
-          height: 25px;
-          border-radius: 50%;
 
-          @extend %containBg;
-        }
         .username {
+          margin-left: 10px;
           color: white;
         }
       }
@@ -783,7 +784,7 @@ function startPull() {
       width: 20px;
       height: 20px;
 
-      @include setBackground('@/assets/img/msg-face.webp');
+      @include setBackground('@/assets/img/msg-face.png');
     }
     .ipt {
       display: block;

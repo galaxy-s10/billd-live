@@ -1,6 +1,6 @@
 import { ComponentPublicInstance, StyleValue, createApp } from 'vue';
 
-import main from './main.vue';
+import main from '@/components/FullLoading/main.vue';
 
 const initInstance = (option: IOption) => {
   // 这里就是与vue2最大的区别了,在vue2的时候,我们只需instance.$mount()便能得到节点,现在不行

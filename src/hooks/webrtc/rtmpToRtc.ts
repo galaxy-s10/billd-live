@@ -108,7 +108,7 @@ export const useWebRtcRtmpToRtc = () => {
           );
           // const answerRes = await fetchRtcV1Play({
           //   sdp: offerSdp.sdp!,
-          //   streamurl: `${myLiveRoom.rtmp_url!}`,
+          //   streamurl: `${myLiveRoom.pull_rtmp_url!}`,
           // });
           // if (answerRes.data.code !== 0) {
           //   console.error('/rtc/v1/play/拿不到sdp');

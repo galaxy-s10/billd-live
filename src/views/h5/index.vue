@@ -39,11 +39,6 @@
               class="cover"
               v-lazy:background-image="iten?.cover_img || iten?.user?.avatar"
             >
-              <PullAuthTip
-                v-if="
-                  iten?.pull_is_should_auth === LiveRoomPullIsShouldAuthEnum.yes
-                "
-              ></PullAuthTip>
               <div
                 v-if="iten?.live"
                 class="living-ico"
@@ -52,7 +47,7 @@
               </div>
               <div
                 v-if="
-                  iten?.cdn === LiveRoomUseCDNEnum.yes ||
+                  iten?.cdn === SwitchEnum.yes ||
                   [
                     LiveRoomTypeEnum.tencent_css,
                     LiveRoomTypeEnum.tencent_css_pk,
@@ -85,16 +80,13 @@ import { useI18n } from 'vue-i18n';
 
 import { fetchAreaLiveRoomList } from '@/api/area';
 import { COMMON_URL } from '@/constant';
-import { IArea } from '@/interface';
+import { IArea, SwitchEnum } from '@/interface';
 import router, { mobileRouterName, routerName } from '@/router';
 import { useAppStore } from '@/store/app';
 import {
   ILiveRoom,
-  LiveRoomIsShowEnum,
-  LiveRoomPullIsShouldAuthEnum,
   LiveRoomStatusEnum,
   LiveRoomTypeEnum,
-  LiveRoomUseCDNEnum,
 } from '@/types/ILiveRoom';
 
 const appStore = useAppStore();
@@ -121,10 +113,10 @@ const currentSwiper = ref(swiperList.value[0]);
 async function getLiveRoomList() {
   try {
     const res = await fetchAreaLiveRoomList({
-      is_show: LiveRoomIsShowEnum.yes,
+      is_show: SwitchEnum.yes,
       status: LiveRoomStatusEnum.normal,
       // is_fake: 2,
-      // cdn: LiveRoomUseCDNEnum.yes,
+      // cdn: SwitchEnum.yes,
       // id: 2,
       orderName: 'priority',
       orderBy: 'desc',
