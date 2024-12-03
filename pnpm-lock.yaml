@@ -21,8 +21,8 @@ importers:
         specifier: ^1.2.1
         version: 1.3.4
       billd-deploy:
-        specifier: ^1.0.26
-        version: 1.0.26(@swc/core@1.3.84)(@types/node@18.15.3)(esbuild@0.15.18)(sass@1.59.3)(terser@5.16.6)(webpack-cli@4.10.0(webpack-bundle-analyzer@4.8.0)(webpack-dev-server@4.13.1)(webpack@5.76.2))
+        specifier: ^1.1.0
+        version: 1.1.0(@swc/core@1.3.84)(@types/node@18.15.3)(esbuild@0.15.18)(sass@1.59.3)(terser@5.16.6)(webpack-cli@4.10.0(webpack-bundle-analyzer@4.8.0)(webpack-dev-server@4.13.1)(webpack@5.76.2))
       billd-html-webpack-plugin:
         specifier: ^1.0.6
         version: 1.0.6(@swc/core@1.3.84)(@types/node@18.15.3)(esbuild@0.15.18)(sass@1.59.3)(terser@5.16.6)(webpack-cli@4.10.0(webpack-bundle-analyzer@4.8.0)(webpack-dev-server@4.13.1)(webpack@5.76.2))
@@ -2498,8 +2498,8 @@ packages:
   big.js@5.2.2:
     resolution: {integrity: sha512-vyL2OymJxmarO8gxMr0mhChsO9QGwhynfuu4+MHTAW6czfq9humCB7rKpUjDd9YUiDPU4mzpyupFSvOClAwbmQ==}
 
-  billd-deploy@1.0.26:
-    resolution: {integrity: sha512-NoBKnWA5dbzI5fgK42GXcul7WfatzIirlWhY0w0SwKx1i7dWn5LvgKk0y3jIR3z9uXG1uVVLcVPW05jp1/rmeQ==}
+  billd-deploy@1.1.0:
+    resolution: {integrity: sha512-7wi42bJR4Hgg66vZ3nNw5E4jkTDozatiTEqogXSUU9Qc+DpDiwoaQV8woHrMYRrTdr7PNTLB53H8cYnsdCRtJw==}
 
   billd-html-webpack-plugin@1.0.6:
     resolution: {integrity: sha512-zM294oAMqRD1rlqoyC1E9QbFsBgMPYStODmQKwUjI+xd02Rwo+3iZhmlQ8q0EuF2KnyhwDwhxyZfDGSo6Ow8Tw==}
@@ -9953,7 +9953,7 @@ snapshots:
 
   big.js@5.2.2: {}
 
-  billd-deploy@1.0.26(@swc/core@1.3.84)(@types/node@18.15.3)(esbuild@0.15.18)(sass@1.59.3)(terser@5.16.6)(webpack-cli@4.10.0(webpack-bundle-analyzer@4.8.0)(webpack-dev-server@4.13.1)(webpack@5.76.2)):
+  billd-deploy@1.1.0(@swc/core@1.3.84)(@types/node@18.15.3)(esbuild@0.15.18)(sass@1.59.3)(terser@5.16.6)(webpack-cli@4.10.0(webpack-bundle-analyzer@4.8.0)(webpack-dev-server@4.13.1)(webpack@5.76.2)):
     dependencies:
       ali-oss: 6.20.0
       billd-html-webpack-plugin: 1.0.6(@swc/core@1.3.84)(@types/node@18.15.3)(esbuild@0.15.18)(sass@1.59.3)(terser@5.16.6)(webpack-cli@4.10.0(webpack-bundle-analyzer@4.8.0)(webpack-dev-server@4.13.1)(webpack@5.76.2))
