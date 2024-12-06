@@ -9,6 +9,7 @@ import {
 } from '@/interface';
 import { mobileRouterName } from '@/router';
 import { ILiveRoom } from '@/types/ILiveRoom';
+import { isMSESupported } from '@/utils';
 
 export type AppRootState = {
   pageIsClick: boolean;
@@ -65,6 +66,7 @@ export type AppRootState = {
     kbs?: string;
     fps?: number;
   };
+  mseSupport: boolean;
   liveLine: LiveLineEnum;
   liveRoomInfo?: ILiveRoom;
   showLoginModal: boolean;
@@ -95,7 +97,8 @@ export const useAppStore = defineStore('app', {
         { routeName: mobileRouterName.h5My, name: '我的' },
       ],
       allTrack: [],
-      liveLine: LiveLineEnum.hls,
+      mseSupport: isMSESupported(),
+      liveLine: isMSESupported() ? LiveLineEnum.flv : LiveLineEnum.hls,
       liveRoomInfo: undefined,
       showLoginModal: false,
       disableSpeaking: new Map(),

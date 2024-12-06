@@ -251,7 +251,6 @@ import { usePull } from '@/hooks/use-pull';
 import { ILive, LiveLineEnum, SwitchEnum } from '@/interface';
 import { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
-import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 
 const router = useRouter();
 const appStore = useAppStore();
@@ -384,15 +383,6 @@ function playLive(item: ILive) {
 
 function changeLive(item: ILive) {
   if (item.id === currentLive.value?.id) return;
-  if (
-    ![
-      LiveRoomTypeEnum.wertc_live,
-      LiveRoomTypeEnum.wertc_meeting_one,
-      LiveRoomTypeEnum.wertc_meeting_two,
-    ].includes(item.live_room!.type!)
-  ) {
-    appStore.liveLine = LiveLineEnum.hls;
-  }
   playLive(item);
 }
 

@@ -129,6 +129,11 @@ export const useWebRtcRtmpToRtc = () => {
         console.log(error);
       }
     },
+
+    close: ({ receiver }: { receiver: string }) => {
+      const rtc = networkStore.rtcMap.get(receiver);
+      rtc?.close();
+    },
   };
 
   return { updateWebRtcRtmpToRtcConfig, webRtcRtmpToRtc };

@@ -7,6 +7,7 @@ import Player from 'video.js/dist/types/player';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 
 import { SRS_CB_URL_QUERY } from '@/constant';
+import { LiveLineEnum } from '@/interface';
 import { useAppStore } from '@/store/app';
 import { useCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
@@ -98,6 +99,7 @@ export function useFlvPlay() {
   // const flvPlayer = ref<flvJs.Player>();
   const flvPlayer = ref<mpegts.Player>();
   const flvVideoEl = ref<HTMLVideoElement>();
+  const appendVideoEl = ref<HTMLVideoElement>();
   const initRetryMax = 120;
   const retryMax = ref(initRetryMax);
   const retry = ref(0);
@@ -134,6 +136,15 @@ export function useFlvPlay() {
       console.log(error);
     }
   }
+
+  watch(
+    () => appStore.liveLine,
+    (newval) => {
+      if (newval !== LiveLineEnum.flv) {
+        appendVideoEl.value?.remove();
+      }
+    }
+  );
 
   watch(
     () => appStore.playing,
@@ -202,25 +213,28 @@ export function useFlvPlay() {
             isLive: true,
             url: handlePlayUrl(data.flvurl),
           });
-          const videoEl = createVideo({
+          appendVideoEl.value = createVideo({
             appendChild: true,
             muted: appStore.pageIsClick ? cacheStore.muted : true,
             autoplay: true,
           });
-          videoEl.addEventListener('play', () => {
+          appendVideoEl.value.addEventListener('play', () => {
             console.log('flv-play');
           });
-          videoEl.addEventListener('playing', () => {
+          appendVideoEl.value.addEventListener('playing', () => {
             console.log('flv-playing');
             flvIsPlaying.value = true;
             retry.value = 0;
-            flvVideoEl.value = videoEl;
+            flvVideoEl.value = appendVideoEl.value;
+            if (flvVideoEl.value) {
+              flvVideoEl.value.muted = cacheStore.muted;
+            }
             resolve('');
           });
-          videoEl.addEventListener('loadedmetadata', () => {
+          appendVideoEl.value.addEventListener('loadedmetadata', () => {
             console.log('flv-loadedmetadata');
           });
-          flvPlayer.value.attachMediaElement(videoEl);
+          flvPlayer.value.attachMediaElement(appendVideoEl.value);
           flvPlayer.value.load();
           flvPlayer.value.on(mpegts.Events.ERROR, () => {
             console.error('mpegts消息：mpegts.Events.ERROR');
@@ -262,6 +276,7 @@ export function useHlsPlay() {
   const appStore = useAppStore();
   const hlsPlayer = ref<Player>();
   const hlsVideoEl = ref<HTMLVideoElement>();
+  const appendVideoEl = ref<HTMLVideoElement>();
   const initRetryMax = 120;
   const retryMax = ref(initRetryMax);
   const retry = ref(0);
@@ -300,6 +315,15 @@ export function useHlsPlay() {
       console.log(error);
     }
   }
+
+  watch(
+    () => appStore.liveLine,
+    (newval) => {
+      if (newval !== LiveLineEnum.hls) {
+        appendVideoEl.value?.remove();
+      }
+    }
+  );
 
   watch(
     () => appStore.playing,
@@ -358,13 +382,13 @@ export function useHlsPlay() {
       function main() {
         console.log('startHlsPlay', data.hlsurl);
         destroyHls();
-        const videoEl = createVideo({
+        appendVideoEl.value = createVideo({
           appendChild: true,
           muted: appStore.pageIsClick ? cacheStore.muted : true,
           autoplay: true,
         });
         hlsPlayer.value = videoJs(
-          videoEl,
+          appendVideoEl.value,
           {
             sources: [
               {
@@ -400,6 +424,9 @@ export function useHlsPlay() {
           console.log('hls-playing');
           hlsIsPlaying.value = true;
           retry.value = 0;
+          if (appendVideoEl.value) {
+            appendVideoEl.value.muted = cacheStore.muted;
+          }
           // console.log(hlsPlayer.value?.videoHeight()); // 获取到的是正确的！
           const childNodes = hlsPlayer.value?.el().childNodes;
           if (childNodes) {

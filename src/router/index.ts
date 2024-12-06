@@ -21,6 +21,7 @@ export const mobileRouterName = {
   h5ShopDetail: 'h5ShopDetail',
   h5Store: 'h5Store',
   h5StoreDetail: 'h5StoreDetail',
+  h5privatizationDeployment: 'h5privatizationDeployment',
   ...commonRouterName,
 };
 
@@ -290,6 +291,11 @@ export const defaultRoutes: RouteRecordRaw[] = [
     path: '/h5/store/:id',
     component: () => import('@/views/h5/storeDetail/index.vue'),
   },
+  {
+    name: mobileRouterName.h5privatizationDeployment,
+    path: '/h5/privatizationDeployment',
+    component: () => import('@/views/h5/privatizationDeployment/index.vue'),
+  },
   // {
   //   name: mobileRouterName.h5Shop,
   //   path: '/h5/shop',
@@ -346,6 +352,11 @@ router.beforeEach((to, from, next) => {
       } else if (to.name === routerName.store) {
         return next({
           name: mobileRouterName.h5Store,
+          query: { ...to.query },
+        });
+      } else if (to.name === routerName.privatizationDeployment) {
+        return next({
+          name: mobileRouterName.h5privatizationDeployment,
           query: { ...to.query },
         });
       } else {

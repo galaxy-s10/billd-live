@@ -74,6 +74,7 @@ export function usePull() {
 
   onUnmounted(() => {
     handleStopDrawing();
+    handleRtmpToRtcStop();
     destroyFlv();
     destroyHls();
   });
@@ -223,9 +224,16 @@ export function usePull() {
     }
   );
 
+  function handleRtmpToRtcStop() {
+    webRtcRtmpToRtc.close({ receiver: 'rtmpToRtc' });
+  }
+
   function handleRtmpToRtcPlay() {
     console.log('handleRtmpToRtcPlay');
     handleStopDrawing();
+    handleRtmpToRtcStop();
+    destroyFlv();
+    destroyHls();
     videoLoading.value = true;
     appStore.liveLine = LiveLineEnum['rtmp-rtc'];
     updateWebRtcRtmpToRtcConfig({
@@ -254,6 +262,9 @@ export function usePull() {
   async function handleWebRtcLivePlay(data) {
     console.log('handleWebRtcLivePlay');
     handleStopDrawing();
+    handleRtmpToRtcStop();
+    destroyFlv();
+    destroyHls();
     videoLoading.value = true;
     appStore.liveLine = LiveLineEnum.rtc;
     updateWebRtcLiveConfig({
@@ -377,8 +388,10 @@ export function usePull() {
 
   function handleHlsPlay() {
     console.log('handleHlsPlay', hlsurl.value);
-    destroyFlv();
     handleStopDrawing();
+    handleRtmpToRtcStop();
+    destroyFlv();
+    destroyHls();
     videoLoading.value = true;
     appStore.liveLine = LiveLineEnum.hls;
     startHlsPlay({
@@ -388,8 +401,10 @@ export function usePull() {
 
   function handleFlvPlay() {
     console.log('handleFlvPlay', flvurl.value);
-    destroyHls();
     handleStopDrawing();
+    handleRtmpToRtcStop();
+    destroyFlv();
+    destroyHls();
     videoLoading.value = true;
     appStore.liveLine = LiveLineEnum.flv;
     startFlvPlay({

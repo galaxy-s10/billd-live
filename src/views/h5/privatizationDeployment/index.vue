@@ -65,7 +65,7 @@
   </div>
   <n-modal v-model:show="showContach">
     <n-card
-      style="width: 400px"
+      style="width: 300px"
       title="联系作者"
       role="dialog"
       closable
@@ -76,7 +76,7 @@
         <img
           src="@/assets/img/my-wechat.webp"
           alt=""
-          style="width: 300px"
+          style="width: 250px"
         />
         <p>微信号：{{ AUTHOR_INFO.wechat }}</p>
         <p>qq号：{{ AUTHOR_INFO.qq }}</p>
@@ -421,7 +421,6 @@ function handleClick(item) {
 
 <style lang="scss" scoped>
 .privatizationDeployment-wrap {
-  height: calc(100vh - $layout-head-h);
   background-color: #f4f8ff;
   .title {
     display: flex;
@@ -429,16 +428,16 @@ function handleClick(item) {
     justify-content: center;
     box-sizing: border-box;
     margin: 0 auto;
-    width: 1200px;
-    height: 180px;
+    width: 80%;
+    height: 160px;
     // background-color: red;
     text-align: center;
-    font-size: 40px;
+    font-size: 30px;
   }
   .tab {
     display: flex;
     justify-content: center;
-    margin: 0 auto;
+    margin: 10px auto 0;
     padding: 8px 0;
     width: 320px;
     border-radius: 40px;
@@ -460,22 +459,25 @@ function handleClick(item) {
     }
   }
   .list {
+    padding-top: 20px;
     display: flex;
     justify-content: center;
-    margin: 50px auto 0;
-    width: 1200px;
+    flex-direction: column;
+    align-items: center;
     .item {
       box-sizing: border-box;
-      margin: 0 10px;
       padding: 20px 20px;
-      width: 240px;
+      width: 80%;
+      margin-bottom: 20px;
       // border: 1px solid #dde6ed;
       border-radius: 2px;
       border-top-left-radius: 4px;
       border-top-right-radius: 4px;
       background-color: white;
       font-size: 14px;
-
+      box-shadow:
+        0 0.90667vw 2.13333vw 0 rgba(0, 0, 0, 0.10196078431372549),
+        0 1px 0.53333vw 0 hsla(0, 0%, 100%, 0.5019607843137255);
       &.blue {
         border-top: 7px solid #38c0ff;
       }
@@ -524,7 +526,7 @@ function handleClick(item) {
       }
       .feat {
         margin-top: 30px;
-        height: 200px;
+        height: 180px;
         .feat-item {
           display: flex;
           align-items: center;

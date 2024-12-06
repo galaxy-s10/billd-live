@@ -641,7 +641,7 @@ async function handleBilibil() {
   console.log(flv?.data?.data?.durl?.[0].url, 'flv');
   console.log(hls?.data?.data?.durl?.[0].url, 'hls');
   roomLiving.value = true;
-  appStore.liveLine = LiveLineEnum.hls;
+  appStore.liveLine = appStore.mseSupport ? LiveLineEnum.flv : LiveLineEnum.hls;
   anchorInfo.value = {
     avatar: roomInfo?.data?.data?.user_cover,
     username: roomInfo?.data?.data?.title,

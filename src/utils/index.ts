@@ -2,6 +2,10 @@
 import { computeBox, getRangeRandom, judgeType } from 'billd-utils';
 import sparkMD5 from 'spark-md5';
 
+export function isMSESupported() {
+  return !!window.MediaSource;
+}
+
 /**
  * ios日期兼容
  * 2022-01-19 15:28:00 转成 2022/01/19 15:28:00
