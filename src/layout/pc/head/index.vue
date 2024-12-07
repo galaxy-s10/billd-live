@@ -298,6 +298,36 @@
               </a>
               <a
                 class="item"
+                @click.prevent="handleStartLive(LiveRoomTypeEnum.forward_douyu)"
+              >
+                <div class="txt">{{ t('layout.forwardDouyu') }}</div>
+              </a>
+              <a
+                class="item"
+                @click.prevent="
+                  handleStartLive(LiveRoomTypeEnum.forward_douyin)
+                "
+              >
+                <div class="txt">{{ t('layout.forwardDouyin') }}</div>
+              </a>
+              <a
+                class="item"
+                @click.prevent="
+                  handleStartLive(LiveRoomTypeEnum.forward_kuaishou)
+                "
+              >
+                <div class="txt">{{ t('layout.forwardKuaishou') }}</div>
+              </a>
+              <a
+                class="item"
+                @click.prevent="
+                  handleStartLive(LiveRoomTypeEnum.forward_xiaohongshu)
+                "
+              >
+                <div class="txt">{{ t('layout.forwardXiaohongshu') }}</div>
+              </a>
+              <a
+                class="item"
                 @click.prevent="handleStartLive(LiveRoomTypeEnum.forward_all)"
               >
                 <div class="txt">{{ t('layout.forwardAll') }}</div>

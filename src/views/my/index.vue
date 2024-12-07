@@ -275,23 +275,23 @@
           </div>
 
           <div>
-            转推抖音：
+            转推斗鱼：
             <div
               class="cdn"
               v-if="
                 userStore.userInfo?.auths?.find(
                   (v) =>
                     v.auth_value ===
-                    DEFAULT_AUTH_INFO.LIVE_PUSH_FORWARD_DOUYIN.auth_value
+                    DEFAULT_AUTH_INFO.LIVE_PUSH_FORWARD_DOUYU.auth_value
                 )
               "
             >
               <n-input-group>
                 <n-input
                   style="width: 500px"
-                  v-model:value="liveRoomInfo!.forward_douyin_url"
+                  v-model:value="liveRoomInfo!.forward_douyu_url"
                   type="text"
-                  placeholder="请输入转推抖音url"
+                  placeholder="请输入转推斗鱼url"
                 />
 
                 <n-button
@@ -313,23 +313,23 @@
           </div>
 
           <div>
-            转推斗鱼：
+            转推抖音：
             <div
               class="cdn"
               v-if="
                 userStore.userInfo?.auths?.find(
                   (v) =>
                     v.auth_value ===
-                    DEFAULT_AUTH_INFO.LIVE_PUSH_FORWARD_DOUYU.auth_value
+                    DEFAULT_AUTH_INFO.LIVE_PUSH_FORWARD_DOUYIN.auth_value
                 )
               "
             >
               <n-input-group>
                 <n-input
                   style="width: 500px"
-                  v-model:value="liveRoomInfo!.forward_douyu_url"
+                  v-model:value="liveRoomInfo!.forward_douyin_url"
                   type="text"
-                  placeholder="请输入转推斗鱼url"
+                  placeholder="请输入转推抖音url"
                 />
 
                 <n-button
@@ -468,7 +468,14 @@ watch(
 );
 
 async function handleUpdateMyLiveRoom() {
-  const res = await fetchUpdateMyLiveRoom(liveRoomInfo.value!);
+  const res = await fetchUpdateMyLiveRoom({
+    forward_bilibili_url: liveRoomInfo.value?.forward_bilibili_url,
+    forward_douyin_url: liveRoomInfo.value?.forward_douyin_url,
+    forward_douyu_url: liveRoomInfo.value?.forward_douyu_url,
+    forward_huya_url: liveRoomInfo.value?.forward_huya_url,
+    forward_kuaishou_url: liveRoomInfo.value?.forward_kuaishou_url,
+    forward_xiaohongshu_url: liveRoomInfo.value?.forward_xiaohongshu_url,
+  });
   if (res.code === 200) {
     window.$message.success('修改成功！');
   }

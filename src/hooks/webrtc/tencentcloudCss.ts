@@ -76,7 +76,7 @@ export const useWebRtcTencentcloudCss = () => {
             // https://cloud.tencent.com/document/product/267/92713#1a9164cf-9f99-47d5-9667-ea558886cb9f
             // 使用用户自定义的音视频流。
             await livePusher.startCustomCapture(canvasVideoStream.value);
-            livePusher.startPush(res.data.push_webrtc_url);
+            livePusher.startPush(res.data.webrtc_url);
           }
         } else {
           console.error('rtc不存在');
