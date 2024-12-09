@@ -90,6 +90,20 @@
             </div>
           </div>
         </template>
+        <template v-if="props.mediaType === MediaTypeEnum.removeGreenVideo">
+          <div class="item">
+            <div class="label">视频（移除绿幕）</div>
+            <div class="value">
+              <n-upload
+                :max="1"
+                :accept="'video/mp4, video/quicktime'"
+                :on-update:file-list="changMedia"
+              >
+                <n-button :disabled="isEdit">选择文件</n-button>
+              </n-upload>
+            </div>
+          </div>
+        </template>
       </div>
 
       <template #footer>
@@ -311,6 +325,17 @@ async function init() {
     mediaName.value = `视频-${
       appStore.allTrack
         .filter((item) => item.type === MediaTypeEnum.media)
+        .filter((item) => !item.hidden).length + 1
+    }`;
+  } else if (props.mediaType === MediaTypeEnum.removeGreenVideo) {
+    currentInput.value = {
+      ...currentInput.value,
+      type: MediaTypeEnum.removeGreenVideo,
+    };
+    mediaInfo.value = [];
+    mediaName.value = `视频（移除绿幕）-${
+      appStore.allTrack
+        .filter((item) => item.type === MediaTypeEnum.removeGreenVideo)
         .filter((item) => !item.hidden).length + 1
     }`;
   }

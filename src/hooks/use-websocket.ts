@@ -8,9 +8,7 @@ import { THEME_COLOR, URL_QUERY } from '@/constant';
 import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { useRTCParams } from '@/hooks/use-rtcParams';
 import { useTip } from '@/hooks/use-tip';
-import { useForwardAll } from '@/hooks/webrtc/forwardAll';
-import { useForwardBilibili } from '@/hooks/webrtc/forwardBilibili';
-import { useForwardHuya } from '@/hooks/webrtc/forwardHuya';
+import { useForwardThirdPartyLiveStreaming } from '@/hooks/webrtc/forwardThirdPartyLiveStreaming';
 import { useWebRtcLive } from '@/hooks/webrtc/live';
 import { useWebRtcMeetingOne } from '@/hooks/webrtc/meetingOne';
 import { useWebRtcMeetingPk } from '@/hooks/webrtc/meetingPk';
@@ -20,6 +18,7 @@ import {
   DanmuMsgTypeEnum,
   ILiveUser,
   IWsMessage,
+  SwitchEnum,
   WsMessageContentTypeEnum,
   WsMessageIsBilibiliEnum,
 } from '@/interface';
@@ -71,9 +70,10 @@ export const useWebsocket = () => {
   } = useRTCParams();
   const { updateWebRtcMeetingPkConfig, webRtcMeetingPk } = useWebRtcMeetingPk();
   const { updateWebRtcSrsConfig, webRtcSrs } = useWebRtcSrs();
-  const { updateForwardBilibiliConfig, forwardBilibili } = useForwardBilibili();
-  const { updateForwardAllConfig, forwardAll } = useForwardAll();
-  const { updateForwardHuyaConfig, forwardHuya } = useForwardHuya();
+  const {
+    updateForwardThirdPartyLiveStreamingConfig,
+    forwardThirdPartyLiveStreaming,
+  } = useForwardThirdPartyLiveStreaming();
   const { updateWebRtcTencentcloudCssConfig, webRtcTencentcloudCss } =
     useWebRtcTencentcloudCss();
   const { updateWebRtcLiveConfig, webRtcLive } = useWebRtcLive();
@@ -217,12 +217,14 @@ export const useWebsocket = () => {
   function handleHeartbeat() {}
 
   function handleStartLive({
-    name,
+    cdn,
+    isdev,
     type,
     msrDelay,
     msrMaxDelay,
   }: {
-    name?: string;
+    cdn: SwitchEnum;
+    isdev: string;
     type: LiveRoomTypeEnum;
     videoEl?: HTMLVideoElement;
     msrDelay: number;
@@ -235,7 +237,6 @@ export const useWebsocket = () => {
       requestId: getRandomString(8),
       msgType: WsMsgTypeEnum.startLive,
       data: {
-        name: name!,
         type,
         msrDelay,
         msrMaxDelay,
@@ -269,48 +270,31 @@ export const useWebsocket = () => {
         sender: mySocketId.value,
         receiver: 'srs',
       });
-    } else if (type === LiveRoomTypeEnum.forward_bilibili) {
-      updateForwardBilibiliConfig({
+    } else if (
+      [
+        LiveRoomTypeEnum.forward_all,
+        LiveRoomTypeEnum.forward_bilibili,
+        LiveRoomTypeEnum.forward_douyin,
+        LiveRoomTypeEnum.forward_douyu,
+        LiveRoomTypeEnum.forward_huya,
+        LiveRoomTypeEnum.forward_kuaishou,
+        LiveRoomTypeEnum.forward_xiaohongshu,
+      ].includes(type)
+    ) {
+      updateForwardThirdPartyLiveStreamingConfig({
+        cdn,
+        isdev,
+        liveRoomType: type,
         isPk: false,
         roomId: roomId.value,
         canvasVideoStream: canvasVideoStream.value,
       });
-      forwardBilibili.newWebRtc({
+      forwardThirdPartyLiveStreaming.newWebRtc({
         sender: mySocketId.value,
         receiver: 'srs',
         videoEl: createNullVideo(),
       });
-      forwardBilibili.sendOffer({
-        sender: mySocketId.value,
-        receiver: 'srs',
-      });
-    } else if (type === LiveRoomTypeEnum.forward_huya) {
-      updateForwardHuyaConfig({
-        isPk: false,
-        roomId: roomId.value,
-        canvasVideoStream: canvasVideoStream.value,
-      });
-      forwardHuya.newWebRtc({
-        sender: mySocketId.value,
-        receiver: 'srs',
-        videoEl: createNullVideo(),
-      });
-      forwardHuya.sendOffer({
-        sender: mySocketId.value,
-        receiver: 'srs',
-      });
-    } else if (type === LiveRoomTypeEnum.forward_all) {
-      updateForwardAllConfig({
-        isPk: false,
-        roomId: roomId.value,
-        canvasVideoStream: canvasVideoStream.value,
-      });
-      forwardAll.newWebRtc({
-        sender: mySocketId.value,
-        receiver: 'srs',
-        videoEl: createNullVideo(),
-      });
-      forwardAll.sendOffer({
+      forwardThirdPartyLiveStreaming.sendOffer({
         sender: mySocketId.value,
         receiver: 'srs',
       });
@@ -523,8 +507,6 @@ export const useWebsocket = () => {
           } else {
             console.error('不是发给我的nativeWebRtcOffer');
           }
-        } else if (data.live_room.type === LiveRoomTypeEnum.wertc_live) {
-        } else if (data.live_room.type === LiveRoomTypeEnum.wertc_meeting_one) {
         }
       }
     );

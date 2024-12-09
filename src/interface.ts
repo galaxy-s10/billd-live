@@ -729,6 +729,7 @@ export enum MediaTypeEnum {
   webAudio,
   pk,
   metting,
+  removeGreenVideo,
 }
 
 export enum DanmuMsgTypeEnum {

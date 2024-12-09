@@ -9,7 +9,7 @@
         class="container"
       >
         <div
-          class="screenshot"
+          class="screenshot-ico"
           @click="handleScreenshot"
         >
           <n-popover
@@ -85,7 +85,7 @@
           class="debug-info"
         >
           <span>{{
-            liveRoomTypeEnumMap[appStore.liveRoomInfo?.type + '']
+            liveRoomTypeEnumMap[Number(route.query[URL_QUERY.liveType])]
           }}</span>
           <span>：</span>
           <span>{{ mySocketId }}</span>
@@ -97,66 +97,112 @@
           ></div>
           <div class="detail">
             <div class="top">
-              <div
-                class="name"
-                v-if="appStore.liveRoomInfo"
-              >
-                名称：
-                <div class="val">
-                  <n-input-group>
-                    <n-input
-                      v-model:value="appStore.liveRoomInfo.name"
-                      size="small"
-                      placeholder="请输入房间名"
-                    />
-                    <n-button
-                      size="small"
-                      type="primary"
-                      @click="changeLiveRoomName"
-                    >
-                      确定
-                    </n-button>
-                  </n-input-group>
+              <div class="top-config">
+                <div
+                  class="name"
+                  v-if="appStore.liveRoomInfo"
+                >
+                  名称：
+                  <div class="val">
+                    <n-input-group>
+                      <n-input
+                        v-model:value="appStore.liveRoomInfo.name"
+                        size="small"
+                        placeholder="请输入房间名"
+                      />
+                      <n-button
+                        size="small"
+                        type="primary"
+                        @click="changeLiveRoomName"
+                      >
+                        确定
+                      </n-button>
+                    </n-input-group>
+                  </div>
                 </div>
-              </div>
-              <div class="area">
-                分区：
-                <div class="val">
-                  <n-input-group>
-                    <n-select
-                      v-model:value="currentArea"
-                      :options="areaList"
-                      size="small"
-                      placeholder="请选择分区"
-                    />
+                <div class="area">
+                  分区：
+                  <div class="val">
+                    <n-input-group>
+                      <n-select
+                        v-model:value="currentArea"
+                        :options="areaList"
+                        size="small"
+                        placeholder="请选择分区"
+                      />
 
-                    <n-button
-                      size="small"
-                      type="primary"
-                      @click="changeLiveRoomArea"
-                    >
-                      确定
-                    </n-button>
-                  </n-input-group>
+                      <n-button
+                        size="small"
+                        type="primary"
+                        @click="changeLiveRoomArea"
+                      >
+                        确定
+                      </n-button>
+                    </n-input-group>
+                  </div>
+                </div>
+                <div class="cdn">
+                  CDN：
+                  <div class="val">
+                    <n-input-group>
+                      <n-select
+                        v-model:value="currentCdn"
+                        :options="cdnList"
+                        size="small"
+                        placeholder=""
+                      />
+
+                      <n-button
+                        size="small"
+                        type="primary"
+                        @click="changeLiveRoomCdn"
+                      >
+                        确定
+                      </n-button>
+                    </n-input-group>
+                  </div>
+                </div>
+                <div class="dev">
+                  DEV：
+                  <div class="val">
+                    <n-input-group>
+                      <n-select
+                        v-model:value="currentDev"
+                        :options="devList"
+                        size="small"
+                        placeholder=""
+                      />
+
+                      <n-button
+                        size="small"
+                        type="primary"
+                        @click="changeLiveRoomCdn"
+                      >
+                        确定
+                      </n-button>
+                    </n-input-group>
+                  </div>
+                </div>
+                <div
+                  class="rtc-info"
+                  v-if="0"
+                >
+                  <div class="item">延迟：{{ rtcRtt || '-' }}</div>
+                  <div class="item">丢包：{{ rtcLoss || '-' }}</div>
+                  <div class="item">帧率：{{ rtcFps || '-' }}</div>
+                  <div class="item">发送码率：{{ rtcBytesSent || '-' }}</div>
+                  <div class="item">
+                    接收码率：{{ rtcBytesReceived || '-' }}
+                  </div>
                 </div>
               </div>
-              <div class="rtc-info">
-                <div class="item">延迟：{{ rtcRtt || '-' }}</div>
-                <div class="item">丢包：{{ rtcLoss || '-' }}</div>
-                <div class="item">帧率：{{ rtcFps || '-' }}</div>
-                <div class="item">发送码率：{{ rtcBytesSent || '-' }}</div>
-                <div class="item">接收码率：{{ rtcBytesReceived || '-' }}</div>
-              </div>
+
               <div class="other">
                 <span
                   class="item share"
                   @click="handleShare"
                 >
                   分享直播间
-                </span>
-                <span class="item">
-                  正在观看：
-                  {{ liveUserList.length }}
                 </span>
               </div>
             </div>
@@ -268,7 +314,7 @@
               </div>
               <div class="name">
                 {{ NODE_ENV === 'development' ? item.id : '' }}({{
-                  mediaTypeEnumMap[item.type]
+                  allMediaTypeList[item.type].txt
                 }}){{ item.mediaName }}
               </div>
             </div>
@@ -329,7 +375,9 @@
         </div>
       </div>
       <div class="danmu-card">
-        <div class="title">弹幕互动</div>
+        <div class="title">
+          弹幕互动{{ liveUserList.length ? `（${liveUserList.length}）` : '' }}
+        </div>
         <div class="list-wrap">
           <div
             ref="danmuListRef"
@@ -486,15 +534,10 @@ import {
 } from 'vue';
 import { useRoute } from 'vue-router';
 
-import { fetchLiveRoomOnlineUser } from '@/api/live';
+import { fetchLiveCloseMyLive, fetchLiveRoomOnlineUser } from '@/api/live';
 import { fetchUpdateMyLiveRoom } from '@/api/liveRoom';
 import { fetchGetWsMessageList } from '@/api/wsMessage';
-import {
-  THEME_COLOR,
-  URL_QUERY,
-  liveRoomTypeEnumMap,
-  mediaTypeEnumMap,
-} from '@/constant';
+import { THEME_COLOR, URL_QUERY, liveRoomTypeEnumMap } from '@/constant';
 import { emojiArray } from '@/emoji';
 import { commentAuthTip, loginTip } from '@/hooks/use-login';
 import { usePush } from '@/hooks/use-push';
@@ -505,6 +548,7 @@ import { useWebsocket } from '@/hooks/use-websocket';
 import {
   DanmuMsgTypeEnum,
   MediaTypeEnum,
+  SwitchEnum,
   WsMessageContentTypeEnum,
   WsMessageIsFileEnum,
   WsMessageIsShowEnum,
@@ -517,9 +561,11 @@ import { useNetworkStore } from '@/store/network';
 import { useUserStore } from '@/store/user';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import {
+  addZero,
   base64ToFile,
   createVideo,
   formatDownTime2,
+  formatTime3,
   formatTimeHour,
   generateBase64,
   getLiveRoomPageUrl,
@@ -529,6 +575,7 @@ import {
   saveFile,
   setAudioTrackContentHints,
   setVideoTrackContentHints,
+  videoRemoveBackground,
 } from '@/utils';
 import { NODE_ENV } from 'script/constant';
 
@@ -613,6 +660,16 @@ const suggestedName = ref('');
 const recordVideoTimer = ref();
 const areaList = ref<{ label: string; value: number }[]>([]);
 const currentArea = ref(-1);
+const cdnList = ref<{ label: string; value: number }[]>([
+  { label: '是', value: SwitchEnum.yes },
+  { label: '否', value: SwitchEnum.no },
+]);
+const currentCdn = ref(SwitchEnum.no);
+const devList = ref<{ label: string; value: string }[]>([
+  { label: '是', value: '1' },
+  { label: '否', value: '2' },
+]);
+const currentDev = ref('1');
 const recordVideoTime = ref('00:00:00');
 let avRecorder: AVRecorder | null = null;
 const loopGetLiveUserTimer = ref();
@@ -811,6 +868,17 @@ async function changeLiveRoomArea() {
     }
   }
 }
+async function changeLiveRoomCdn() {
+  if (appStore.liveRoomInfo) {
+    // @ts-ignore
+    const res = await fetchUpdateMyLiveRoom({
+      cdn: currentCdn.value,
+    });
+    if (res.code === 200) {
+      window.$message.success('修改成功！');
+    }
+  }
+}
 
 function handleSendDanmu() {
   sendDanmuTxt(danmuStr.value);
@@ -980,6 +1048,9 @@ watch(
       const area = newval.areas?.[0];
       if (area) {
         currentArea.value = area.id!;
+      }
+      if (newval.cdn !== undefined) {
+        currentCdn.value = newval.cdn;
       }
     }
   },
@@ -1201,6 +1272,7 @@ function handleEndLive() {
   clearLoop();
   endLive();
   sendRoomNoLive();
+  fetchLiveCloseMyLive();
 }
 
 function clearLoop() {
@@ -1245,16 +1317,27 @@ async function handleHistoryMsg() {
   }
 }
 
+function formatCurrentTime() {
+  const res = formatTime3(+new Date());
+  const name = `${res.year}年${addZero(res.month)}月${addZero(
+    res.day
+  )}日${addZero(res.hours)}时${addZero(res.minutes)}分${addZero(
+    res.seconds
+  )}秒`;
+  return name;
+}
+
 function handleScreenshot() {
   const url = generateBase64(pushCanvasRef.value!);
   const a = document.createElement('a');
   const event = new MouseEvent('click');
-  a.download = `${+new Date()}截屏`;
+  a.download = `${formatCurrentTime()}截屏`;
   a.href = url;
   a.dispatchEvent(event);
 }
 
 async function handleRecordVideo() {
+  // @ts-ignore
   if (!window.VideoDecoder || !window.AudioEncoder) {
     window.$message.warning(`当前环境不支持录制视频`);
     return;
@@ -1262,13 +1345,14 @@ async function handleRecordVideo() {
   initAudio();
   try {
     if (!recording.value) {
-      suggestedName.value = `billd直播录制-${+new Date()}.mp4`;
+      suggestedName.value = `billd直播录制-${formatCurrentTime()}.mp4`;
+      // @ts-ignore
       const fileHandle = await window.showSaveFilePicker({
         suggestedName: suggestedName.value,
       });
       const writer = await fileHandle.createWritable();
-      avRecorder = new AVRecorder(canvasVideoStream.value!.clone(), {});
-      await avRecorder.start();
+      avRecorder = new AVRecorder(canvasVideoStream.value!.clone());
+
       const startTime = +new Date();
       recordVideoTimer.value = setInterval(() => {
         const res = formatDownTime2({
@@ -1283,15 +1367,23 @@ async function handleRecordVideo() {
           recordVideoTime.value = `${res.h}:${res.m}:${res.s}`;
         }
       }, 1000);
-      avRecorder.outputStream?.pipeTo(writer).catch(console.error);
+      recording.value = true;
+      avRecorder
+        .start()
+        .pipeTo(writer)
+        .catch((error) => {
+          recording.value = false;
+          console.log('录制错误', error);
+          window.$message.error('录制错误');
+        });
     } else {
       clearInterval(recordVideoTimer.value);
       recordVideoTime.value = '00:00:00';
+      recording.value = false;
       await avRecorder?.stop();
       window.$message.success(`录制文件: ${suggestedName.value} 已保存到本地`);
       avRecorder = null;
     }
-    recording.value = !recording.value;
   } catch (error) {
     console.log(error);
     recording.value = false;
@@ -1323,7 +1415,7 @@ function handleShare() {
     title: '分享',
     confirmButtonText: '复制',
     hiddenCancel: true,
-    maskClosable: false,
+    maskClosable: true,
   })
     .then(() => {
       copyToClipBoard(getLiveRoomPageUrl(+roomId.value));
@@ -1339,6 +1431,8 @@ function handleStartLive() {
   }
   initAudio();
   startLive({
+    cdn: currentCdn.value,
+    isdev: currentDev.value,
     type: liveType,
     msrDelay: msrDelay.value,
     msrMaxDelay: 5000,
@@ -1376,6 +1470,7 @@ function autoCreateVideo(data: {
   rect?: { left: number; top: number };
   scaleInfo?: Record<number, { scaleX: number; scaleY: number }>;
   muted?: boolean;
+  removeGreen?: boolean;
 }) {
   const { file, id, rect, scaleInfo, muted } = data;
   let stream = data.stream;
@@ -1406,7 +1501,7 @@ function autoCreateVideo(data: {
     videoEl.onloadedmetadata = () => {
       let canvasDom: Raw<fabric.Image>;
       let ratio;
-      function main() {
+      async function main() {
         const width =
           stream?.getVideoTracks()[0].getSettings().width! ||
           videoEl.videoWidth;
@@ -1417,10 +1512,15 @@ function autoCreateVideo(data: {
         videoEl.width = width;
         videoEl.height = height;
         const old = appStore.allTrack.find((item) => item.id === id);
+        let removeGreenCanvas: any = videoEl;
+        if (data.removeGreen) {
+          removeGreenCanvas = await videoRemoveBackground({ videoEl });
+          console.log('removeGreenCanvas');
+        }
         if (canvasDom) {
           fabricCanvas.value?.remove(canvasDom);
           canvasDom = markRaw(
-            new fabric.Image(videoEl, {
+            new fabric.Image(removeGreenCanvas, {
               top: (old?.rect?.top || rect?.top || 0) / window.devicePixelRatio,
               left:
                 (old?.rect?.left || rect?.left || 0) / window.devicePixelRatio,
@@ -1430,7 +1530,7 @@ function autoCreateVideo(data: {
           );
         } else {
           canvasDom = markRaw(
-            new fabric.Image(videoEl, {
+            new fabric.Image(removeGreenCanvas, {
               top: (old?.rect?.top || rect?.top || 0) / window.devicePixelRatio,
               left:
                 (old?.rect?.left || rect?.left || 0) / window.devicePixelRatio,
@@ -1560,9 +1660,7 @@ function initCanvas() {
   const ins = markRaw(new fabric.Canvas(pushCanvasRef.value!));
   ins.setWidth(resolutionWidth);
   ins.setHeight(resolutionHeight);
-  ins.setBackgroundColor('black', () => {
-    console.log('setBackgroundColor回调');
-  });
+  ins.setBackgroundColor('black', () => {});
   wrapSize.width = wrapWidth;
   wrapSize.height = wrapHeight;
   fabricCanvas.value = ins;
@@ -1678,7 +1776,7 @@ async function handleCache() {
     obj.scaleInfo = item.scaleInfo;
     obj.stopwatchInfo = item.stopwatchInfo;
 
-    async function handleMediaVideo() {
+    async function handleMediaVideo(removeGreen?: boolean) {
       const { code, file } = await readFile(item.id);
       if (code === 1 && file) {
         const { videoEl, stream, canvasDom } = await autoCreateVideo({
@@ -1687,6 +1785,7 @@ async function handleCache() {
           muted: true,
           rect: item.rect,
           scaleInfo: item.scaleInfo,
+          removeGreen,
         });
         if (obj.volume !== undefined) {
           videoEl.volume = obj.volume / 100;
@@ -1765,7 +1864,6 @@ async function handleCache() {
             const height = stream.getVideoTracks()[0].getSettings().height!;
             videoEl.width = width;
             videoEl.height = height;
-
             const canvasDom = markRaw(
               new fabric.Image(videoEl, {
                 top: (item.rect?.top || 0) / window.devicePixelRatio,
@@ -1831,7 +1929,6 @@ async function handleCache() {
           const height = stream.getVideoTracks()[0].getSettings().height!;
           videoEl.width = width;
           videoEl.height = height;
-
           const canvasDom = markRaw(
             new fabric.Image(videoEl, {
               top: (item.rect?.top || 0) / window.devicePixelRatio,
@@ -1927,6 +2024,11 @@ async function handleCache() {
         fabricCanvas.value.add(canvasDom);
         obj.canvasDom = canvasDom;
       }
+    } else if (
+      item.type === MediaTypeEnum.removeGreenVideo &&
+      item.video === 1
+    ) {
+      queue.push(handleMediaVideo(true));
     }
     res.push(obj);
   });
@@ -2444,6 +2546,76 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     // @ts-ignore
     cacheStore.setResourceList(res);
     console.log('获取视频成功');
+  } else if (val.type === MediaTypeEnum.removeGreenVideo) {
+    const mediaVideoTrack: AppRootState['allTrack'][0] = {
+      id: getRandomEnglishString(6),
+      openEye: true,
+      audio: 2,
+      video: 1,
+      mediaName: val.mediaName,
+      type: MediaTypeEnum.removeGreenVideo,
+      track: undefined,
+      trackid: undefined,
+      stream: undefined,
+      streamid: undefined,
+      hidden: false,
+      muted: false,
+      scaleInfo: {},
+      rect: { left: 0, top: 0 },
+    };
+    if (fabricCanvas.value) {
+      if (!val.mediaInfo) return;
+      const file = val.mediaInfo[0].file!;
+      const { code } = await saveFile({ file, fileName: mediaVideoTrack.id });
+      if (code !== 1) return;
+      const { videoEl, canvasDom, scale, stream } = await autoCreateVideo({
+        file,
+        id: mediaVideoTrack.id,
+        muted: mediaVideoTrack.muted,
+        rect: mediaVideoTrack.rect,
+        scaleInfo: mediaVideoTrack.scaleInfo,
+        removeGreen: true,
+      });
+      setScaleInfo({ canvasDom, track: mediaVideoTrack, scale });
+      mediaVideoTrack.videoEl = videoEl;
+      mediaVideoTrack.canvasDom = canvasDom;
+      mediaVideoTrack.stream = stream;
+      mediaVideoTrack.streamid = stream.id;
+      mediaVideoTrack.track = stream.getVideoTracks()[0];
+      mediaVideoTrack.trackid = stream.getVideoTracks()[0].id;
+
+      if (stream.getAudioTracks()[0]) {
+        console.log('视频有音频');
+        mediaVideoTrack.audio = 1;
+        mediaVideoTrack.volume = appStore.normalVolume;
+        const audioTrack: AppRootState['allTrack'][0] = {
+          id: mediaVideoTrack.id,
+          openEye: true,
+          audio: 1,
+          video: 2,
+          mediaName: val.mediaName,
+          type: MediaTypeEnum.removeGreenVideo,
+          track: stream.getAudioTracks()[0],
+          trackid: stream.getAudioTracks()[0].id,
+          stream,
+          streamid: stream.id,
+          hidden: true,
+          muted: false,
+          volume: mediaVideoTrack.volume,
+          scaleInfo: {},
+        };
+        const res = [...appStore.allTrack, audioTrack];
+        appStore.setAllTrack(res);
+        cacheStore.setResourceList(res);
+        handleMixedAudio();
+      }
+    }
+    const res = [...appStore.allTrack, mediaVideoTrack];
+    // @ts-ignore
+    appStore.setAllTrack(res);
+    // @ts-ignore
+    cacheStore.setResourceList(res);
+    console.log('获取视频成功');
   }
 }
 
@@ -2610,7 +2782,6 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
     background-color: white;
     color: #9499a0;
     vertical-align: top;
-
     .container {
       position: relative;
       height: 100%;
@@ -2620,7 +2791,7 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
         position: absolute;
         top: 5px;
         left: 5px;
-        z-index: 100;
+        z-index: 1;
         color: red;
         font-size: 12px;
         line-height: 1;
@@ -2632,7 +2803,7 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
         cursor: pointer;
         transform: translateX(-100%);
       }
-      .screenshot {
+      .screenshot-ico {
         position: absolute;
         top: 30px;
         left: -10px;
@@ -2643,7 +2814,6 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
         position: absolute;
         top: 5px;
         left: 5px;
-        z-index: 100;
         color: red;
         font-size: 12px;
         line-height: 1;
@@ -2698,26 +2868,40 @@ function handleStartMedia(item: { type: MediaTypeEnum; txt: string }) {
             align-items: center;
             justify-content: space-between;
             color: #18191c;
-            .name {
+            .top-config {
               display: flex;
               align-items: center;
-              margin-right: 15px;
-              .val {
-                width: 180px;
+              .name {
+                display: flex;
+                align-items: center;
+                margin-right: 15px;
+                .val {
+                  width: 180px;
+                }
+              }
+              .rtc-info {
+                display: flex;
+                flex: 1;
+              }
+              .area {
+                display: flex;
+                align-items: center;
+                margin-right: 15px;
+                .val {
+                  width: 130px;
+                }
+              }
+              .cdn,
+              .dev {
+                display: flex;
+                align-items: center;
+                margin-right: 15px;
+                .val {
+                  width: 110px;
+                }
               }
             }
-            .rtc-info {
-              display: flex;
-              flex: 1;
-            }
-            .area {
-              display: flex;
-              align-items: center;
-              margin-right: 15px;
-              .val {
-                width: 130px;
-              }
-            }
+
             .other {
               .item {
                 margin-right: 10px;

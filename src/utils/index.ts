@@ -1,6 +1,68 @@
 // TIP: ctrl+cmd+t,生成函数注释
+import { createChromakey } from '@webav/av-cliper';
 import { computeBox, getRangeRandom, judgeType } from 'billd-utils';
 import sparkMD5 from 'spark-md5';
+
+export function videoRemoveBackground(data: {
+  videoEl;
+  /** 需要扣除的背景色，若不传则取第一个像素点 */
+  keyColor?;
+  /** 背景色相似度阈值，过小可能保留背景色，过大可能扣掉更多非背景像素点 */
+  similarity?;
+  /** 平滑度；过小可能出现锯齿，过大导致整体变透明 */
+  smoothness?;
+  /** 饱和度；过小可能保留绿色混合，过大导致图片变灰度 */
+  spill?;
+}) {
+  const videoEl = data.videoEl;
+  const keyColor = data.keyColor || [31, 255, 60];
+  const similarity = data.similarity || 0.4;
+  const smoothness = data.smoothness || 0.1;
+  const spill = data.spill || 0.1;
+  return new Promise<HTMLCanvasElement>((resolve) => {
+    videoEl.style.position = 'fixed';
+    videoEl.style.bottom = '0';
+    videoEl.style.right = '0';
+    videoEl.style.width = '1px';
+    videoEl.style.height = '1px';
+    videoEl.style.opacity = '0';
+    videoEl.style.pointerEvents = 'none';
+    document.body.appendChild(videoEl);
+    videoEl.addEventListener('playing', () => {
+      // @ts-ignore
+      const stream = videoEl.captureStream() as MediaStream;
+      const { width, height } = stream.getVideoTracks()[0].getSettings();
+      if (width && height) {
+        const canvasEl = document.createElement('canvas');
+        videoEl.width = width;
+        videoEl.height = height;
+        canvasEl.width = width;
+        canvasEl.height = height;
+        const ctx = canvasEl.getContext('2d', { alpha: true });
+        if (ctx) {
+          const chromakey = createChromakey({
+            keyColor,
+            similarity,
+            smoothness,
+            spill,
+          });
+          const render = async () => {
+            ctx.drawImage(await chromakey(videoEl), 0, 0, width, height);
+            requestAnimationFrame(render);
+          };
+          render();
+        }
+        // const video = document.createElement('video');
+        // video.srcObject = canvasEl.captureStream();
+        // video.autoplay = true;
+        // video.loop = true;
+        // document.body.appendChild(video);
+        // resolve(video);
+        resolve(canvasEl);
+      }
+    });
+  });
+}
 
 export function isMSESupported() {
   return !!window.MediaSource;
@@ -141,10 +203,11 @@ export function formatMoney(money: number, hideZeroCent?: boolean) {
   }
 }
 
+export function addZero(num: number) {
+  return num < 10 ? `0${num}` : `${num}`;
+}
+
 export const formatTimeHour = (time: number | string | Date) => {
-  function addZero(num: number) {
-    return num < 10 ? `0${num}` : num;
-  }
   let time2 = time;
   if (judgeType(time) === 'string') {
     time2 = iosTimestamp(time as string);
@@ -162,9 +225,6 @@ export const formatTimeHour = (time: number | string | Date) => {
 };
 
 export const formatTime = (timestamp: number) => {
-  function addZero(num: number) {
-    return num < 10 ? `0${num}` : num;
-  }
   const date = new Date(timestamp);
 
   // 获取年份
@@ -189,6 +249,30 @@ export const formatTime = (timestamp: number) => {
   return `${year}-${addZero(month)}-${addZero(day)} ${addZero(hours)}:${addZero(
     minutes
   )}:${addZero(seconds)}`;
+};
+
+export const formatTime3 = (timestamp: number) => {
+  const date = new Date(timestamp);
+
+  // 获取年份
+  const year = date.getFullYear();
+
+  // 获取月份（注意月份是从0开始的，所以要加1）
+  const month = date.getMonth() + 1;
+
+  // 获取日期
+  const day = date.getDate();
+
+  // 获取小时
+  const hours = date.getHours();
+
+  // 获取分钟
+  const minutes = date.getMinutes();
+
+  // 获取秒数
+  const seconds = date.getSeconds();
+
+  return { year, month, day, hours, minutes, seconds };
 };
 
 export const getLiveRoomPageUrl = (liveRoomId: number) => {

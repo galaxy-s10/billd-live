@@ -191,7 +191,6 @@ export type WsOtherJoinType = IResWsFormat<{
 
 /** 开始直播 */
 export type WsStartLiveType = IReqWsFormat<{
-  name: string;
   type: LiveRoomTypeEnum;
   /** 单位：毫秒 */
   msrDelay: number;

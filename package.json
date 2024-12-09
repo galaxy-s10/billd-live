@@ -39,7 +39,8 @@
   "dependencies": {
     "@vicons/ionicons5": "^0.12.0",
     "@vueuse/core": "^10.11.1",
-    "@webav/av-recorder": "^0.3.3",
+    "@webav/av-cliper": "^1.0.6",
+    "@webav/av-recorder": "^1.0.6",
     "axios": "^1.2.1",
     "billd-deploy": "^1.1.0",
     "billd-html-webpack-plugin": "^1.0.6",

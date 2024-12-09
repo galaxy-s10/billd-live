@@ -14,9 +14,12 @@ importers:
       '@vueuse/core':
         specifier: ^10.11.1
         version: 10.11.1(vue@3.3.4)
+      '@webav/av-cliper':
+        specifier: ^1.0.6
+        version: 1.0.6
       '@webav/av-recorder':
-        specifier: ^0.3.3
-        version: 0.3.3
+        specifier: ^1.0.6
+        version: 1.0.6
       axios:
         specifier: ^1.2.1
         version: 1.3.4
@@ -1834,12 +1837,6 @@ packages:
   '@types/connect@3.4.35':
     resolution: {integrity: sha512-cdeYyv4KWoEgpBISTxWvqYsVy444DOqehiF3fM3ne10AmJ62RSyNkUnxMJXHQWRQQX2eR94m5y1IZyDwBjV9FQ==}
 
-  '@types/dom-mediacapture-transform@0.1.9':
-    resolution: {integrity: sha512-/K96dASG23bqF+VAftybbI5SUj9qSsdsSKZglm7Bq/sIaEve5z8I+GdClARcSQMAAVkH7bc83UI1jiH/qc5LMw==}
-
-  '@types/dom-webcodecs@0.1.11':
-    resolution: {integrity: sha512-yPEZ3z7EohrmOxbk/QTAa0yonMFkNkjnVXqbGb7D4rMr+F1dGQ8ZUFxXkyLLJuiICPejZ0AZE9Rrk9wUCczx4A==}
-
   '@types/eslint-scope@3.7.4':
     resolution: {integrity: sha512-9K4zoImiZc3HlIp6AVUDE4CWYx22a+lhSZMYNpbjW04+YF0KWj4pJXnEMjdnFTiQibFFmElcsasJXDbdI/EPhA==}
 
@@ -1941,9 +1938,6 @@ packages:
 
   '@types/web-bluetooth@0.0.20':
     resolution: {integrity: sha512-g9gZnnXVq7gM7v3tJCWV/qw7w+KeOlSHAhgF9RytFyifW6AF61hdT2ucrYhPq9hLs5JIryeupHV3qGk95dH9ow==}
-
-  '@types/wicg-file-system-access@2020.9.8':
-    resolution: {integrity: sha512-ggMz8nOygG7d/stpH40WVaNvBwuyYLnrg5Mbyf6bmsj/8+gb6Ei4ZZ9/4PNpcPNTT8th9Q8sM8wYmWGjMWLX/A==}
 
   '@types/ws@8.5.4':
     resolution: {integrity: sha512-zdQDHKUgcX/zBc4GrwsE/7dVdAD8JR4EuiAXiiUhhfyIJXXb2+PrGshFyeXWQPMmmZ2XxgaqclgpIC7eTXc1mg==}
@@ -2142,14 +2136,17 @@ packages:
   '@webassemblyjs/wast-printer@1.11.1':
     resolution: {integrity: sha512-IQboUWM4eKzWW+N/jij2sRatKMh99QEelo3Eb2q0qXkvPRISAj8Qxtmw5itwqK+TTkBuUIE45AxYPToqPtL5gg==}
 
-  '@webav/av-cliper@0.3.3':
-    resolution: {integrity: sha512-VUIaxlfZHsJLc875eL+rGaWTavVLRqkgaVa6R8XIpdjmWJxnD7Le55mViL1SxRILKtsi0KnqWfWDL2JzNAcwOw==}
+  '@webav/av-cliper@1.0.6':
+    resolution: {integrity: sha512-uyG6FkD2XYfWT0J+lpVJiTZ7YBg4OzGzG97Fq9A97LKTvKoqP0vB8jyELV4edZOUzwKjh3HJiALFWNL9uV+IWQ==}
 
-  '@webav/av-recorder@0.3.3':
-    resolution: {integrity: sha512-nMA6MT8hqEYq9yjIQeTo+Ee5CNw/9zXzvbksFCsWH8+VPTKoKFlDIqbgSLMpYjOgkkT7a9RY5IpCxU9Aq7Wdkw==}
+  '@webav/av-recorder@1.0.6':
+    resolution: {integrity: sha512-I50ZGU9LSIRuW8xrF8Amqr/IjtPpkfexfjYG2M0CMt2aT6bFo9jhvc1jdwlRT7V7/1iuS52DH7rYDg11+myG7A==}
 
-  '@webav/mp4box.js@0.5.3-fenghen':
-    resolution: {integrity: sha512-jAN15I3Po1Z6Ns02iknb6KGbird9rd1h9TGldzbwsar+88ZlHd+oVjOQnFavBdNDc5vmULUnldcWGDdKc02npw==}
+  '@webav/internal-utils@1.0.6':
+    resolution: {integrity: sha512-rjuVwsxcaS9LGSBeBZqoFE8af7GKH9IPAKMsr2tsdd03B+M/wWrmRWH0ZtaHJChPRneOOZkDicHlMKijc2Cdqw==}
+
+  '@webav/mp4box.js@0.5.4-fenghen':
+    resolution: {integrity: sha512-1NDZyNcB4Eu52tWhrRPGRTXpXUzWzh1xJE6jA0owj/Tlh8d9Bhsu2nsl9Dyheg1IhiFm3FfFoz0aK5dkCadqow==}
 
   '@webpack-cli/configtest@1.2.0':
     resolution: {integrity: sha512-4FB8Tj6xyVkyqjj1OaTqCjXYULB9FMkqQ8yGrZjRDrYh0nOE+7Lhs45WioWQQMV+ceFlE368Ukhe6xdvJM9Egg==}
@@ -3875,9 +3872,6 @@ packages:
     resolution: {integrity: sha512-6jvvn/12IC4quLBL1KNokxC7wWTvYncaVUYSoxWw7YykPLuRrnv4qdHcSOywOI5RpkOVGeQRtWM8/q+G6W6qfQ==}
     engines: {node: '>= 8'}
 
-  fix-webm-duration@1.0.5:
-    resolution: {integrity: sha512-b6oula3OfSknx0aWoLsxvp4DVIYbwsf+UAkr6EDAK3iuMYk/OSNKzmeSI61GXK0MmFTEuzle19BPvTxMIKjkZg==}
-
   flat-cache@3.0.4:
     resolution: {integrity: sha512-dm9s5Pw7Jc0GvMYbshN6zchCA9RgQlzzEZX3vylR9IqFfS8XciblUXOKfW6SiuJ0e13eDYZoZV5wdrev7P3Nwg==}
     engines: {node: ^10.12.0 || >=12.0.0}
@@ -5240,8 +5234,8 @@ packages:
     resolution: {integrity: sha512-ur5UIdyw5Y7yEj9wLzhqXiy6GZ3Mwx0yGI+5sMn2r0N0v3cKJvUmFH5yPP+WXh9e0xfyzyJX95D8l088DNFj7A==}
     hasBin: true
 
-  opfs-tools@0.1.1:
-    resolution: {integrity: sha512-F+UroKcPfU2/ZzT/4/hONIEbdFHkD/oWwpzH3rkaz+EiDm0W6b2vqNAp1LrWClGrERZ19X3ceRixYL0ZdXcpjA==}
+  opfs-tools@0.6.1:
+    resolution: {integrity: sha512-UAopBwr64jzyrNUr4LWWhLGZY2dAzNIKX/CTI48wR5V88dx3aqx0DN+NdosMY9vZ0heb12ZMTPQ0XpoC4cfSOA==}
 
   optionator@0.9.1:
     resolution: {integrity: sha512-74RlY5FCnhq4jRxVUPKDaRwrVNXMqsGsiW6AJw4XK8hmtm10wC0ypZBLw5IIp85NZMr91+qd1RvvENwg7jjRFw==}
@@ -9144,12 +9138,6 @@ snapshots:
     dependencies:
       '@types/node': 18.15.3
 
-  '@types/dom-mediacapture-transform@0.1.9':
-    dependencies:
-      '@types/dom-webcodecs': 0.1.11
-
-  '@types/dom-webcodecs@0.1.11': {}
-
   '@types/eslint-scope@3.7.4':
     dependencies:
       '@types/eslint': 8.21.2
@@ -9250,8 +9238,6 @@ snapshots:
   '@types/video.js@7.3.52': {}
 
   '@types/web-bluetooth@0.0.20': {}
-
-  '@types/wicg-file-system-access@2020.9.8': {}
 
   '@types/ws@8.5.4':
     dependencies:
@@ -9558,23 +9544,23 @@ snapshots:
       '@webassemblyjs/ast': 1.11.1
       '@xtuc/long': 4.2.2
 
-  '@webav/av-cliper@0.3.3':
+  '@webav/av-cliper@1.0.6':
     dependencies:
-      '@types/dom-webcodecs': 0.1.11
-      '@webav/mp4box.js': 0.5.3-fenghen
-      opfs-tools: 0.1.1
+      '@webav/internal-utils': 1.0.6
+      '@webav/mp4box.js': 0.5.4-fenghen
+      opfs-tools: 0.6.1
       wave-resampler: 1.0.0
 
-  '@webav/av-recorder@0.3.3':
+  '@webav/av-recorder@1.0.6':
     dependencies:
-      '@types/dom-mediacapture-transform': 0.1.9
-      '@types/dom-webcodecs': 0.1.11
-      '@types/wicg-file-system-access': 2020.9.8
-      '@webav/av-cliper': 0.3.3
-      '@webav/mp4box.js': 0.5.3-fenghen
-      fix-webm-duration: 1.0.5
+      '@webav/av-cliper': 1.0.6
+      '@webav/internal-utils': 1.0.6
 
-  '@webav/mp4box.js@0.5.3-fenghen': {}
+  '@webav/internal-utils@1.0.6':
+    dependencies:
+      '@webav/mp4box.js': 0.5.4-fenghen
+
+  '@webav/mp4box.js@0.5.4-fenghen': {}
 
   '@webpack-cli/configtest@1.2.0(webpack-cli@4.10.0(webpack-bundle-analyzer@4.8.0)(webpack-dev-server@4.13.1)(webpack@5.76.2))(webpack@5.76.2(@swc/core@1.3.84)(esbuild@0.15.18)(webpack-cli@4.10.0))':
     dependencies:
@@ -11651,8 +11637,6 @@ snapshots:
       micromatch: 4.0.5
       resolve-dir: 1.0.1
 
-  fix-webm-duration@1.0.5: {}
-
   flat-cache@3.0.4:
     dependencies:
       flatted: 3.2.7
@@ -13101,7 +13085,7 @@ snapshots:
 
   opener@1.5.2: {}
 
-  opfs-tools@0.1.1: {}
+  opfs-tools@0.6.1: {}
 
   optionator@0.9.1:
     dependencies:

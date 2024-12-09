@@ -337,7 +337,6 @@ router.beforeEach((to, from, next) => {
     console.log('当前是移动端');
     if (!Object.keys(mobileRouterName).includes(to.name as string)) {
       // 当前移动端，但是跳转了非移动端路由
-      console.log('当前移动端，但是跳转了非移动端路由', to, from);
       if (to.name === routerName.pull) {
         return next({
           name: mobileRouterName.h5Room,
@@ -375,7 +374,6 @@ router.beforeEach((to, from, next) => {
       return next();
     }
   } else {
-    console.log('当前是电脑/ipad端');
     if (Object.keys(mobileRouterName).includes(to.name as string)) {
       // 当前非移动端，但是跳转了移动端路由
       console.log('当前非移动端，但是跳转了移动端路由');

@@ -1,7 +1,6 @@
 import { ref, watch } from 'vue';
 
-import { DEFAULT_AUTH_INFO } from '@/constant';
-import { MediaTypeEnum } from '@/interface';
+import { allMediaTypeList, DEFAULT_AUTH_INFO } from '@/constant';
 import { useUserStore } from '@/store/user';
 
 export const useRTCParams = () => {
@@ -192,41 +191,6 @@ export const useRTCParams = () => {
     },
     { immediate: true }
   );
-  const allMediaTypeList: Record<string, { type: MediaTypeEnum; txt: string }> =
-    {
-      [MediaTypeEnum.camera]: {
-        type: MediaTypeEnum.camera,
-        txt: '摄像头',
-      },
-      [MediaTypeEnum.microphone]: {
-        type: MediaTypeEnum.microphone,
-        txt: '麦克风',
-      },
-      [MediaTypeEnum.screen]: {
-        type: MediaTypeEnum.screen,
-        txt: '窗口',
-      },
-      [MediaTypeEnum.txt]: {
-        type: MediaTypeEnum.txt,
-        txt: '文字',
-      },
-      [MediaTypeEnum.img]: {
-        type: MediaTypeEnum.img,
-        txt: '图片',
-      },
-      [MediaTypeEnum.media]: {
-        type: MediaTypeEnum.media,
-        txt: '视频',
-      },
-      [MediaTypeEnum.time]: {
-        type: MediaTypeEnum.time,
-        txt: '时间',
-      },
-      [MediaTypeEnum.stopwatch]: {
-        type: MediaTypeEnum.stopwatch,
-        txt: '秒表',
-      },
-    };
 
   return {
     maxBitrate,

@@ -195,17 +195,43 @@ export const goodsTypeEnumMap = {
   [GoodsTypeEnum.qypShop]: '逸鹏的商品',
 };
 
-export const mediaTypeEnumMap = {
-  [MediaTypeEnum.camera]: '摄像头',
-  [MediaTypeEnum.microphone]: '麦克风',
-  [MediaTypeEnum.screen]: '窗口',
-  [MediaTypeEnum.img]: '图片',
-  [MediaTypeEnum.txt]: '文字',
-  [MediaTypeEnum.media]: '视频',
-  [MediaTypeEnum.time]: '时间',
-  [MediaTypeEnum.stopwatch]: '秒表',
-  [MediaTypeEnum.pk]: '打pk',
-  [MediaTypeEnum.metting]: '会议',
+export const allMediaTypeList = {
+  [MediaTypeEnum.camera]: {
+    type: MediaTypeEnum.camera,
+    txt: '摄像头',
+  },
+  [MediaTypeEnum.microphone]: {
+    type: MediaTypeEnum.microphone,
+    txt: '麦克风',
+  },
+  [MediaTypeEnum.screen]: {
+    type: MediaTypeEnum.screen,
+    txt: '窗口',
+  },
+  [MediaTypeEnum.txt]: {
+    type: MediaTypeEnum.txt,
+    txt: '文字',
+  },
+  [MediaTypeEnum.img]: {
+    type: MediaTypeEnum.img,
+    txt: '图片',
+  },
+  [MediaTypeEnum.media]: {
+    type: MediaTypeEnum.media,
+    txt: '视频',
+  },
+  [MediaTypeEnum.time]: {
+    type: MediaTypeEnum.time,
+    txt: '时间',
+  },
+  [MediaTypeEnum.stopwatch]: {
+    type: MediaTypeEnum.stopwatch,
+    txt: '秒表',
+  },
+  [MediaTypeEnum.removeGreenVideo]: {
+    type: MediaTypeEnum.removeGreenVideo,
+    txt: '移除绿幕',
+  },
 };
 
 export const liveRoomTypeEnumMap = {
@@ -219,9 +245,13 @@ export const liveRoomTypeEnumMap = {
   [LiveRoomTypeEnum.wertc_live]: 'webrtc直播',
   [LiveRoomTypeEnum.wertc_meeting_one]: 'webrtc会议一',
   [LiveRoomTypeEnum.wertc_meeting_two]: 'webrtc会议二',
-  [LiveRoomTypeEnum.forward_bilibili]: '转推b站',
-  [LiveRoomTypeEnum.forward_huya]: '转推虎牙',
   [LiveRoomTypeEnum.forward_all]: '转推所有',
+  [LiveRoomTypeEnum.forward_bilibili]: '转推b站',
+  [LiveRoomTypeEnum.forward_douyin]: '转推抖音',
+  [LiveRoomTypeEnum.forward_douyu]: '转推斗鱼',
+  [LiveRoomTypeEnum.forward_huya]: '转推虎牙',
+  [LiveRoomTypeEnum.forward_kuaishou]: '转推快手',
+  [LiveRoomTypeEnum.forward_xiaohongshu]: '转推小红书',
 };
 
 export const sliderList = [

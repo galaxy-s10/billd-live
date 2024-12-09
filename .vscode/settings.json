@@ -44,6 +44,6 @@
     "tsx",
     "vue"
   ],
-  "typescript.tsdk": "node_modules/typescript/lib",
+  // "typescript.tsdk": "node_modules/typescript/lib",
   "vue.codeActions.savingTimeLimit": 2000
 }

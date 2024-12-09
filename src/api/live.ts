@@ -16,3 +16,7 @@ export function fetchLiveRoomOnlineUser(params) {
 export function fetchLiveLiveRoomIsLive(liveRoomId: number) {
   return request.get(`/live/live_room_is_live/${liveRoomId}`);
 }
+
+export function fetchLiveCloseMyLive() {
+  return request.post(`/live/close_my_live`);
+}

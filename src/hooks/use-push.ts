@@ -193,7 +193,7 @@ export function usePush() {
     });
   }
 
-  async function startLive({ type, msrDelay, msrMaxDelay }) {
+  async function startLive({ type, cdn, isdev, msrDelay, msrMaxDelay }) {
     if (!loginTip()) return;
     const flag = handleUserHasLiveRoom();
     if (!flag) {
@@ -232,11 +232,7 @@ export function usePush() {
         frameRate: currentMaxFramerate.value,
       });
     }
-    handleStartLive({
-      type,
-      msrDelay,
-      msrMaxDelay,
-    });
+    handleStartLive({ cdn, isdev, type, msrDelay, msrMaxDelay });
   }
 
   /** 结束直播 */
