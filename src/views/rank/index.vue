@@ -607,8 +607,9 @@ onMounted(() => {
             border-radius: 50%;
           }
           .username {
+            margin-right: 15px;
             margin-left: 10px;
-            width: 100px;
+            max-width: 200px;
 
             @extend %singleEllipsis;
           }

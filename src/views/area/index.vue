@@ -61,7 +61,6 @@ watch(
     cursor: pointer;
     &.active {
       color: $theme-color-gold;
-      font-size: 16px;
 
       &::after {
         position: absolute;

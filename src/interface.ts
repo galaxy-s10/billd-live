@@ -704,6 +704,7 @@ export type ILive = {
   live_room?: ILiveRoom;
   /** 用户信息 */
   user?: IUser;
+  live_record?: ILiveRecord;
 
   created_at?: string;
   updated_at?: string;
@@ -729,7 +730,8 @@ export enum MediaTypeEnum {
   webAudio,
   pk,
   metting,
-  removeGreenVideo,
+  mediaRemoveGreen,
+  cameraRemoveGreen,
 }
 
 export enum DanmuMsgTypeEnum {
@@ -741,16 +743,12 @@ export enum DanmuMsgTypeEnum {
   reward,
 }
 
-export interface ILiveUser {
-  created_at: number;
-  client_ip: string;
-  value: {
-    live_room_id: number;
-    live_room_name: string;
-    user_id: number;
-    user_username: string;
-    user_avatar: string;
-  };
+export interface ILiveRoomLiveUser {
+  live_room_id: number;
+  live_room_name: string;
+  user_id: number;
+  user_username: string;
+  user_avatar: string;
 }
 
 export interface ICredential {
@@ -781,4 +779,65 @@ export interface IStreamKey {
 export interface IPushRes {
   srsPushRes: IStreamKey;
   cdnPushRes: IStreamKey;
+}
+
+export interface ILiveRecord {
+  id?: number;
+  /** 直播平台 */
+  platform?: LivePlatformEnum;
+  /** 直播流名称 */
+  stream_name?: string;
+  /** 直播流id */
+  stream_id?: string;
+  /** 用户id */
+  user_id?: number;
+  /** 直播间id */
+  live_room_id?: number;
+  /** 直播时长（单位：秒） */
+  duration?: number;
+  /** 弹幕数 */
+  danmu?: number;
+  /** 观看数 */
+  view?: number;
+  /** 直播开始时间 */
+  start_time?: string;
+  /** 直播结束时间 */
+  end_time?: string;
+  /** 备注 */
+  remark?: string;
+
+  /** 直播间信息 */
+  live_room?: ILiveRoom;
+  /** 用户信息 */
+  user?: IUser;
+
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string;
+}
+
+export enum BlacklistTypeEnum {
+  /** 频繁请求 */
+  frequent,
+  /** 管理员禁用 */
+  admin_disable,
+  /** 禁言 */
+  disable_msg,
+}
+
+export interface IBlacklist {
+  id?: number;
+  ip?: string;
+  user_id?: number;
+  type?: BlacklistTypeEnum;
+  start_date?: number;
+  end_date?: number;
+  msg?: string;
+  remark?: string;
+
+  user?: IUser;
+
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string;
 }

@@ -16,7 +16,7 @@ import { useWebRtcSrs } from '@/hooks/webrtc/srs';
 import { useWebRtcTencentcloudCss } from '@/hooks/webrtc/tencentcloudCss';
 import {
   DanmuMsgTypeEnum,
-  ILiveUser,
+  ILiveRoomLiveUser,
   IWsMessage,
   SwitchEnum,
   WsMessageContentTypeEnum,
@@ -83,7 +83,7 @@ export const useWebsocket = () => {
   const connectStatus = ref<WsConnectStatusEnum>();
   const loopHeartbeatTimer = ref();
   const loopGetLiveUserTimer = ref();
-  const liveUserList = ref<ILiveUser[]>([]);
+  const liveUserList = ref<ILiveRoomLiveUser[]>([]);
   const roomId = ref('');
   const roomLiving = ref(false);
   const isAnchor = ref(false);

@@ -3,6 +3,37 @@ import { createChromakey } from '@webav/av-cliper';
 import { computeBox, getRangeRandom, judgeType } from 'billd-utils';
 import sparkMD5 from 'spark-md5';
 
+/**
+ * 对象排序
+ */
+export function objectSort(data: { obj; sortField; sort?: 'asc' | 'desc' }) {
+  // 将对象转换为数组
+  const entries = Object.entries(data.obj);
+  entries.sort(function (a, b) {
+    // @ts-ignore
+    const res1 = a[1][data.sortField];
+    // @ts-ignore
+    const res2 = b[1][data.sortField];
+    if (data.sort === 'desc') {
+      return res2 - res1;
+    } else {
+      return res1 - res2;
+    }
+  });
+
+  return entries;
+
+  // 将排序后的数组转换回对象
+  // const res: any = {};
+  // for (let i = 0; i < entries.length; i += 1) {
+  //   res[entries[i][0]] = entries[i][1];
+  // }
+  // return res;
+}
+
+/**
+ * 移除视频背景
+ */
 export function videoRemoveBackground(data: {
   videoEl;
   /** 需要扣除的背景色，若不传则取第一个像素点 */
@@ -52,12 +83,6 @@ export function videoRemoveBackground(data: {
           };
           render();
         }
-        // const video = document.createElement('video');
-        // video.srcObject = canvasEl.captureStream();
-        // video.autoplay = true;
-        // video.loop = true;
-        // document.body.appendChild(video);
-        // resolve(video);
         resolve(canvasEl);
       }
     });

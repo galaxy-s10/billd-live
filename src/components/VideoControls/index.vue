@@ -136,7 +136,7 @@
                 :class="{ active: appStore.videoControls?.renderMode === item }"
                 v-for="item in LiveRenderEnum"
                 :key="item"
-                @click="appStore.videoControls.renderMode = item"
+                @click="changeRenderMode(item)"
               >
                 {{ item }}
               </div>
@@ -203,6 +203,7 @@ import { LiveLineEnum, LiveRenderEnum } from '@/interface';
 import { AppRootState, useAppStore } from '@/store/app';
 import { useCacheStore } from '@/store/cache';
 import { ILiveRoom, LiveRoomTypeEnum } from '@/types/ILiveRoom';
+import { isMSESupported } from '@/utils';
 
 const props = withDefaults(
   defineProps<{
@@ -247,6 +248,14 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown);
 });
 
+function changeRenderMode(item: LiveRenderEnum) {
+  if (item === LiveRenderEnum.canvas) {
+    window.$message.warning('暂不开放');
+    return;
+  }
+  appStore.videoControls.renderMode = item;
+}
+
 function handleKeydown(e) {
   if (e.key === 'Escape') {
     if (appStore.videoControlsValue.pageFullMode) {
@@ -278,6 +287,10 @@ function handlePageFull() {
 }
 
 function changeLiveLine(item: LiveLineEnum) {
+  if (item === LiveLineEnum.flv && !isMSESupported()) {
+    window.$message.warning('当前环境不支持该线路');
+    return;
+  }
   const type = props.liveRoom.type!;
   if (item === LiveLineEnum['rtmp-rtc']) {
     if (

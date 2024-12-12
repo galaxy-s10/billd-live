@@ -7,10 +7,8 @@ export function fetchLiveList(params) {
   });
 }
 
-export function fetchLiveRoomOnlineUser(params) {
-  return request.get('/live/live_room_online_user', {
-    params,
-  });
+export function fetchLiveRoomOnlineUser(liveRoomId: number) {
+  return request.get(`/live/live_room_online_user/${liveRoomId}`);
 }
 
 export function fetchLiveLiveRoomIsLive(liveRoomId: number) {

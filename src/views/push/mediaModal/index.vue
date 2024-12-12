@@ -90,7 +90,7 @@
             </div>
           </div>
         </template>
-        <template v-if="props.mediaType === MediaTypeEnum.removeGreenVideo">
+        <template v-if="props.mediaType === MediaTypeEnum.mediaRemoveGreen">
           <div class="item">
             <div class="label">视频（移除绿幕）</div>
             <div class="value">
@@ -102,6 +102,32 @@
                 <n-button :disabled="isEdit">选择文件</n-button>
               </n-upload>
             </div>
+          </div>
+        </template>
+        <template v-if="props.mediaType === MediaTypeEnum.cameraRemoveGreen">
+          <!-- <div class="item">
+            <div class="label">摄像头（移除绿幕）</div>
+            <div class="value">
+              <n-upload
+                :max="1"
+                :accept="'video/mp4, video/quicktime'"
+                :on-update:file-list="changMedia"
+              >
+                <n-button :disabled="isEdit">选择文件</n-button>
+              </n-upload>
+            </div>
+          </div> -->
+          <div class="item">
+            <!-- <div class="label">摄像头（移除绿幕）</div> -->
+            <!-- <div class="value">
+              <n-upload
+                :max="1"
+                :accept="'video/mp4, video/quicktime'"
+                :on-update:file-list="changMedia"
+              >
+                <n-button :disabled="isEdit">选择文件</n-button>
+              </n-upload>
+            </div> -->
           </div>
         </template>
       </div>
@@ -171,13 +197,13 @@ function changMedia(list: UploadFileInfo[]) {
 }
 
 function handleOk() {
-  if (mediaName.value.length < 4 || mediaName.value.length > 10) {
-    window.$message.info('名称要求4-10个字符！');
+  if (mediaName.value.length < 4 || mediaName.value.length > 20) {
+    window.$message.info('名称要求4-20个字符！');
     return;
   }
   if (props.mediaType === MediaTypeEnum.txt) {
-    if (txtInfo.value!.txt!.length! < 3 || txtInfo.value!.txt!.length! > 100) {
-      window.$message.info('内容要求3-100个字符！');
+    if (txtInfo.value!.txt!.length! < 1 || txtInfo.value!.txt!.length! > 100) {
+      window.$message.info('内容要求1-100个字符！');
       return;
     }
   }
@@ -189,6 +215,12 @@ function handleOk() {
       }
     }
     if (props.mediaType === MediaTypeEnum.media) {
+      if (mediaInfo.value!.length! !== 1) {
+        window.$message.info('请选择视频！');
+        return;
+      }
+    }
+    if (props.mediaType === MediaTypeEnum.mediaRemoveGreen) {
       if (mediaInfo.value!.length! !== 1) {
         window.$message.info('请选择视频！');
         return;
@@ -327,23 +359,44 @@ async function init() {
         .filter((item) => item.type === MediaTypeEnum.media)
         .filter((item) => !item.hidden).length + 1
     }`;
-  } else if (props.mediaType === MediaTypeEnum.removeGreenVideo) {
+  } else if (props.mediaType === MediaTypeEnum.mediaRemoveGreen) {
     currentInput.value = {
       ...currentInput.value,
-      type: MediaTypeEnum.removeGreenVideo,
+      type: MediaTypeEnum.mediaRemoveGreen,
     };
     mediaInfo.value = [];
     mediaName.value = `视频（移除绿幕）-${
       appStore.allTrack
-        .filter((item) => item.type === MediaTypeEnum.removeGreenVideo)
+        .filter((item) => item.type === MediaTypeEnum.mediaRemoveGreen)
+        .filter((item) => !item.hidden).length + 1
+    }`;
+  } else if (props.mediaType === MediaTypeEnum.cameraRemoveGreen) {
+    res.forEach((item) => {
+      if (item.kind === 'videoinput' && item.deviceId !== 'default') {
+        inputOptions.value.push({
+          label: item.label,
+          value: item.deviceId,
+        });
+      }
+    });
+    currentInput.value = {
+      ...currentInput.value,
+      deviceId: inputOptions.value[0].value,
+      type: MediaTypeEnum.cameraRemoveGreen,
+    };
+    mediaName.value = `摄像头（移除绿幕）-${
+      appStore.allTrack
+        .filter((item) => item.type === MediaTypeEnum.cameraRemoveGreen)
         .filter((item) => !item.hidden).length + 1
     }`;
   }
   if (props.initData) {
     if (
-      [MediaTypeEnum.camera, MediaTypeEnum.microphone].includes(
-        props.initData.type
-      )
+      [
+        MediaTypeEnum.camera,
+        MediaTypeEnum.cameraRemoveGreen,
+        MediaTypeEnum.microphone,
+      ].includes(props.initData.type)
     ) {
       currentInput.value = {
         deviceId: props.initData.deviceId!,

@@ -51,7 +51,7 @@ export function usePull() {
   const videoWrapRef = ref<HTMLDivElement>();
   const videoResolution = ref();
   const remoteVideo = ref<Array<HTMLVideoElement | HTMLCanvasElement>>([]);
-  const remoteStream = ref<MediaStream[]>([]);
+  const remoteStreamVideo = ref<HTMLVideoElement[]>([]);
   const {
     mySocketId,
     initWs,
@@ -78,6 +78,12 @@ export function usePull() {
     destroyFlv();
     destroyHls();
   });
+
+  function stopPlay() {
+    handleRtmpToRtcStop();
+    destroyFlv();
+    destroyHls();
+  }
 
   function handleStopDrawing() {
     changeWrapSizeFn = undefined;
@@ -141,8 +147,13 @@ export function usePull() {
     () => hlsVideoEl.value,
     (newval) => {
       if (newval) {
-        // @ts-ignore
-        remoteStream.value.push(newval.captureStream());
+        newval.style.removeProperty('opacity');
+        newval.style.removeProperty('position');
+        newval.style.removeProperty('top');
+        newval.style.removeProperty('bottom');
+        newval.style.removeProperty('left');
+        newval.style.removeProperty('right');
+        remoteStreamVideo.value.push(newval);
       }
     }
   );
@@ -151,8 +162,13 @@ export function usePull() {
     () => flvVideoEl.value,
     (newval) => {
       if (newval) {
-        // @ts-ignore
-        remoteStream.value.push(newval.captureStream());
+        newval.style.removeProperty('opacity');
+        newval.style.removeProperty('position');
+        newval.style.removeProperty('top');
+        newval.style.removeProperty('bottom');
+        newval.style.removeProperty('left');
+        newval.style.removeProperty('right');
+        remoteStreamVideo.value.push(newval);
       }
     }
   );
@@ -165,13 +181,11 @@ export function usePull() {
   );
 
   watch(
-    [() => appStore.videoControls.renderMode, () => remoteStream.value],
+    [() => remoteStreamVideo.value, () => appStore.videoControls.renderMode],
     () => {
       handleStopDrawing();
-      remoteStream.value.forEach((v) => {
-        const el = createVideo({});
-        el.srcObject = v;
-        videoPlay(el);
+      remoteStreamVideo.value.forEach((videoEl) => {
+        videoPlay(videoEl);
       });
     },
     {
@@ -195,7 +209,6 @@ export function usePull() {
   watch(
     () => cacheStore.muted,
     (newVal) => {
-      appStore.pageIsClick = true;
       rtcVideo.value.forEach((v) => {
         v.muted = newVal;
       });
@@ -241,7 +254,7 @@ export function usePull() {
       roomId: roomId.value,
     });
     const videoEl = createVideo({
-      appendChild: true,
+      appendChild: false,
       muted: appStore.pageIsClick ? cacheStore.muted : true,
     });
     rtcVideo.value.push(videoEl);
@@ -249,8 +262,8 @@ export function usePull() {
       sender: mySocketId.value,
       receiver: 'rtmpToRtc',
       videoEl,
-      sucessCb: (stream) => {
-        remoteStream.value.push(stream);
+      sucessCb: () => {
+        remoteStreamVideo.value.push(videoEl);
       },
     });
     webRtcRtmpToRtc.sendOffer({
@@ -272,7 +285,7 @@ export function usePull() {
       canvasVideoStream: null,
     });
     const videoEl = createVideo({
-      appendChild: true,
+      appendChild: false,
       muted: appStore.pageIsClick ? cacheStore.muted : true,
     });
     rtcVideo.value.push(videoEl);
@@ -280,8 +293,8 @@ export function usePull() {
       sender: mySocketId.value,
       receiver: data.sender,
       videoEl,
-      sucessCb: (stream) => {
-        remoteStream.value.push(stream);
+      sucessCb: () => {
+        remoteStreamVideo.value.push(videoEl);
       },
     });
 
@@ -300,7 +313,7 @@ export function usePull() {
     videoLoading.value = true;
     appStore.liveLine = LiveLineEnum.rtc;
     const videoEl = createVideo({
-      appendChild: true,
+      appendChild: false,
       muted: appStore.pageIsClick ? cacheStore.muted : true,
     });
     rtcVideo.value.push(videoEl);
@@ -310,8 +323,8 @@ export function usePull() {
       sender: mySocketId.value,
       receiver: data.sender,
       videoEl,
-      sucessCb: (stream) => {
-        remoteStream.value.push(stream);
+      sucessCb: () => {
+        remoteStreamVideo.value.push(videoEl);
       },
     });
     webRtcMeetingOne.addTrack({
@@ -413,7 +426,6 @@ export function usePull() {
   }
 
   function handlePlay(data: ILiveRoom) {
-    roomLiving.value = true;
     flvurl.value =
       data.cdn === SwitchEnum.yes ? data.pull_cdn_flv_url! : data.pull_flv_url!;
     hlsurl.value =
@@ -466,9 +478,13 @@ export function usePull() {
             LiveRoomTypeEnum.obs,
             LiveRoomTypeEnum.tencent_css,
             LiveRoomTypeEnum.tencent_css_pk,
-            LiveRoomTypeEnum.forward_bilibili,
-            LiveRoomTypeEnum.forward_huya,
             LiveRoomTypeEnum.forward_all,
+            LiveRoomTypeEnum.forward_bilibili,
+            LiveRoomTypeEnum.forward_douyin,
+            LiveRoomTypeEnum.forward_douyu,
+            LiveRoomTypeEnum.forward_huya,
+            LiveRoomTypeEnum.forward_kuaishou,
+            LiveRoomTypeEnum.forward_xiaohongshu,
           ].includes(liveRoomInfo.type!)
         ) {
           handlePlay(liveRoomInfo);
@@ -479,6 +495,7 @@ export function usePull() {
         }
       }
       if (!roomLiving.value) {
+        videoLoading.value = false;
         closeRtc();
         handleStopDrawing();
       }
@@ -492,12 +509,10 @@ export function usePull() {
   watch(
     () => appStore.liveLine,
     (newVal) => {
-      console.log('liveLine变了', newVal);
+      console.log('直播线路变了', newVal);
       handleStopDrawing();
-      remoteStream.value = [];
-      if (!roomLiving.value) {
-        return;
-      }
+      remoteStreamVideo.value = [];
+
       switch (newVal) {
         case LiveLineEnum.flv:
           handleFlvPlay();
@@ -566,6 +581,7 @@ export function usePull() {
     initWs,
     initRtcReceive,
     videoWrapRef,
+    stopPlay,
     handlePlay,
     handleStopDrawing,
     initPull,

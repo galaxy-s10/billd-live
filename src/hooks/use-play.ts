@@ -150,6 +150,10 @@ export function useFlvPlay() {
     () => appStore.playing,
     (newVal) => {
       if (flvVideoEl.value) {
+        if (appStore.pageIsClick) {
+          flvVideoEl.value.muted = false;
+          cacheStore.muted = false;
+        }
         if (newVal) {
           flvVideoEl.value.play();
         } else {
@@ -169,7 +173,6 @@ export function useFlvPlay() {
   watch(
     () => cacheStore.muted,
     (newVal) => {
-      appStore.pageIsClick = true;
       if (flvVideoEl.value) {
         flvVideoEl.value.muted = newVal;
       }
@@ -329,6 +332,10 @@ export function useHlsPlay() {
     () => appStore.playing,
     (newVal) => {
       if (hlsVideoEl.value) {
+        if (appStore.pageIsClick) {
+          hlsVideoEl.value.muted = false;
+          cacheStore.muted = false;
+        }
         if (newVal) {
           hlsVideoEl.value.play();
         } else {
@@ -348,7 +355,6 @@ export function useHlsPlay() {
   watch(
     () => cacheStore.muted,
     (newVal) => {
-      appStore.pageIsClick = true;
       if (hlsVideoEl.value) {
         hlsVideoEl.value.muted = newVal;
       }

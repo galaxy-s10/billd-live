@@ -44,11 +44,13 @@ export const useUserStore = defineStore('user', {
     },
     async usernameLogin({ username, password }) {
       try {
+        const exp = 24 * 7;
         const { data: token } = await fetchUsernameLogin({
           username,
           password,
+          exp,
         });
-        this.setToken(token, 24);
+        this.setToken(token, exp);
         return token;
       } catch (error: any) {
         // 错误返回401，全局的响应拦截会打印报错信息

@@ -95,6 +95,41 @@ export const COMMON_URL = {
   },
 };
 
+export const DEFAULT_ROLE_INFO = {
+  ALL_ROLE: {
+    id: 1,
+    role_value: 'ALL_ROLE',
+  },
+  ADMIN: {
+    id: 2,
+    role_value: 'ADMIN',
+  },
+  SUPER_ADMIN: {
+    id: 3,
+    role_value: 'SUPER_ADMIN',
+  },
+  LIVE_ADMIN: {
+    id: 4,
+    role_value: 'LIVE_ADMIN',
+  },
+  USER: {
+    id: 5,
+    role_value: 'USER',
+  },
+  VIP_USER: {
+    id: 6,
+    role_value: 'VIP_USER',
+  },
+  SVIP_USER: {
+    id: 7,
+    role_value: 'SVIP_USER',
+  },
+  TOURIST_USER: {
+    id: 8,
+    role_value: 'TOURIST_USER',
+  },
+};
+
 export const DEFAULT_AUTH_INFO = {
   ALL_AUTH: {
     id: 1,
@@ -199,38 +234,53 @@ export const allMediaTypeList = {
   [MediaTypeEnum.camera]: {
     type: MediaTypeEnum.camera,
     txt: '摄像头',
+    priority: 1,
   },
-  [MediaTypeEnum.microphone]: {
-    type: MediaTypeEnum.microphone,
-    txt: '麦克风',
-  },
-  [MediaTypeEnum.screen]: {
-    type: MediaTypeEnum.screen,
-    txt: '窗口',
-  },
-  [MediaTypeEnum.txt]: {
-    type: MediaTypeEnum.txt,
-    txt: '文字',
-  },
-  [MediaTypeEnum.img]: {
-    type: MediaTypeEnum.img,
-    txt: '图片',
+  [MediaTypeEnum.cameraRemoveGreen]: {
+    type: MediaTypeEnum.cameraRemoveGreen,
+    txt: '摄像头（移除绿幕）',
+    priority: 2,
   },
   [MediaTypeEnum.media]: {
     type: MediaTypeEnum.media,
     txt: '视频',
+    priority: 3,
   },
+  [MediaTypeEnum.mediaRemoveGreen]: {
+    type: MediaTypeEnum.mediaRemoveGreen,
+    txt: '视频（移除绿幕）',
+    priority: 4,
+  },
+  [MediaTypeEnum.microphone]: {
+    type: MediaTypeEnum.microphone,
+    txt: '麦克风',
+    priority: 5,
+  },
+  [MediaTypeEnum.screen]: {
+    type: MediaTypeEnum.screen,
+    txt: '窗口',
+    priority: 6,
+  },
+  [MediaTypeEnum.txt]: {
+    type: MediaTypeEnum.txt,
+    txt: '文字',
+    priority: 7,
+  },
+  [MediaTypeEnum.img]: {
+    type: MediaTypeEnum.img,
+    txt: '图片',
+    priority: 8,
+  },
+
   [MediaTypeEnum.time]: {
     type: MediaTypeEnum.time,
     txt: '时间',
+    priority: 9,
   },
   [MediaTypeEnum.stopwatch]: {
     type: MediaTypeEnum.stopwatch,
     txt: '秒表',
-  },
-  [MediaTypeEnum.removeGreenVideo]: {
-    type: MediaTypeEnum.removeGreenVideo,
-    txt: '移除绿幕',
+    priority: 10,
   },
 };
 

@@ -19,22 +19,6 @@
         autoplay
         loop
       ></video>
-      <!-- <div class="slider-wrap">
-        <div
-          v-for="(item, index) in interactionList"
-          :key="index"
-        >
-          <Slider
-            v-if="item.length"
-            :list="item"
-            :width="docW"
-            :speed="60"
-            :direction="index % 2 === 0 ? 'l-r' : 'r-l'"
-            :customStyle="{ margin: '0 auto' }"
-          ></Slider>
-        </div>
-      </div> -->
-
       <div class="container">
         <div
           v-loading="videoLoading"
@@ -82,7 +66,7 @@
             >
               <div
                 class="btn"
-                @click="joinRoom(currentLive?.live_room, 2)"
+                @click="joinRoom(currentLive?.live_room, 'false')"
               >
                 进入直播
               </div>
@@ -147,7 +131,7 @@
             v-for="(item, indey) in otherLiveRoomList"
             :key="indey"
             class="live-room"
-            @click="joinRoom(item.live_room, 2)"
+            @click="joinRoom(item.live_room, 'false')"
           >
             <div
               class="cover"
@@ -181,7 +165,7 @@
             v-for="(iten, indey) in bilibiliLiveRoomList"
             :key="indey"
             class="live-room"
-            @click="joinRoom(iten.live_room, 1)"
+            @click="joinRoom(iten.live_room, 'true')"
           >
             <div
               class="cover"
@@ -281,6 +265,7 @@ const {
   videoResolution,
   handleStopDrawing,
   handlePlay,
+  stopPlay,
 } = usePull();
 const isBottom = ref(false);
 const rootMargin = {
@@ -411,11 +396,13 @@ async function getLiveRoomList() {
   }
 }
 
-function joinRoom(data, isBilibili) {
+function joinRoom(data, isBilibili = 'false') {
+  stopPlay();
+  const query = isBilibili === 'true' ? { [URL_QUERY.isBilibili]: 'true' } : {};
   const url = router.resolve({
     name: routerName.pull,
     params: { roomId: data.id },
-    query: { [URL_QUERY.isBilibili]: isBilibili },
+    query,
   });
   openToTarget(url.href);
 }
@@ -423,12 +410,10 @@ function joinRoom(data, isBilibili) {
 
 <style lang="scss" scoped>
 .home-wrap {
-  // overflow: scroll;
-  // height: 100vh;
-  // height: calc(100vh - $header-height);
   .play-container {
     position: relative;
     z-index: 1;
+    padding-top: 20px;
     padding-bottom: 50px;
     .bg-img {
       position: absolute;
@@ -459,8 +444,7 @@ function joinRoom(data, isBilibili) {
       justify-content: center;
       box-sizing: border-box;
       margin: 0 auto;
-      padding-top: 20px;
-      height: calc($w-1100 / $video-ratio);
+      height: calc($w-1150 / $video-ratio);
 
       .left {
         position: relative;
@@ -469,7 +453,7 @@ function joinRoom(data, isBilibili) {
         flex-shrink: 0;
         box-sizing: border-box;
         margin-right: 20px;
-        width: $w-1100;
+        width: $w-1150;
         height: 100%;
         border-radius: 4px;
         background-color: rgba($color: #000000, $alpha: 0.3);
@@ -519,8 +503,8 @@ function joinRoom(data, isBilibili) {
           left: 50%;
           // min-width: 100%;
           // min-height: 100%;
-          max-width: $w-1100;
-          max-height: calc($w-1100 / $video-ratio);
+          max-width: $w-1150;
+          max-height: calc($w-1150 / $video-ratio);
           transform: translate(-50%, -50%);
 
           user-select: none;
@@ -531,8 +515,8 @@ function joinRoom(data, isBilibili) {
           left: 50%;
           // min-width: 100%;
           // min-height: 100%;
-          max-width: $w-1100;
-          max-height: calc($w-1100 / $video-ratio);
+          max-width: $w-1150;
+          max-height: calc($w-1150 / $video-ratio);
           transform: translate(-50%, -50%);
 
           user-select: none;

@@ -65,12 +65,16 @@
         >
           <n-space>
             <n-button
-              v-for="(item, index) in allMediaTypeList"
+              v-for="(item, index) in objectSort({
+                obj: allMediaTypeList,
+                sortField: 'priority',
+                sort: 'asc',
+              })"
               :key="index"
               class="item"
-              @click="handleStartMedia(item)"
+              @click="handleStartMedia(item[1] as any)"
             >
-              {{ item.txt }}
+              {{ (item[1] as any).txt }}
             </n-button>
           </n-space>
         </div>
@@ -571,6 +575,7 @@ import {
   getLiveRoomPageUrl,
   getRandomEnglishString,
   handleUserMedia,
+  objectSort,
   readFile,
   saveFile,
   setAudioTrackContentHints,
@@ -1095,7 +1100,7 @@ onUnmounted(() => {
 function handleSendGetLiveUser(liveRoomId: number) {
   clearInterval(loopGetLiveUserTimer.value);
   async function main() {
-    const res = await fetchLiveRoomOnlineUser({ live_room_id: liveRoomId });
+    const res = await fetchLiveRoomOnlineUser(liveRoomId);
     if (res.code === 200) {
       liveUserList.value = res.data;
     }
@@ -1911,7 +1916,7 @@ async function handleCache() {
       obj.trackid = event.getAudioTracks()[0].id;
     }
 
-    async function handleCamera() {
+    async function handleCamera(removeGreen?: boolean) {
       const event = await navigator.mediaDevices.getUserMedia({
         video: { deviceId: obj.deviceId },
         audio: false,
@@ -1921,7 +1926,7 @@ async function handleCache() {
       videoEl.setAttribute('videoid', obj.id);
       videoEl.srcObject = event;
       await new Promise((resolve) => {
-        videoEl.onloadedmetadata = () => {
+        videoEl.onloadedmetadata = async () => {
           const stream = videoEl
             // @ts-ignore
             .captureStream();
@@ -1929,8 +1934,12 @@ async function handleCache() {
           const height = stream.getVideoTracks()[0].getSettings().height!;
           videoEl.width = width;
           videoEl.height = height;
+          let removeGreenCanvas: any = videoEl;
+          if (removeGreen) {
+            removeGreenCanvas = await videoRemoveBackground({ videoEl });
+          }
           const canvasDom = markRaw(
-            new fabric.Image(videoEl, {
+            new fabric.Image(removeGreenCanvas, {
               top: (item.rect?.top || 0) / window.devicePixelRatio,
               left: (item.rect?.left || 0) / window.devicePixelRatio,
               width,
@@ -2025,10 +2034,10 @@ async function handleCache() {
         obj.canvasDom = canvasDom;
       }
     } else if (
-      item.type === MediaTypeEnum.removeGreenVideo &&
+      item.type === MediaTypeEnum.mediaRemoveGreen &&
       item.video === 1
     ) {
-      queue.push(handleMediaVideo(true));
+      queue.push(handleCamera(true));
     }
     res.push(obj);
   });
@@ -2071,6 +2080,7 @@ function setScaleInfo({ track, canvasDom, scale = 1 }) {
 }
 
 async function addMediaOk(val: AppRootState['allTrack'][0]) {
+  console.log('addMediaOk', val);
   showMediaModalCpt.value = false;
   if (val.type === MediaTypeEnum.screen) {
     const event = await handleDisplayMedia({
@@ -2168,6 +2178,46 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
       id: videoTrack.id,
       rect: videoTrack.rect,
       scaleInfo: videoTrack.scaleInfo,
+    });
+    setScaleInfo({ canvasDom, track: videoTrack, scale });
+    videoTrack.videoEl = videoEl;
+    videoTrack.canvasDom = canvasDom;
+
+    const res = [...appStore.allTrack, videoTrack];
+    appStore.setAllTrack(res);
+    cacheStore.setResourceList(res);
+    console.log('获取摄像头成功');
+  } else if (val.type === MediaTypeEnum.cameraRemoveGreen) {
+    const event = await handleUserMedia({
+      video: {
+        deviceId: val.deviceId,
+      },
+      audio: false,
+    });
+    if (!event) return;
+    const videoTrack: AppRootState['allTrack'][0] = {
+      id: getRandomEnglishString(6),
+      openEye: true,
+      deviceId: val.deviceId,
+      audio: 2,
+      video: 1,
+      mediaName: val.mediaName,
+      type: MediaTypeEnum.cameraRemoveGreen,
+      track: event.getVideoTracks()[0],
+      trackid: event.getVideoTracks()[0].id,
+      stream: event,
+      streamid: event.id,
+      hidden: false,
+      muted: false,
+      scaleInfo: {},
+      rect: { left: 0, top: 0 },
+    };
+    const { canvasDom, videoEl, scale } = await autoCreateVideo({
+      stream: event,
+      id: videoTrack.id,
+      rect: videoTrack.rect,
+      scaleInfo: videoTrack.scaleInfo,
+      removeGreen: true,
     });
     setScaleInfo({ canvasDom, track: videoTrack, scale });
     videoTrack.videoEl = videoEl;
@@ -2546,14 +2596,14 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     // @ts-ignore
     cacheStore.setResourceList(res);
     console.log('获取视频成功');
-  } else if (val.type === MediaTypeEnum.removeGreenVideo) {
+  } else if (val.type === MediaTypeEnum.mediaRemoveGreen) {
     const mediaVideoTrack: AppRootState['allTrack'][0] = {
       id: getRandomEnglishString(6),
       openEye: true,
       audio: 2,
       video: 1,
       mediaName: val.mediaName,
-      type: MediaTypeEnum.removeGreenVideo,
+      type: MediaTypeEnum.mediaRemoveGreen,
       track: undefined,
       trackid: undefined,
       stream: undefined,
@@ -2594,7 +2644,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
           audio: 1,
           video: 2,
           mediaName: val.mediaName,
-          type: MediaTypeEnum.removeGreenVideo,
+          type: MediaTypeEnum.mediaRemoveGreen,
           track: stream.getAudioTracks()[0],
           trackid: stream.getAudioTracks()[0].id,
           stream,
@@ -2615,7 +2665,7 @@ async function addMediaOk(val: AppRootState['allTrack'][0]) {
     appStore.setAllTrack(res);
     // @ts-ignore
     cacheStore.setResourceList(res);
-    console.log('获取视频成功');
+    console.log('获取mediaRemoveGreen成功');
   }
 }
 

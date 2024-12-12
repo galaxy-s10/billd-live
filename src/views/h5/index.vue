@@ -69,6 +69,42 @@
           </div>
         </div>
       </div>
+      <div class="item">
+        <div
+          class="title"
+          @click.stop
+        >
+          <div class="left">b站直播</div>
+          <div
+            class="right"
+            @click="showAllBilibili()"
+          >
+            查看全部
+          </div>
+        </div>
+        <div class="live-room-list">
+          <div
+            v-for="(item, indey) in bilibiliLiveRoomList"
+            :key="indey"
+            class="live-room"
+            @click="goRoom(item, true)"
+          >
+            <div
+              class="cover"
+              v-lazy:background-image="
+                item.live_room?.cover_img || item?.user?.avatar
+              "
+            >
+              <div class="living-ico">直播中</div>
+              <div class="cdn-ico">
+                <div class="txt">CDN</div>
+              </div>
+              <div class="txt">{{ item?.live_room?.users?.[0].username }}</div>
+            </div>
+            <div class="desc">{{ item?.live_room?.name }}</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -79,8 +115,9 @@ import { onMounted, onUnmounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { fetchAreaLiveRoomList } from '@/api/area';
-import { COMMON_URL } from '@/constant';
-import { IArea, SwitchEnum } from '@/interface';
+import { fetchLiveBilibiliGetUserRecommend } from '@/api/bilibili';
+import { COMMON_URL, URL_QUERY } from '@/constant';
+import { IArea, ILive, SwitchEnum } from '@/interface';
 import router, { mobileRouterName, routerName } from '@/router';
 import { useAppStore } from '@/store/app';
 import {
@@ -109,6 +146,7 @@ const swiperList = ref([
 ]);
 const swiperTimer = ref();
 const currentSwiper = ref(swiperList.value[0]);
+const bilibiliLiveRoomList = ref<ILive[]>([]);
 
 async function getLiveRoomList() {
   try {
@@ -143,7 +181,23 @@ function showAll(item: IArea) {
   });
 }
 
-function goRoom(item: ILiveRoom) {
+function showAllBilibili() {
+  router.push({
+    name: mobileRouterName.h5Area,
+    params: { id: 1 },
+    query: { [URL_QUERY.isBilibili]: 'true' },
+  });
+}
+
+function goRoom(item: ILiveRoom, isBilibili = false) {
+  if (isBilibili) {
+    router.push({
+      name: routerName.h5Room,
+      params: { roomId: item.id },
+      query: { [URL_QUERY.isBilibili]: 'true' },
+    });
+    return;
+  }
   if (!item.live) {
     window.$message.info('该直播间没在直播~');
     return;
@@ -164,12 +218,42 @@ onMounted(() => {
     }
     currentSwiper.value = swiperList.value[num];
   }, 3000);
+  handleBilibilData();
 });
 
 onUnmounted(() => {
   clearInterval(swiperTimer.value);
   appStore.showLoginModal = false;
 });
+
+async function handleBilibilData() {
+  let arr: any = [];
+  try {
+    const res = await fetchLiveBilibiliGetUserRecommend({
+      page: 1,
+      page_size: 4,
+      platform: 'web',
+    });
+    // const list = res.data?.list;
+    const list = res?.data?.data?.list;
+    if (list) {
+      arr = list.map((item) => {
+        return {
+          id: item.roomid,
+          user: { username: item.uname },
+          live_room: {
+            id: item.roomid,
+            name: item.title,
+            cover_img: item.cover,
+          },
+        };
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+  bilibiliLiveRoomList.value = arr;
+}
 </script>
 
 <style lang="scss" scoped>

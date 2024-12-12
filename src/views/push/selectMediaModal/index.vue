@@ -2,18 +2,18 @@
   <div class="select-media-wrap">
     <Modal
       title="选择直播素材"
-      :mask-closable="false"
+      :mask-closable="true"
       @close="emits('close')"
-      :width="'350px'"
+      :width="'520px'"
     >
       <div class="btn-wrap">
         <div
           class="btn"
-          v-for="(item, index) in allMediaTypeList"
+          v-for="(item, index) in obj"
           :key="index"
         >
-          <n-button @click="emits('ok', item.type)">
-            {{ item.txt }}
+          <n-button @click="emits('ok', item[1].type)">
+            {{ item[1].txt }}
           </n-button>
         </div>
       </div>
@@ -24,9 +24,12 @@
 </template>
 
 <script lang="ts" setup>
-import { MediaTypeEnum } from '@/interface';
+import { onMounted, ref } from 'vue';
 
-withDefaults(
+import { MediaTypeEnum } from '@/interface';
+import { objectSort } from '@/utils';
+
+const props = withDefaults(
   defineProps<{
     allMediaTypeList: {
       [index: string]: {
@@ -38,6 +41,15 @@ withDefaults(
   {}
 );
 const emits = defineEmits(['close', 'ok']);
+
+const obj = ref();
+onMounted(() => {
+  obj.value = objectSort({
+    obj: props.allMediaTypeList,
+    sortField: 'priority',
+    sort: 'asc',
+  });
+});
 </script>
 
 <style lang="scss" scoped>

@@ -50,7 +50,7 @@
         点击播放
       </div>
       <VideoControls
-        v-if="roomLiving"
+        v-if="roomLiving && liveRoomInfo"
         :resolution="videoResolution"
         @refresh="handleRefresh"
         @full-screen="handleFullScreen"
@@ -169,12 +169,12 @@
             >
               <div class="info">
                 <Avatar
-                  :url="item.value.user_avatar"
-                  :name="item.value.user_username"
+                  :url="item.user_avatar"
+                  :name="item.user_username"
                   :size="25"
                 ></Avatar>
                 <div class="username">
-                  {{ item.value.user_username }}
+                  {{ item.user_username }}
                 </div>
               </div>
             </div>
@@ -271,10 +271,14 @@ import { windowReload } from 'billd-utils';
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
+import {
+  fetchLiveBilibiliPlayUrl,
+  fetchLiveBilibiliRoomGetInfo,
+} from '@/api/bilibili';
 import { fetchLiveRoomOnlineUser } from '@/api/live';
 import { fetchFindLiveRoom } from '@/api/liveRoom';
 import { fetchGetWsMessageList } from '@/api/wsMessage';
-import { THEME_COLOR } from '@/constant';
+import { THEME_COLOR, URL_QUERY } from '@/constant';
 import { emojiArray } from '@/emoji';
 import { useFullScreen, usePictureInPicture } from '@/hooks/use-play';
 import { usePull } from '@/hooks/use-pull';
@@ -289,7 +293,7 @@ import router, { mobileRouterName } from '@/router';
 import { useAppStore } from '@/store/app';
 import { useCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
-import { ILiveRoom } from '@/types/ILiveRoom';
+import { ILiveRoom, LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import { IUser } from '@/types/IUser';
 import { formatTimeHour } from '@/utils';
 
@@ -302,6 +306,7 @@ const bottomRef = ref<HTMLDivElement>();
 const danmuListRef = ref<HTMLDivElement>();
 const showEmoji = ref(false);
 const showPlayBtn = ref(true);
+const isBilibili = ref(false);
 
 const liveRoomInfo = ref<ILiveRoom>();
 const anchorInfo = ref<IUser>();
@@ -341,12 +346,7 @@ onMounted(async () => {
   setTimeout(() => {
     scrollTo(0, 0);
   }, 100);
-
   roomId.value = route.params.roomId as string;
-  initPull({ roomId: roomId.value, autolay: true });
-  await handleFindLiveRoomInfo();
-  if (!liveRoomInfo.value) return;
-  handleRefresh();
   videoWrapRef.value = remoteVideoRef.value;
   videoWrapHeight.value =
     document.documentElement.clientWidth / appStore.videoRatio;
@@ -358,6 +358,17 @@ onMounted(async () => {
       containerHeight.value = res;
     }
   });
+  if (route.query[URL_QUERY.isBilibili] === 'true') {
+    isBilibili.value = true;
+    initWs({ roomId: roomId.value, isBilibili: true, isAnchor: false });
+    handleBilibil();
+    return;
+  }
+  initPull({ roomId: roomId.value, autolay: true });
+  await handleFindLiveRoomInfo();
+  if (!liveRoomInfo.value) return;
+  handleRefresh();
+
   await handleFindLiveRoomInfo();
   handleSendGetLiveUser(Number(roomId.value));
   handleHistoryMsg();
@@ -368,6 +379,37 @@ onMounted(async () => {
   });
   initRtcReceive();
 });
+
+async function handleBilibil() {
+  const flv = await fetchLiveBilibiliPlayUrl({
+    cid: route.params.roomId,
+    platform: 'web',
+  });
+  const hls = await fetchLiveBilibiliPlayUrl({
+    cid: route.params.roomId,
+    platform: 'h5',
+  });
+  const roomInfo = await fetchLiveBilibiliRoomGetInfo({
+    room_id: route.params.roomId,
+  });
+  console.log(flv?.data?.data?.durl?.[0].url, 'flv');
+  console.log(hls?.data?.data?.durl?.[0].url, 'hls');
+  roomLiving.value = true;
+  anchorInfo.value = {
+    avatar: roomInfo?.data?.data?.user_cover,
+    username: roomInfo?.data?.data?.title,
+  };
+  liveRoomInfo.value = {
+    type: LiveRoomTypeEnum.system,
+    pull_flv_url: flv?.data?.data?.durl?.[0].url,
+    pull_hls_url: hls?.data?.data?.durl?.[0].url,
+    areas: [{ name: roomInfo?.data?.data?.area_name }],
+    desc: roomInfo?.data?.data?.description,
+    name: roomInfo?.data?.data?.title,
+    cover_img: roomInfo?.data?.data?.user_cover,
+  };
+  handleRefresh();
+}
 
 watch(
   () => roomLiving.value,
@@ -427,7 +469,7 @@ async function handleHistoryMsg() {
 function handleSendGetLiveUser(liveRoomId: number) {
   clearInterval(loopGetLiveUserTimer.value);
   async function main() {
-    const res = await fetchLiveRoomOnlineUser({ live_room_id: liveRoomId });
+    const res = await fetchLiveRoomOnlineUser(liveRoomId);
     if (res.code === 200) {
       liveUserList.value = res.data;
     }

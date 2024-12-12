@@ -18,7 +18,9 @@
         >
           <div
             class="cover"
-            v-lazy:background-image="iten?.cover_img || iten?.users?.[0].avatar"
+            v-lazy:background-image="
+              iten?.cover_img || iten?.users?.[0]?.avatar
+            "
           >
             <div
               v-if="iten?.live"
@@ -27,13 +29,7 @@
               <div class="live-txt">直播中</div>
             </div>
             <div
-              v-if="
-                iten?.cdn === SwitchEnum.yes ||
-                [
-                  LiveRoomTypeEnum.tencent_css,
-                  LiveRoomTypeEnum.tencent_css_pk,
-                ].includes(iten.type!)
-              "
+              v-if="iten?.cdn === SwitchEnum.yes"
               class="cdn-ico"
             >
               <div class="txt">CDN</div>
@@ -52,10 +48,12 @@ import { onMounted, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { fetchLiveRoomList } from '@/api/area';
+import { fetchLiveBilibiliGetUserRecommend } from '@/api/bilibili';
 import LongList from '@/components/LongList/index.vue';
+import { URL_QUERY } from '@/constant';
 import { SwitchEnum } from '@/interface';
 import router, { routerName } from '@/router';
-import { ILiveRoom, LiveRoomTypeEnum } from '@/types/ILiveRoom';
+import { ILiveRoom } from '@/types/ILiveRoom';
 
 const route = useRoute();
 
@@ -64,7 +62,7 @@ const topRef = ref<HTMLDivElement>();
 
 const pageParams = reactive({
   nowPage: 0,
-  pageSize: 50,
+  pageSize: 20,
 });
 const height = ref(0);
 const loading = ref(false);
@@ -73,6 +71,15 @@ const longListRef = ref<InstanceType<typeof LongList>>();
 const status = ref<'loading' | 'nonedata' | 'allLoaded' | 'normal'>('loading');
 
 function goRoom(item: ILiveRoom) {
+  // @ts-ignore
+  if (item.is_bilibili) {
+    router.push({
+      name: routerName.h5Room,
+      params: { roomId: item.id },
+      query: { [URL_QUERY.isBilibili]: 'true' },
+    });
+    return;
+  }
   if (!item.live) {
     window.$message.info('该直播间没在直播~');
     return;
@@ -83,13 +90,55 @@ function goRoom(item: ILiveRoom) {
   });
 }
 
+async function handleBilibilData() {
+  try {
+    if (loading.value) return;
+    loading.value = true;
+    pageParams.nowPage += 1;
+    status.value = 'loading';
+    pageParams.nowPage += 1;
+    const res = await fetchLiveBilibiliGetUserRecommend({
+      page: pageParams.nowPage,
+      page_size: pageParams.pageSize,
+      platform: 'web',
+    });
+    const list = res?.data?.data?.list;
+    if (list) {
+      const arr = list.map((item) => {
+        return {
+          id: item.roomid,
+          name: item.title,
+          cover_img: item.cover,
+          users: [{ username: item.uname }],
+          is_bilibili: true,
+          live: {},
+          cdn: SwitchEnum.yes,
+        };
+      });
+      hasMore.value = res.data.data.has_more === 1 ? true : false;
+      liveRoomList.value.push(...arr);
+    }
+  } catch (error) {
+    pageParams.nowPage -= 1;
+    console.log(error);
+  }
+  loading.value = false;
+  status.value = 'normal';
+  status.value = 'normal';
+  handleStatus();
+}
+
 onMounted(() => {
   if (topRef.value) {
     height.value =
       document.documentElement.clientHeight -
       topRef.value.getBoundingClientRect().top;
   }
-  getData();
+  if (route.query[URL_QUERY.isBilibili] === 'true') {
+    handleBilibilData();
+  } else {
+    getData();
+  }
 });
 
 function handleStatus() {
@@ -129,9 +178,14 @@ async function getData() {
   status.value = 'normal';
   handleStatus();
 }
+
 function getListData() {
   if (!hasMore.value) return;
-  getData();
+  if (route.query[URL_QUERY.isBilibili] === 'true') {
+    handleBilibilData();
+  } else {
+    getData();
+  }
 }
 </script>
 
