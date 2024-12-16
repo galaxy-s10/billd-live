@@ -1,65 +1,18 @@
 {
-  "roomid": 545068,
-  "uid": 8739477,
-  "title": "德云色 18点解说！",
-  "uname": "老实憨厚的笑笑",
-  "online": 4972049,
-  "user_cover": "http://i0.hdslb.com/bfs/live/new_room_cover/5b194702d6c96774e049d5f7ab2d859ec5009755.jpg",
-  "user_cover_flag": 1,
-  "system_cover": "http://i0.hdslb.com/bfs/live-key-frame/keyframe08121830000000545068fh3wc4.jpg",
-  "cover": "http://i0.hdslb.com/bfs/live/new_room_cover/5b194702d6c96774e049d5f7ab2d859ec5009755.jpg",
-  "show_cover": "",
-  "link": "/545068?hotRank=0",
-  "face": "https://i0.hdslb.com/bfs/face/59da329a536b148b0e8d19143b686d2da06dad93.jpg",
-  "parent_id": 2,
-  "parent_name": "网游",
-  "area_id": 86,
-  "area_name": "英雄联盟",
-  "area_v2_parent_id": 2,
-  "area_v2_parent_name": "网游",
-  "area_v2_id": 86,
-  "area_v2_name": "英雄联盟",
-  "session_id": "579fbbb823062ad7109aa6991d66b9e5_66799746-DE90-4659-8DF0-F18EE6301655",
-  "group_id": 1000268,
-  "show_callback": "https://live-trace.bilibili.com/xlive/data-interface/v1/index/log?sessionID=579fbbb823062ad7109aa6991d66b9e5_66799746-DE90-4659-8DF0-F18EE6301655&group_id=1000268&biz=live&event_id=live_card_show&rule_key=&special_id=0&roomid=545068&parent_id=2&area_id=86&page=0&position=2",
-  "click_callback": "https://live-trace.bilibili.com/xlive/data-interface/v1/index/log?sessionID=579fbbb823062ad7109aa6991d66b9e5_66799746-DE90-4659-8DF0-F18EE6301655&group_id=1000268&biz=live&event_id=live_card_click&rule_key=&special_id=0&roomid=545068&parent_id=2&area_id=86&page=0&position=2",
-  "web_pendent": "",
-  "pk_id": 0,
-  "pendant_info": {
-    "1": {
-      "pendent_id": 426,
-      "content": "",
-      "color": "#FB9E60",
-      "pic": "https://i0.hdslb.com/bfs/live/539ce26c45cd4019f55b64cfbcedc3c01820e539.png",
-      "position": 1,
-      "type": "mobile_index_badge",
-      "name": "百人成就"
+  "forceVersion": "0.0.100",
+  "noiceVersion": "0.0.100",
+  "currentVersion": "0.0.100",
+  "mustForceVersion": [
+    "0.0.100",
+    "0.0.101"
+  ],
+  "versionList": [
+    {
+      "version": "0.0.100",
+      "showVersion": "v0.0.100",
+      "download": "https://res.ldmnq.com/xdyun/download/XD-YunInst_v1.0.2.2.exe",
+      "updateContent": "更新内容：<br />1、优化部分系统崩溃问题；<br />2、优化同步操作，批量操作交互体验；",
+      "updateDate": "2024年10月22日11:08:51"
     }
-  },
-  "verify": {
-    "role": 2,
-    "desc": "bilibili 2022百大UP主、2022直播年度弹幕人气奖UP主、职业游戏解说孙亚龙",
-    "type": 0
-  },
-  "head_box": {
-    "name": "百人舰队主播头像",
-    "value": "https://i0.hdslb.com/bfs/vc/071eb10548fe9bc482ff69331983d94192ce9507.png",
-    "desc": ""
-  },
-  "head_box_type": 1,
-  "is_auto_play": 1,
-  "flag": 0,
-  "watched_show": {
-    "switch": true,
-    "num": 119606,
-    "text_small": "11.9万",
-    "text_large": "11.9万人看过",
-    "icon": "https://i0.hdslb.com/bfs/live/a725a9e61242ef44d764ac911691a7ce07f36c1d.png",
-    "icon_location": 0,
-    "icon_web": "https://i0.hdslb.com/bfs/live/8d9d0f33ef8bf6f308742752d13dd0df731df19c.png"
-  },
-  "is_nft": 0,
-  "nft_dmark": "https://i0.hdslb.com/bfs/live/9f176ff49d28c50e9c53ec1c3297bd1ee539b3d6.gif",
-  "play_together_goods": null,
-  "watermark": ""
+  ]
 }

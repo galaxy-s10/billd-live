@@ -2,6 +2,8 @@ import { GoodsTypeEnum, MediaTypeEnum } from '@/interface';
 import { prodDomain, QINIU_KODO } from '@/spec-config';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 
+export const NODE_ENV = process.env.NODE_ENV;
+
 export const QQ_CLIENT_ID = `101958191`;
 export const QQ_OAUTH_URL = `https://graph.qq.com/oauth2.0`;
 export const QQ_REDIRECT_URI = `https://live.${prodDomain}/oauth/qq_login`;
@@ -57,18 +59,18 @@ export const COMMON_URL = {
     live: {
       flutter: {
         android: `${QINIU_KODO.hssblog.url}/billd-live/download/billd-live-v0.0.4.apk`,
-        github: 'https://github.com/galaxy-s10/billd-live-flutter',
+        github: 'https://github.com/billd-project/live-flutter',
       },
       reactNative: {
         android: '',
-        github: 'https://github.com/galaxy-s10/billd-live-react-native',
+        github: 'https://github.com/billd-project/live-react-native',
       },
       kotlin: {
         android: '',
-        github: 'https://github.com/galaxy-s10/billd-live-kotlin',
+        github: 'https://github.com/billd-project/live-kotlin',
       },
       electron: {
-        github: 'https://github.com/galaxy-s10/billd-live-electron',
+        github: 'https://github.com/billd-project/live-electron',
         windows: ``,
         macOS: ``,
       },
@@ -87,10 +89,10 @@ export const COMMON_URL = {
     },
   },
   release: {
-    flutter: 'https://github.com/galaxy-s10/billd-live-flutter',
-    kotlin: 'https://github.com/galaxy-s10/billd-live-kotlin',
-    reactNative: 'https://github.com/galaxy-s10/billd-live-react-native',
-    electron: 'https://github.com/galaxy-s10/billd-live-electron',
+    flutter: 'https://github.com/billd-project/live-flutter',
+    kotlin: 'https://github.com/billd-project/live-kotlin',
+    reactNative: 'https://github.com/billd-project/live-react-native',
+    electron: 'https://github.com/billd-project/live-electron',
     desk: 'https://github.com/galaxy-s10/billd-desk',
   },
 };

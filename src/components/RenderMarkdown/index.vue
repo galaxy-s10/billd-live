@@ -15,8 +15,8 @@ import 'md-editor-v3/lib/preview.css';
 
 const props = withDefaults(
   defineProps<{
-    md: string;
-    height: number;
+    md?: string;
+    height?: number;
   }>(),
   {
     md: '',

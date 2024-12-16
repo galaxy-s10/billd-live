@@ -315,7 +315,7 @@ const router = createRouter({
   history: createWebHistory(),
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   if (to.name === routerName.oauth) {
     return next();
   }

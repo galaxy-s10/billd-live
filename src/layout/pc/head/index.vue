@@ -32,18 +32,18 @@
           </a>
 
           <a
+            v-if="!isMobile()"
             class="item"
             :href="COMMON_URL.admin"
             @click.prevent="openToTarget(COMMON_URL.admin)"
-            v-if="!isMobile()"
           >
             {{ t('layout.liveAdmin') }}
           </a>
 
           <a
+            v-if="!isMobile()"
             class="item"
             @click.prevent="router.push({ name: routerName.downloadLive })"
-            v-if="!isMobile()"
           >
             {{ t('layout.download') }}
           </a>
@@ -91,8 +91,8 @@
 
       <div class="right">
         <Dropdown
-          class="doc"
           v-if="!isMobile()"
+          class="doc"
         >
           <template #btn>
             <div class="btn">
@@ -111,8 +111,8 @@
               >
                 <div class="txt">{{ t(item.label) }}</div>
                 <VPIconExternalLink
-                  class="icon"
                   v-if="item.url"
+                  class="icon"
                 ></VPIconExternalLink>
               </a>
             </div>
@@ -120,8 +120,8 @@
         </Dropdown>
 
         <Dropdown
-          class="ecosystem"
           v-if="!isMobile()"
+          class="ecosystem"
         >
           <template #btn>
             <div class="btn">
@@ -165,8 +165,8 @@
         </Dropdown>
 
         <Dropdown
-          class="about"
           v-if="!isMobile()"
+          class="about"
         >
           <template #btn>
             <div class="btn">
@@ -183,7 +183,10 @@
                 :href="item.url"
                 @click.prevent="handleJump(item)"
               >
-                <div class="txt">{{ t(item.label) }}</div>
+                <div class="txt">
+                  <s v-if="item.type === 'delete'">{{ t(item.label) }}</s>
+                  <span v-else>{{ t(item.label) }}</span>
+                </div>
                 <VPIconExternalLink
                   v-if="item.url"
                   class="icon"
@@ -194,18 +197,19 @@
         </Dropdown>
 
         <a
+          v-if="!isMobile() && userStore.userInfo"
           class="signin"
           @click="handleSignin"
-          v-if="!isMobile() && userStore.userInfo"
         >
           {{ t('layout.signin') }}
           <div
-            class="red-dot"
             v-if="appStore.showSigninRedDot"
+            class="red-dot"
           ></div>
         </a>
 
         <a
+          v-if="!isMobile()"
           class="privatizationDeployment"
           :class="{
             active:
@@ -216,7 +220,6 @@
           @click.prevent="
             router.push({ name: routerName.privatizationDeployment })
           "
-          v-if="!isMobile()"
         >
           {{ t('layout.deploy') }}
           <div class="badge">
@@ -242,7 +245,7 @@
         <a
           class="github"
           target="_blank"
-          href="https://github.com/galaxy-s10/billd-live"
+          href="https://github.com/billd-project/live"
         >
           <img
             :src="githubStar"
@@ -410,8 +413,8 @@
         </Dropdown>
 
         <Dropdown
-          class="switch-lang"
           v-if="!isMobile()"
+          class="switch-lang"
         >
           <template #btn>
             <div class="btn">
@@ -422,9 +425,9 @@
           <template #list>
             <div class="list">
               <a
-                class="item"
                 v-for="(item, index) in localeList"
                 :key="index"
+                class="item"
                 :class="{ active: item.value === cacheStore.locale }"
                 @click="changeLocale(item)"
               >
@@ -515,6 +518,7 @@ const aboutList = ref([
     label: 'layout.officialGroup',
     routerName: routerName.group,
     url: '',
+    type: 'delete',
   },
   {
     label: 'layout.release',
@@ -526,31 +530,31 @@ const aboutList = ref([
 const resourceList = ref([
   {
     label: 'billd-live',
-    url: 'https://github.com/galaxy-s10/billd-live',
+    url: 'https://github.com/billd-project/live',
   },
   {
     label: 'billd-live-electron',
-    url: 'https://github.com/galaxy-s10/billd-live-electron',
+    url: 'https://github.com/billd-project/live-electron',
   },
   {
     label: 'billd-live-server',
-    url: 'https://github.com/galaxy-s10/billd-live-server',
+    url: 'https://github.com/billd-project/live-server',
   },
   {
     label: 'billd-live-admin',
-    url: 'https://github.com/galaxy-s10/billd-live-admin',
+    url: 'https://github.com/billd-project/live-admin',
   },
   {
     label: 'billd-live-kotlin',
-    url: 'https://github.com/galaxy-s10/billd-live-kotlin',
+    url: 'https://github.com/billd-project/live-kotlin',
   },
   {
     label: 'billd-live-flutter',
-    url: 'https://github.com/galaxy-s10/billd-live-flutter',
+    url: 'https://github.com/billd-project/live-flutter',
   },
   {
     label: 'billd-live-react-native',
-    url: 'https://github.com/galaxy-s10/billd-live-react-native',
+    url: 'https://github.com/billd-project/live-react-native',
   },
   {
     label: 'billd-desk',
@@ -609,7 +613,7 @@ async function handleSignin() {
   const res = await fetchCreateSignin({});
   if (res.code === 200) {
     appStore.showSigninRedDot = false;
-    // eslint-disable-next-line
+
     window.$message.success(`签到成功！已连续签到${res.data.nums}天`);
   }
 }
@@ -652,7 +656,7 @@ function handleJump(item) {
 onMounted(() => {
   locale.value = cacheStore.locale;
   githubStar.value =
-    'https://img.shields.io/github/stars/galaxy-s10/billd-live?label=Star&logo=GitHub&labelColor=white&logoColor=black&style=social&cacheSeconds=3600';
+    'https://img.shields.io/github/stars/billd-project/live?label=Star&logo=GitHub&labelColor=white&logoColor=black&style=social';
 });
 
 function handleTip2() {

@@ -23,8 +23,8 @@
       {{ t('common.allLoaded') }}
     </div>
     <div
-      class="bottom-ref"
       ref="bottomRef"
+      class="bottom-ref"
     ></div>
   </div>
 </template>

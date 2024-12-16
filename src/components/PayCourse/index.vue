@@ -1,7 +1,7 @@
 <template>
   <div
-    class="pay-course"
     v-if="show"
+    class="pay-course"
   >
     <img
       src="@/assets/img/pay-course.webp"

@@ -32,10 +32,10 @@ const show = ref(false);
 
 withDefaults(
   defineProps<{
-    txt: string;
+    txt?: string;
     maxLen: number;
   }>(),
-  {}
+  { txt: '' }
 );
 
 function handleMousemove(e: MouseEvent) {

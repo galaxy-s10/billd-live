@@ -7,8 +7,8 @@
       {{ t('common.payMoney', { money: formatMoney(props.money!) }) }}
     </div>
     <div
-      class="qrcode-wrap"
       v-loading="loading"
+      class="qrcode-wrap"
     >
       <img
         v-if="aliPayBase64 !== ''"
@@ -39,8 +39,8 @@
           {{ t('common.aliPayScanTip') }}
         </div>
         <div
-          class="expr"
           v-if="!isExpired"
+          class="expr"
         >
           {{
             t('common.aliPayScanTip', {
@@ -54,8 +54,8 @@
           }}）
         </div>
         <div
-          class="expr"
           v-else
+          class="expr"
         >
           <span
             class="link"

@@ -51,26 +51,26 @@
 
     <div class="right">
       <div
-        class="item fps"
         v-if="props.control?.fps && appStore.videoControlsValue.fps"
+        class="item fps"
       >
         {{ appStore.videoControlsValue.fps }}帧
       </div>
       <div
-        class="item kbs"
         v-if="props.control?.kbs && appStore.videoControlsValue.kbs"
+        class="item kbs"
       >
         {{ appStore.videoControlsValue.kbs }}KB/s
       </div>
       <div
-        class="item resolution"
         v-if="props.control?.resolution && resolution"
+        class="item resolution"
       >
         {{ resolution }}
       </div>
       <div
-        class="item line"
         v-if="props.control?.line"
+        class="item line"
       >
         <Dropdown
           :positon="'center'"
@@ -82,10 +82,10 @@
           <template #list>
             <div class="list">
               <div
-                class="iten"
-                :class="{ active: appStore.liveLine === item }"
                 v-for="item in lineList"
                 :key="item"
+                class="iten"
+                :class="{ active: appStore.liveLine === item }"
                 @click="changeLiveLine(item)"
               >
                 {{ item }}
@@ -95,8 +95,8 @@
         </Dropdown>
       </div>
       <div
-        class="item speed"
         v-if="props.control?.speed"
+        class="item speed"
       >
         <Dropdown
           :positon="'center'"
@@ -119,8 +119,8 @@
         </Dropdown>
       </div>
       <div
-        class="item render"
         v-if="props.control?.renderMode"
+        class="item render"
       >
         <Dropdown
           :positon="'center'"
@@ -132,10 +132,10 @@
           <template #list>
             <div class="list">
               <div
-                class="iten"
-                :class="{ active: appStore.videoControls?.renderMode === item }"
                 v-for="item in LiveRenderEnum"
                 :key="item"
+                class="iten"
+                :class="{ active: appStore.videoControls?.renderMode === item }"
                 @click="changeRenderMode(item)"
               >
                 {{ item }}
@@ -145,8 +145,8 @@
         </Dropdown>
       </div>
       <div
-        class="item"
         v-if="props.control?.pipMode"
+        class="item"
       >
         <span
           class="txt"
@@ -158,8 +158,8 @@
         </span>
       </div>
       <div
-        class="item"
         v-if="props.control?.pageFullMode"
+        class="item"
       >
         <span
           class="txt"
@@ -173,8 +173,8 @@
         </span>
       </div>
       <div
-        class="item"
         v-if="props.control?.fullMode"
+        class="item"
       >
         <span
           class="txt"

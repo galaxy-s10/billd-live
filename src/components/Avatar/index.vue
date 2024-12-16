@@ -6,12 +6,12 @@
     <div class="cycle-wrap">
       <div
         v-if="url && url !== ''"
-        class="avatar"
         v-lazy:background-image="url"
+        class="avatar"
       ></div>
       <div
-        class="avatar default"
         v-else
+        class="avatar default"
       ></div>
       <template v-if="living && !disableLiving">
         <div class="cycle cycle-1"></div>

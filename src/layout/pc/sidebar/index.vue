@@ -22,9 +22,9 @@
       <div class="txt">{{ t('layout.siteOrder') }}</div>
     </div>
     <div
+      v-if="userStore.userInfo"
       class="item"
       @click="handleJump"
-      v-if="userStore.userInfo"
     >
       <div class="ico wallet"></div>
       <div class="txt">{{ t('layout.myWallet') }}</div>
