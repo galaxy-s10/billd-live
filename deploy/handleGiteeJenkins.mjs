@@ -7,7 +7,8 @@ import trash from 'trash';
 
 const allFile = [];
 const ignore = ['.DS_Store', '.git', 'node_modules', 'dist'];
-const localDir = '/Users/huangshuisheng/Desktop/hss/galaxy-s10/billd-live';
+const localDir =
+  '/Users/huangshuisheng/Desktop/hss/billd-project/billd-live-pro';
 const giteeDir = '/Users/huangshuisheng/Desktop/hss/jenkins/billd-live';
 
 const dir = fs.readdirSync(localDir).filter((item) => {
@@ -48,7 +49,7 @@ function putFile() {
       // 数组的最后一个一定是文件，因此不需要判断它是不是目录
       if (index !== arr.length - 1) {
         const flag = fs.existsSync(item);
-         
+
         !flag && fs.mkdirSync(item);
       }
     });
