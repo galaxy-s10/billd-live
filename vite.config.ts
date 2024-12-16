@@ -12,25 +12,15 @@ import { createHtmlPlugin } from 'vite-plugin-html';
 
 import pkg from './package.json';
 
-const isWeb = process.env['VITE_APP_RELEASE_PROJECT_ISWEB'] === 'true';
-
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production';
 
   const outputStaticUrl = () => {
-    if (isWeb) {
-      if (isProduction) {
-        return 'https://resource.hsslive.cn/billd-live/client/dist/';
-      } else {
-        return './';
-      }
+    if (isProduction) {
+      return 'https://resource.hsslive.cn/billd-live/client/dist/';
     } else {
-      if (isProduction) {
-        return 'dist';
-      } else {
-        return './';
-      }
+      return './';
     }
   };
 
