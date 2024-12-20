@@ -54,6 +54,16 @@ export const routerName = {
   notFound: 'notFound',
   group: 'group',
   my: 'my',
+  center: 'center',
+  centerUser: 'centerUser',
+  centerUserInfo: 'centerUserInfo',
+  centerUserIncome: 'centerUserIncome',
+  centerLiveRoom: 'centerLiveRoom',
+  centerLiveRoomInfo: 'centerLiveRoomInfo',
+  centerLiveRoomStartLive: 'centerLiveRoomStartLive',
+  centerLiveData: 'centerLiveData',
+  centerLiveDataOverview: 'centerLiveDataOverview',
+  centerLiveDataRecord: 'centerLiveDataRecord',
   user: 'user',
   download: 'download',
   downloadLive: 'downloadLive',
@@ -165,6 +175,68 @@ export const defaultRoutes: RouteRecordRaw[] = [
         name: routerName.my,
         path: '/my',
         component: () => import('@/views/my/index.vue'),
+      },
+      {
+        name: routerName.center,
+        path: '/center',
+        component: () => import('@/views/center/index.vue'),
+        children: [
+          {
+            name: routerName.centerUser,
+            path: 'user',
+            component: () => import('@/views/center/user/index.vue'),
+            children: [
+              {
+                name: routerName.centerUserInfo,
+                path: 'info',
+                component: () => import('@/views/center/user/info/index.vue'),
+              },
+              {
+                name: routerName.centerUserIncome,
+                path: 'income',
+                component: () => import('@/views/center/user/income/index.vue'),
+              },
+            ],
+          },
+          {
+            name: routerName.centerLiveRoom,
+            path: 'liveroom',
+            component: () => import('@/views/center/liveroom/index.vue'),
+            children: [
+              {
+                name: routerName.centerLiveRoomInfo,
+                path: 'info',
+                component: () =>
+                  import('@/views/center/liveroom/info/index.vue'),
+              },
+              {
+                name: routerName.centerLiveRoomStartLive,
+                path: 'start-live',
+                component: () =>
+                  import('@/views/center/liveroom/start-live/index.vue'),
+              },
+            ],
+          },
+          {
+            name: routerName.centerLiveData,
+            path: 'live-data',
+            component: () => import('@/views/center/live-data//index.vue'),
+            children: [
+              {
+                name: routerName.centerLiveDataOverview,
+                path: 'overview',
+                component: () =>
+                  import('@/views/center/live-data/overview/index.vue'),
+              },
+              {
+                name: routerName.centerLiveDataRecord,
+                path: 'record',
+                component: () =>
+                  import('@/views/center/live-data/record/index.vue'),
+              },
+            ],
+          },
+        ],
       },
       {
         name: routerName.user,

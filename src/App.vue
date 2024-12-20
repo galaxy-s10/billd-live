@@ -51,9 +51,6 @@ const themeOverrides: GlobalThemeOverrides = {
 };
 
 onMounted(() => {
-  document.addEventListener('click', () => {
-    appStore.pageIsClick = true;
-  });
   handleGlobalMsgMyList();
   useGoogleAd();
   initGlobalData();

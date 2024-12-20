@@ -24,8 +24,8 @@ const appStore = useAppStore();
 <style lang="scss" scoped>
 .layout {
   box-sizing: border-box;
-  padding-top: $header-height;
-  min-height: 100vh;
+  // padding-top: $header-height;
+  height: 100vh;
 
   .fixed-mask {
     position: fixed;

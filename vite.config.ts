@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => {
 
   const outputStaticUrl = () => {
     if (isProduction) {
-      return 'https://resource.hsslive.cn/billd-live/client/dist/';
+      return 'https://live.hsslive.cn/dist/';
     } else {
       return './';
     }

@@ -17,7 +17,65 @@
             :on-update:value="tabChange"
           >
             <n-tab-pane
-              name="pwdlogin"
+              :name="tabEnum.idlogin"
+              tab="ID登录"
+            >
+              <n-form
+                ref="loginFormRef"
+                label-placement="left"
+                size="large"
+                :model="loginForm"
+                :rules="loginRules"
+              >
+                <n-form-item path="id">
+                  <n-input
+                    v-model:value="loginForm.username"
+                    type="text"
+                    placeholder="请输入用户ID"
+                  >
+                    <template #prefix>
+                      <n-icon
+                        size="20"
+                        class="lang"
+                      >
+                        <PersonOutline></PersonOutline>
+                      </n-icon>
+                    </template>
+                  </n-input>
+                </n-form-item>
+                <n-form-item path="password">
+                  <n-input
+                    v-model:value="loginForm.password"
+                    type="password"
+                    show-password-on="mousedown"
+                    placeholder="请输入密码"
+                    @focus="onFocus"
+                    @blur="onBlur"
+                    @keyup.enter="handleLoginSubmit"
+                  >
+                    <template #prefix>
+                      <n-icon
+                        size="20"
+                        class="lang"
+                      >
+                        <LockClosedOutline></LockClosedOutline>
+                      </n-icon>
+                    </template>
+                  </n-input>
+                </n-form-item>
+              </n-form>
+              <n-button
+                type="primary"
+                block
+                secondary
+                strong
+                @click="handleLoginSubmit"
+              >
+                登录
+              </n-button>
+            </n-tab-pane>
+            <n-tab-pane
+              :name="tabEnum.usernamelogin"
               tab="账密登录"
             >
               <n-form
@@ -75,7 +133,7 @@
               </n-button>
             </n-tab-pane>
             <n-tab-pane
-              name="pwdregister"
+              :name="tabEnum.register"
               tab="注册"
             >
               <n-form
@@ -182,7 +240,12 @@ const loginForm = ref({
   password: '',
 });
 const loginFormRef = ref(null);
-const currentTab = ref('pwdlogin'); // pwdlogin
+enum tabEnum {
+  idlogin,
+  usernamelogin,
+  register,
+}
+const currentTab = ref(tabEnum.idlogin);
 const loopTimer = ref();
 const emits = defineEmits(['close']);
 
@@ -200,7 +263,7 @@ function handleClose() {
   emits('close');
 }
 
-const handleLogin = async () => {
+async function handleUsernameLogin() {
   if (
     loginForm.value.username.length < 3 ||
     loginForm.value.username.length > 12
@@ -225,7 +288,27 @@ const handleLogin = async () => {
     userStore.getUserInfo();
     appStore.showLoginModal = false;
   }
-};
+}
+
+async function handleUserIdLogin() {
+  if (
+    loginForm.value.password.length < 6 ||
+    loginForm.value.password.length > 18
+  ) {
+    window.$message.warning('密码长度要求6-18位！');
+    return;
+  }
+  let token = null;
+  token = await userStore.idLogin({
+    id: Number(loginForm.value.username),
+    password: loginForm.value.password,
+  });
+  if (token) {
+    window.$message.success('登录成功！');
+    userStore.getUserInfo();
+    appStore.showLoginModal = false;
+  }
+}
 
 function handleUserRegister(e) {
   e.preventDefault();
@@ -248,7 +331,11 @@ const handleLoginSubmit = (e) => {
   // @ts-ignore
   loginFormRef.value.validate((errors) => {
     if (!errors) {
-      handleLogin();
+      if (currentTab.value === tabEnum.usernamelogin) {
+        handleUsernameLogin();
+      } else if (currentTab.value === tabEnum.idlogin) {
+        handleUserIdLogin();
+      }
     }
   });
 };

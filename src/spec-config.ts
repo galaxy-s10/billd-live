@@ -19,12 +19,13 @@ export const TENCENTCLOUD_COS = {
     Region: 'ap-guangzhou',
     StorageClass: 'STANDARD',
     prefix: {
-      'common/': 'common/',
-      'images/': 'images/',
-      'msg-images/': 'msg-images/',
+      'billd-live/client/common/': 'billd-live/client/common/',
+      'billd-live/client/img/': 'billd-live/client/img/',
+      'billd-live/client/msg-img/': 'billd-live/client/msg-img/',
     },
   },
 };
+export const TENCENTCLOUD_CHAT_SDK_APPID = 1400815419; // 腾讯云即时通讯IM SDKAppID
 
 export const QINIU_KODO = {
   hssblog: {

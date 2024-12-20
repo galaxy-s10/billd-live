@@ -393,14 +393,41 @@
                 class="item"
                 @click.prevent="
                   router.push({
-                    name: routerName.my,
-                    params: {
-                      userId: userStore.userInfo.id,
-                    },
+                    name: routerName.wallet,
                   })
                 "
               >
-                <div class="txt">{{ t('layout.my') }}</div>
+                <div class="txt">
+                  {{ t('layout.wallet') }}：{{
+                    formatMoney(userStore.userInfo.wallet?.balance || 0)
+                  }}元
+                </div>
+              </a>
+              <a
+                class="item"
+                @click.prevent="
+                  router.push({
+                    name: routerName.centerUserInfo,
+                  })
+                "
+              >
+                <div class="txt">{{ t('layout.userCenter') }}</div>
+              </a>
+              <a
+                class="item"
+                @click.prevent="
+                  router.push({
+                    name: routerName.centerLiveRoomInfo,
+                  })
+                "
+              >
+                <div class="txt">{{ t('layout.liveCenter') }}</div>
+              </a>
+              <a
+                class="item"
+                @click.prevent="jumpToMyLiveRoom"
+              >
+                <div class="txt">{{ t('layout.myLiveRoom') }}</div>
               </a>
               <a
                 class="item"
@@ -459,6 +486,7 @@ import { useAppStore } from '@/store/app';
 import { useCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
+import { formatMoney, getLiveRoomPageUrl } from '@/utils';
 
 const { t, locale } = useI18n();
 const router = useRouter();
@@ -608,6 +636,16 @@ watch(
     immediate: true,
   }
 );
+
+function jumpToMyLiveRoom() {
+  const id = userStore.userInfo?.live_rooms?.[0]?.id;
+  if (!id) {
+    window.$message.warning('你还没有开通直播间！');
+    return;
+  }
+  const url = getLiveRoomPageUrl(id!);
+  openToTarget(url);
+}
 
 async function handleSignin() {
   const res = await fetchCreateSignin({});
@@ -1020,7 +1058,7 @@ function handleWebsiteJump() {
         }
         .list {
           padding: 10px 0;
-          width: 90px;
+          width: 170px;
 
           .item {
             position: relative;

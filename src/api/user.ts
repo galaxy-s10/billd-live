@@ -36,13 +36,22 @@ export function fetchQrcodeLoginStatus({ platform, login_id }) {
   });
 }
 
-export function fetchUsernameLogin({ username, password, exp }) {
+export function fetchUserIdLogin({ id, password, exp }) {
+  return request.post('/user/id_login', {
+    id,
+    password,
+    exp,
+  });
+}
+
+export function fetchUserUsernameLogin({ username, password, exp }) {
   return request.post('/user/username_login', {
     username,
     password,
     exp,
   });
 }
+
 export function fetchIdLogin({ id, password }) {
   return request.post('/user/login', {
     id,
