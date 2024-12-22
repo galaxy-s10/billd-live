@@ -2,26 +2,40 @@ import path from 'path';
 
 import vue from '@vitejs/plugin-vue';
 import { BilldHtmlWebpackPlugin, logData } from 'billd-html-webpack-plugin';
+import externalGlobals from 'rollup-plugin-external-globals';
 import autoImport from 'unplugin-auto-import/vite';
 import { NaiveUiResolver } from 'unplugin-vue-components/resolvers';
 import unpluginVueComponents from 'unplugin-vue-components/vite';
 import { defineConfig } from 'vite';
+import prefetchPlugin from 'vite-plugin-bundle-prefetch';
 import checker from 'vite-plugin-checker';
+import { chunkSplitPlugin } from 'vite-plugin-chunk-split';
 import eslint from 'vite-plugin-eslint2';
 import { createHtmlPlugin } from 'vite-plugin-html';
 
 import pkg from './package.json';
 
+const globals = externalGlobals({
+  // 'runtime-core': 'runtime-core',
+  // vue: 'Vue',
+  // 'vue-demi': 'VueDemi',
+  // 'vue-router': 'VueRouter',
+  'video.js': 'videojs',
+  'mpegts.js': 'mpegts',
+  fabric: 'fabric',
+  'cos-js-sdk-v5': 'COS',
+});
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production';
-
   const outputStaticUrl = () => {
     if (isProduction) {
       return 'https://live.hsslive.cn/dist/';
     } else {
       return './';
     }
+    // return './';
   };
 
   return {
@@ -34,7 +48,18 @@ export default defineConfig(({ mode }) => {
       },
     },
     resolve: {
-      alias: { '@': path.resolve(__dirname, 'src') },
+      alias: {
+        '@': path.resolve(__dirname, 'src'),
+        // 'runtime-core':
+        //   'https://res.hsslive.cn/npm/@vue/runtime-core@3.5.13/+esm.js',
+        // vue: 'https://res.hsslive.cn/npm/vue@3.5.13/+esm.js',
+        // 'vue-router': 'https://res.hsslive.cn/npm/vue-router@4.2.4/+esm.js',
+        // 'video.js': 'https://res.hsslive.cn/npm/video.js@8.21.0/+esm.js',
+        // 'mpegts.js': 'https://res.hsslive.cn/npm/mpegts.js@1.7.3/+esm.js',
+        // fabric: 'https://res.hsslive.cn/npm/fabric@5.4.2/+esm.js',
+        // 'cos-js-sdk-v5':
+        //   'https://res.hsslive.cn/npm/cos-js-sdk-v5@1.8.6/+esm.js',
+      },
       /**
        * 不建议省略.vue后缀
        * https://cn.vitejs.dev/config/shared-options.html#resolve-extensions
@@ -43,9 +68,42 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       outDir: 'dist',
+      rollupOptions: {
+        external: [
+          // 'vue',
+          // 'vue-demi',
+          // 'vue-router',
+          // 'runtime-core',
+          'video.js',
+          'mpegts.js',
+          'fabric',
+          'cos-js-sdk-v5',
+        ],
+        plugins: [globals],
+      },
     },
     plugins: [
-      // legacy(),
+      // visualizer({
+      //   gzipSize: true,
+      //   brotliSize: true,
+      //   emitFile: false,
+      //   filename: 'visualizer.html', // 分析图生成的文件名
+      //   open: true, // 如果存在本地服务端口，将在打包后自动展示
+      // }),
+      chunkSplitPlugin({
+        // 指定拆包策略
+        // customSplitting: {
+        //   // `vue` and `vue-router` 会被打包到一个名为`vue-vendor`的 chunk 里面(包括它们的一些依赖，如 object-assign)
+        //   'vue-vendor': [/vue/],
+        //   'vue-router-vendor': [/vue-router/],
+        //   'av-cliper-vendor': [/@webav\/av-cliper/],
+        //   // 源码中 utils 目录的代码都会打包进 `utils` 这个 chunk 中
+        //   // utils: [/src\/utils/],
+        //   views: [/src\/views/],
+        //   compoents: [/src\/compoents/],
+        // },
+      }),
+      prefetchPlugin(),
       // isProduction && legacy(),
       vue(),
       createHtmlPlugin({
