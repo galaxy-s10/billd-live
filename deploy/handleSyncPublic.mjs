@@ -92,6 +92,7 @@ if (process.cwd().indexOf('galaxy-s10') !== -1) {
       });
       return flag;
     });
+    console.log(allFile);
     putFile();
 
     const currentPkgStr = fs.readFileSync(
