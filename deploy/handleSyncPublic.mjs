@@ -15,7 +15,9 @@ const ignoreIndexOf = [
   path.resolve(proDir, 'src/store'),
   path.resolve(proDir, 'src/types'),
   path.resolve(proDir, 'src/utils'),
-  path.resolve(proDir, 'src/views'),
+  path.resolve(proDir, 'src/views/pull'),
+  path.resolve(proDir, 'src/views/push'),
+  path.resolve(proDir, 'src/views/h5'),
 ];
 
 const dir = fs.readdirSync(proDir).filter((item) => {

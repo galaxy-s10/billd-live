@@ -1,0 +1,582 @@
+<template>
+  <div class="privatizationDeployment-wrap">
+    <h2 class="title">
+      <div
+        v-for="(item, index) in detail[currentTab].slogan"
+        :key="index"
+      >
+        {{ item }}
+      </div>
+    </h2>
+    <div class="tab">
+      <div
+        v-for="(item, index) in tab"
+        :key="index"
+        class="item"
+        :class="{ active: item.id === currentTab }"
+        @click="currentTab = item.id"
+      >
+        {{ item.txt }}
+      </div>
+    </div>
+    <div class="list">
+      <div
+        v-for="(item, index) in detail[currentTab].list"
+        :key="index"
+        class="item"
+        :class="{ [item['color']]: 1 }"
+      >
+        <div class="name">{{ item.name }}</div>
+        <div class="desc">{{ item.desc }}</div>
+        <div class="price">
+          <span class="t1">{{ item.price.left }}</span>
+          <span class="t2">{{ item.price.center }}</span>
+          <span class="t3">{{ item.price.right }}</span>
+        </div>
+        <div class="feat">
+          <div
+            v-if="item.tip !== ''"
+            class="feat-item tip"
+          >
+            {{ item.tip }}
+          </div>
+          <div
+            v-for="(iten, indey) in item.feat"
+            :key="indey"
+            class="feat-item"
+          >
+            <div
+              :class="{
+                done: iten.status === 'done',
+                todo: iten.status === 'todo',
+              }"
+            ></div>
+            <div class="txt">{{ iten.txt }}</div>
+          </div>
+        </div>
+        <div
+          class="btn"
+          @click="handleClick(item.btn)"
+        >
+          {{ item.btn.txt }}
+        </div>
+      </div>
+    </div>
+  </div>
+  <n-modal v-model:show="showContach">
+    <n-card
+      style="width: 400px"
+      title="联系作者"
+      role="dialog"
+      closable
+      @close="showContach = false"
+    >
+      <div>
+        <div>微信二维码：</div>
+        <img
+          src="@/assets/img/my-wechat.webp"
+          alt=""
+          style="width: 300px"
+        />
+        <div>微信号：{{ AUTHOR_INFO.wechat }}</div>
+        <div>qq号：{{ AUTHOR_INFO.qq }}</div>
+        <div>添加时请备注：<b>live私有化部署</b></div>
+        <b style="color: red">
+          <span>
+            注意：项目开源，个人用户有问题github提Issue即可，不必添加作者！
+          </span>
+          <br />
+          <i>如有商业合作，请充分了解该项目。咨询需付费（100元/小时）！</i>
+        </b>
+      </div>
+    </n-card>
+  </n-modal>
+</template>
+
+<script lang="ts" setup>
+import { openToTarget } from 'billd-utils';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+
+import { AUTHOR_INFO, COMMON_URL, PROJECT_NAME } from '@/constant';
+import { routerName } from '@/router';
+
+const router = useRouter();
+const showContach = ref(false);
+const currentTab = ref<'personal' | 'openSource' | 'customized' | string>(
+  'openSource'
+);
+
+const tab = ref([
+  {
+    id: 'personal',
+    txt: '个人版',
+  },
+  {
+    id: 'openSource',
+    txt: '开源版',
+  },
+  {
+    id: 'customized',
+    txt: '定制版',
+  },
+]);
+
+const detail = ref({
+  personal: {
+    slogan: ['欢迎使用billd直播~'],
+    list: [
+      {
+        color: 'blue',
+        name: 'VIP',
+        desc: '适用于个人用户简单体验',
+        price: {
+          left: '￥',
+          center: '0',
+          right: '',
+        },
+        tip: '',
+        feat: [
+          {
+            status: 'done',
+            txt: 'SRS直播',
+          },
+          {
+            status: 'done',
+            txt: '打PK直播',
+          },
+          {
+            status: 'done',
+            txt: 'WebRTC直播',
+          },
+          {
+            status: 'done',
+            txt: 'WebRTC会议',
+          },
+        ],
+        btn: {
+          type: 'push',
+          link: routerName.push,
+          txt: '免费体验',
+        },
+      },
+      {
+        color: 'green',
+        name: 'SVIP',
+        desc: '适用于个人用户中度体验',
+        price: {
+          left: '￥',
+          center: '10',
+          right: '元/月',
+        },
+        tip: '涵盖VIP全部功能',
+        feat: [
+          {
+            status: 'done',
+            txt: '转推b站',
+          },
+          {
+            status: 'done',
+            txt: '转推虎牙',
+          },
+          {
+            status: 'done',
+            txt: '去广告',
+          },
+        ],
+        btn: {
+          type: 'toast',
+          link: '即将上线~',
+          txt: '立即购买',
+        },
+      },
+      {
+        color: 'orange',
+        name: 'ADMIN',
+        desc: '适用于个人用户深度体验',
+        price: {
+          left: '￥',
+          center: '50',
+          right: '元/月',
+        },
+        tip: '涵盖SVIP全部功能',
+        feat: [
+          {
+            status: 'done',
+            txt: 'Msr直播',
+          },
+          {
+            status: 'done',
+            txt: '腾讯云直播（CDN）',
+          },
+          {
+            status: 'done',
+            txt: '腾讯云打PK（CDN）',
+          },
+        ],
+        btn: {
+          type: 'toast',
+          link: '即将上线~',
+          txt: '立即购买',
+        },
+      },
+    ],
+  },
+  openSource: {
+    slogan: ['billd直播开源至今，累计收获1.3k+ star', '值得信赖，欢迎部署~'],
+    list: [
+      {
+        color: 'blue',
+        name: 'Github',
+        desc: '适用于个人学习/测试用途',
+        price: {
+          left: '￥',
+          center: '0',
+          right: '',
+        },
+        tip: '',
+        feat: [
+          {
+            status: 'done',
+            txt: '源码开源，自行部署',
+          },
+          {
+            status: 'done',
+            txt: '前台（Web）',
+          },
+          {
+            status: 'done',
+            txt: '后台（Web）',
+          },
+          {
+            status: 'done',
+            txt: '后端（Node.js）',
+          },
+          {
+            status: 'done',
+            txt: '移动端（Flutter）',
+          },
+          {
+            status: 'todo',
+            txt: '客户端（Electron）',
+          },
+        ],
+        btn: {
+          type: 'link',
+          link: 'https://github.com/billd-project/live',
+          txt: '立即部署',
+        },
+      },
+      {
+        color: 'green',
+        name: '私有化部署',
+        desc: '适用于个人/企业自建直播平台',
+        price: {
+          left: '￥',
+          center: '8000',
+          right: '起',
+        },
+        tip: '涵盖Github全部/部分功能',
+        feat: [
+          {
+            status: 'done',
+            txt: '一次部署，永久使用',
+          },
+          {
+            status: 'done',
+            txt: '无门槛，全程专人负责部署',
+          },
+          {
+            status: 'done',
+            txt: '本地服务器部署',
+          },
+          {
+            status: 'done',
+            txt: '快速上线',
+          },
+        ],
+        btn: {
+          type: 'showContact',
+          link: '',
+          txt: '立即咨询',
+        },
+      },
+    ],
+  },
+  customized: {
+    slogan: ['billd直播支持定制化', '立即定制自己的个性化直播间~'],
+    list: [
+      {
+        color: 'blue',
+        name: '在线咨询',
+        desc: '咨询/答疑服务',
+        price: {
+          left: '￥',
+          center: '100',
+          right: '元/小时',
+        },
+        tip: '',
+        feat: [
+          {
+            status: 'done',
+            txt: '一对一解答',
+          },
+        ],
+        btn: {
+          type: 'showContact',
+          link: '',
+          txt: '立即咨询',
+        },
+      },
+      {
+        color: 'green',
+        name: '付费课程',
+        desc: '适用于前端/音视频小白',
+        price: {
+          left: '￥',
+          center: '399',
+          right: '元',
+        },
+        tip: '',
+        feat: [
+          {
+            status: 'done',
+            txt: '一对一解答（4小时）',
+          },
+          {
+            status: 'done',
+            txt: '能够搭建最基础的直播间',
+          },
+          {
+            status: 'done',
+            txt: '单独的代码仓库',
+          },
+          {
+            status: 'done',
+            txt: '视频讲解',
+          },
+          {
+            status: 'done',
+            txt: `${PROJECT_NAME}付费课微信群`,
+          },
+        ],
+        btn: {
+          type: 'link',
+          link: COMMON_URL.payCoursesArticle,
+          txt: '了解详情',
+        },
+      },
+      {
+        color: 'orange',
+        name: '私有化部署',
+        desc: '适用于个人/企业自建直播平台',
+        price: {
+          left: '￥',
+          center: '9999',
+          right: '起',
+        },
+        tip: '',
+        feat: [
+          {
+            status: 'done',
+            txt: '一次部署，永久使用',
+          },
+          {
+            status: 'done',
+            txt: '无门槛，全程专人负责部署',
+          },
+          {
+            status: 'done',
+            txt: '本地服务器部署',
+          },
+          {
+            status: 'done',
+            txt: '快速上线',
+          },
+          {
+            status: 'done',
+            txt: '定制化功能',
+          },
+        ],
+        btn: {
+          type: 'showContact',
+          link: '',
+          txt: '立即咨询',
+        },
+      },
+    ],
+  },
+});
+
+function handleClick(item) {
+  if (item.type === 'link') {
+    openToTarget(item.link);
+  } else if (item.type === 'push') {
+    const url = router.resolve({
+      name: item.link,
+    });
+    openToTarget(url.href);
+  } else if (item.type === 'buy') {
+    console.log('buy');
+  } else if (item.type === 'toast') {
+    window.$message.info(item.link);
+  } else if (item.type === 'showContact') {
+    showContach.value = true;
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.privatizationDeployment-wrap {
+  height: calc(100vh - $layout-head-h);
+  background-color: #f4f8ff;
+  .title {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+    margin: 0 auto;
+    width: 1200px;
+    height: 180px;
+    // background-color: red;
+    text-align: center;
+    font-size: 40px;
+  }
+  .tab {
+    display: flex;
+    justify-content: center;
+    margin: 0 auto;
+    padding: 8px 0;
+    width: 320px;
+    border-radius: 40px;
+    background: white;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
+
+    user-select: none;
+    .item {
+      padding: 4px 25px;
+      border-radius: 40px;
+      color: #686e88;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      &.active {
+        background-color: $theme-color-gold;
+        color: white;
+      }
+    }
+  }
+  .list {
+    display: flex;
+    justify-content: center;
+    margin: 50px auto 0;
+    width: 1200px;
+    .item {
+      box-sizing: border-box;
+      margin: 0 10px;
+      padding: 20px 20px;
+      width: 240px;
+      // border: 1px solid #dde6ed;
+      border-radius: 2px;
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+      background-color: white;
+      font-size: 14px;
+
+      &.blue {
+        border-top: 7px solid #38c0ff;
+      }
+      &.green {
+        border-top: 7px solid #30d1aa;
+      }
+      &.orange {
+        border-top: 7px solid #ffbd33;
+      }
+      .name {
+        padding: 10px 0 0;
+        height: 40px;
+        text-align: center;
+        font-size: 30px;
+        line-height: 1;
+      }
+      .desc {
+        margin-top: 10px;
+        height: 40px;
+        color: #88898d;
+        text-align: center;
+        // background-color: red;
+      }
+      .price {
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        height: 45px;
+        color: #88898d;
+        text-align: center;
+        .t1 {
+          color: #272727;
+          font-weight: 600;
+          font-size: 16px;
+        }
+        .t2 {
+          color: #272727;
+          font-size: 40px;
+          line-height: 36px;
+        }
+        .t3 {
+          color: #2c2c2c;
+          font-size: 16px;
+        }
+        // background-color: red;
+      }
+      .feat {
+        margin-top: 30px;
+        height: 200px;
+        .feat-item {
+          display: flex;
+          align-items: center;
+          margin-bottom: 10px;
+          &.tip {
+            color: #88898d;
+          }
+          .todo,
+          .done {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            text-align: center;
+          }
+          .todo {
+            position: relative;
+            &::after {
+              color: #ffc049;
+              content: '-';
+              text-align: center;
+              font-size: 16px;
+            }
+          }
+          .done {
+            @include setBackground('@/assets/img/check.png');
+          }
+        }
+      }
+      .btn {
+        margin: 0 auto;
+        padding: 8px 0;
+        width: 160px;
+        border: 1px solid $theme-color-gold;
+        border-radius: 4px;
+        color: $theme-color-gold;
+        text-align: center;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 00.3s ease;
+        &:hover {
+          background-color: $theme-color-gold;
+          color: white;
+        }
+      }
+    }
+  }
+}
+</style>
