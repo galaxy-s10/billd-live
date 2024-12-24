@@ -9,7 +9,7 @@
         <a
           class="github"
           target="_blank"
-          href="https://github.com/billd-project/live"
+          href="https://github.com/galaxy-s10/billd-live"
         >
           <img
             :src="githubStar"
@@ -77,9 +77,9 @@ const options = [
 
 onMounted(() => {
   githubStar.value =
-    'https://img.shields.io/github/stars/billd-project/live?label=Star&logo=GitHub&labelColor=white&logoColor=black&style=social';
+    'https://img.shields.io/github/stars/galaxy-s10/billd-live?label=Star&logo=GitHub&labelColor=white&logoColor=black&style=social';
   githubFork.value =
-    'https://img.shields.io/github/forks/billd-project/live?label=Fork&logo=GitHub&labelColor=white&logoColor=black&style=social';
+    'https://img.shields.io/github/forks/galaxy-s10/billd-live?label=Fork&logo=GitHub&labelColor=white&logoColor=black&style=social';
 });
 
 function handleSelect(key) {

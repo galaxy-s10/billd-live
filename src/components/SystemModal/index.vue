@@ -10,7 +10,7 @@
       >
         <div>
           欢迎进入直播间，遇到问题请提<a
-            href="https://github.com/billd-project/live/issues/new"
+            href="https://github.com/galaxy-s10/billd-live/issues/new"
             target="_blank"
           >
             issue

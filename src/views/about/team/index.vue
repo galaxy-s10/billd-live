@@ -148,15 +148,15 @@ const list = ref([
     skill: [
       {
         label: 'billd-live',
-        github: 'https://github.com/billd-project/live',
+        github: 'https://github.com/galaxy-s10/billd-live',
       },
       {
         label: 'billd-live-admin',
-        github: 'https://github.com/billd-project/live-admin',
+        github: 'https://github.com/galaxy-s10/billd-live-admin',
       },
       {
         label: 'billd-live-server',
-        github: 'https://github.com/billd-project/live-server',
+        github: 'https://github.com/galaxy-s10/billd-live-server',
       },
     ],
     social: [{ github: 'https://www.github.com/galaxy-s10' }],

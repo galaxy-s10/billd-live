@@ -59,18 +59,18 @@ export const COMMON_URL = {
     live: {
       flutter: {
         android: `${QINIU_KODO.hssblog.url}/billd-live/download/billd-live-v0.0.4.apk`,
-        github: 'https://github.com/billd-project/live-flutter',
+        github: 'https://github.com/galaxy-s10/billd-live-flutter',
       },
       reactNative: {
         android: '',
-        github: 'https://github.com/billd-project/live-react-native',
+        github: 'https://github.com/galaxy-s10/billd-live-react-native',
       },
       kotlin: {
         android: '',
-        github: 'https://github.com/billd-project/live-kotlin',
+        github: 'https://github.com/galaxy-s10/billd-live-kotlin',
       },
       electron: {
-        github: 'https://github.com/billd-project/live-electron',
+        github: 'https://github.com/galaxy-s10/billd-live-electron',
         windows: ``,
         macOS: ``,
       },
@@ -89,10 +89,10 @@ export const COMMON_URL = {
     },
   },
   release: {
-    flutter: 'https://github.com/billd-project/live-flutter',
-    kotlin: 'https://github.com/billd-project/live-kotlin',
-    reactNative: 'https://github.com/billd-project/live-react-native',
-    electron: 'https://github.com/billd-project/live-electron',
+    flutter: 'https://github.com/galaxy-s10/billd-live-flutter',
+    kotlin: 'https://github.com/galaxy-s10/billd-live-kotlin',
+    reactNative: 'https://github.com/galaxy-s10/billd-live-react-native',
+    electron: 'https://github.com/galaxy-s10/billd-live-electron',
     desk: 'https://github.com/galaxy-s10/billd-desk',
   },
 };

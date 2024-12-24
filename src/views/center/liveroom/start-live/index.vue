@@ -69,9 +69,31 @@
               clearable
             />
           </div>
-          <span class="save">保存</span>
+          <span
+            class="save"
+            @click="handleUpdateMyLiveRoom"
+            >保存</span
+          >
         </div>
         <div class="title">谁可以看：</div>
+        <div class="limit-wrap">
+          <div
+            class="limit-item"
+            :class="{ active: watchLimit === 'all' }"
+            @click="watchLimit = 'all'"
+          >
+            <div class="name">公开直播</div>
+            <div class="desc">所有人可见该场直播内容</div>
+          </div>
+          <div
+            class="limit-item disabled"
+            :class="{ active: watchLimit === 'fans' }"
+            @click="handleTip"
+          >
+            <div class="name">粉丝专属</div>
+            <div class="desc">粉丝用户可见该场直播内容</div>
+          </div>
+        </div>
       </div>
     </div>
     <span
@@ -90,6 +112,7 @@ import { ref, toRefs, watch } from 'vue';
 
 import { fetchUpdateLiveRoomKey, fetchUpdateMyLiveRoom } from '@/api/liveRoom';
 import { URL_QUERY } from '@/constant';
+import { handleTip } from '@/hooks/use-common';
 import { loginTip } from '@/hooks/use-login';
 import router, { routerName } from '@/router';
 import { useUserStore } from '@/store/user';
@@ -101,6 +124,7 @@ const { userInfo } = toRefs(userStore);
 const liveRoomInfo = ref<ILiveRoom>();
 const updateKeyLoading = ref(false);
 const title = ref('');
+const watchLimit = ref('all');
 
 watch(
   () => userInfo?.value,
@@ -155,15 +179,13 @@ function handleCopy(url: string | number) {
   window.$message.success('复制成功！');
 }
 
-// @ts-ignore
 async function handleUpdateMyLiveRoom() {
+  if (!title.value.length) {
+    window.$message.warning('房间标题不能为空！');
+    return;
+  }
   const res = await fetchUpdateMyLiveRoom({
-    forward_bilibili_url: liveRoomInfo.value?.forward_bilibili_url,
-    forward_douyin_url: liveRoomInfo.value?.forward_douyin_url,
-    forward_douyu_url: liveRoomInfo.value?.forward_douyu_url,
-    forward_huya_url: liveRoomInfo.value?.forward_huya_url,
-    forward_kuaishou_url: liveRoomInfo.value?.forward_kuaishou_url,
-    forward_xiaohongshu_url: liveRoomInfo.value?.forward_xiaohongshu_url,
+    name: title.value,
   });
   if (res.code === 200) {
     window.$message.success('修改成功！');
@@ -286,6 +308,37 @@ function openLiveRoom() {
         font-size: 12px;
         cursor: pointer;
         margin-left: 20px;
+      }
+    }
+    .limit-wrap {
+      display: flex;
+      align-items: center;
+      .limit-item {
+        border: 1px solid #e9eaec;
+        border-radius: 5px;
+        box-sizing: border-box;
+        padding: 10px 20px;
+        margin-right: 20px;
+        cursor: pointer;
+        &.active {
+          border: 1px solid $theme-color-gold;
+          .name {
+            color: #000;
+          }
+        }
+        &.disabled {
+          cursor: no-drop;
+        }
+        .name {
+          font-size: 16px;
+          font-weight: bold;
+          color: #98a4ad;
+        }
+        .desc {
+          font-size: 12px;
+          margin-top: 4px;
+          color: #999;
+        }
       }
     }
   }

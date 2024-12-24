@@ -11,7 +11,7 @@
             <span
               class="link"
               @click="
-                openToTarget('https://github.com/billd-project/live#readme')
+                openToTarget('https://github.com/galaxy-s10/billd-live#readme')
               "
             >
               {{ PROJECT_NAME }}的README

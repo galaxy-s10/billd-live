@@ -22,7 +22,7 @@ const globals = externalGlobals({
   // 'vue-router': 'VueRouter',
   'video.js': 'videojs',
   'mpegts.js': 'mpegts',
-  fabric: 'fabric',
+  // fabric: 'fabric',
   'cos-js-sdk-v5': 'COS',
 });
 
@@ -76,7 +76,7 @@ export default defineConfig(({ mode }) => {
           // 'runtime-core',
           'video.js',
           'mpegts.js',
-          'fabric',
+          // 'fabric',
           'cos-js-sdk-v5',
         ],
         plugins: [globals],
@@ -110,7 +110,8 @@ export default defineConfig(({ mode }) => {
         inject: {
           data: {
             // @ts-ignore
-            title: '',
+            title: 'billd直播',
+            // injectScript: `<script src="${outputStaticUrl()}worker.js"></script>`,
           },
         },
       }),

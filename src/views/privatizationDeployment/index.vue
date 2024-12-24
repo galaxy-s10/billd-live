@@ -263,7 +263,7 @@ const detail = ref({
         ],
         btn: {
           type: 'link',
-          link: 'https://github.com/billd-project/live',
+          link: 'https://github.com/galaxy-s10/billd-live',
           txt: '立即部署',
         },
       },

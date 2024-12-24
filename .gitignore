@@ -6,3 +6,4 @@ auto-imports.d.ts
 .eslintcache
 deploy/index.js
 deploy/index.cjs
+visualizer.html

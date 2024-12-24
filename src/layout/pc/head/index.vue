@@ -245,7 +245,7 @@
         <a
           class="github"
           target="_blank"
-          href="https://github.com/billd-project/live"
+          href="https://github.com/galaxy-s10/billd-live"
         >
           <img
             :src="githubStar"
@@ -558,31 +558,31 @@ const aboutList = ref([
 const resourceList = ref([
   {
     label: 'billd-live',
-    url: 'https://github.com/billd-project/live',
+    url: 'https://github.com/galaxy-s10/billd-live',
   },
   {
     label: 'billd-live-electron',
-    url: 'https://github.com/billd-project/live-electron',
+    url: 'https://github.com/galaxy-s10/billd-live-electron',
   },
   {
     label: 'billd-live-server',
-    url: 'https://github.com/billd-project/live-server',
+    url: 'https://github.com/galaxy-s10/billd-live-server',
   },
   {
     label: 'billd-live-admin',
-    url: 'https://github.com/billd-project/live-admin',
+    url: 'https://github.com/galaxy-s10/billd-live-admin',
   },
   {
     label: 'billd-live-kotlin',
-    url: 'https://github.com/billd-project/live-kotlin',
+    url: 'https://github.com/galaxy-s10/billd-live-kotlin',
   },
   {
     label: 'billd-live-flutter',
-    url: 'https://github.com/billd-project/live-flutter',
+    url: 'https://github.com/galaxy-s10/billd-live-flutter',
   },
   {
     label: 'billd-live-react-native',
-    url: 'https://github.com/billd-project/live-react-native',
+    url: 'https://github.com/galaxy-s10/billd-live-react-native',
   },
   {
     label: 'billd-desk',
@@ -694,7 +694,7 @@ function handleJump(item) {
 onMounted(() => {
   locale.value = cacheStore.locale;
   githubStar.value =
-    'https://img.shields.io/github/stars/billd-project/live?label=Star&logo=GitHub&labelColor=white&logoColor=black&style=social';
+    'https://img.shields.io/github/stars/galaxy-s10/billd-live?label=Star&logo=GitHub&labelColor=white&logoColor=black&style=social';
 });
 
 function handleTip2() {

@@ -117,6 +117,8 @@ function openLiveRoom() {
 .profile-wrap {
   position: relative;
   padding: 10px;
+  padding-top: $header-height;
+
   .link {
     color: $theme-color-gold;
     text-decoration: none;

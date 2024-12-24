@@ -301,6 +301,16 @@ pnpm run dev
 - srs 版本：基于 docker，镜像：registry.cn-hangzhou.aliyuncs.com/ossrs/srs:5.0.170
 - ffmpeg 版本：6.0
 
+## 贡献者
+
+  <a href="https://github.com/galaxy-s10/billd-live/graphs/contributors" target="_blank">
+    <img
+      width="200"
+      src="https://contrib.rocks/image?repo=galaxy-s10/billd-live"
+      alt="Billd-Live logo"
+    />
+  </a>
+
 ## 致敬开源
 
 billd-live自2023年3月开源以来，仅有作者（也就是我）一个人维护，深知做开源的难处。
