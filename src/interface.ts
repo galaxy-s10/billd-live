@@ -1,4 +1,4 @@
-import { ILiveRoom, LiveRoomStatusEnum } from '@/types/ILiveRoom';
+import { ILiveRoom } from '@/types/ILiveRoom';
 import { IUser } from '@/types/IUser';
 
 export interface IBilibiliLiveUserRecommend {
@@ -642,15 +642,20 @@ export interface IRole {
 
 export interface IArea {
   id?: number;
+  p_id?: number;
   name?: string;
+  status?: SwitchEnum;
+  hot_status?: SwitchEnum;
   /** 备注 */
   remark?: string;
   /** 权重 */
   priority?: number;
-  area_live_rooms?: IAreaLiveRoom[];
+
+  children?: IArea[];
+
   live_rooms?: ILiveRoom[];
-  live_room_is_show?: SwitchEnum;
-  live_room_status?: LiveRoomStatusEnum;
+  area_live_rooms?: IAreaLiveRoom[];
+
   created_at?: string;
   updated_at?: string;
   deleted_at?: string;

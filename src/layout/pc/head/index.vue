@@ -22,70 +22,18 @@
           </a>
 
           <a
+            v-for="(item, index) in appStore.areaList"
+            :key="index"
             class="item"
             :class="{
-              active: router.currentRoute.value.name === routerName.area,
+              active: Number(route.params.id) === item.id,
             }"
-            @click.prevent="router.push({ name: routerName.area })"
+            @click.prevent="
+              router.push({ name: routerName.area, params: { id: item.id } })
+            "
           >
-            {{ t('layout.area') }}
+            {{ item.name }}
           </a>
-
-          <a
-            v-if="!isMobile()"
-            class="item"
-            :href="COMMON_URL.admin"
-            @click.prevent="openToTarget(COMMON_URL.admin)"
-          >
-            {{ t('layout.liveAdmin') }}
-          </a>
-
-          <a
-            v-if="!isMobile()"
-            class="item"
-            @click.prevent="router.push({ name: routerName.downloadLive })"
-          >
-            {{ t('layout.download') }}
-          </a>
-
-          <!-- <Dropdown
-            class="item"
-            v-if="!isMobile()"
-          >
-            <template #btn>
-              <div class="btn">
-                <span>{{ t('layout.download') }}</span>
-                <VPIconChevronDown class="icon"></VPIconChevronDown>
-              </div>
-            </template>
-            <template #list>
-              <div class="list">
-                <a
-                  class="item"
-                  @click.prevent="
-                    router.push({ name: routerName.downloadLive })
-                  "
-                >
-                  <div class="txt">{{ t('layout.liveClient') }}</div>
-                </a>
-                <a
-                  class="item"
-                  @click.prevent="
-                    router.push({ name: routerName.downloadRemoteDesktop })
-                  "
-                >
-                  <div class="txt">{{ t('layout.remoteDesktopClient') }}</div>
-                </a>
-              </div>
-            </template>
-          </Dropdown> -->
-
-          <!-- <a
-            class="item"
-            @click.prevent="openToTarget(COMMON_URL.desk)"
-          >
-            {{ t('layout.remoteDesktop') }}
-          </a> -->
         </div>
       </div>
 
@@ -472,7 +420,7 @@
 import { isMobile, openToTarget, windowReload } from 'billd-utils';
 import { onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import { fetchCreateSignin, fetchTodayIsSignin } from '@/api/signin';
 import Dropdown from '@/components/Dropdown/index.vue';
@@ -489,6 +437,7 @@ import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import { formatMoney, getLiveRoomPageUrl } from '@/utils';
 
 const { t, locale } = useI18n();
+const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
 const appStore = useAppStore();

@@ -1,80 +1,282 @@
 <template>
-  <div class="tab-list">
+  <div
+    ref="topRef"
+    class="area-wrap"
+    :style="{ height: height + 'px' }"
+  >
     <div
-      v-for="(item, index) in appStore.areaList"
-      :key="index"
-      class="tab"
-      :class="{ active: router.currentRoute.value.params.id === item.id + '' }"
-      @click.prevent="changeArea(item)"
+      v-if="0"
+      class="tag-wrap"
     >
-      {{ item.name }}
+      <span
+        v-for="(item, index) in appStore.areaList.find(
+          (v) => v.id === Number(route.params.id)
+        )?.children"
+        :key="index"
+        class="tag"
+      >
+        {{ item.name }}
+      </span>
     </div>
-    <div v-if="!appStore.areaList.length">暂无分区</div>
-  </div>
 
-  <router-view></router-view>
+    <LongList
+      v-if="height > 0"
+      ref="longListRef"
+      class="list"
+      :rootMargin="{
+        top: 0,
+        bottom: 100,
+        left: 0,
+        right: 0,
+      }"
+      :status="status"
+      @get-list-data="getListData"
+    >
+      <div
+        v-for="(item, index) in liveRoomList"
+        :key="index"
+        class="item"
+        @click="goRoom(item)"
+      >
+        <div
+          v-lazy:background-image="item?.cover_img || item?.users?.[0]?.avatar"
+          class="cover"
+        >
+          <div
+            v-if="item?.live"
+            class="living-ico"
+          >
+            直播中
+          </div>
+          <div
+            v-if="
+              item?.cdn === SwitchEnum.yes ||
+              [
+                LiveRoomTypeEnum.tencent_css,
+                LiveRoomTypeEnum.tencent_css_pk,
+              ].includes(item.type!)
+            "
+            class="cdn-ico"
+          >
+            <div class="txt">CDN</div>
+          </div>
+          <div class="txt">{{ item?.users?.[0]?.username }}</div>
+        </div>
+        <div class="desc">{{ item?.name }}</div>
+      </div>
+    </LongList>
+  </div>
 </template>
 
 <script lang="ts" setup>
-import { watch } from 'vue';
+import { openToTarget } from 'billd-utils';
+import { onMounted, reactive, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
-import { IArea } from '@/interface';
+import { fetchLiveRoomList } from '@/api/area';
+import LongList from '@/components/LongList/index.vue';
+import { SwitchEnum } from '@/interface';
 import router, { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
+import { ILiveRoom, LiveRoomTypeEnum } from '@/types/ILiveRoom';
 
+const liveRoomList = ref<ILiveRoom[]>([]);
 const appStore = useAppStore();
+const route = useRoute();
+const status = ref<'loading' | 'nonedata' | 'allLoaded' | 'normal'>('loading');
 
-function changeArea(item: IArea) {
-  router.push({ name: routerName.areaDetail, params: { id: item.id } });
-}
+const longListRef = ref<InstanceType<typeof LongList>>();
+const topRef = ref<HTMLDivElement>();
+const height = ref(-1);
+const loading = ref(false);
+const hasMore = ref(true);
+const pageParams = reactive({
+  nowPage: 0,
+  pageSize: 50,
+});
 
 watch(
-  () => appStore.areaList,
-  (newval) => {
-    if (newval.length) {
-      router.push({
-        name: routerName.areaDetail,
-        params: { id: appStore.areaList[0].id },
-      });
-    }
-  },
-  {
-    immediate: true,
-    deep: true,
+  () => route.params.id,
+  (newVal) => {
+    if (!newVal) return;
+    liveRoomList.value = [];
+    pageParams.nowPage = 0;
+    getData();
   }
 );
+
+function handleStatus() {
+  if (loading.value) {
+    status.value = 'loading';
+  } else if (hasMore.value) {
+    status.value = 'normal';
+  } else {
+    status.value = 'allLoaded';
+  }
+  if (!liveRoomList.value?.length) {
+    status.value = 'nonedata';
+  }
+}
+
+function goRoom(item: ILiveRoom) {
+  if (!item.live) {
+    window.$message.info('该直播间没在直播~');
+    return;
+  }
+  const url = router.resolve({
+    name: routerName.pull,
+    params: { roomId: item.id },
+  });
+  openToTarget(url.href);
+}
+
+onMounted(() => {
+  if (topRef.value) {
+    height.value =
+      document.documentElement.clientHeight -
+      topRef.value.getBoundingClientRect().top;
+  }
+  getData();
+});
+
+function getListData() {
+  if (!hasMore.value) return;
+  getData();
+}
+
+async function getData() {
+  try {
+    if (loading.value) return;
+    loading.value = true;
+    status.value = 'loading';
+    pageParams.nowPage += 1;
+    const res = await fetchLiveRoomList({
+      id: Number(route.params.id),
+      live_room_is_show: SwitchEnum.yes,
+      nowPage: pageParams.nowPage,
+      pageSize: pageParams.pageSize,
+    });
+    if (res.code === 200) {
+      liveRoomList.value.push(...res.data.rows);
+      hasMore.value = res.data.hasMore;
+    }
+  } catch (error) {
+    pageParams.nowPage -= 1;
+    console.log(error);
+  }
+  loading.value = false;
+  status.value = 'normal';
+  handleStatus();
+}
 </script>
 
 <style lang="scss" scoped>
-.tab-list {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-  height: 40px;
-  font-size: 14px;
-  padding-top: calc($header-height + 10px);
-  padding-left: 20px;
-  padding-right: 20px;
-  user-select: none;
-  .tab {
-    position: relative;
-    margin-right: 20px;
-    cursor: pointer;
-    &.active {
+.area-wrap {
+  box-sizing: border-box;
+  padding-top: $header-height;
+  width: 100vw;
+  background-color: #f1f2f3;
+  .tag-wrap {
+    .tag {
+      display: inline-block;
+      margin-right: 10px;
+      padding: 2px 10px;
+      font-size: 12px;
+      border-radius: 10px;
       color: $theme-color-gold;
+      border: 1px solid rgba($color: #999, $alpha: 0.3);
+    }
+  }
 
-      &::after {
-        position: absolute;
-        bottom: -6px;
-        left: 50%;
-        width: 20px;
-        height: 2px;
-        border-radius: 10px;
-        background-color: $theme-color-gold;
-        content: '';
-        transform: translateX(-50%);
+  .list {
+    padding-top: 20px;
+    display: flex;
+    align-content: flex-start;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    .item {
+      display: inline-block;
+      margin-right: 25px;
+      margin-bottom: 12px;
+      width: 300px;
+      cursor: pointer;
+      .cover {
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+        height: 150px;
+        border-radius: 8px;
+
+        @extend %containBg;
+        .living-ico {
+          position: absolute;
+          top: 0px;
+          left: 0px;
+          z-index: 10;
+          padding: 0 10px;
+          height: 20px;
+          border-radius: 8px 0 10px;
+          background-color: $theme-color-gold;
+          color: white;
+          text-align: center;
+          font-size: 12px;
+          line-height: 20px;
+        }
+        .cdn-ico {
+          position: absolute;
+          top: -10px;
+          right: -10px;
+          z-index: 2;
+          width: 70px;
+          height: 28px;
+          background-color: #f87c48;
+          color: white;
+          transform: rotate(45deg);
+          transform-origin: bottom;
+          .txt {
+            margin-left: 18px;
+            background-image: initial !important;
+            font-size: 13px;
+          }
+        }
+
+        .txt {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          box-sizing: border-box;
+          padding: 4px 8px;
+          width: 100%;
+          border-radius: 0 0 4px 4px;
+          background-image: linear-gradient(
+            -180deg,
+            rgba(0, 0, 0, 0),
+            rgba(0, 0, 0, 0.6)
+          );
+          color: white;
+          text-align: initial;
+          font-size: 13px;
+
+          @extend %singleEllipsis;
+        }
+      }
+      .desc {
+        margin-top: 4px;
+        font-size: 14px;
+
+        @extend %singleEllipsis;
       }
     }
+    .null {
+      width: 100%;
+      text-align: center;
+    }
+  }
+  .paging-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
   }
 }
 </style>

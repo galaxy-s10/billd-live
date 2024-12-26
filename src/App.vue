@@ -23,7 +23,7 @@ import { isMobile } from 'billd-utils';
 import { GlobalThemeOverrides, NConfigProvider } from 'naive-ui';
 import { onMounted } from 'vue';
 
-import { fetchAreaList } from '@/api/area';
+import { fetchAreaGetTreeArea } from '@/api/area';
 import { fetchGlobalMsgMyList } from '@/api/globalMsg';
 import NaiveMessage from '@/components/NaiveMessage/index.vue';
 import NaiveModal from '@/components/NaiveModal/index.vue';
@@ -99,9 +99,13 @@ async function handleGlobalMsgMyList() {
 }
 
 async function getAreaList() {
-  const res = await fetchAreaList({ orderName: 'priority', orderBy: 'desc' });
-  if (res.code === 200) {
-    appStore.areaList = res.data.rows;
+  const res = await fetchAreaGetTreeArea({
+    orderName: 'priority',
+    orderBy: 'desc',
+    id: 0,
+  });
+  if (res.code === 200 && res.data) {
+    appStore.areaList = res.data;
   }
 }
 

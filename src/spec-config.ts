@@ -62,3 +62,5 @@ export enum REDIS_DATABASE {
   blog,
   live,
 }
+
+export const KONGKONG_SERVER_IP = '8.218.5.78';

@@ -77,9 +77,9 @@ const options = [
 
 onMounted(() => {
   githubStar.value =
-    'https://img.shields.io/github/stars/galaxy-s10/billd-live?label=Star&logo=GitHub&labelColor=white&logoColor=black&style=social';
+    'https://img.shields.io/github/stars/galaxy-s10/billd-live.svg?label=Star&logo=GitHub&labelColor=white&logoColor=black&style=social&maxAge=86400';
   githubFork.value =
-    'https://img.shields.io/github/forks/galaxy-s10/billd-live?label=Fork&logo=GitHub&labelColor=white&logoColor=black&style=social';
+    'https://img.shields.io/github/forks/galaxy-s10/billd-live.svg?label=Fork&logo=GitHub&labelColor=white&logoColor=black&style=social&maxAge=86400';
 });
 
 function handleSelect(key) {
