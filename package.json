@@ -35,11 +35,7 @@
     "release": "standard-version",
     "sync-repo": "ts-node ./deploy/handleSyncPublic.mjs"
   },
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
-    }
-  },
+  "config": {},
   "dependencies": {},
   "devDependencies": {
     "@eslint/js": "^9.10.0",

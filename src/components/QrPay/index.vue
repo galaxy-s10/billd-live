@@ -163,6 +163,7 @@ async function handleStartPay() {
     });
     if (res.code === 200) {
       if (isMobile()) {
+        console.log(res.data.qr_code);
         hrefToTarget(res.data.qr_code);
         return;
       }
