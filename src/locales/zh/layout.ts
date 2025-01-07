@@ -19,6 +19,7 @@ export default nameSpaceWrap('layout', {
   sponsor: '赞助',
   signin: '签到',
   deploy: '私有化部署',
+  price: '定价',
   videoTools: '视频工具',
   remoteDesktop: '远程桌面',
   startLive: '我要开播',

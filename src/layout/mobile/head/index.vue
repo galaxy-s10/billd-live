@@ -125,14 +125,14 @@ function changeRoute(item: AppRootState['navList'][0]) {
         align-items: center;
         justify-content: center;
         box-sizing: border-box;
-        width: 35px;
-        height: 35px;
+        width: 30px;
+        height: 30px;
         border-radius: 50%;
         background-color: papayawhip;
         font-size: 13px;
         cursor: pointer;
 
-        @extend %containBg;
+        @extend %coverBg;
       }
     }
   }

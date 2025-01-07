@@ -76,6 +76,17 @@
             >
               开播设置
             </div>
+            <div
+              class="list-item"
+              :class="{
+                active: route.name === routerName.centerLiveRoomForward,
+              }"
+              @click.stop="
+                router.push({ name: routerName.centerLiveRoomForward })
+              "
+            >
+              转推设置
+            </div>
           </div>
         </div>
         <div
@@ -146,7 +157,7 @@ onMounted(() => {
   display: flex;
   padding-top: $header-height;
   width: 100vw;
-  height: calc(100vh - $header-height);
+  min-height: calc(100vh - $header-height);
   background-color: #f3f3f7;
 
   .center {

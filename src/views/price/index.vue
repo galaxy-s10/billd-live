@@ -24,10 +24,14 @@
         v-for="(item, index) in detail[currentTab].list"
         :key="index"
         class="item"
-        :class="{ [item['color']]: 1 }"
+        :style="{ borderColor: item['color'] }"
       >
         <div class="name">{{ item.name }}</div>
-        <div class="desc">{{ item.desc }}</div>
+        <div class="desc">
+          <!-- eslint-disable vue/no-v-html -->
+          <div v-html="item.desc"></div>
+          <!-- eslint-enable -->
+        </div>
         <div class="price">
           <span class="t1">{{ item.price.left }}</span>
           <span class="t2">{{ item.price.center }}</span>
@@ -71,14 +75,12 @@
       closable
       @close="showContach = false"
     >
-      <div>
-        <span
-          class="link"
-          @click="router.push({ name: routerName.hi })"
-        >
-          点击查看
-        </span>
-      </div>
+      <span
+        class="link"
+        @click="router.push({ name: routerName.hi })"
+      >
+        点击查看
+      </span>
     </n-card>
   </n-modal>
 </template>
@@ -88,201 +90,265 @@ import { openToTarget } from 'billd-utils';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { COMMON_URL, PROJECT_NAME } from '@/constant';
 import { routerName } from '@/router';
 
 const router = useRouter();
 const showContach = ref(false);
 const currentTab = ref<'personal' | 'openSource' | 'customized' | string>(
-  'openSource'
+  'personal'
 );
 
 const tab = ref([
   {
     id: 'personal',
-    txt: '个人版',
+    txt: '单独订阅',
   },
   {
     id: 'openSource',
-    txt: '开源版',
+    txt: '组合订阅',
   },
   {
     id: 'customized',
-    txt: '定制版',
+    txt: '永久订阅',
   },
 ]);
 
 const detail = ref({
   personal: {
-    slogan: ['欢迎使用billd直播~'],
+    slogan: ['支持单独订阅', '欢迎订阅🚀'],
     list: [
       {
-        color: 'blue',
-        name: 'VIP',
-        desc: '适用于个人用户简单体验',
+        color: '#38c0ff',
+        name: 'Web直播前台',
+        desc: '基于Vue3 + WebRTC + Vite6',
         price: {
           left: '￥',
-          center: '0',
-          right: '',
+          center: '299',
+          right: '元/年',
         },
-        tip: '',
+        tip: '包含以下代码仓库：',
         feat: [
           {
             status: 'done',
-            txt: 'SRS直播',
-          },
-          {
-            status: 'done',
-            txt: '打PK直播',
-          },
-          {
-            status: 'done',
-            txt: 'WebRTC直播',
-          },
-          {
-            status: 'done',
-            txt: 'WebRTC会议',
+            txt: 'billd-live-pro',
           },
         ],
         btn: {
-          type: 'push',
-          link: routerName.push,
-          txt: '免费体验',
+          type: 'showContact',
+          link: '',
+          txt: '立即咨询',
         },
       },
       {
-        color: 'green',
-        name: 'SVIP',
-        desc: '适用于个人用户中度体验',
+        color: '#38c0ff',
+        name: 'Web直播后台',
+        desc: '基于Vue3 + NaiveUI + Vite6',
         price: {
           left: '￥',
-          center: '10',
-          right: '元/月',
+          center: '299',
+          right: '元/年',
         },
-        tip: '涵盖VIP全部功能',
+        tip: '包含以下代码仓库：',
         feat: [
           {
             status: 'done',
-            txt: '转推b站',
-          },
-          {
-            status: 'done',
-            txt: '转推虎牙',
-          },
-          {
-            status: 'done',
-            txt: '去广告',
+            txt: 'billd-live-admin-pro',
           },
         ],
         btn: {
-          type: 'toast',
-          link: '即将上线~',
-          txt: '立即购买',
+          type: 'showContact',
+          link: '',
+          txt: '立即咨询',
         },
       },
       {
-        color: 'orange',
-        name: 'ADMIN',
-        desc: '适用于个人用户深度体验',
+        color: '#30d1aa',
+        name: 'Web直播后端',
+        desc: '基于Nodejs + Koa2 + Ts',
         price: {
           left: '￥',
-          center: '50',
-          right: '元/月',
+          center: '399',
+          right: '元/年',
         },
-        tip: '涵盖SVIP全部功能',
+        tip: '包含以下代码仓库：',
         feat: [
           {
             status: 'done',
-            txt: 'Msr直播',
-          },
-          {
-            status: 'done',
-            txt: '腾讯云直播（CDN）',
-          },
-          {
-            status: 'done',
-            txt: '腾讯云打PK（CDN）',
+            txt: 'billd-live-server-pro',
           },
         ],
         btn: {
-          type: 'toast',
-          link: '即将上线~',
-          txt: '立即购买',
+          type: 'showContact',
+          link: '',
+          txt: '立即咨询',
+        },
+      },
+      {
+        color: '#30d1aa',
+        name: 'App直播客户端',
+        desc: '基于Flutter',
+        price: {
+          left: '￥',
+          center: '299',
+          right: '元/年',
+        },
+        tip: '包含以下代码仓库：',
+        feat: [
+          {
+            status: 'done',
+            txt: 'billd-live-flutter-pro',
+          },
+        ],
+        btn: {
+          type: 'showContact',
+          link: '',
+          txt: '立即咨询',
         },
       },
     ],
   },
   openSource: {
-    slogan: ['billd直播开源至今，累计收获1.3k+ star', '值得信赖，欢迎部署~'],
+    slogan: ['组合订阅更优惠！', '欢迎订阅🚀'],
     list: [
       {
-        color: 'blue',
-        name: 'Github',
-        desc: '适用于个人学习/测试用途',
+        color: '#38c0ff',
+        name: 'Web直播',
+        desc: '浏览器开直播、看直播',
         price: {
           left: '￥',
-          center: '0',
-          right: '',
+          center: '599',
+          right: '元/年',
         },
-        tip: '',
+        tip: '包含以下代码仓库：',
         feat: [
           {
             status: 'done',
-            txt: '源码开源，自行部署',
+            txt: 'billd-live-pro',
           },
           {
             status: 'done',
-            txt: '前台（Web）',
-          },
-          {
-            status: 'done',
-            txt: '后台（Web）',
-          },
-          {
-            status: 'done',
-            txt: '后端（Node.js）',
-          },
-          {
-            status: 'done',
-            txt: '移动端（Flutter）',
-          },
-          {
-            status: 'todo',
-            txt: '客户端（Electron）',
+            txt: 'billd-live-server-pro',
           },
         ],
         btn: {
-          type: 'link',
-          link: 'https://github.com/galaxy-s10/billd-live',
-          txt: '立即部署',
+          type: 'showContact',
+          link: '',
+          txt: '立即咨询',
         },
       },
       {
-        color: 'green',
-        name: '私有化部署',
-        desc: '适用于个人/企业自建直播平台',
+        color: '#30d1aa',
+        name: 'App直播',
+        desc: '手机App开直播、看直播',
         price: {
           left: '￥',
-          center: '8000',
-          right: '起',
+          center: '599',
+          right: '元/年',
         },
-        tip: '涵盖Github全部/部分功能',
+        tip: '包含以下代码仓库：',
         feat: [
           {
             status: 'done',
-            txt: '一次部署，永久使用',
+            txt: 'billd-live-flutter-pro',
           },
           {
             status: 'done',
-            txt: '无门槛，全程专人负责部署',
+            txt: 'billd-live-server-pro',
+          },
+        ],
+        btn: {
+          type: 'showContact',
+          link: '',
+          txt: '立即咨询',
+        },
+      },
+      {
+        color: '#30d1aa',
+        name: 'Web直播+后台',
+        desc: '浏览器开直播、看直播；<br />直播后台',
+        price: {
+          left: '￥',
+          center: '799',
+          right: '元/年',
+        },
+        tip: '包含以下代码仓库：',
+        feat: [
+          {
+            status: 'done',
+            txt: 'billd-live-pro',
           },
           {
             status: 'done',
-            txt: '本地服务器部署',
+            txt: 'billd-live-admin-pro',
           },
           {
             status: 'done',
-            txt: '快速上线',
+            txt: 'billd-live-server-pro',
+          },
+        ],
+        btn: {
+          type: 'showContact',
+          link: '',
+          txt: '立即咨询',
+        },
+      },
+
+      {
+        color: '#30d1aa',
+        name: 'App直播+后台',
+        desc: '手机App开直播、看直播；<br />直播后台',
+        price: {
+          left: '￥',
+          center: '799',
+          right: '元/年',
+        },
+        tip: '包含以下代码仓库：',
+        feat: [
+          {
+            status: 'done',
+            txt: 'billd-live-flutter-pro',
+          },
+          {
+            status: 'done',
+            txt: 'billd-live-admin-pro',
+          },
+          {
+            status: 'done',
+            txt: 'billd-live-server-pro',
+          },
+        ],
+        btn: {
+          type: 'showContact',
+          link: '',
+          txt: '立即咨询',
+        },
+      },
+      {
+        color: '#30d1aa',
+        name: '全平台直播',
+        desc: '浏览器、App开/看直播；<br />直播后台',
+        price: {
+          left: '￥',
+          center: '999',
+          right: '元/年',
+        },
+        tip: '包含以下代码仓库：',
+        feat: [
+          {
+            status: 'done',
+            txt: 'billd-live-pro',
+          },
+          {
+            status: 'done',
+            txt: 'billd-live-admin-pro',
+          },
+          {
+            status: 'done',
+            txt: 'billd-live-flutter-pro',
+          },
+          {
+            status: 'done',
+            txt: 'billd-live-server-pro',
           },
         ],
         btn: {
@@ -294,22 +360,22 @@ const detail = ref({
     ],
   },
   customized: {
-    slogan: ['billd直播支持定制化', '立即定制自己的个性化直播间~'],
+    slogan: ['订阅三年即永久！', '欢迎订阅🚀'],
     list: [
       {
-        color: 'blue',
-        name: '在线咨询',
-        desc: '咨询/答疑服务',
+        color: '#38c0ff',
+        name: 'Web直播前台',
+        desc: '基于Vue3 + WebRTC + Vite6',
         price: {
           left: '￥',
-          center: '100',
-          right: '元/小时',
+          center: '888',
+          right: '元/永久',
         },
-        tip: '',
+        tip: '包含以下代码仓库：',
         feat: [
           {
             status: 'done',
-            txt: '一对一解答',
+            txt: 'billd-live-pro',
           },
         ],
         btn: {
@@ -319,73 +385,63 @@ const detail = ref({
         },
       },
       {
-        color: 'green',
-        name: '付费课程',
-        desc: '适用于前端/音视频小白',
+        color: '#38c0ff',
+        name: 'Web直播后台',
+        desc: '基于Vue3 + NaiveUI + Vite6',
         price: {
           left: '￥',
-          center: '399',
-          right: '元',
+          center: '888',
+          right: '元/永久',
         },
-        tip: '',
+        tip: '包含以下代码仓库：',
         feat: [
           {
             status: 'done',
-            txt: '一对一解答（4小时）',
-          },
-          {
-            status: 'done',
-            txt: '能够搭建最基础的直播间',
-          },
-          {
-            status: 'done',
-            txt: '单独的代码仓库',
-          },
-          {
-            status: 'done',
-            txt: '视频讲解',
-          },
-          {
-            status: 'done',
-            txt: `${PROJECT_NAME}付费课微信群`,
+            txt: 'billd-live-admin-pro',
           },
         ],
         btn: {
-          type: 'link',
-          link: COMMON_URL.payCoursesArticle,
-          txt: '了解详情',
+          type: 'showContact',
+          link: '',
+          txt: '立即咨询',
         },
       },
       {
-        color: 'orange',
-        name: '私有化部署',
-        desc: '适用于个人/企业自建直播平台',
+        color: '#30d1aa',
+        name: 'Web直播后端',
+        desc: '基于Nodejs + Koa2 + Ts',
         price: {
           left: '￥',
-          center: '9999',
-          right: '起',
+          center: '1088',
+          right: '元/永久',
         },
-        tip: '',
+        tip: '包含以下代码仓库：',
         feat: [
           {
             status: 'done',
-            txt: '一次部署，永久使用',
+            txt: 'billd-live-server-pro',
           },
+        ],
+        btn: {
+          type: 'showContact',
+          link: '',
+          txt: '立即咨询',
+        },
+      },
+      {
+        color: '#30d1aa',
+        name: 'App直播客户端',
+        desc: '基于Flutter',
+        price: {
+          left: '￥',
+          center: '888',
+          right: '元/永久',
+        },
+        tip: '包含以下代码仓库：',
+        feat: [
           {
             status: 'done',
-            txt: '无门槛，全程专人负责部署',
-          },
-          {
-            status: 'done',
-            txt: '本地服务器部署',
-          },
-          {
-            status: 'done',
-            txt: '快速上线',
-          },
-          {
-            status: 'done',
-            txt: '定制化功能',
+            txt: 'billd-live-flutter-pro',
           },
         ],
         btn: {
@@ -426,6 +482,7 @@ function handleClick(item) {
   padding-top: $layout-head-h;
   height: calc(100vh - $layout-head-h);
   background-color: #f4f8ff;
+
   .title {
     display: flex;
     flex-direction: column;
@@ -443,7 +500,7 @@ function handleClick(item) {
     justify-content: center;
     margin: 0 auto;
     padding: 8px 0;
-    width: 320px;
+    width: 350px;
     border-radius: 40px;
     background: white;
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
@@ -472,6 +529,7 @@ function handleClick(item) {
       margin: 0 10px;
       padding: 20px 20px;
       width: 240px;
+      border-top: 6px solid;
       // border: 1px solid #dde6ed;
       border-radius: 2px;
       border-top-left-radius: 4px;
@@ -479,25 +537,16 @@ function handleClick(item) {
       background-color: white;
       font-size: 14px;
 
-      &.blue {
-        border-top: 7px solid #38c0ff;
-      }
-      &.green {
-        border-top: 7px solid #30d1aa;
-      }
-      &.orange {
-        border-top: 7px solid #ffbd33;
-      }
       .name {
         padding: 10px 0 0;
         height: 40px;
         text-align: center;
-        font-size: 30px;
+        font-size: 26px;
         line-height: 1;
       }
       .desc {
         margin-top: 10px;
-        height: 40px;
+        height: 50px;
         color: #88898d;
         text-align: center;
         // background-color: red;

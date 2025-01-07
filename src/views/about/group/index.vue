@@ -16,28 +16,20 @@
         {{ COMMON_URL.payCoursesArticle }}
       </span>
     </p>
-    <div>微信二维码：</div>
-    <img
-      src="@/assets/img/my-wechat.webp"
-      alt=""
-      style="width: 250px"
-    />
-    <div>微信号：{{ AUTHOR_INFO.wechat }}</div>
-    <div>qq号：{{ AUTHOR_INFO.qq }}</div>
-    <b style="color: red">
-      <span>
-        注意：项目开源，个人用户有问题github提Issue即可，不必添加作者！
-      </span>
-      <br />
-      <i>如有商业合作，请充分了解该项目。咨询需付费（100元/小时）！</i>
-    </b>
+    <span
+      class="link"
+      @click="router.push({ name: routerName.hi })"
+    >
+      点击查看
+    </span>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { openToTarget } from 'billd-utils';
 
-import { AUTHOR_INFO, COMMON_URL, PROJECT_NAME } from '@/constant';
+import { COMMON_URL, PROJECT_NAME } from '@/constant';
+import router, { routerName } from '@/router';
 </script>
 
 <style lang="scss" scoped>

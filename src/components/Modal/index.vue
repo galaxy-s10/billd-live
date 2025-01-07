@@ -78,11 +78,15 @@ const emits = defineEmits(['close']);
       position: absolute;
       top: 20px;
       right: 20px;
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
       cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.22, 0.58, 0.12, 0.98);
 
-      @include cross(#ccc, 3px);
+      @include cross(#999, 2px);
+      &:hover {
+        transform: rotate(180deg) scale(1.1);
+      }
     }
     .content {
       margin: 15px 0;

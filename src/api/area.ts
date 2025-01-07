@@ -3,7 +3,7 @@ import { ILiveRoom } from '@/types/ILiveRoom';
 import request from '@/utils/request';
 
 export function fetchAreaGetTreeArea(params) {
-  return request.get('/area/get_tree_area', { params });
+  return request.get('/area/get_all_area_by_tree', { params });
 }
 
 export function fetchAreaList(params) {

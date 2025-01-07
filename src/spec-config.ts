@@ -14,7 +14,7 @@ export const WECHAT_GZH_OAUTH_URL = `https://open.weixin.qq.com/connect/oauth2/a
 export const TENCENTCLOUD_APPID = 1305322458; // 腾讯云APPID
 export const TENCENTCLOUD_COS = {
   [`res-${TENCENTCLOUD_APPID}`]: {
-    url: `https://res.${prodDomain}`,
+    url: `https://tencentcos-res.${prodDomain}`,
     Bucket: `res-${TENCENTCLOUD_APPID}`,
     Region: 'ap-guangzhou',
     StorageClass: 'STANDARD',

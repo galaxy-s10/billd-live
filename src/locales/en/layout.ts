@@ -18,6 +18,7 @@ export default nameSpaceWrap('layout', {
   sponsor: 'Sponsor',
   signin: 'Signin',
   deploy: 'Private Deploy',
+  price: 'Price',
   videoTools: 'Video Tool',
   remoteDesktop: 'Remote Desktop',
   startLive: 'Start Live',

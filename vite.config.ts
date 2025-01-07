@@ -51,14 +51,14 @@ export default defineConfig(({ mode }) => {
       alias: {
         '@': path.resolve(__dirname, 'src'),
         // 'runtime-core':
-        //   'https://res.hsslive.cn/npm/@vue/runtime-core@3.5.13/+esm.js',
-        // vue: 'https://res.hsslive.cn/npm/vue@3.5.13/+esm.js',
-        // 'vue-router': 'https://res.hsslive.cn/npm/vue-router@4.2.4/+esm.js',
-        // 'video.js': 'https://res.hsslive.cn/npm/video.js@8.21.0/+esm.js',
-        // 'mpegts.js': 'https://res.hsslive.cn/npm/mpegts.js@1.7.3/+esm.js',
-        // fabric: 'https://res.hsslive.cn/npm/fabric@5.4.2/+esm.js',
+        //   'https://tencentcos-res.hsslive.cn/npm/@vue/runtime-core@3.5.13/+esm.js',
+        // vue: 'https://tencentcos-res.hsslive.cn/npm/vue@3.5.13/+esm.js',
+        // 'vue-router': 'https://tencentcos-res.hsslive.cn/npm/vue-router@4.2.4/+esm.js',
+        // 'video.js': 'https://tencentcos-res.hsslive.cn/npm/video.js@8.21.0/+esm.js',
+        // 'mpegts.js': 'https://tencentcos-res.hsslive.cn/npm/mpegts.js@1.7.3/+esm.js',
+        // fabric: 'https://tencentcos-res.hsslive.cn/npm/fabric@5.4.2/+esm.js',
         // 'cos-js-sdk-v5':
-        //   'https://res.hsslive.cn/npm/cos-js-sdk-v5@1.8.6/+esm.js',
+        //   'https://tencentcos-res.hsslive.cn/npm/cos-js-sdk-v5@1.8.6/+esm.js',
       },
       /**
        * 不建议省略.vue后缀
@@ -119,42 +119,42 @@ export default defineConfig(({ mode }) => {
                   injectTo: 'head',
                   tag: 'script',
                   attrs: {
-                    src: 'https://res.hsslive.cn/npm/video.js@8.21.0/video.min.js',
+                    src: 'https://tencentcos-res.hsslive.cn/npm/video.js@8.21.0/video.min.js',
                   },
                 },
                 {
                   injectTo: 'head',
                   tag: 'script',
                   attrs: {
-                    src: 'https://res.hsslive.cn/npm/mpegts.js@1.7.3/mpegts.min.js',
+                    src: 'https://tencentcos-res.hsslive.cn/npm/mpegts.js@1.7.3/mpegts.min.js',
                   },
                 },
                 {
                   injectTo: 'head',
                   tag: 'script',
                   attrs: {
-                    src: 'https://res.hsslive.cn/npm/cos-js-sdk-v5@1.8.6/cos-js-sdk-v5.min.js',
+                    src: 'https://tencentcos-res.hsslive.cn/npm/cos-js-sdk-v5@1.8.6/cos-js-sdk-v5.min.js',
                   },
                 },
                 // {
                 //   injectTo: 'head',
                 //   tag: 'script',
                 //   attrs: {
-                //     src: 'https://res.hsslive.cn/npm/vue@3.5.13/vue.global.min.js',
+                //     src: 'https://tencentcos-res.hsslive.cn/npm/vue@3.5.13/vue.global.min.js',
                 //   },
                 // },
                 // {
                 //   injectTo: 'head',
                 //   tag: 'script',
                 //   attrs: {
-                //     src: 'https://res.hsslive.cn/npm/vue-demi@0.14.6/index.iife.min.js',
+                //     src: 'https://tencentcos-res.hsslive.cn/npm/vue-demi@0.14.6/index.iife.min.js',
                 //   },
                 // },
                 // {
                 //   injectTo: 'head',
                 //   tag: 'script',
                 //   attrs: {
-                //     src: 'https://res.hsslive.cn/npm/vue-router@4.2.4/vue-router.global.min.js',
+                //     src: 'https://tencentcos-res.hsslive.cn/npm/vue-router@4.2.4/vue-router.global.min.js',
                 //   },
                 // },
               ]

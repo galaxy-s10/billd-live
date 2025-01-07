@@ -31,6 +31,8 @@ export const COOKIE_DOMAIN =
 
 export const THEME_COLOR = '#ffd700';
 
+export const DEFAULT_RATIO = 16 / 9;
+
 export const SRS_CB_URL_QUERY = {
   publishKey: 'pushkey',
   publishType: 'pushtype',
@@ -58,7 +60,7 @@ export const COMMON_URL = {
   download: {
     live: {
       flutter: {
-        android: `${QINIU_KODO.hssblog.url}/billd-live/download/billd-live-v0.0.4.apk`,
+        android: `https://github.com/galaxy-s10/billd-live-flutter/releases/tag/v0.0.4`,
         github: 'https://github.com/galaxy-s10/billd-live-flutter',
       },
       reactNative: {

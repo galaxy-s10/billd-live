@@ -135,7 +135,9 @@
                 v-for="item in LiveRenderEnum"
                 :key="item"
                 class="iten"
-                :class="{ active: appStore.videoControls?.renderMode === item }"
+                :class="{
+                  active: appStore.videoControlsValue?.renderMode === item,
+                }"
                 @click="changeRenderMode(item)"
               >
                 {{ item }}
@@ -146,31 +148,88 @@
       </div>
       <div
         v-if="props.control?.pipMode"
-        class="item"
+        class="item pip"
       >
-        <span
-          class="txt"
-          @click="handlePip"
+        <Dropdown
+          :positon="'center'"
+          :is-top="true"
         >
-          {{
-            !appStore.videoControlsValue.pipMode ? '开启画中画' : '退出画中画'
-          }}
-        </span>
+          <template #btn>
+            <div class="btn">画中画</div>
+          </template>
+          <template #list>
+            <div class="list">
+              <div
+                v-for="(item, index) in switchList"
+                :key="index"
+                class="iten"
+                :class="{
+                  active: item.value === appStore.videoControlsValue.pipMode,
+                }"
+                @click="handlePip"
+              >
+                {{ item.label }}
+              </div>
+            </div>
+          </template>
+        </Dropdown>
       </div>
       <div
         v-if="props.control?.pageFullMode"
-        class="item"
+        class="item page-full"
       >
-        <span
-          class="txt"
-          @click="handlePageFull"
+        <Dropdown
+          :positon="'center'"
+          :is-top="true"
         >
-          {{
-            !appStore.videoControlsValue.pageFullMode
-              ? '开启网页全屏'
-              : '退出网页全屏'
-          }}
-        </span>
+          <template #btn>
+            <div class="btn">网页全屏</div>
+          </template>
+          <template #list>
+            <div class="list">
+              <div
+                v-for="(item, index) in switchList"
+                :key="index"
+                class="iten"
+                :class="{
+                  active:
+                    item.value === appStore.videoControlsValue.pageFullMode,
+                }"
+                @click="handlePageFull"
+              >
+                {{ item.label }}
+              </div>
+            </div>
+          </template>
+        </Dropdown>
+      </div>
+      <div
+        v-if="props.control?.danmu"
+        class="item danmu"
+      >
+        <Dropdown
+          :positon="'center'"
+          :is-top="true"
+        >
+          <template #btn>
+            <div class="btn">弹幕</div>
+          </template>
+          <template #list>
+            <div class="list">
+              <div
+                v-for="(item, index) in switchList"
+                :key="index"
+                class="iten"
+                :class="{
+                  active: item.value === appStore.videoControlsValue.danmu,
+                }"
+                @click="handleDanmu"
+              >
+                {{ item.label }}
+              </div>
+            </div>
+          </template>
+        </Dropdown>
       </div>
       <div
         v-if="props.control?.fullMode"
@@ -228,6 +287,10 @@ const cacheStore = useCacheStore();
 const appStore = useAppStore();
 
 const lineList = ref<any[]>([]);
+const switchList = ref([
+  { label: '开启', value: true },
+  { label: '关闭', value: false },
+]);
 
 const debounceRefresh = debounce(() => {
   emits('refresh');
@@ -253,7 +316,7 @@ function changeRenderMode(item: LiveRenderEnum) {
     window.$message.warning('暂不开放');
     return;
   }
-  appStore.videoControls.renderMode = item;
+  appStore.videoControlsValue.renderMode = item;
 }
 
 function handleKeydown(e) {
@@ -268,7 +331,7 @@ function handleKeydown(e) {
 function handlePip() {
   if (
     isSafari() &&
-    appStore.videoControls.renderMode === LiveRenderEnum.canvas
+    appStore.videoControlsValue.renderMode === LiveRenderEnum.canvas
   ) {
     window.$message.info('请先切换渲染模式为video');
     return;
@@ -277,6 +340,9 @@ function handlePip() {
   appStore.videoControlsValue.pipMode = !appStore.videoControlsValue.pipMode;
 }
 
+function handleDanmu() {
+  appStore.videoControlsValue.danmu = !appStore.videoControlsValue.danmu;
+}
 function handlePageFull() {
   emits('pageFullScreen');
   if (!appStore.videoControlsValue.pageFullMode) {
@@ -357,9 +423,9 @@ function changeLiveLine(item: LiveLineEnum) {
   width: 100%;
   height: 40px;
   background-image: linear-gradient(
-    -180deg,
-    rgba(0, 0, 0, 0),
-    rgba(0, 0, 0, 0.7)
+    180deg,
+    rgba(0, 0, 0, 0) 0,
+    rgba(0, 0, 0, 0.32) 100%
   );
   color: white;
   text-align: initial;
@@ -392,10 +458,12 @@ function changeLiveLine(item: LiveLineEnum) {
     }
 
     .render,
+    .pip,
     .resolution,
     .line,
     .speed,
-    .full {
+    .page-full,
+    .danmu {
       &:hover {
         .list {
           display: block;
@@ -426,6 +494,13 @@ function changeLiveLine(item: LiveLineEnum) {
     .line {
       .list {
         width: 75px;
+      }
+    }
+    .pip,
+    .page-full,
+    .danmu {
+      .list {
+        width: 60px;
       }
     }
 

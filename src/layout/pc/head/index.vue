@@ -26,10 +26,16 @@
             :key="index"
             class="item"
             :class="{
-              active: Number(route.params.id) === item.id,
+              active: Number(route.params.p_area_id) === item.id,
             }"
             @click.prevent="
-              router.push({ name: routerName.area, params: { id: item.id } })
+              router.push({
+                name: routerName.area,
+                params: { p_area_id: item.id },
+                query: {
+                  area_id: 0,
+                },
+              })
             "
           >
             {{ item.name }}
@@ -39,7 +45,7 @@
 
       <div class="right">
         <Dropdown
-          v-if="!isMobile()"
+          v-if="0"
           class="doc"
         >
           <template #btn>
@@ -68,7 +74,7 @@
         </Dropdown>
 
         <Dropdown
-          v-if="!isMobile()"
+          v-if="0"
           class="ecosystem"
         >
           <template #btn>
@@ -113,7 +119,7 @@
         </Dropdown>
 
         <Dropdown
-          v-if="!isMobile()"
+          v-if="0"
           class="about"
         >
           <template #btn>
@@ -145,19 +151,6 @@
         </Dropdown>
 
         <a
-          v-if="!isMobile() && userStore.userInfo"
-          class="signin"
-          @click="handleSignin"
-        >
-          {{ t('layout.signin') }}
-          <div
-            v-if="appStore.showSigninRedDot"
-            class="red-dot"
-          ></div>
-        </a>
-
-        <a
-          v-if="!isMobile()"
           class="privatizationDeployment"
           :class="{
             active:
@@ -173,6 +166,18 @@
           <div class="badge">
             <div class="txt">hot</div>
           </div>
+        </a>
+
+        <a
+          v-if="!isMobile() && userStore.userInfo"
+          class="signin"
+          @click="handleSignin"
+        >
+          {{ t('layout.signin') }}
+          <div
+            v-if="appStore.showSigninRedDot"
+            class="red-dot"
+          ></div>
         </a>
 
         <!-- <a
@@ -729,7 +734,7 @@ function handleWebsiteJump() {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 50;
+  z-index: 100;
   box-sizing: border-box;
   // min-width: $w-1100;
   width: 100%;

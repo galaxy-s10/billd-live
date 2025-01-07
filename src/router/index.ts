@@ -22,6 +22,8 @@ export const mobileRouterName = {
   h5Store: 'h5Store',
   h5StoreDetail: 'h5StoreDetail',
   h5privatizationDeployment: 'h5privatizationDeployment',
+  h5price: 'h5price',
+  h5hi: 'h5hi',
   ...commonRouterName,
 };
 
@@ -61,13 +63,14 @@ export const routerName = {
   centerLiveRoom: 'centerLiveRoom',
   centerLiveRoomInfo: 'centerLiveRoomInfo',
   centerLiveRoomStartLive: 'centerLiveRoomStartLive',
+  centerLiveRoomForward: 'centerLiveRoomForward',
   centerLiveData: 'centerLiveData',
   centerLiveDataOverview: 'centerLiveDataOverview',
   centerLiveDataRecord: 'centerLiveDataRecord',
   user: 'user',
   download: 'download',
-  downloadLive: 'downloadLive',
-  downloadRemoteDesktop: 'downloadRemoteDesktop',
+  price: 'price',
+  hi: 'hi',
 
   pull: 'pull',
   push: 'push',
@@ -151,7 +154,7 @@ export const defaultRoutes: RouteRecordRaw[] = [
       },
       {
         name: routerName.area,
-        path: '/area/:id',
+        path: '/area/:p_area_id',
         component: () => import('@/views/area/index.vue'),
       },
       {
@@ -168,6 +171,11 @@ export const defaultRoutes: RouteRecordRaw[] = [
         name: routerName.my,
         path: '/my',
         component: () => import('@/views/my/index.vue'),
+      },
+      {
+        name: routerName.hi,
+        path: '/hi',
+        component: () => import('@/views/hi/index.vue'),
       },
       {
         name: routerName.center,
@@ -208,6 +216,12 @@ export const defaultRoutes: RouteRecordRaw[] = [
                 component: () =>
                   import('@/views/center/liveroom/start-live/index.vue'),
               },
+              {
+                name: routerName.centerLiveRoomForward,
+                path: 'forward',
+                component: () =>
+                  import('@/views/center/liveroom/forward/index.vue'),
+              },
             ],
           },
           {
@@ -237,14 +251,14 @@ export const defaultRoutes: RouteRecordRaw[] = [
         component: () => import('@/views/user/index.vue'),
       },
       {
-        name: routerName.downloadRemoteDesktop,
-        path: '/download/desk',
-        component: () => import('@/views/download/desk/index.vue'),
+        name: routerName.download,
+        path: '/download',
+        component: () => import('@/views/download/index.vue'),
       },
       {
-        name: routerName.downloadLive,
-        path: '/download/live',
-        component: () => import('@/views/download/live/index.vue'),
+        name: routerName.price,
+        path: '/price',
+        component: () => import('@/views/price/index.vue'),
       },
       {
         name: routerName.sponsors,
@@ -361,6 +375,16 @@ export const defaultRoutes: RouteRecordRaw[] = [
     path: '/h5/privatizationDeployment',
     component: () => import('@/views/h5/privatizationDeployment/index.vue'),
   },
+  {
+    name: mobileRouterName.h5price,
+    path: '/h5/price',
+    component: () => import('@/views/h5/price/index.vue'),
+  },
+  {
+    name: mobileRouterName.h5hi,
+    path: '/h5/hi',
+    component: () => import('@/views/h5/hi/index.vue'),
+  },
   // {
   //   name: mobileRouterName.h5Shop,
   //   path: '/h5/shop',
@@ -402,30 +426,41 @@ router.beforeEach((to, _from, next) => {
     console.log('当前是移动端');
     if (!Object.keys(mobileRouterName).includes(to.name as string)) {
       // 当前移动端，但是跳转了非移动端路由
+      console.log('当前移动端，但是跳转了非移动端路由');
       if (to.name === routerName.pull) {
         return next({
-          name: mobileRouterName.h5Room,
+          name: routerName.h5Room,
           params: { roomId: to.params.roomId },
           query: { ...to.query },
         });
       } else if (to.name === routerName.shop) {
         return next({
-          name: mobileRouterName.h5Shop,
+          name: routerName.h5Shop,
           query: { ...to.query },
         });
       } else if (to.name === routerName.store) {
         return next({
-          name: mobileRouterName.h5Store,
+          name: routerName.h5Store,
           query: { ...to.query },
         });
       } else if (to.name === routerName.privatizationDeployment) {
         return next({
-          name: mobileRouterName.h5privatizationDeployment,
+          name: routerName.h5privatizationDeployment,
+          query: { ...to.query },
+        });
+      } else if (to.name === routerName.price) {
+        return next({
+          name: routerName.h5price,
+          query: { ...to.query },
+        });
+      } else if (to.name === routerName.hi) {
+        return next({
+          name: routerName.h5hi,
           query: { ...to.query },
         });
       } else {
         return next({
-          name: mobileRouterName.h5,
+          name: routerName.h5,
         });
       }
     } else {
@@ -444,7 +479,34 @@ router.beforeEach((to, _from, next) => {
       console.log('当前非移动端，但是跳转了移动端路由');
       if (to.name === routerName.h5Room) {
         return next({
-          name: routerName.home,
+          name: routerName.pull,
+          params: { roomId: to.params.roomId },
+          query: { ...to.query },
+        });
+      } else if (to.name === routerName.h5Shop) {
+        return next({
+          name: routerName.shop,
+          query: { ...to.query },
+        });
+      } else if (to.name === routerName.h5Store) {
+        return next({
+          name: routerName.store,
+          query: { ...to.query },
+        });
+      } else if (to.name === routerName.h5privatizationDeployment) {
+        return next({
+          name: routerName.privatizationDeployment,
+          query: { ...to.query },
+        });
+      } else if (to.name === routerName.h5price) {
+        return next({
+          name: routerName.price,
+          query: { ...to.query },
+        });
+      } else if (to.name === routerName.h5hi) {
+        return next({
+          name: routerName.hi,
+          query: { ...to.query },
         });
       } else {
         return next({

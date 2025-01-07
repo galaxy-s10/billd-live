@@ -1,7 +1,7 @@
 <template>
   <div class="wrap">
     <div class="title">场次数据</div>
-    <div class="card"></div>
+    <div class="card">建设中...</div>
   </div>
 </template>
 
@@ -20,6 +20,7 @@
     background-color: white;
     background-color: white;
     height: 200px;
+    padding: 20px;
   }
 }
 </style>

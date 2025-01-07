@@ -14,40 +14,30 @@
       <div class="ico shop"></div>
       <div class="txt">{{ t('layout.shop') }}</div>
     </div>
-    <div
+    <!-- <div
       class="item"
       @click="router.push({ name: routerName.order })"
     >
       <div class="ico data"></div>
       <div class="txt">{{ t('layout.siteOrder') }}</div>
-    </div>
-    <div
+    </div> -->
+    <!-- <div
       v-if="userStore.userInfo"
       class="item"
       @click="handleJump"
     >
       <div class="ico wallet"></div>
       <div class="txt">{{ t('layout.myWallet') }}</div>
-    </div>
+    </div> -->
   </aside>
 </template>
 
 <script lang="ts" setup>
 import { useI18n } from 'vue-i18n';
 
-import { loginTip } from '@/hooks/use-login';
 import router, { routerName } from '@/router';
-import { useUserStore } from '@/store/user';
 
 const { t } = useI18n();
-const userStore = useUserStore();
-
-function handleJump() {
-  if (!loginTip()) {
-    return;
-  }
-  router.push({ name: routerName.wallet });
-}
 </script>
 
 <style lang="scss" scoped>

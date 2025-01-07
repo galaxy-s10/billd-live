@@ -28,17 +28,17 @@ import { fetchGlobalMsgMyList } from '@/api/globalMsg';
 import NaiveMessage from '@/components/NaiveMessage/index.vue';
 import NaiveModal from '@/components/NaiveModal/index.vue';
 import { THEME_COLOR, appBuildInfo } from '@/constant';
-import { useCheckUpdate } from '@/hooks/use-common';
 import { useGoogleAd } from '@/hooks/use-google-ad';
 import { loginMessage } from '@/hooks/use-login';
 import { useAppStore } from '@/store/app';
 import { useCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
-import { getHostnameUrl } from '@/utils';
 import { getLastBuildDate, setLastBuildDate } from '@/utils/localStorage/app';
 import { getToken } from '@/utils/localStorage/user';
 
-const { checkUpdate } = useCheckUpdate();
+import { flattenTree } from './utils';
+
+// const { checkUpdate } = useCheckUpdate();
 const appStore = useAppStore();
 const cacheStore = useCacheStore();
 const userStore = useUserStore();
@@ -54,9 +54,9 @@ onMounted(() => {
   handleGlobalMsgMyList();
   useGoogleAd();
   initGlobalData();
-  checkUpdate({
-    htmlUrl: getHostnameUrl(),
-  });
+  // checkUpdate({
+  //   htmlUrl: getHostnameUrl(),
+  // });
   handleUpdate();
   loginMessage();
   cacheStore.muted = true;
@@ -106,6 +106,11 @@ async function getAreaList() {
   });
   if (res.code === 200 && res.data) {
     appStore.areaList = res.data;
+    const flatdata: any[] = [];
+    res.data.forEach((item) => {
+      flatdata.push(...flattenTree(item, 'children'));
+    });
+    appStore.flatAreaList = flatdata;
   }
 }
 

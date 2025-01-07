@@ -130,24 +130,14 @@
           <div
             v-for="(item, indey) in otherLiveRoomList"
             :key="indey"
-            class="live-room"
             @click="joinRoom(item.live_room, 'false')"
           >
-            <div
-              v-lazy:background-image="
-                item?.live_room?.cover_img || item?.user?.avatar
-              "
-              class="cover"
-            >
-              <div
-                v-if="item?.live_room?.cdn === SwitchEnum.yes"
-                class="cdn-ico"
-              >
-                <div class="txt">CDN</div>
-              </div>
-              <div class="txt">{{ item?.live_room?.users?.[0].username }}</div>
-            </div>
-            <div class="desc">{{ item?.live_room?.name }}</div>
+            <LiveRoomItem
+              :liveroom="{
+                ...item.live_room,
+                users: item.user ? [item.user] : [],
+              }"
+            ></LiveRoomItem>
           </div>
           <div
             v-if="!otherLiveRoomList.length"
@@ -164,22 +154,9 @@
           <div
             v-for="(iten, indey) in bilibiliLiveRoomList"
             :key="indey"
-            class="live-room"
             @click="joinRoom(iten.live_room, 'true')"
           >
-            <div
-              v-lazy:background-image="iten?.live_room?.cover_img"
-              class="cover"
-            >
-              <div
-                v-if="iten?.live_room?.cdn === SwitchEnum.yes"
-                class="cdn-ico"
-              >
-                <div class="txt">CDN</div>
-              </div>
-              <div class="txt">{{ iten?.live_room?.users?.[0].username }}</div>
-            </div>
-            <div class="desc">{{ iten?.live_room?.name }}</div>
+            <LiveRoomItem :liveroom="iten.live_room"></LiveRoomItem>
           </div>
           <div
             v-if="bilibiliLoading"
@@ -317,17 +294,17 @@ async function handleBilibilData() {
   try {
     pageParams.page += 1;
     const res = await fetchLiveBilibiliGetUserRecommend(pageParams);
-    // const list = res.data?.list;
     const list = res?.data?.data?.list;
     if (list) {
       arr = list.map((item) => {
         return {
           id: item.roomid,
-          user: { username: item.uname },
           live_room: {
             id: item.roomid,
             name: item.title,
             cover_img: item.cover,
+            users: [{ username: item.uname, avatar: item.user_cover }],
+            areas: [{ name: item.area_name }],
           },
         };
       });
@@ -414,8 +391,12 @@ function joinRoom(data, isBilibili = 'false') {
   .play-container {
     position: relative;
     z-index: 1;
-    padding-top: 20px;
+    box-sizing: border-box;
+    margin: 0 auto;
+    padding: 20px 10px;
     padding-bottom: 50px;
+    width: $w-1380;
+
     .bg-img {
       position: absolute;
       top: 0;
@@ -424,9 +405,8 @@ function joinRoom(data, isBilibili = 'false') {
       z-index: -1;
       width: 100%;
       height: 100%;
-      background-position: center;
-      background-size: cover;
-      background-repeat: no-repeat;
+
+      @extend %coverBg;
     }
     .bg-video {
       position: absolute;
@@ -442,10 +422,10 @@ function joinRoom(data, isBilibili = 'false') {
     }
     .container {
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
       box-sizing: border-box;
       margin: 0 auto;
-      height: calc($w-1150 / $video-ratio);
+      height: calc($w-1125 / $video-ratio);
 
       .left {
         position: relative;
@@ -453,11 +433,11 @@ function joinRoom(data, isBilibili = 'false') {
         overflow: hidden;
         flex-shrink: 0;
         box-sizing: border-box;
-        margin-right: 20px;
-        width: $w-1150;
-        height: 100%;
+        width: $w-1125;
+        height: calc($w-1125 / $video-ratio);
         border-radius: 4px;
         background-color: rgba($color: #000000, $alpha: 0.3);
+        box-shadow: 0px 0px 15px -3px rgba(0, 0, 0, 0.1);
 
         @extend %coverBg;
 
@@ -492,10 +472,9 @@ function joinRoom(data, isBilibili = 'false') {
 
         .cover {
           position: absolute;
-          background-position: center center;
-          background-size: cover;
           filter: blur(5px);
 
+          @extend %coverBg;
           inset: 0;
         }
         :deep(canvas) {
@@ -545,6 +524,7 @@ function joinRoom(data, isBilibili = 'false') {
             color: $theme-color-gold;
             font-size: 16px;
             cursor: pointer;
+            transition: all 0.2s ease;
             &:hover {
               background-color: $theme-color-gold;
               color: white;
@@ -666,9 +646,9 @@ function joinRoom(data, isBilibili = 'false') {
               width: 100%;
               border-radius: 0 0 4px 4px;
               background-image: linear-gradient(
-                -180deg,
-                rgba(0, 0, 0, 0),
-                rgba(0, 0, 0, 0.6)
+                180deg,
+                rgba(0, 0, 0, 0) 0,
+                rgba(0, 0, 0, 0.32) 100%
               );
               color: white;
               text-align: initial;
@@ -690,17 +670,17 @@ function joinRoom(data, isBilibili = 'false') {
   .area-container {
     box-sizing: border-box;
     margin: 10px auto;
-    width: $w-1450;
+    width: $w-1380;
 
     .area-item {
       .title {
-        padding: 10px 0;
+        padding: 10px;
         font-size: 26px;
       }
       .live-room-list {
         display: flex;
         flex-wrap: wrap;
-        justify-content: space-between;
+        margin-top: 20px;
         .live-room {
           display: inline-block;
           margin-right: 32px;
@@ -711,11 +691,11 @@ function joinRoom(data, isBilibili = 'false') {
           .cover {
             position: relative;
             overflow: hidden;
-            width: 100%;
-            height: 150px;
+            width: 281px;
+            height: 158px;
             border-radius: 8px;
 
-            @extend %containBg;
+            @extend %coverBg;
 
             .cdn-ico {
               position: absolute;
@@ -744,9 +724,9 @@ function joinRoom(data, isBilibili = 'false') {
               width: 100%;
               border-radius: 0 0 4px 4px;
               background-image: linear-gradient(
-                -180deg,
-                rgba(0, 0, 0, 0),
-                rgba(0, 0, 0, 0.6)
+                180deg,
+                rgba(0, 0, 0, 0) 0,
+                rgba(0, 0, 0, 0.32) 100%
               );
               color: white;
               text-align: initial;
@@ -795,24 +775,27 @@ function joinRoom(data, isBilibili = 'false') {
 @media screen and (max-width: 1330px) {
   .home-wrap {
     .play-container {
+      width: $w-1200;
       .container {
-        height: calc($w-900 / $video-ratio);
+        height: calc($w-930 / $video-ratio);
 
         .left {
-          width: $w-900;
+          width: $w-930;
+          height: calc($w-930 / $video-ratio);
+
           :deep(canvas) {
-            max-width: $w-900;
-            max-height: calc($w-900 / $video-ratio);
+            max-width: $w-930;
+            max-height: calc($w-930 / $video-ratio);
           }
           :deep(video) {
-            max-width: $w-900;
-            max-height: calc($w-900 / $video-ratio);
+            max-width: $w-930;
+            max-height: calc($w-930 / $video-ratio);
           }
         }
       }
     }
     .area-container {
-      width: $w-1150;
+      width: $w-1200;
       .area-item {
         .live-room-list {
           .live-room {

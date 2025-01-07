@@ -190,7 +190,7 @@ onMounted(() => {
             width: 25px;
             height: 25px;
 
-            @extend %containBg;
+            @extend %coverBg;
           }
         }
         .txt {

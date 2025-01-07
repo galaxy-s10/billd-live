@@ -6,27 +6,20 @@
     </p>
     <div class="hr"></div>
     <div class="info">
-      <div class="title">微信二维码</div>
-      <img
-        src="@/assets/img/my-wechat.webp"
-        alt=""
-        class="my-wechat"
-      />
-      <p>微信号：{{ AUTHOR_INFO.wechat }}</p>
-      <p>qq号：{{ AUTHOR_INFO.qq }}</p>
-      <b style="color: red">
-        <span>
-          注意：项目开源，个人用户有问题github提Issue即可，不必添加作者！
-        </span>
-        <br />
-        <i>如有商业合作，请充分了解该项目。咨询需付费（100元/小时）！</i>
-      </b>
+      联系作者：
+      <span
+        class="link"
+        @click="router.push({ name: routerName.hi })"
+      >
+        点击查看
+      </span>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { AUTHOR_INFO, PROJECT_NAME } from '@/constant';
+import { PROJECT_NAME } from '@/constant';
+import router, { routerName } from '@/router';
 </script>
 
 <style lang="scss" scoped>
