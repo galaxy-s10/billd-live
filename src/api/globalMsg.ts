@@ -6,3 +6,9 @@ export function fetchGlobalMsgMyList(params: IList<IGlobalMsg>) {
     params,
   });
 }
+
+export function fetchGlobalMsgGlobal(params: IList<IGlobalMsg>) {
+  return request.get<IGlobalMsg[]>('/global_msg/global', {
+    params,
+  });
+}

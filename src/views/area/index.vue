@@ -189,11 +189,12 @@ async function getData() {
 
 <style lang="scss" scoped>
 .area-wrap {
+  overflow: scroll;
   box-sizing: border-box;
-  padding-top: $header-height;
   width: 100vw;
-  height: 100vh;
-  background-color: #f1f2f3;
+  height: 100%;
+
+  @extend %customScrollbar;
   .content-wrap {
     margin: 20px auto 0;
     width: $w-1500;
@@ -229,8 +230,8 @@ async function getData() {
       align-content: flex-start;
       flex-wrap: wrap;
       padding-top: 20px;
-      padding-left: 40px;
       padding-right: 40px;
+      padding-left: 40px;
 
       .null {
         width: 100%;

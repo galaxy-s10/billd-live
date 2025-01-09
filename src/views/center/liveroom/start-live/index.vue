@@ -457,6 +457,7 @@ function openLiveRoom() {
 
 <style lang="scss" scoped>
 .wrap {
+  box-sizing: border-box;
   .title {
     margin-bottom: 20px;
     color: #333;

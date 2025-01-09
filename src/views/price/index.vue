@@ -479,8 +479,7 @@ function handleClick(item) {
   cursor: pointer;
 }
 .privatizationDeployment-wrap {
-  padding-top: $layout-head-h;
-  height: calc(100vh - $layout-head-h);
+  height: 100%;
   background-color: #f4f8ff;
 
   .title {

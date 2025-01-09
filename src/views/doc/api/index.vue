@@ -19,7 +19,7 @@ import { COMMON_URL } from '@/constant';
 
 <style lang="scss" scoped>
 .api-doc-wrap {
-  padding-top: calc($header-height + 10px);
+  padding-top: 20px;
   padding-left: 20px;
   padding-right: 20px;
   .link {

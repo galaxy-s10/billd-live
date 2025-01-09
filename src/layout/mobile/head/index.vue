@@ -21,13 +21,11 @@
           />
         </a>
         <template v-if="!userStore.userInfo">
-          <div class="qqlogin">
-            <div
-              class="btn"
-              @click="appStore.showLoginModal = true"
-            >
-              登录
-            </div>
+          <div
+            class="btn"
+            @click="appStore.showLoginModal = true"
+          >
+            登录
           </div>
         </template>
         <n-dropdown
@@ -36,10 +34,11 @@
           :options="options"
           @select="handleSelect"
         >
-          <div
-            v-lazy:background-image="userStore.userInfo.avatar"
-            class="btn"
-          ></div>
+          <Avatar
+            :url="userStore.userInfo.avatar"
+            :name="userStore.userInfo.username"
+            :size="30"
+          ></Avatar>
         </n-dropdown>
       </div>
     </div>
@@ -98,9 +97,9 @@ function changeRoute(item: AppRootState['navList'][0]) {
   .logo-bar {
     display: flex;
     align-items: center;
-    box-sizing: border-box;
     justify-content: space-between;
-    padding: 0 20px;
+    box-sizing: border-box;
+    padding: 0 15px;
     height: 40px;
     border-bottom: 1px solid #e7e7e7;
     background-color: white;
@@ -115,12 +114,12 @@ function changeRoute(item: AppRootState['navList'][0]) {
       align-items: center;
       .github {
         display: flex;
+        margin-right: 10px;
         img {
           margin-left: 6px;
         }
       }
       .btn {
-        margin-left: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -129,7 +128,7 @@ function changeRoute(item: AppRootState['navList'][0]) {
         height: 30px;
         border-radius: 50%;
         background-color: papayawhip;
-        font-size: 13px;
+        font-size: 12px;
         cursor: pointer;
 
         @extend %coverBg;
@@ -144,7 +143,7 @@ function changeRoute(item: AppRootState['navList'][0]) {
     line-height: 40px;
     .item {
       position: relative;
-      margin: 0 20px;
+      margin: 0 15px;
       &.active {
         &::after {
           position: absolute;

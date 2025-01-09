@@ -448,10 +448,12 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .rank-wrap {
+  overflow: scroll;
   box-sizing: border-box;
-  padding-top: $header-height;
-  height: 100vh;
+  height: 100%;
   background-color: #f4f4f4;
+
+  @extend %customScrollbar;
   .type-list {
     display: flex;
     align-items: center;

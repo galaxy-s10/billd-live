@@ -155,11 +155,13 @@ onMounted(() => {
 <style lang="scss" scoped>
 .center-wrap {
   display: flex;
-  padding-top: $header-height;
+  overflow: scroll;
+  box-sizing: border-box;
   width: 100vw;
-  min-height: calc(100vh - $header-height);
+  height: 100%;
   background-color: #f3f3f7;
 
+  @extend %customScrollbar;
   .center {
     display: flex;
     justify-content: space-between;

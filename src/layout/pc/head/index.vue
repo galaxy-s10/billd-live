@@ -1,5 +1,9 @@
 <template>
-  <header class="head-wrap">
+  <header
+    ref="headerRef"
+    class="head-wrap"
+  >
+    <Notification></Notification>
     <div class="head">
       <div class="left">
         <div
@@ -423,7 +427,7 @@
 
 <script lang="ts" setup>
 import { isMobile, openToTarget, windowReload } from 'billd-utils';
-import { onMounted, ref, watch } from 'vue';
+import { nextTick, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -448,7 +452,7 @@ const userStore = useUserStore();
 const appStore = useAppStore();
 const cacheStore = useCacheStore();
 const githubStar = ref('');
-
+const headerRef = ref<HTMLHeadElement>();
 const localeList = [
   { label: '中文', value: 'zh' },
   { label: 'English', value: 'en' },
@@ -645,11 +649,29 @@ function handleJump(item) {
   }
 }
 
+watch(
+  () => appStore.notification.length,
+  () => {
+    nextTick(() => {
+      getHeight();
+    });
+  }
+);
+
 onMounted(() => {
   locale.value = cacheStore.locale;
   githubStar.value =
     'https://img.shields.io/github/stars/galaxy-s10/billd-live?label=Star&logo=GitHub&labelColor=white&logoColor=black&style=social';
+  getHeight();
 });
+
+function getHeight() {
+  if (headerRef.value) {
+    appStore.innerHeight =
+      document.documentElement.clientHeight -
+      headerRef.value.getBoundingClientRect().bottom;
+  }
+}
 
 function handleTip2() {
   window.$message.warning('重构中，暂不开放');
@@ -731,9 +753,9 @@ function handleWebsiteJump() {
 
 <style lang="scss" scoped>
 .head-wrap {
-  position: fixed;
-  top: 0;
-  left: 0;
+  // position: fixed;
+  // top: 0;
+  // left: 0;
   z-index: 100;
   box-sizing: border-box;
   // min-width: $w-1100;

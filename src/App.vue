@@ -19,12 +19,12 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import { isMobile } from 'billd-utils';
+import { isIPad, isMobile } from 'billd-utils';
 import { GlobalThemeOverrides, NConfigProvider } from 'naive-ui';
 import { onMounted } from 'vue';
 
 import { fetchAreaGetTreeArea } from '@/api/area';
-import { fetchGlobalMsgMyList } from '@/api/globalMsg';
+import { fetchGlobalMsgGlobal } from '@/api/globalMsg';
 import NaiveMessage from '@/components/NaiveMessage/index.vue';
 import NaiveModal from '@/components/NaiveModal/index.vue';
 import { THEME_COLOR, appBuildInfo } from '@/constant';
@@ -36,6 +36,7 @@ import { useUserStore } from '@/store/user';
 import { getLastBuildDate, setLastBuildDate } from '@/utils/localStorage/app';
 import { getToken } from '@/utils/localStorage/user';
 
+import { GlobalMsgTypeEnum, SwitchEnum } from './interface';
 import { flattenTree } from './utils';
 
 // const { checkUpdate } = useCheckUpdate();
@@ -49,6 +50,8 @@ const themeOverrides: GlobalThemeOverrides = {
     primaryColorHover: THEME_COLOR,
   },
 };
+
+handleRemoveGlobalLoading();
 
 onMounted(() => {
   handleGlobalMsgMyList();
@@ -73,27 +76,39 @@ onMounted(() => {
   //     new VConsole.default();
   //   })
   //   .catch(() => {});
-  if (isMobile()) {
-    const metaEl = document.querySelector('meta[name="viewport"]');
+  if (isMobile() && !isIPad()) {
+    const metaEl = document.createElement('meta');
+    metaEl.setAttribute('name', 'viewport');
     metaEl?.setAttribute(
       'content',
       'width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no'
     );
+    document.head.appendChild(metaEl);
   }
 });
 
+function handleRemoveGlobalLoading() {
+  const el = document.querySelector('.b-global-loading') as HTMLDivElement;
+  el.style.display = 'none';
+}
+
 async function handleGlobalMsgMyList() {
-  const res = await fetchGlobalMsgMyList({
+  const res = await fetchGlobalMsgGlobal({
     orderName: 'priority',
     orderBy: 'desc',
+    show: SwitchEnum.yes,
   });
   if (res.code === 200) {
-    res.data.rows.forEach((item) => {
-      window.$modal.create({
-        title: '提示',
-        preset: 'dialog',
-        content: item.content || '',
-      });
+    res.data.forEach((item) => {
+      if (item.type === GlobalMsgTypeEnum.notification) {
+        appStore.notification.push(item);
+      } else {
+        window.$modal.create({
+          title: item.title || '提示',
+          preset: 'dialog',
+          content: item.content || '',
+        });
+      }
     });
   }
 }

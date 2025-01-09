@@ -53,6 +53,9 @@ importers:
       flv.js:
         specifier: ^1.6.2
         version: 1.6.2
+      hls.js:
+        specifier: ^1.5.18
+        version: 1.5.18
       js-cookie:
         specifier: ^3.0.5
         version: 3.0.5
@@ -4938,6 +4941,9 @@ packages:
   highlight.js@11.8.0:
     resolution: {integrity: sha512-MedQhoqVdr0U6SSnWPzfiadUcDHfN/Wzq25AkXiQv9oiOO/sG0S7XkvpFIqWBl9Yq1UYyYOOVORs5UW2XlPyzg==}
     engines: {node: '>=12.0.0'}
+
+  hls.js@1.5.18:
+    resolution: {integrity: sha512-znxR+2jecWluu/0KOBqUcvVyAB5tLff10vjMGrpAlz1eFY+ZhF1bY3r82V+Bk7WJdk03iTjtja9KFFz5BrqjSA==}
 
   homedir-polyfill@1.0.3:
     resolution: {integrity: sha512-eSmmWE5bZTK2Nou4g0AI3zZ9rswp7GRKoKXS1BLUkvPviOqs4YTN1djQIqrXy9k5gEtdLPy86JjRwsNM9tnDcA==}
@@ -13945,6 +13951,8 @@ snapshots:
       hermes-estree: 0.25.1
 
   highlight.js@11.8.0: {}
+
+  hls.js@1.5.18: {}
 
   homedir-polyfill@1.0.3:
     dependencies:

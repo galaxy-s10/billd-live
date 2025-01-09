@@ -1,8 +1,5 @@
 <template>
-  <div
-    ref="docRef"
-    class="home-wrap"
-  >
+  <div class="home-wrap">
     <div class="play-container">
       <div
         v-if="configBg && configBg !== ''"
@@ -231,7 +228,6 @@ const bilibiliLiveRoomList = ref<ILive[]>([]);
 const interactionList = ref<any[]>([]);
 const videoWrapTmpRef = ref<HTMLDivElement>();
 const remoteVideoRef = ref<HTMLDivElement>();
-const docRef = ref<HTMLElement | null>();
 const loadMoreRef = ref<HTMLElement | null>();
 
 const pageParams = reactive({ page: 0, page_size: 30, platform: 'web' });
@@ -253,22 +249,8 @@ const rootMargin = {
 };
 
 onMounted(() => {
-  const intersectionObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((item) => {
-        if (item.isIntersecting) {
-          isBottom.value = true;
-        } else {
-          isBottom.value = false;
-        }
-      });
-    },
-    {
-      // root: '',
-      rootMargin: `${rootMargin.top}px ${rootMargin.right}px ${rootMargin.bottom}px ${rootMargin.left}px`,
-    }
-  );
-  intersectionObserver.observe(loadMoreRef.value!);
+  initIntersectionObserver();
+  initGetBilibilData();
   handleSlideList();
   getLiveRoomList();
   videoWrapRef.value = videoWrapTmpRef.value;
@@ -286,6 +268,30 @@ watch(
     immediate: true,
   }
 );
+
+function initIntersectionObserver() {
+  const intersectionObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((item) => {
+        if (item.isIntersecting) {
+          isBottom.value = true;
+        } else {
+          isBottom.value = false;
+        }
+      });
+    },
+    {
+      // root: '',
+      rootMargin: `${rootMargin.top}px ${rootMargin.right}px ${rootMargin.bottom}px ${rootMargin.left}px`,
+    }
+  );
+  intersectionObserver.observe(loadMoreRef.value!);
+}
+
+async function initGetBilibilData() {
+  const arr = await handleBilibilData();
+  bilibiliLiveRoomList.value.push(...arr);
+}
 
 async function handleBilibilData() {
   if (bilibiliLoading.value) return [];
@@ -387,7 +393,9 @@ function joinRoom(data, isBilibili = 'false') {
 
 <style lang="scss" scoped>
 .home-wrap {
-  padding-top: $header-height;
+  height: 100%;
+  overflow: scroll;
+  @extend %customScrollbar;
   .play-container {
     position: relative;
     z-index: 1;

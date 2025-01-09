@@ -114,7 +114,7 @@ async function getPayList() {
 <style lang="scss" scoped>
 .order-wrap {
   padding: 50px 30px 0;
-  padding-top: calc($header-height + 10px);
+  padding-top: 20px;
 
   .list {
     text-align: center;

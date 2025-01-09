@@ -26,7 +26,7 @@ import router, { routerName } from '@/router';
 .author-wrap {
   box-sizing: border-box;
   margin: 0 auto;
-  padding-top: calc($header-height + 10px);
+  padding-top: 20px;
   width: 960px;
   height: 100vh;
   .link {

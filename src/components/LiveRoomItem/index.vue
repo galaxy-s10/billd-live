@@ -2,9 +2,7 @@
   <div class="liveroom-item">
     <div class="hover-item">
       <div
-        v-lazy:background-image="
-          liveroom?.cover_img || liveroom?.users?.[0]?.avatar
-        "
+        v-lazy:background-image="liveroom?.cover_img"
         class="cover"
       >
         <div
@@ -88,7 +86,7 @@ withDefaults(
       box-shadow: 0 13px 20px 0 rgba(59, 64, 72, 0.22);
       .cover {
         width: 281px;
-        height: 158px;
+        height: calc(281px / $video-ratio);
       }
     }
     .cover {
@@ -96,8 +94,9 @@ withDefaults(
       overflow: hidden;
       margin: 0 auto;
       width: 256px;
-      height: 144px;
+      height: calc(256px / $video-ratio);
       border-radius: 8px;
+      transition: background-image 0.5s ease;
 
       @extend %coverBg;
       .living-ico {

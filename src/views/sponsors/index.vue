@@ -159,7 +159,7 @@ const silverList = ref([
   display: flex;
   box-sizing: border-box;
   margin: 0 auto;
-  padding-top: calc($header-height + 10px);
+  padding-top: 20px;
   width: 960px;
   color: rgb(33, 53, 71);
 

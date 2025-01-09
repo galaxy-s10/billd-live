@@ -95,7 +95,6 @@ import router, { routerName } from '@/router';
 
 <style lang="scss" scoped>
 .hi-wrap {
-  padding-top: $layout-head-h;
   background-color: #f4f8ff;
   box-sizing: border-box;
   padding-left: 40px;

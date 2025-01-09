@@ -307,6 +307,7 @@ export enum GlobalMsgTypeEnum {
   user = 'user',
   system = 'system',
   activity = 'activity',
+  notification = 'notification',
 }
 
 export interface IGlobalMsg {
@@ -316,6 +317,7 @@ export interface IGlobalMsg {
   type?: GlobalMsgTypeEnum;
   show?: SwitchEnum;
   priority?: number;
+  title?: string;
   content?: string;
   remark?: string;
 

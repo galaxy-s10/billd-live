@@ -2,10 +2,15 @@
   <div class="layout">
     <!-- <div class="fixed-mask"></div> -->
     <HeadCpt></HeadCpt>
-    <router-view v-slot="{ Component }">
-      <component :is="Component"></component>
-    </router-view>
-    <SidebarCpt></SidebarCpt>
+    <div
+      class="view"
+      :style="{ height: appStore.innerHeight + 'px' }"
+    >
+      <router-view v-slot="{ Component }">
+        <component :is="Component"></component>
+      </router-view>
+    </div>
+    <Sidebar></Sidebar>
     <LoginModal v-if="appStore.showLoginModal"></LoginModal>
     <PayCourse v-if="appStore.usePayCourse"></PayCourse>
   </div>
@@ -15,18 +20,15 @@
 import { useAppStore } from '@/store/app';
 
 import HeadCpt from './head/index.vue';
-import SidebarCpt from './sidebar/index.vue';
 
-document.body.style.minWidth = '1200px';
 const appStore = useAppStore();
 </script>
 
 <style lang="scss" scoped>
 .layout {
   box-sizing: border-box;
-  // padding-top: $header-height;
   height: 100vh;
-
+  overflow: hidden;
   .fixed-mask {
     position: fixed;
     top: 0;
@@ -39,6 +41,12 @@ const appStore = useAppStore();
     opacity: 0.2;
     filter: blur(70px);
     pointer-events: none;
+  }
+  .view {
+    height: 100%;
+    overflow: hidden;
+    // overflow: scroll;
+    // @extend %customScrollbar;
   }
 }
 </style>

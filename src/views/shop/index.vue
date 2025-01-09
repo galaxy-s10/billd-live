@@ -215,7 +215,6 @@ function changeTab(type: GoodsTypeEnum) {
 
 <style lang="scss" scoped>
 .shop-wrap {
-  padding-top: $header-height;
   padding-left: 30px;
   padding-right: 30px;
   height: 100vh;
