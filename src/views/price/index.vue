@@ -94,27 +94,25 @@ import { routerName } from '@/router';
 
 const router = useRouter();
 const showContach = ref(false);
-const currentTab = ref<'personal' | 'openSource' | 'customized' | string>(
-  'personal'
-);
+const currentTab = ref<'single' | 'multi' | 'forever' | string>('multi');
 
 const tab = ref([
   {
-    id: 'personal',
+    id: 'single',
     txt: '单独订阅',
   },
   {
-    id: 'openSource',
+    id: 'multi',
     txt: '组合订阅',
   },
   {
-    id: 'customized',
+    id: 'forever',
     txt: '永久订阅',
   },
 ]);
 
 const detail = ref({
-  personal: {
+  single: {
     slogan: ['支持单独订阅', '欢迎订阅🚀'],
     list: [
       {
@@ -140,7 +138,7 @@ const detail = ref({
         },
       },
       {
-        color: '#38c0ff',
+        color: '#597ef7',
         name: 'Web直播后台',
         desc: '基于Vue3 + NaiveUI + Vite6',
         price: {
@@ -184,9 +182,9 @@ const detail = ref({
         },
       },
       {
-        color: '#30d1aa',
+        color: '#ffa940',
         name: 'App直播客户端',
-        desc: '基于Flutter',
+        desc: '基于Flutter3 + WebRTC',
         price: {
           left: '￥',
           center: '299',
@@ -207,13 +205,13 @@ const detail = ref({
       },
     ],
   },
-  openSource: {
+  multi: {
     slogan: ['组合订阅更优惠！', '欢迎订阅🚀'],
     list: [
       {
-        color: '#38c0ff',
+        color: '#1677ff',
         name: 'Web直播',
-        desc: '浏览器开直播、看直播',
+        desc: '网页开直播、看直播',
         price: {
           left: '￥',
           center: '599',
@@ -237,7 +235,7 @@ const detail = ref({
         },
       },
       {
-        color: '#30d1aa',
+        color: '#EE826C',
         name: 'App直播',
         desc: '手机App开直播、看直播',
         price: {
@@ -263,9 +261,9 @@ const detail = ref({
         },
       },
       {
-        color: '#30d1aa',
+        color: '#bae637',
         name: 'Web直播+后台',
-        desc: '浏览器开直播、看直播；<br />直播后台',
+        desc: '网页开直播、看直播；<br />直播后台',
         price: {
           left: '￥',
           center: '799',
@@ -292,9 +290,8 @@ const detail = ref({
           txt: '立即咨询',
         },
       },
-
       {
-        color: '#30d1aa',
+        color: '#eb2f96',
         name: 'App直播+后台',
         desc: '手机App开直播、看直播；<br />直播后台',
         price: {
@@ -324,9 +321,9 @@ const detail = ref({
         },
       },
       {
-        color: '#30d1aa',
+        color: '#13c2c2',
         name: '全平台直播',
-        desc: '浏览器、App开/看直播；<br />直播后台',
+        desc: '网页、App开/看直播；<br />直播后台',
         price: {
           left: '￥',
           center: '999',
@@ -359,7 +356,7 @@ const detail = ref({
       },
     ],
   },
-  customized: {
+  forever: {
     slogan: ['订阅三年即永久！', '欢迎订阅🚀'],
     list: [
       {
@@ -385,7 +382,7 @@ const detail = ref({
         },
       },
       {
-        color: '#38c0ff',
+        color: '#597ef7',
         name: 'Web直播后台',
         desc: '基于Vue3 + NaiveUI + Vite6',
         price: {
@@ -429,9 +426,9 @@ const detail = ref({
         },
       },
       {
-        color: '#30d1aa',
+        color: '#ffa940',
         name: 'App直播客户端',
-        desc: '基于Flutter',
+        desc: '基于Flutter3 + WebRTC',
         price: {
           left: '￥',
           center: '888',
@@ -506,7 +503,7 @@ function handleClick(item) {
 
     user-select: none;
     .item {
-      padding: 4px 25px;
+      padding: 4px 22px;
       border-radius: 40px;
       color: #686e88;
       font-weight: 700;

@@ -95,10 +95,12 @@ import router, { routerName } from '@/router';
 
 <style lang="scss" scoped>
 .hi-wrap {
-  background-color: #f4f8ff;
+  overflow: scroll;
   box-sizing: border-box;
-  padding-left: 40px;
   padding-bottom: 10px;
+  padding-left: 40px;
+  height: 100%;
+  background-color: #f4f8ff;
   &:hover {
     @extend %customScrollbar;
   }
@@ -113,8 +115,8 @@ import router, { routerName } from '@/router';
   }
 
   .title {
-    font-size: 22px;
     margin: 0;
+    font-size: 22px;
   }
   .red {
     color: red;
