@@ -20,7 +20,6 @@ const globals: any = externalGlobals({
   // vue: 'Vue',
   // 'vue-demi': 'VueDemi',
   // 'vue-router': 'VueRouter',
-  'video.js': 'videojs',
   'mpegts.js': 'mpegts',
   // fabric: 'fabric',
   'cos-js-sdk-v5': 'COS',
@@ -54,7 +53,6 @@ export default defineConfig(({ mode }) => {
         //   'https://tencentcos-res.hsslive.cn/npm/@vue/runtime-core@3.5.13/+esm.js',
         // vue: 'https://tencentcos-res.hsslive.cn/npm/vue@3.5.13/+esm.js',
         // 'vue-router': 'https://tencentcos-res.hsslive.cn/npm/vue-router@4.2.4/+esm.js',
-        // 'video.js': 'https://tencentcos-res.hsslive.cn/npm/video.js@8.21.0/+esm.js',
         // 'mpegts.js': 'https://tencentcos-res.hsslive.cn/npm/mpegts.js@1.7.3/+esm.js',
         // fabric: 'https://tencentcos-res.hsslive.cn/npm/fabric@5.4.2/+esm.js',
         // 'cos-js-sdk-v5':
@@ -74,7 +72,6 @@ export default defineConfig(({ mode }) => {
           // 'vue-demi',
           // 'vue-router',
           // 'runtime-core',
-          'video.js',
           'mpegts.js',
           // 'fabric',
           'cos-js-sdk-v5',
@@ -115,13 +112,6 @@ export default defineConfig(({ mode }) => {
           },
           tags: isProduction
             ? [
-                {
-                  injectTo: 'head',
-                  tag: 'script',
-                  attrs: {
-                    src: 'https://tencentcos-res.hsslive.cn/npm/video.js@8.21.0/video.min.js',
-                  },
-                },
                 {
                   injectTo: 'head',
                   tag: 'script',

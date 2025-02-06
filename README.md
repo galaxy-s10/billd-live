@@ -41,6 +41,18 @@
 - ~~项目发展至今，遇到很多形形色色的人，总结来说，95%的人都是直播方面的小白，5%的是接触过直播；这95%里面的人里面，大概有10%是小老板/外包之类的，剩下的90%就基本都是技术开发了，这90%的技术开发里，~~ 虽然bill-live项目收获到了很多star，但这其中绝大多数来自于看个乐，真正将项目clone下来运行的寥寥无几。
 - 很久之前写过一篇文章：[前端之被包养就不要谈独立人格](https://www.hsslive.cn/article/139)。有能力你可以自己写，不用别人的。别人的免费开源的东西，人家有个 readme 或者文档已经是仁尽义尽。
 
+如果你希望快速学到billd-live项目的核心直播技术栈：
+
+- billd-live 付费课：[https://www.hsslive.cn/article/151](https://www.hsslive.cn/article/151)，**送4小时一对一解答**。
+- github或者网上搜webrtc直播相关字眼，没有多少相对完善的项目/教程。
+- 总之个人认为，我这个付费课就是最优解。（缺点只有一个：要花钱。）
+
+致敬开源：
+
+billd-live自2023年3月开源以来，仅有作者（也就是我）一个人维护，深知做开源的难处。
+
+如果你github单个仓库拿到 **`128+star`**（并且你是该仓库作者），我个人认为这是非常不容易的，因为这代表了你的开源被很多人关注或认同，如果此时你正在了解直播相关方面的内容，我录制的 [**billd-live付费课**](https://www.hsslive.cn/article/151) 或许会对你有一定帮助，它将对你进行**免费**，作为我认同你在开源方面做的贡献，以及我力所能及的对你的回馈，希望你能不忘初心，砥砺前行~
+
 ## 简介
 
 billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://live.bilibili.com)功能，即你（房主）可以发布直播，别人进入你的直播间后能看到你的直播内容；而你也可以作为观众，进入别人的直播间看别人的直播内容。
@@ -199,11 +211,11 @@ Apifox：[https://apifox.com/apidoc/shared-c7556b54-17b2-494e-a039-572d83f103ed]
   style="width:300px"
 />
 
-## 本地启动
+## 相关视频
 
-> b 站教程：[从零搭建迷你版 b 站 web 直播间合集](https://space.bilibili.com/381307133/channel/collectiondetail?sid=1458070)，看里面带 `从零搭建迷你b站直播间` 封面的视频。
->
-> billd-live 付费课：[https://www.hsslive.cn/article/151](https://www.hsslive.cn/article/151)
+b 站：[从零搭建迷你版 b 站 web 直播间合集](https://space.bilibili.com/381307133/lists/1458070?type=season)
+
+## 本地启动
 
 ### billd-live
 
@@ -260,12 +272,6 @@ pnpm run mysql:dev
 pnpm run dev
 ```
 
-## 兼容性
-
-- [x] iphone 14
-- [x] 三星 s10
-- [x] ipad air 3
-
 ## 常见问题
 
 [https://live.hsslive.cn/doc/faq](https://live.hsslive.cn/doc/faq)
@@ -273,6 +279,12 @@ pnpm run dev
 ## 技术支持
 
 [https://live.hsslive.cn/support](https://live.hsslive.cn/support)
+
+## 兼容性
+
+- [x] iphone 14
+- [x] 三星 s10
+- [x] ipad air 3
 
 ## 环境配置
 
@@ -287,11 +299,11 @@ pnpm run dev
 - mysql 版本：基于 docker，镜像：mysql:8.0
 - redis 版本：基于 docker，镜像：redis:7.0
 - srs 版本：基于 docker，镜像：registry.cn-hangzhou.aliyuncs.com/ossrs/srs:5.0.170
-- ffmpeg 版本：5.1.2
+- ffmpeg 版本：6.1.1
 
 ### 构建/托管服务器环境
 
-> 配置：4 核 CPU，4G 内存，8M 带宽（广州）
+> 配置：4 核 CPU，4G 内存，8M 峰值带宽（广州）
 
 - 操作系统：CentOS Linux release 8.2.2004
 - nginx 版本：1.22.1
@@ -303,9 +315,9 @@ pnpm run dev
 
 ### 流媒体服务器环境
 
-> ~~配置：2 核 CPU，2G 内存，带宽 30M（香港）~~，2G内存也能跑，但偶尔会占满内存导致服务器卡死。
+> ~~配置：2 核 CPU，2G 内存，30M 峰值带宽（香港）~~，2G内存也能跑，但偶尔会占满内存导致服务器卡死。
 >
-> 配置：2 核 CPU，4G 内存，带宽 30M（香港）
+> 配置：2 核 CPU，4G 内存，30M 峰值带宽（香港）
 
 - 操作系统：Alibaba Cloud Linux release 3 (Soaring Falcon)
 - node 版本：v16.20.0
@@ -324,9 +336,3 @@ pnpm run dev
       alt="Billd-Live logo"
     />
   </a>
-
-## 致敬开源
-
-billd-live自2023年3月开源以来，仅有作者（也就是我）一个人维护，深知做开源的难处。
-
-如果你做过开源项目，并且单个仓库拿到 **`128+star`**，我个人认为这是非常不容易的，因为这代表了你的开源被很多人关注或认同，如果此时你正在了解直播相关方面的内容，我录制的 [**billd-live付费课**](https://www.hsslive.cn/article/151) 或许会对你有一定帮助，它将对你进行**免费**，作为我认同你在开源方面做的贡献，以及我对你力所能及的回馈，希望你能不忘初心，砥砺前行~

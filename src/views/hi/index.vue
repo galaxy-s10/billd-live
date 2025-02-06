@@ -15,7 +15,7 @@
     </p>
 
     <h3>Github</h3>
-    <li>所有项目累计收到2.1k star</li>
+    <li>所有项目累计收到2.2k star</li>
     <li class="red">本人在github上公开的项目完全免费，可商用！</li>
     <li>
       初心仅仅是记录自己的开发的过程，并不是为爱发电（专门写东西给大家用）。
@@ -83,6 +83,8 @@
     </li>
     <h3>联系作者</h3>
     <li class="red">！！！请仔细阅读上面的内容，再考虑是否添加！！！</li>
+    <li>添加前请充分了解billd-live项目！</li>
+    <li>添加时备注来意，否则不通过！</li>
     <li>微信：{{ AUTHOR_INFO.wechat }}</li>
     <li>QQ：{{ AUTHOR_INFO.qq }}</li>
   </div>

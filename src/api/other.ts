@@ -1,4 +1,3 @@
-import { ICredential } from '@/interface';
 import request from '@/utils/request';
 
 /**
@@ -6,13 +5,4 @@ import request from '@/utils/request';
  */
 export function fetchServerInfo() {
   return request.get('/other/server_info');
-}
-
-export function fetchGetPolicyByRes({ prefix }) {
-  return request.get<{ err; credential: ICredential }>(
-    '/other/get_policy_by_res',
-    {
-      params: { prefix },
-    }
-  );
 }

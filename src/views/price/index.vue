@@ -27,11 +27,12 @@
         :style="{ borderColor: item['color'] }"
       >
         <div class="name">{{ item.name }}</div>
-        <div class="desc">
-          <!-- eslint-disable vue/no-v-html -->
-          <div v-html="item.desc"></div>
-          <!-- eslint-enable -->
-        </div>
+        <!-- eslint-disable vue/no-v-html -->
+        <div
+          class="desc"
+          v-html="item.desc"
+        ></div>
+        <!-- eslint-enable -->
         <div class="price">
           <span class="t1">{{ item.price.left }}</span>
           <span class="t2">{{ item.price.center }}</span>
