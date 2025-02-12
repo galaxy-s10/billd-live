@@ -218,9 +218,6 @@ const showJoinBtn = ref(false);
 const topNums = ref(6);
 const configBg = ref('');
 const configVideo = ref();
-// const configVideo = ref(
-//   'https://www.xdyun.com/resldmnqcom/ldq_website/all_ldy/cloudphone_xdyun_ldy_mobile/mobile/assets/xd-video-6c9bcd.mp4'
-// );
 const currentLive = ref<ILive>();
 const topLiveRoomList = ref<ILive[]>([]);
 const otherLiveRoomList = ref<ILive[]>([]);

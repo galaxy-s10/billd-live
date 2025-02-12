@@ -1,36 +1,38 @@
 <template>
   <div class="wrap">
     <div class="title">直播间信息</div>
-    <div class="card">
-      <template v-if="liveRoomInfo">
-        <div class="item">
-          直播间ID：
-          <a
-            :href="getLiveRoomPageUrl(liveRoomInfo.id!)"
-            class="link"
-            target="_blank"
-          >
-            {{ liveRoomInfo.id }}
-          </a>
-        </div>
-        <div class="item">直播间名称：{{ liveRoomInfo.name }}</div>
-        <div class="item">
-          直播间简介：{{ liveRoomInfo.desc || '暂无简介' }}
-        </div>
-        <div class="item">
-          直播间分区：{{ liveRoomInfo.areas?.[0]?.name || '暂无分区' }}
-        </div>
-        <div class="item">
-          开通时间：{{ liveRoomInfo.created_at }}
-        </div></template
-      >
+    <div
+      v-if="!liveRoomInfo"
+      class="card"
+    >
       <span
-        v-else
         class="link"
         @click="openLiveRoom"
       >
-        未开通
+        未开通直播间
       </span>
+    </div>
+
+    <div
+      v-if="liveRoomInfo"
+      class="card"
+    >
+      <div class="item">
+        直播间ID：
+        <a
+          :href="getLiveRoomPageUrl(liveRoomInfo.id!)"
+          class="link"
+          target="_blank"
+        >
+          {{ liveRoomInfo.id }}
+        </a>
+      </div>
+      <div class="item">直播间名称：{{ liveRoomInfo.name }}</div>
+      <div class="item">直播间简介：{{ liveRoomInfo.desc || '暂无简介' }}</div>
+      <div class="item">
+        直播间分区：{{ liveRoomInfo.areas?.[0]?.name || '暂无分区' }}
+      </div>
+      <div class="item">开通时间：{{ liveRoomInfo.created_at }}</div>
     </div>
   </div>
 </template>

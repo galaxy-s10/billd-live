@@ -1,6 +1,19 @@
 <template>
   <div class="wrap">
     <div class="title">开播设置</div>
+
+    <div
+      v-if="!liveRoomInfo"
+      class="card"
+    >
+      <span
+        class="link"
+        @click="openLiveRoom"
+      >
+        未开通直播间
+      </span>
+    </div>
+
     <div
       v-if="liveRoomInfo"
       class="card-top"
@@ -48,8 +61,12 @@
         </div>
       </div>
     </div>
-    <div class="card">
-      <div v-if="liveRoomInfo">
+
+    <div
+      v-if="liveRoomInfo"
+      class="card"
+    >
+      <div>
         <div class="title">直播分区：</div>
         <div class="area-wrap">
           <span v-if="selectArea.length">{{
@@ -244,16 +261,12 @@
           </p>
         </div>
       </div>
-      <span
-        v-else
-        class="link"
-        @click="openLiveRoom"
-      >
-        未开通直播间
-      </span>
     </div>
 
-    <div class="card notice">
+    <div
+      v-if="liveRoomInfo"
+      class="card notice"
+    >
       <div class="title">主播公告</div>
       <div class="ipt-wrap">
         <div class="ipt">
@@ -275,7 +288,10 @@
       </div>
     </div>
 
-    <div class="card cover">
+    <div
+      v-if="liveRoomInfo"
+      class="card cover"
+    >
       <div class="title">直播封面</div>
       <div class="cover-wrap">
         <div
@@ -303,13 +319,14 @@
 
 <script lang="ts" setup>
 import { copyToClipBoard, openToTarget } from 'billd-utils';
-import { computed, ref, toRefs, watch } from 'vue';
+import { computed, onMounted, ref, toRefs, watch } from 'vue';
 
+import { fetchLiveLiveRoomIsLive } from '@/api/live';
 import { fetchUpdateLiveRoomKey, fetchUpdateMyLiveRoom } from '@/api/liveRoom';
 import { DEFAULT_ROLE_INFO, URL_QUERY } from '@/constant';
 import { handleTip } from '@/hooks/use-common';
 import { loginTip } from '@/hooks/use-login';
-import { IArea } from '@/interface';
+import { IArea, SwitchEnum } from '@/interface';
 import router, { routerName } from '@/router';
 import { useUserStore } from '@/store/user';
 import { ILiveRoom, LiveRoomTypeEnum } from '@/types/ILiveRoom';
@@ -334,6 +351,19 @@ const isSuperAdmin = computed(() => {
   );
 });
 
+onMounted(() => {});
+
+async function initStartLiveInfo() {
+  const res = await fetchLiveLiveRoomIsLive(liveRoomInfo.value?.id!);
+  if (res.code === 200 && res.data) {
+    console.log(res, 'ss');
+    startLive.value = true;
+    selectArea.value = res.data.live_room?.areas!;
+    methodLimit.value =
+      res.data.live_room?.cdn === SwitchEnum.yes ? 'cdn' : 'srs';
+  }
+}
+
 watch(
   () => userInfo?.value,
   (newval) => {
@@ -343,6 +373,7 @@ watch(
       title.value = res.name || '';
       noticeMsg.value = res.notice_msg || '';
       coverImg.value = res.cover_img || '';
+      initStartLiveInfo();
     }
   },
   {
@@ -397,6 +428,10 @@ function handleMethodLimit(val) {
   methodLimit.value = val;
 }
 function handleStartLive() {
+  if (!selectArea.value.length) {
+    window.$message.warning('请先选择分区！');
+    return;
+  }
   startLive.value = !startLive.value;
 }
 
@@ -458,6 +493,7 @@ function openLiveRoom() {
 <style lang="scss" scoped>
 .wrap {
   box-sizing: border-box;
+  padding-bottom: 10px;
   .title {
     margin-bottom: 20px;
     color: #333;

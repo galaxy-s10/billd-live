@@ -140,16 +140,11 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 
 import router, { routerName } from '@/router';
 
 const route = useRoute();
-
-onMounted(() => {
-  console.log(route.matched);
-});
 </script>
 
 <style lang="scss" scoped>

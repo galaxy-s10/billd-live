@@ -12,7 +12,7 @@ export function fetchLiveRoomOnlineUser(liveRoomId: number) {
 }
 
 export function fetchLiveLiveRoomIsLive(liveRoomId: number) {
-  return request.get(`/live/live_room_is_live/${liveRoomId}`);
+  return request.get<ILive | null>(`/live/live_room_is_live/${liveRoomId}`);
 }
 
 export function fetchLiveCloseMyLive() {
