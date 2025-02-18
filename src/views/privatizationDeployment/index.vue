@@ -275,7 +275,7 @@ const detail = ref({
         desc: '网页开直播、看直播',
         price: {
           left: '￥',
-          center: '7999',
+          center: '9999',
           right: '元',
         },
         tip: '包含以下代码仓库：',
@@ -301,7 +301,7 @@ const detail = ref({
         desc: '手机App开直播、看直播',
         price: {
           left: '￥',
-          center: '7999',
+          center: '9999',
           right: '元',
         },
         tip: '包含以下代码仓库：',
@@ -327,7 +327,7 @@ const detail = ref({
         desc: '网页开直播、看直播；<br />直播后台',
         price: {
           left: '￥',
-          center: '9999',
+          center: '12999',
           right: '元',
         },
         tip: '包含以下代码仓库：',
@@ -357,7 +357,7 @@ const detail = ref({
         desc: '手机App开直播、看直播；<br />直播后台',
         price: {
           left: '￥',
-          center: '9999',
+          center: '12999',
           right: '元',
         },
         tip: '包含以下代码仓库：',
@@ -387,7 +387,7 @@ const detail = ref({
         desc: '网页、App开/看直播；<br />直播后台',
         price: {
           left: '￥',
-          center: '12999',
+          center: '15999',
           right: '元',
         },
         tip: '包含以下代码仓库：',
@@ -448,7 +448,7 @@ const detail = ref({
         desc: '处理技术相关问题服务',
         price: {
           left: '￥',
-          center: '200',
+          center: '300',
           right: '元/小时',
         },
         tip: '',
@@ -470,7 +470,7 @@ const detail = ref({
         desc: '适用于个人/企业自建直播间',
         price: {
           left: '￥',
-          center: '9999',
+          center: '12999',
           right: '元/起',
         },
         tip: '包含以下代码仓库：',

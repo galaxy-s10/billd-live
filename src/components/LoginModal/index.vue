@@ -278,12 +278,11 @@ async function handleUsernameLogin() {
     window.$message.warning('密码长度要求6-18位！');
     return;
   }
-  let token = null;
-  token = await userStore.usernameLogin({
+  await userStore.usernameLogin({
     username: loginForm.value.username,
     password: loginForm.value.password,
   });
-  if (token) {
+  if (userStore.token) {
     window.$message.success('登录成功！');
     userStore.getUserInfo();
     appStore.showLoginModal = false;

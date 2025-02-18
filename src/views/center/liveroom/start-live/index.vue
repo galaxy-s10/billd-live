@@ -133,24 +133,18 @@
         <div class="title">直播方式：</div>
         <div class="method-wrap">
           <div
+            v-for="(item, index) in liveRoomTypeList"
+            :key="index"
             class="method-item"
-            :class="{ active: methodLimit === 'srs' }"
-            @click="handleMethodLimit('srs')"
+            :class="{ active: currentLiveRoomType === item.value }"
+            @click="handleCurrentLiveRoomType(item.value)"
           >
-            <div class="name">普通直播</div>
-          </div>
-          <div
-            class="method-item"
-            :class="{
-              active: methodLimit === 'cdn',
-            }"
-            @click="handleMethodLimit('cdn')"
-          >
-            <div class="name">CDN直播</div>
+            <div class="name">{{ t(item.label) }}</div>
           </div>
         </div>
         <div
           class="btn-wrap"
+          :class="{ end: startLive }"
           @click="handleStartLive"
         >
           {{ !startLive ? '开始直播' : '结束直播' }}
@@ -165,7 +159,7 @@
               <div class="ipt">
                 <input
                   :value="
-                    methodLimit === 'cdn'
+                    currentLiveRoomType === LiveRoomTypeEnum.tencent_css
                       ? liveRoomInfo.push_cdn_obs_server
                       : liveRoomInfo.push_obs_server
                   "
@@ -178,7 +172,7 @@
                 class="copy"
                 @click="
                   handleCopy(
-                    methodLimit === 'cdn'
+                    currentLiveRoomType === LiveRoomTypeEnum.tencent_css
                       ? liveRoomInfo.push_cdn_obs_server!
                       : liveRoomInfo.push_obs_server!
                   )
@@ -192,7 +186,7 @@
               <div class="ipt">
                 <input
                   :value="
-                    methodLimit === 'cdn'
+                    currentLiveRoomType === LiveRoomTypeEnum.tencent_css
                       ? liveRoomInfo.push_cdn_obs_stream_key
                       : liveRoomInfo.push_obs_stream_key
                   "
@@ -209,7 +203,7 @@
                 class="copy"
                 @click="
                   handleCopy(
-                    methodLimit === 'cdn'
+                    currentLiveRoomType === LiveRoomTypeEnum.tencent_css
                       ? liveRoomInfo.push_cdn_obs_stream_key!
                       : liveRoomInfo.push_obs_stream_key!
                   )
@@ -225,7 +219,7 @@
               <div class="ipt">
                 <input
                   :value="
-                    methodLimit === 'cdn'
+                    currentLiveRoomType === LiveRoomTypeEnum.tencent_css
                       ? liveRoomInfo.push_cdn_rtmp_url
                       : liveRoomInfo.push_rtmp_url
                   "
@@ -238,9 +232,9 @@
                 class="copy"
                 @click="
                   handleCopy(
-                    methodLimit === 'cdn'
-                      ? liveRoomInfo.push_cdn_obs_server!
-                      : liveRoomInfo.push_obs_server!
+                    currentLiveRoomType === LiveRoomTypeEnum.tencent_css
+                      ? liveRoomInfo.push_cdn_rtmp_url!
+                      : liveRoomInfo.push_rtmp_url!
                   )
                 "
               >
@@ -312,7 +306,7 @@
     <AreaModal
       v-if="showAreaModal"
       @close="showAreaModal = false"
-      @confirm="handleConfirm"
+      @confirm="changeLiveRoomArea"
     ></AreaModal>
   </div>
 </template>
@@ -320,17 +314,24 @@
 <script lang="ts" setup>
 import { copyToClipBoard, openToTarget } from 'billd-utils';
 import { computed, onMounted, ref, toRefs, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 
-import { fetchLiveLiveRoomIsLive } from '@/api/live';
+import {
+  fetchLiveCloseMyLive,
+  fetchLiveLiveRoomIsLive,
+  fetchLiveStartLive,
+} from '@/api/live';
 import { fetchUpdateLiveRoomKey, fetchUpdateMyLiveRoom } from '@/api/liveRoom';
 import { DEFAULT_ROLE_INFO, URL_QUERY } from '@/constant';
 import { handleTip } from '@/hooks/use-common';
 import { loginTip } from '@/hooks/use-login';
-import { IArea, SwitchEnum } from '@/interface';
+import { IArea } from '@/interface';
 import router, { routerName } from '@/router';
 import { useUserStore } from '@/store/user';
 import { ILiveRoom, LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import { getLiveRoomPageUrl } from '@/utils';
+
+const { t } = useI18n();
 
 const userStore = useUserStore();
 const { userInfo } = toRefs(userStore);
@@ -340,10 +341,69 @@ const title = ref('');
 const noticeMsg = ref('');
 const coverImg = ref('');
 const watchLimit = ref('all');
-const methodLimit = ref('srs');
+const currentLiveRoomType = ref<LiveRoomTypeEnum>();
 const selectArea = ref<IArea[]>([]);
 const startLive = ref(false);
 const showAreaModal = ref(false);
+
+const liveRoomTypeList = ref([
+  {
+    label: 'layout.srsLive',
+    value: LiveRoomTypeEnum.srs,
+  },
+  {
+    label: 'layout.tencentCssLive',
+    value: LiveRoomTypeEnum.tencent_css,
+  },
+  {
+    label: 'layout.pkLive',
+    value: LiveRoomTypeEnum.pk,
+  },
+  {
+    label: 'layout.tencentCssPkLive',
+    value: LiveRoomTypeEnum.tencent_css_pk,
+  },
+  {
+    label: 'layout.msrLive',
+    value: LiveRoomTypeEnum.msr,
+  },
+  {
+    label: 'layout.webrtcLive',
+    value: LiveRoomTypeEnum.wertc_live,
+  },
+  {
+    label: 'layout.webrtcMeeting',
+    value: LiveRoomTypeEnum.wertc_meeting_one,
+  },
+  {
+    label: 'layout.forwardBilibili',
+    value: LiveRoomTypeEnum.forward_bilibili,
+  },
+  {
+    label: 'layout.forwardHuya',
+    value: LiveRoomTypeEnum.forward_huya,
+  },
+  {
+    label: 'layout.forwardDouyu',
+    value: LiveRoomTypeEnum.forward_douyu,
+  },
+  {
+    label: 'layout.forwardDouyin',
+    value: LiveRoomTypeEnum.forward_douyin,
+  },
+  {
+    label: 'layout.forwardKuaishou',
+    value: LiveRoomTypeEnum.forward_kuaishou,
+  },
+  {
+    label: 'layout.forwardXiaohongshu',
+    value: LiveRoomTypeEnum.forward_xiaohongshu,
+  },
+  {
+    label: 'layout.forwardAll',
+    value: LiveRoomTypeEnum.forward_all,
+  },
+]);
 
 const isSuperAdmin = computed(() => {
   return userInfo?.value?.roles?.find(
@@ -351,16 +411,16 @@ const isSuperAdmin = computed(() => {
   );
 });
 
-onMounted(() => {});
+onMounted(() => {
+  currentLiveRoomType.value = LiveRoomTypeEnum.srs;
+});
 
 async function initStartLiveInfo() {
   const res = await fetchLiveLiveRoomIsLive(liveRoomInfo.value?.id!);
   if (res.code === 200 && res.data) {
-    console.log(res, 'ss');
     startLive.value = true;
     selectArea.value = res.data.live_room?.areas!;
-    methodLimit.value =
-      res.data.live_room?.cdn === SwitchEnum.yes ? 'cdn' : 'srs';
+    currentLiveRoomType.value = res.data.live_room?.type;
   }
 }
 
@@ -415,24 +475,71 @@ async function handleUpdateKey() {
   }
 }
 
-function handleConfirm(v) {
+async function changeLiveRoomArea(v) {
   selectArea.value = v;
   showAreaModal.value = false;
+  if (startLive.value) {
+    const res = await fetchUpdateMyLiveRoom({
+      // @ts-ignore
+      areas: selectArea.value.map((v) => v.id!),
+    });
+    if (res.code === 200) {
+      window.$message.success('修改成功！');
+    }
+  }
 }
 
-function handleMethodLimit(val) {
-  if (val === 'cdn' && !isSuperAdmin.value) {
-    window.$message.error('权限不足！');
+function handleCurrentLiveRoomType(val) {
+  if (startLive.value) {
+    window.$message.warning('开播时不能修改！');
     return;
   }
-  methodLimit.value = val;
+
+  if (!isSuperAdmin.value) {
+    if (
+      [
+        LiveRoomTypeEnum.forward_all,
+        LiveRoomTypeEnum.forward_bilibili,
+        LiveRoomTypeEnum.forward_douyin,
+        LiveRoomTypeEnum.forward_douyu,
+        LiveRoomTypeEnum.forward_huya,
+        LiveRoomTypeEnum.forward_kuaishou,
+        LiveRoomTypeEnum.forward_xiaohongshu,
+        LiveRoomTypeEnum.msr,
+        LiveRoomTypeEnum.tencent_css,
+        LiveRoomTypeEnum.tencent_css_pk,
+      ].includes(val)
+    ) {
+      window.$message.error('权限不足！');
+      return;
+    }
+  }
+  currentLiveRoomType.value = val;
 }
-function handleStartLive() {
+
+async function handleStartLive() {
+  if (startLive.value) {
+    const res = await fetchLiveCloseMyLive();
+    if (res.code === 200) {
+      window.$message.warning('已关闭直播');
+      startLive.value = !startLive.value;
+    }
+    return;
+  }
   if (!selectArea.value.length) {
     window.$message.warning('请先选择分区！');
     return;
   }
-  startLive.value = !startLive.value;
+  if (currentLiveRoomType.value !== undefined) {
+    const res = await fetchLiveStartLive({
+      liveRoomType: currentLiveRoomType.value,
+      areas: selectArea.value.map((v) => v.id!),
+    });
+    if (res.code === 200 && res.data.code === 0) {
+      console.log(res.data);
+      startLive.value = !startLive.value;
+    }
+  }
 }
 
 function handleCopy(url: string | number) {
@@ -608,19 +715,21 @@ function openLiveRoom() {
       }
     }
     .limit-wrap {
-      display: flex;
+      display: inline-flex;
       align-items: center;
       margin-bottom: 20px;
       .limit-item {
         box-sizing: border-box;
-        margin-right: 20px;
         padding: 10px 20px;
-        width: 200px;
+        width: 210px;
         border: 1px solid #e9eaec;
         border-radius: 5px;
         cursor: pointer;
 
         user-select: none;
+        &:not(:last-child) {
+          margin-right: 20px;
+        }
         &.active {
           border: 1px solid $theme-color-gold;
           .name {
@@ -645,16 +754,22 @@ function openLiveRoom() {
     .method-wrap {
       display: flex;
       align-items: center;
+      flex-wrap: wrap;
       .method-item {
         box-sizing: border-box;
         margin-right: 20px;
+        margin-bottom: 20px;
         padding: 10px 20px;
-        width: 200px;
+        width: 210px;
         border: 1px solid #e9eaec;
         border-radius: 5px;
         cursor: pointer;
 
         user-select: none;
+        // &:not(:last-child) {
+        //   margin-right: 20px;
+        //   margin-bottom: 20px;
+        // }
         &.active {
           border: 1px solid $theme-color-gold;
           .name {
@@ -688,6 +803,9 @@ function openLiveRoom() {
       cursor: pointer;
 
       user-select: none;
+      &.end {
+        background-color: red;
+      }
     }
     .obs-wrap {
       margin: 20px auto 20px;

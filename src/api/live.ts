@@ -1,4 +1,5 @@
 import { ILive, IPaging } from '@/interface';
+import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import request from '@/utils/request';
 
 export function fetchLiveList(params) {
@@ -13,6 +14,13 @@ export function fetchLiveRoomOnlineUser(liveRoomId: number) {
 
 export function fetchLiveLiveRoomIsLive(liveRoomId: number) {
   return request.get<ILive | null>(`/live/live_room_is_live/${liveRoomId}`);
+}
+
+export function fetchLiveStartLive(data: {
+  liveRoomType: LiveRoomTypeEnum;
+  areas?: number[];
+}) {
+  return request.post(`/live/start_live`, data);
 }
 
 export function fetchLiveCloseMyLive() {

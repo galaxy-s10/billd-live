@@ -224,9 +224,29 @@
               </a>
               <a
                 class="item"
+                @click.prevent="handleStartLive(LiveRoomTypeEnum.tencent_css)"
+              >
+                <div class="txt">{{ t('layout.tencentCssLive') }}</div>
+              </a>
+              <a
+                class="item"
                 @click.prevent="handleTip2()"
               >
                 <div class="txt">{{ t('layout.pkLive') }}</div>
+              </a>
+              <a
+                class="item"
+                @click.prevent="
+                  handleStartLive(LiveRoomTypeEnum.tencent_css_pk)
+                "
+              >
+                <div class="txt">{{ t('layout.tencentCssPkLive') }}</div>
+              </a>
+              <a
+                class="item"
+                @click.prevent="handleStartLive(LiveRoomTypeEnum.msr)"
+              >
+                <div class="txt">{{ t('layout.msrLive') }}</div>
               </a>
               <a
                 class="item"
@@ -291,27 +311,6 @@
                 @click.prevent="handleStartLive(LiveRoomTypeEnum.forward_all)"
               >
                 <div class="txt">{{ t('layout.forwardAll') }}</div>
-              </a>
-              <a
-                class="item"
-                @click.prevent="handleStartLive(LiveRoomTypeEnum.msr)"
-              >
-                <div class="txt">{{ t('layout.msrLive') }}</div>
-              </a>
-
-              <a
-                class="item"
-                @click.prevent="handleStartLive(LiveRoomTypeEnum.tencent_css)"
-              >
-                <div class="txt">{{ t('layout.tencentCssLive') }}</div>
-              </a>
-              <a
-                class="item"
-                @click.prevent="
-                  handleStartLive(LiveRoomTypeEnum.tencent_css_pk)
-                "
-              >
-                <div class="txt">{{ t('layout.tencentCssPkLive') }}</div>
               </a>
               <div class="tip">
                 <div

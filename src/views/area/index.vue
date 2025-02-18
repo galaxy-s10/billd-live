@@ -197,11 +197,10 @@ async function getData() {
   @extend %customScrollbar;
   .content-wrap {
     margin: 20px auto 0;
-    width: $w-1500;
+    width: $w-1300;
     .tag-wrap {
       box-sizing: border-box;
-      padding: 0 40px 0 50px;
-      width: calc($w-1500 - 50px);
+      width: 100%;
       // background-color: red;
       .tag {
         display: inline-block;
@@ -230,8 +229,6 @@ async function getData() {
       align-content: flex-start;
       flex-wrap: wrap;
       padding-top: 20px;
-      padding-right: 40px;
-      padding-left: 40px;
 
       .null {
         width: 100%;
@@ -243,6 +240,22 @@ async function getData() {
       align-items: center;
       justify-content: center;
       margin-bottom: 20px;
+    }
+  }
+}
+// 屏幕宽度小于1300的时候
+@media screen and (max-width: $w-1300) {
+  .area-wrap {
+    .content-wrap {
+      width: $w-1000;
+    }
+  }
+}
+// 屏幕宽度小于1000的时候
+@media screen and (max-width: $w-1000) {
+  .area-wrap {
+    .content-wrap {
+      width: $w-900;
     }
   }
 }

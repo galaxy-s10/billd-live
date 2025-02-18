@@ -108,7 +108,7 @@ const tab = ref([
   },
   {
     id: 'forever',
-    txt: '永久订阅',
+    txt: '更多订阅',
   },
 ]);
 
@@ -122,8 +122,8 @@ const detail = ref({
         desc: '基于Vue3 + WebRTC + Vite6',
         price: {
           left: '￥',
-          center: '299',
-          right: '元/年',
+          center: '2999',
+          right: '元/永久',
         },
         tip: '包含以下代码仓库：',
         feat: [
@@ -144,8 +144,8 @@ const detail = ref({
         desc: '基于Vue3 + NaiveUI + Vite6',
         price: {
           left: '￥',
-          center: '299',
-          right: '元/年',
+          center: '2999',
+          right: '元/永久',
         },
         tip: '包含以下代码仓库：',
         feat: [
@@ -163,11 +163,11 @@ const detail = ref({
       {
         color: '#30d1aa',
         name: 'Web直播后端',
-        desc: '基于Nodejs + Koa2 + Ts',
+        desc: '基于Node + Koa2 + Ts + Srs',
         price: {
           left: '￥',
-          center: '399',
-          right: '元/年',
+          center: '3999',
+          right: '元/永久',
         },
         tip: '包含以下代码仓库：',
         feat: [
@@ -185,11 +185,11 @@ const detail = ref({
       {
         color: '#ffa940',
         name: 'App直播客户端',
-        desc: '基于Flutter3 + WebRTC',
+        desc: '基于Flutter3 + Dart3 + WebRTC',
         price: {
           left: '￥',
-          center: '299',
-          right: '元/年',
+          center: '2999',
+          right: '元/永久',
         },
         tip: '包含以下代码仓库：',
         feat: [
@@ -215,8 +215,8 @@ const detail = ref({
         desc: '网页开直播、看直播',
         price: {
           left: '￥',
-          center: '599',
-          right: '元/年',
+          center: '6098',
+          right: '元/永久',
         },
         tip: '包含以下代码仓库：',
         feat: [
@@ -241,8 +241,8 @@ const detail = ref({
         desc: '手机App开直播、看直播',
         price: {
           left: '￥',
-          center: '599',
-          right: '元/年',
+          center: '6098',
+          right: '元/永久',
         },
         tip: '包含以下代码仓库：',
         feat: [
@@ -267,8 +267,8 @@ const detail = ref({
         desc: '网页开直播、看直播；<br />直播后台',
         price: {
           left: '￥',
-          center: '799',
-          right: '元/年',
+          center: '8198',
+          right: '元/永久',
         },
         tip: '包含以下代码仓库：',
         feat: [
@@ -297,8 +297,8 @@ const detail = ref({
         desc: '手机App开直播、看直播；<br />直播后台',
         price: {
           left: '￥',
-          center: '799',
-          right: '元/年',
+          center: '8198',
+          right: '元/永久',
         },
         tip: '包含以下代码仓库：',
         feat: [
@@ -327,8 +327,8 @@ const detail = ref({
         desc: '网页、App开/看直播；<br />直播后台',
         price: {
           left: '￥',
-          center: '999',
-          right: '元/年',
+          center: '10198',
+          right: '元/永久',
         },
         tip: '包含以下代码仓库：',
         feat: [
@@ -358,89 +358,35 @@ const detail = ref({
     ],
   },
   forever: {
-    slogan: ['订阅三年即永久！', '欢迎订阅🚀'],
+    slogan: ['敬请期待！', '⭐️⭐️⭐️'],
     list: [
       {
-        color: '#38c0ff',
-        name: 'Web直播前台',
-        desc: '基于Vue3 + WebRTC + Vite6',
+        color: '#13c2c2',
+        name: '待上线',
+        desc: '',
         price: {
-          left: '￥',
-          center: '888',
-          right: '元/永久',
+          left: '',
+          center: '',
+          right: '',
         },
-        tip: '包含以下代码仓库：',
+        tip: '',
         feat: [
-          {
-            status: 'done',
-            txt: 'billd-live-pro',
-          },
-        ],
-        btn: {
-          type: 'showContact',
-          link: '',
-          txt: '立即咨询',
-        },
-      },
-      {
-        color: '#597ef7',
-        name: 'Web直播后台',
-        desc: '基于Vue3 + NaiveUI + Vite6',
-        price: {
-          left: '￥',
-          center: '888',
-          right: '元/永久',
-        },
-        tip: '包含以下代码仓库：',
-        feat: [
-          {
-            status: 'done',
-            txt: 'billd-live-admin-pro',
-          },
-        ],
-        btn: {
-          type: 'showContact',
-          link: '',
-          txt: '立即咨询',
-        },
-      },
-      {
-        color: '#30d1aa',
-        name: 'Web直播后端',
-        desc: '基于Nodejs + Koa2 + Ts',
-        price: {
-          left: '￥',
-          center: '1088',
-          right: '元/永久',
-        },
-        tip: '包含以下代码仓库：',
-        feat: [
-          {
-            status: 'done',
-            txt: 'billd-live-server-pro',
-          },
-        ],
-        btn: {
-          type: 'showContact',
-          link: '',
-          txt: '立即咨询',
-        },
-      },
-      {
-        color: '#ffa940',
-        name: 'App直播客户端',
-        desc: '基于Flutter3 + WebRTC',
-        price: {
-          left: '￥',
-          center: '888',
-          right: '元/永久',
-        },
-        tip: '包含以下代码仓库：',
-        feat: [
-          {
-            status: 'done',
-            txt: 'billd-live-flutter-pro',
-          },
+          // {
+          //   status: 'done',
+          //   txt: 'billd-live-pro',
+          // },
+          // {
+          //   status: 'done',
+          //   txt: 'billd-live-admin-pro',
+          // },
+          // {
+          //   status: 'done',
+          //   txt: 'billd-live-flutter-pro',
+          // },
+          // {
+          //   status: 'done',
+          //   txt: 'billd-live-server-pro',
+          // },
         ],
         btn: {
           type: 'showContact',
