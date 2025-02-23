@@ -64,7 +64,7 @@
             :key="item.id"
           >
             <MobileLiveRoomItem
-              :liveroom="{ ...item.live_room, live: {}, cdn: SwitchEnum.yes }"
+              :liveroom="{ ...item.live_room, live: {} }"
               :user="item.live_room?.users?.[0]"
               @click="goRoom(item, true)"
             ></MobileLiveRoomItem>

@@ -224,7 +224,9 @@
               </a>
               <a
                 class="item"
-                @click.prevent="handleStartLive(LiveRoomTypeEnum.tencent_css)"
+                @click.prevent="
+                  handleStartLive(LiveRoomTypeEnum.tencentcloud_css)
+                "
               >
                 <div class="txt">{{ t('layout.tencentCssLive') }}</div>
               </a>
@@ -237,7 +239,7 @@
               <a
                 class="item"
                 @click.prevent="
-                  handleStartLive(LiveRoomTypeEnum.tencent_css_pk)
+                  handleStartLive(LiveRoomTypeEnum.tencentcloud_css_pk)
                 "
               >
                 <div class="txt">{{ t('layout.tencentCssPkLive') }}</div>
@@ -671,8 +673,8 @@ function handleStartLive(key: LiveRoomTypeEnum) {
   if (
     [
       LiveRoomTypeEnum.msr,
-      LiveRoomTypeEnum.tencent_css,
-      LiveRoomTypeEnum.tencent_css_pk,
+      LiveRoomTypeEnum.tencentcloud_css,
+      LiveRoomTypeEnum.tencentcloud_css_pk,
     ].includes(key)
   ) {
     if (

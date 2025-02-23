@@ -364,8 +364,8 @@ function changeLiveLine(item: LiveLineEnum) {
         LiveRoomTypeEnum.wertc_live,
         LiveRoomTypeEnum.wertc_meeting_one,
         LiveRoomTypeEnum.wertc_meeting_two,
-        LiveRoomTypeEnum.tencent_css,
-        LiveRoomTypeEnum.tencent_css_pk,
+        LiveRoomTypeEnum.tencentcloud_css,
+        LiveRoomTypeEnum.tencentcloud_css_pk,
       ].includes(type)
     ) {
       window.$message.info('不支持该线路！');

@@ -13,10 +13,9 @@
         </div>
         <div
           v-if="
-            liveroom?.cdn === SwitchEnum.yes ||
             [
-              LiveRoomTypeEnum.tencent_css,
-              LiveRoomTypeEnum.tencent_css_pk,
+              LiveRoomTypeEnum.tencentcloud_css,
+              LiveRoomTypeEnum.tencentcloud_css_pk,
             ].includes(liveroom?.type!)
           "
           class="cdn-ico"
@@ -48,7 +47,6 @@
 </template>
 
 <script lang="ts" setup>
-import { SwitchEnum } from '@/interface';
 import { ILiveRoom, LiveRoomTypeEnum } from '@/types/ILiveRoom';
 
 withDefaults(

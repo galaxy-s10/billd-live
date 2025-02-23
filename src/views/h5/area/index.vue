@@ -94,7 +94,6 @@ async function handleBilibilData() {
           users: [{ username: item.uname }],
           is_bilibili: true,
           live: {},
-          cdn: SwitchEnum.yes,
         };
       });
       hasMore.value = res.data.data.has_more === 1 ? true : false;

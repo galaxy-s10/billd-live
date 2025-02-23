@@ -97,7 +97,7 @@ import { routerName } from '@/router';
 
 const router = useRouter();
 const showContach = ref(false);
-const currentTab = ref<'single' | 'multi' | 'forever' | string>('multi');
+const currentTab = ref<'single' | 'multi' | 'forever' | string>('single');
 
 const tab = ref([
   {
@@ -275,7 +275,7 @@ const detail = ref({
         desc: '网页开直播、看直播',
         price: {
           left: '￥',
-          center: '9999',
+          center: '8999',
           right: '元',
         },
         tip: '包含以下代码仓库：',
@@ -301,7 +301,7 @@ const detail = ref({
         desc: '手机App开直播、看直播',
         price: {
           left: '￥',
-          center: '9999',
+          center: '8999',
           right: '元',
         },
         tip: '包含以下代码仓库：',
@@ -327,7 +327,7 @@ const detail = ref({
         desc: '网页开直播、看直播；<br />直播后台',
         price: {
           left: '￥',
-          center: '12999',
+          center: '11999',
           right: '元',
         },
         tip: '包含以下代码仓库：',
@@ -357,7 +357,7 @@ const detail = ref({
         desc: '手机App开直播、看直播；<br />直播后台',
         price: {
           left: '￥',
-          center: '12999',
+          center: '11999',
           right: '元',
         },
         tip: '包含以下代码仓库：',
@@ -387,7 +387,7 @@ const detail = ref({
         desc: '网页、App开/看直播；<br />直播后台',
         price: {
           left: '￥',
-          center: '15999',
+          center: '13999',
           right: '元',
         },
         tip: '包含以下代码仓库：',
@@ -470,7 +470,7 @@ const detail = ref({
         desc: '适用于个人/企业自建直播间',
         price: {
           left: '￥',
-          center: '12999',
+          center: '9999',
           right: '元/起',
         },
         tip: '包含以下代码仓库：',

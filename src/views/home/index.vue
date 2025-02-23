@@ -24,7 +24,12 @@
           @click="showJoinBtn = !showJoinBtn"
         >
           <div
-            v-if="currentLive?.live_room?.cdn === SwitchEnum.yes"
+            v-if="
+              [
+                LiveRoomTypeEnum.tencentcloud_css,
+                LiveRoomTypeEnum.tencentcloud_css_pk,
+              ].includes(currentLive?.live_room?.type!)
+            "
             class="cdn-ico"
           >
             <div class="txt">CDN</div>
@@ -91,7 +96,12 @@
             >
               <div class="hidden">
                 <div
-                  v-if="item?.live_room?.cdn === SwitchEnum.yes"
+                  v-if="
+                    [
+                      LiveRoomTypeEnum.tencentcloud_css,
+                      LiveRoomTypeEnum.tencentcloud_css_pk,
+                    ].includes(currentLive?.live_room?.type!)
+                  "
                   class="cdn-ico"
                 >
                   <div class="txt">CDN</div>
@@ -206,9 +216,10 @@ import { fetchLiveBilibiliGetUserRecommend } from '@/api/bilibili';
 import { fetchLiveList } from '@/api/live';
 import { sliderList, URL_QUERY } from '@/constant';
 import { usePull } from '@/hooks/use-pull';
-import { ILive, LiveLineEnum, SwitchEnum } from '@/interface';
+import { ILive, LiveLineEnum } from '@/interface';
 import { routerName } from '@/router';
 import { useAppStore } from '@/store/app';
+import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 
 const router = useRouter();
 const appStore = useAppStore();
@@ -360,7 +371,6 @@ async function getLiveRoomList() {
       childOrderBy: 'desc,asc',
       // status: 0,
       // is_show: 0,
-      // cdn: 0,
       // is_fake: 0,
       // live_room_id: 1,
     });

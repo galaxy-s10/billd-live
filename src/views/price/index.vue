@@ -100,21 +100,114 @@ const currentTab = ref<'single' | 'multi' | 'forever' | string>('multi');
 const tab = ref([
   {
     id: 'single',
-    txt: '单独订阅',
+    txt: '个人订阅',
   },
   {
     id: 'multi',
-    txt: '组合订阅',
+    txt: '企业订阅',
   },
   {
     id: 'forever',
-    txt: '更多订阅',
+    txt: '套餐订阅',
   },
 ]);
 
 const detail = ref({
   single: {
-    slogan: ['支持单独订阅', '欢迎订阅🚀'],
+    slogan: ['一次性源码，适合个人用户', '欢迎订阅🚀'],
+    list: [
+      {
+        color: '#38c0ff',
+        name: 'Web直播前台',
+        desc: '基于Vue3 + WebRTC + Vite6',
+        price: {
+          left: '￥',
+          center: '1999',
+          right: '元',
+        },
+        tip: '包含以下代码仓库：',
+        feat: [
+          {
+            status: 'done',
+            txt: 'billd-live-pro',
+          },
+        ],
+        btn: {
+          type: 'showContact',
+          link: '',
+          txt: '立即咨询',
+        },
+      },
+      {
+        color: '#597ef7',
+        name: 'Web直播后台',
+        desc: '基于Vue3 + NaiveUI + Vite6',
+        price: {
+          left: '￥',
+          center: '1999',
+          right: '元',
+        },
+        tip: '包含以下代码仓库：',
+        feat: [
+          {
+            status: 'done',
+            txt: 'billd-live-admin-pro',
+          },
+        ],
+        btn: {
+          type: 'showContact',
+          link: '',
+          txt: '立即咨询',
+        },
+      },
+      {
+        color: '#30d1aa',
+        name: 'Web直播后端',
+        desc: '基于Node + Koa2 + Ts + Srs',
+        price: {
+          left: '￥',
+          center: '2999',
+          right: '元',
+        },
+        tip: '包含以下代码仓库：',
+        feat: [
+          {
+            status: 'done',
+            txt: 'billd-live-server-pro',
+          },
+        ],
+        btn: {
+          type: 'showContact',
+          link: '',
+          txt: '立即咨询',
+        },
+      },
+      {
+        color: '#ffa940',
+        name: 'App直播客户端',
+        desc: '基于Flutter3 + Dart3 + WebRTC',
+        price: {
+          left: '￥',
+          center: '1999',
+          right: '元',
+        },
+        tip: '包含以下代码仓库：',
+        feat: [
+          {
+            status: 'done',
+            txt: 'billd-live-flutter-pro',
+          },
+        ],
+        btn: {
+          type: 'showContact',
+          link: '',
+          txt: '立即咨询',
+        },
+      },
+    ],
+  },
+  multi: {
+    slogan: ['源码永久更新，适合企业用户', '欢迎订阅🚀'],
     list: [
       {
         color: '#38c0ff',
@@ -206,8 +299,8 @@ const detail = ref({
       },
     ],
   },
-  multi: {
-    slogan: ['组合订阅更优惠！', '欢迎订阅🚀'],
+  forever: {
+    slogan: ['源码永久更新，适合企业用户', '套餐订阅更优惠！🚀'],
     list: [
       {
         color: '#1677ff',
@@ -215,7 +308,7 @@ const detail = ref({
         desc: '网页开直播、看直播',
         price: {
           left: '￥',
-          center: '6098',
+          center: '5999',
           right: '元/永久',
         },
         tip: '包含以下代码仓库：',
@@ -241,7 +334,7 @@ const detail = ref({
         desc: '手机App开直播、看直播',
         price: {
           left: '￥',
-          center: '6098',
+          center: '5999',
           right: '元/永久',
         },
         tip: '包含以下代码仓库：',
@@ -267,7 +360,7 @@ const detail = ref({
         desc: '网页开直播、看直播；<br />直播后台',
         price: {
           left: '￥',
-          center: '8198',
+          center: '7999',
           right: '元/永久',
         },
         tip: '包含以下代码仓库：',
@@ -297,7 +390,7 @@ const detail = ref({
         desc: '手机App开直播、看直播；<br />直播后台',
         price: {
           left: '￥',
-          center: '8198',
+          center: '7999',
           right: '元/永久',
         },
         tip: '包含以下代码仓库：',
@@ -327,8 +420,8 @@ const detail = ref({
         desc: '网页、App开/看直播；<br />直播后台',
         price: {
           left: '￥',
-          center: '10198',
-          right: '元/永久',
+          center: '9999',
+          right: '元',
         },
         tip: '包含以下代码仓库：',
         feat: [
@@ -348,45 +441,6 @@ const detail = ref({
             status: 'done',
             txt: 'billd-live-server-pro',
           },
-        ],
-        btn: {
-          type: 'showContact',
-          link: '',
-          txt: '立即咨询',
-        },
-      },
-    ],
-  },
-  forever: {
-    slogan: ['敬请期待！', '⭐️⭐️⭐️'],
-    list: [
-      {
-        color: '#13c2c2',
-        name: '待上线',
-        desc: '',
-        price: {
-          left: '',
-          center: '',
-          right: '',
-        },
-        tip: '',
-        feat: [
-          // {
-          //   status: 'done',
-          //   txt: 'billd-live-pro',
-          // },
-          // {
-          //   status: 'done',
-          //   txt: 'billd-live-admin-pro',
-          // },
-          // {
-          //   status: 'done',
-          //   txt: 'billd-live-flutter-pro',
-          // },
-          // {
-          //   status: 'done',
-          //   txt: 'billd-live-server-pro',
-          // },
         ],
         btn: {
           type: 'showContact',

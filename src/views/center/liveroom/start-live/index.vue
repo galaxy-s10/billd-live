@@ -159,7 +159,7 @@
               <div class="ipt">
                 <input
                   :value="
-                    currentLiveRoomType === LiveRoomTypeEnum.tencent_css
+                    currentLiveRoomType === LiveRoomTypeEnum.tencentcloud_css
                       ? liveRoomInfo.push_cdn_obs_server
                       : liveRoomInfo.push_obs_server
                   "
@@ -172,7 +172,7 @@
                 class="copy"
                 @click="
                   handleCopy(
-                    currentLiveRoomType === LiveRoomTypeEnum.tencent_css
+                    currentLiveRoomType === LiveRoomTypeEnum.tencentcloud_css
                       ? liveRoomInfo.push_cdn_obs_server!
                       : liveRoomInfo.push_obs_server!
                   )
@@ -186,7 +186,7 @@
               <div class="ipt">
                 <input
                   :value="
-                    currentLiveRoomType === LiveRoomTypeEnum.tencent_css
+                    currentLiveRoomType === LiveRoomTypeEnum.tencentcloud_css
                       ? liveRoomInfo.push_cdn_obs_stream_key
                       : liveRoomInfo.push_obs_stream_key
                   "
@@ -203,7 +203,7 @@
                 class="copy"
                 @click="
                   handleCopy(
-                    currentLiveRoomType === LiveRoomTypeEnum.tencent_css
+                    currentLiveRoomType === LiveRoomTypeEnum.tencentcloud_css
                       ? liveRoomInfo.push_cdn_obs_stream_key!
                       : liveRoomInfo.push_obs_stream_key!
                   )
@@ -219,7 +219,7 @@
               <div class="ipt">
                 <input
                   :value="
-                    currentLiveRoomType === LiveRoomTypeEnum.tencent_css
+                    currentLiveRoomType === LiveRoomTypeEnum.tencentcloud_css
                       ? liveRoomInfo.push_cdn_rtmp_url
                       : liveRoomInfo.push_rtmp_url
                   "
@@ -232,7 +232,7 @@
                 class="copy"
                 @click="
                   handleCopy(
-                    currentLiveRoomType === LiveRoomTypeEnum.tencent_css
+                    currentLiveRoomType === LiveRoomTypeEnum.tencentcloud_css
                       ? liveRoomInfo.push_cdn_rtmp_url!
                       : liveRoomInfo.push_rtmp_url!
                   )
@@ -353,7 +353,7 @@ const liveRoomTypeList = ref([
   },
   {
     label: 'layout.tencentCssLive',
-    value: LiveRoomTypeEnum.tencent_css,
+    value: LiveRoomTypeEnum.tencentcloud_css,
   },
   {
     label: 'layout.pkLive',
@@ -361,7 +361,7 @@ const liveRoomTypeList = ref([
   },
   {
     label: 'layout.tencentCssPkLive',
-    value: LiveRoomTypeEnum.tencent_css_pk,
+    value: LiveRoomTypeEnum.tencentcloud_css_pk,
   },
   {
     label: 'layout.msrLive',
@@ -506,8 +506,8 @@ function handleCurrentLiveRoomType(val) {
         LiveRoomTypeEnum.forward_kuaishou,
         LiveRoomTypeEnum.forward_xiaohongshu,
         LiveRoomTypeEnum.msr,
-        LiveRoomTypeEnum.tencent_css,
-        LiveRoomTypeEnum.tencent_css_pk,
+        LiveRoomTypeEnum.tencentcloud_css,
+        LiveRoomTypeEnum.tencentcloud_css_pk,
       ].includes(val)
     ) {
       window.$message.error('权限不足！');
