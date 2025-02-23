@@ -327,6 +327,7 @@ export interface IGlobalMsg {
   updated_at?: string;
   deleted_at?: string;
 }
+
 export interface ISigninStatistics {
   id?: number;
   user_id?: number;

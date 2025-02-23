@@ -1,20 +1,16 @@
-export const prodDomain = 'hsslive.cn';
-export const headTitle = prodDomain.split('.')[0];
+export const PROD_DOMAIN = 'hsslive.cn';
 
 export const QQ_CLIENT_ID = 101958191;
-export const QQ_OAUTH_URL =
-  'https://graph.qq.com/oauth2.0/authorize?response_type=code&';
+export const QQ_REDIRECT_URI = `https://live.${PROD_DOMAIN}/oauth/qq_login`;
 
-export const GITHUB_CLIENT_ID = '8c2c07b574ae70ecfa9d';
-export const GITHUB_OAUTH_URL = 'https://github.com/login/oauth/authorize?';
+export const WECHAT_GZH_APPID = ''; // 公众号
 
-export const WECHAT_GZH_APPID = `wxbd243c01ac5ad1b7`; // 公众号
-export const WECHAT_GZH_OAUTH_URL = `https://open.weixin.qq.com/connect/oauth2/authorize?`;
+export const WECHAT_REDIRECT_URI = `https://live.${PROD_DOMAIN}/oauth/wechat_login`;
 
 export const TENCENTCLOUD_APPID = 1305322458; // 腾讯云APPID
 export const TENCENTCLOUD_COS = {
   [`res-${TENCENTCLOUD_APPID}`]: {
-    url: `https://tencentcos-res.${prodDomain}`,
+    url: `https://tencentcos-res.${PROD_DOMAIN}`,
     Bucket: `res-${TENCENTCLOUD_APPID}`,
     Region: 'ap-guangzhou',
     StorageClass: 'STANDARD',
@@ -29,8 +25,8 @@ export const TENCENTCLOUD_CHAT_SDK_APPID = 1400815419; // 腾讯云即时通讯I
 
 export const QINIU_KODO = {
   hssblog: {
-    domain: `resource.${prodDomain}`,
-    url: `https://resource.${prodDomain}`,
+    domain: `resource.${PROD_DOMAIN}`,
+    url: `https://resource.${PROD_DOMAIN}`,
     bucket: 'hssblog',
     prefix: {
       'billd-live/image/': 'billd-live/image/',
@@ -39,8 +35,8 @@ export const QINIU_KODO = {
     },
   },
   'hss-backup': {
-    domain: `backup.${prodDomain}`,
-    url: `http://backup.${prodDomain}`,
+    domain: `backup.${PROD_DOMAIN}`,
+    url: `http://backup.${PROD_DOMAIN}`,
     bucket: 'hss-backup',
     prefix: {
       'billd-live/mysql/': 'billd-live/mysql/',
@@ -48,15 +44,18 @@ export const QINIU_KODO = {
   },
 };
 
+export const COOKIE_DOMAIN =
+  process.env.NODE_ENV === 'development' ? undefined : `.${PROD_DOMAIN}`;
+
 export const WEBSOCKET_URL =
   process.env.NODE_ENV === 'development'
     ? `ws://localhost:4300` // `ws://localhost:4300`
-    : `wss://srs-pull.${prodDomain}`;
+    : `wss://srs-pull.${PROD_DOMAIN}`;
 
 export const AXIOS_BASEURL =
   process.env.NODE_ENV === 'development'
     ? `/api`
-    : `https://live-api.${prodDomain}`;
+    : `https://live-api.${PROD_DOMAIN}`;
 
 export enum REDIS_DATABASE {
   blog,

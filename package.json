@@ -22,6 +22,7 @@
   "author": "shuisheng <2274751790@qq.com>",
   "type": "module",
   "scripts": {
+    "build": "vite build",
     "build:beta": "vite build",
     "build:prod": "vite build",
     "copy": "ts-node ./deploy/handleGiteeJenkins.mjs",
@@ -33,6 +34,7 @@
     "lint:fix": "eslint . --config ./eslint.config.js --cache --fix",
     "preview": "vite preview",
     "release": "standard-version",
+    "sync-doc": "ts-node ./deploy/handleSyncDoc.mjs",
     "sync-repo": "ts-node ./deploy/handleSyncPublic.mjs"
   },
   "config": {},

@@ -29,29 +29,7 @@
 
 ## 📢 省流 📢
 
-2025 年起，billd-live 项目的所有仓库将进入 dev 状态，如果你需要获取线上生产环境的代码，有以下两种方式：
-
-1. 请花些时间查看之前提交的代码：[https://github.com/galaxy-s10/billd-live/commits/master/](https://github.com/galaxy-s10/billd-live/commits/master/)。
-2. 订阅 [billd-project](https://github.com/billd-project)，价格：[https://live.hsslive.cn/price](https://live.hsslive.cn/price)
-
-历史原因：
-
-- 只有作者一人开发和维护。项目初期时，希望大家能参与进来：[README.md](https://github.com/galaxy-s10/billd-live/blob/be67e1c947c3a899a87fd65aa59e4ac60b7ee6c4/README.md)，但截止到 2025 年 01 月 07 日，也就是差不多两年过去了，billd-live 项目（`billd-live`、`billd-live-admin`、`billd-live-server`、`billd-live-flutter`等），还是只有作者一人开发和维护。
-- billd-live 项目初心只是为了记录自己的学习音视频、直播等相关内容的过程（也就是写的东西是给自己看的，不是给别人看的），[README.md](https://github.com/galaxy-s10/billd-live/blob/63927bdd99a50b391bacd704130f39cc0b5b432e/README.md#%E7%AE%80%E4%BB%8B)
-- ~~项目发展至今，遇到很多形形色色的人，总结来说，95%的人都是直播方面的小白，5%的是接触过直播；这 95%里面的人里面，大概有 10%是小老板/外包之类的，剩下的 90%就基本都是技术开发了，这 90%的技术开发里，~~ 虽然 bill-live 项目收获到了很多 star，但这其中绝大多数来自于看个乐，真正将项目 clone 下来运行的寥寥无几。
-- 很久之前写过一篇文章：[前端之被包养就不要谈独立人格](https://www.hsslive.cn/article/139)。有能力你可以自己写，不用别人的。别人的免费开源的东西，人家有个 readme 或者文档已经是仁尽义尽。
-
-如果你希望快速学到 billd-live 项目的核心直播技术栈：
-
-- billd-live 付费课：[https://www.hsslive.cn/article/151](https://www.hsslive.cn/article/151)，**送 4 小时一对一解答**。
-- github 或者网上搜 webrtc 直播相关字眼，没有多少相对完善的项目/教程。
-- 总之个人认为，我这个付费课就是最优解。（缺点只有一个：要花钱。）
-
-致敬开源：
-
-billd-live 自 2023 年 3 月开源以来，仅有作者（也就是我）一个人维护，深知做开源的难处。
-
-如果你 github 单个仓库拿到 **`128+star`**（并且你是该仓库作者），我个人认为这是非常不容易的，因为这代表了你的开源被很多人关注或认同，如果此时你正在了解直播相关方面的内容，我录制的 [**billd-live 付费课**](https://www.hsslive.cn/article/151) 或许会对你有一定帮助，它将对你进行**免费**，作为我认同你在开源方面做的贡献，以及我力所能及的对你的回馈，希望你能不忘初心，砥砺前行~
+2025 年起，billd-live 项目的所有仓库将进入 dev 状态：[history-reason.md](docs/history-reason.md)
 
 ## 简介
 
@@ -96,25 +74,6 @@ billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://
 - [x] 接入腾讯云（云直播）
 - [ ] 接入腾讯云（实时音视频 TRTC）
 - [x] 私有化部署
-
-## 技术栈
-
-- 前端相关：[Vue3](https://vuejs.org) 以及相关技术栈、`Typescript`、`WebRTC`、`WebCodecs`、`Web Workder`、`Web Audio`、`Canvas`
-- 后端相关：[Nodejs](https://nodejs.org) 以及相关技术栈、`Koa2`、`Sequelize`、`Mysql`、`Redis`、`Socket.io`
-- 流媒体服务器相关：[SRS](https://ossrs.net)、 [FFmpeg](https://ffmpeg.org)、[Coturn](https://github.com/coturn/coturn)
-- Docker 相关：[Docker](https://www.docker.com)
-
-## 私有化部署
-
-[https://live.hsslive.cn/privatizationDeployment](https://live.hsslive.cn/privatizationDeployment)
-
-## 接口文档
-
-Apifox：[https://apifox.com/apidoc/shared-c7556b54-17b2-494e-a039-572d83f103ed](https://apifox.com/apidoc/shared-c7556b54-17b2-494e-a039-572d83f103ed)
-
-## 客户端下载
-
-官网下载：[https://live.hsslive.cn/download/live](https://live.hsslive.cn/download/live)
 
 ## 预览
 
@@ -166,9 +125,11 @@ Apifox：[https://apifox.com/apidoc/shared-c7556b54-17b2-494e-a039-572d83f103ed]
   style="height:500px"
 />
 
+### 后台（web）
+
 ### 安卓端（flutter）
 
--
+- 首页
 
 <img
   src="https://resource.hsslive.cn/billd-live/image/38a0fae4c5104913ca0b7617ca58b518.webp" 
@@ -211,121 +172,59 @@ Apifox：[https://apifox.com/apidoc/shared-c7556b54-17b2-494e-a039-572d83f103ed]
   style="width:300px"
 />
 
-## 相关视频
+## 技术栈
 
-b 站：[从零搭建迷你版 b 站 web 直播间合集](https://space.bilibili.com/381307133/lists/1458070?type=season)
+- 前端相关：[Vue3](https://vuejs.org) 以及相关技术栈、`Typescript`、`WebRTC`、`WebCodecs`、`Web Workder`、`Web Audio`、`Canvas`
+- 后端相关：[Nodejs](https://nodejs.org) 以及相关技术栈、`Koa2`、`Typescript`、`Sequelize`、`Mysql`、`Redis`、`Socket.io`
+- 客户端相关：[Flutter3](https://flutter.dev)以及相关技术栈、`getx`、`WebRTC`
+- 流媒体服务器相关：[SRS](https://ossrs.net)、 [FFmpeg](https://ffmpeg.org)、[Coturn](https://github.com/coturn/coturn)
+- Docker 相关：[Docker](https://www.docker.com)
 
 ## 本地启动
 
-### billd-live
+- [x] billd-live(pro) 查看 [start-client.md](docs/start-client.md)
 
-- 安装依赖（建议使用 node 版本：v18.19.0）
+- [x] billd-live-server(pro) 查看 [start-server.md](docs/start-server.md)
 
-```bash
-pnpm i
-```
+## 性能测试
 
-> 更新 billd 相关依赖：
-
-```bash
-pnpm i billd-utils@latest billd-scss@latest billd-deploy@latest billd-html-webpack-plugin@latest
-```
-
-- 运行
-
-```bash
-npm run dev
-```
-
-- 打包
-
-```bash
-npm run build
-```
-
-### billd-live-server
-
-- 安装依赖（建议使用 node 版本：v18.19.0）
-
-```bash
-pnpm i
-```
-
-> 更新 billd 相关依赖：
-
-```bash
-pnpm i billd-utils@latest billd-scss@latest billd-html-webpack-plugin@latest
-```
-
-> 本地必须要有 docker、ffmpeg 环境！
->
-> 项目启动后，会在项目的 src/secret/目录下生成 secret.ts 文件，请填写里面的信息，MYSQL_CONFIG、REDIS_CONFIG、RABBITMQ_CONFIG、SRS_CONFIG 必填！
-
-```bash
-# 1.初始化docker容器
-pnpm run docker:dev
-
-# 2.初始化数据库（可选，只需要执行一次）
-pnpm run mysql:dev
-
-# 3.运行（4300端口）
-pnpm run dev
-```
+查看 [benchmarking.md](docs/benchmarking.md)
 
 ## 常见问题
 
-[https://live.hsslive.cn/doc/faq](https://live.hsslive.cn/doc/faq)
+查看 [faq.md](docs/faq.md)
+
+查看 [https://live.hsslive.cn/doc/faq](https://live.hsslive.cn/doc/faq)
+
+## 环境配置
+
+查看 [environment.md](docs/environment.md)
+
+## 相关视频
+
+查看 [从零搭建迷你版 b 站 web 直播间合集](https://space.bilibili.com/381307133/lists/1458070?type=season)
+
+## 接口文档
+
+查看 [https://apifox.com/apidoc/shared-c7556b54-17b2-494e-a039-572d83f103ed](https://apifox.com/apidoc/shared-c7556b54-17b2-494e-a039-572d83f103ed)
 
 ## 技术支持
 
-[https://live.hsslive.cn/support](https://live.hsslive.cn/support)
+查看 [https://live.hsslive.cn/support](https://live.hsslive.cn/support)
+
+## 客户端下载
+
+查看 [https://live.hsslive.cn/download](https://live.hsslive.cn/download)
+
+## 私有化部署
+
+查看 [https://live.hsslive.cn/privatizationDeployment](https://live.hsslive.cn/privatizationDeployment)
 
 ## 兼容性
 
 - [x] iphone 14
 - [x] 三星 s10
 - [x] ipad air 3
-
-## 环境配置
-
-### 本地开发环境
-
-> 配置：MacBook Pro 2023 Apple M3 Max，14 核 CPU，36G 内存
-
-- 操作系统：mac os 14.1
-- node 版本：v18.19.0
-- pnpm 版本：8.6.3
-- docker 版本：24.0.5, build ced0996
-- mysql 版本：基于 docker，镜像：mysql:8.0
-- redis 版本：基于 docker，镜像：redis:7.0
-- srs 版本：基于 docker，镜像：registry.cn-hangzhou.aliyuncs.com/ossrs/srs:5.0.170
-- ffmpeg 版本：6.1.1
-
-### 构建/托管服务器环境
-
-> 配置：4 核 CPU，4G 内存，8M 峰值带宽（广州）
-
-- 操作系统：CentOS Linux release 8.2.2004
-- nginx 版本：1.22.1
-- node 版本：v16.19.1
-- pnpm 版本：8.6.3
-- docker 版本：23.0.1, build a5ee5b1
-- mysql 版本：基于 docker，镜像：mysql:8.0
-- redis 版本：基于 docker，镜像：redis:7.0
-
-### 流媒体服务器环境
-
-> ~~配置：2 核 CPU，2G 内存，30M 峰值带宽（香港）~~，2G 内存也能跑，但偶尔会占满内存导致服务器卡死。
->
-> 配置：2 核 CPU，4G 内存，30M 峰值带宽（香港）
-
-- 操作系统：Alibaba Cloud Linux release 3 (Soaring Falcon)
-- node 版本：v16.20.0
-- pnpm 版本：8.6.3
-- pm2 版本：5.3.0
-- docker 版本：24.0.2, build cb74dfc
-- srs 版本：基于 docker，镜像：registry.cn-hangzhou.aliyuncs.com/ossrs/srs:5.0.170
-- ffmpeg 版本：6.0
 
 ## 贡献者
 

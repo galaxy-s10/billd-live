@@ -541,18 +541,6 @@ const resourceList = ref([
     label: 'billd-live-react-native',
     url: 'https://github.com/galaxy-s10/billd-live-react-native',
   },
-  {
-    label: 'billd-desk',
-    url: 'https://github.com/galaxy-s10/billd-desk',
-  },
-  {
-    label: 'billd-desk-electron',
-    url: 'https://github.com/galaxy-s10/billd-desk-electron',
-  },
-  {
-    label: 'billd-desk-flutter',
-    url: 'https://github.com/galaxy-s10/billd-desk-flutter',
-  },
 ]);
 
 const plugins = ref([

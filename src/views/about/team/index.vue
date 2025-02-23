@@ -136,7 +136,6 @@ import { ref } from 'vue';
 import { PROJECT_NAME, URL_QUERY } from '@/constant';
 import { GoodsTypeEnum } from '@/interface';
 import router, { routerName } from '@/router';
-import { prodDomain } from '@/spec-config';
 
 const list = ref([
   {
@@ -160,7 +159,7 @@ const list = ref([
       },
     ],
     social: [{ github: 'https://www.github.com/galaxy-s10' }],
-    website: `https://www.${prodDomain}`,
+    website: `https://www.hsslive.cn`,
   },
 ]);
 </script>
