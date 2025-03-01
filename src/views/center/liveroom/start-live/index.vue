@@ -533,10 +533,9 @@ async function handleStartLive() {
   if (currentLiveRoomType.value !== undefined) {
     const res = await fetchLiveStartLive({
       liveRoomType: currentLiveRoomType.value,
-      areas: selectArea.value.map((v) => v.id!),
+      areaId: selectArea.value[selectArea.value.length - 1].id,
     });
     if (res.code === 200 && res.data.code === 0) {
-      console.log(res.data);
       startLive.value = !startLive.value;
     }
   }

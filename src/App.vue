@@ -117,7 +117,6 @@ async function getAreaList() {
   const res = await fetchAreaGetTreeArea({
     orderName: 'priority',
     orderBy: 'desc',
-    id: 0,
   });
   if (res.code === 200 && res.data) {
     appStore.areaList = res.data;

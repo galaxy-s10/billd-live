@@ -100,7 +100,7 @@
                     [
                       LiveRoomTypeEnum.tencentcloud_css,
                       LiveRoomTypeEnum.tencentcloud_css_pk,
-                    ].includes(currentLive?.live_room?.type!)
+                    ].includes(item.live_room?.type!)
                   "
                   class="cdn-ico"
                 >

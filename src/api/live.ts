@@ -22,7 +22,7 @@ export function fetchLiveLiveRoomIsLive(liveRoomId: number) {
 
 export function fetchLiveStartLive(data: {
   liveRoomType: LiveRoomTypeEnum;
-  areas?: number[];
+  areaId?: number;
 }) {
   return request.post(`/live/start_live`, data);
 }

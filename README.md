@@ -186,6 +186,8 @@ billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://
 
 - [x] billd-live-server(pro) 查看 [start-server.md](docs/start-server.md)
 
+- [x] billd-live-flutter(pro) 查看 [start-app.md](docs/start-app.md)
+
 ## 性能测试
 
 查看 [benchmarking.md](docs/benchmarking.md)

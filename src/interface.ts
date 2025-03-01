@@ -1,4 +1,4 @@
-import { ILiveRoom } from '@/types/ILiveRoom';
+import { ILiveRoom, LiveRoomTypeEnum } from '@/types/ILiveRoom';
 import { IUser } from '@/types/IUser';
 
 export interface IBilibiliLiveUserRecommend {
@@ -791,16 +791,14 @@ export interface IPushRes {
 
 export interface ILiveRecord {
   id?: number;
-  /** 直播平台 */
-  platform?: LivePlatformEnum;
-  /** 直播流名称 */
-  stream_name?: string;
-  /** 直播流id */
-  stream_id?: string;
+  /** 直播id */
+  live_id?: number;
   /** 用户id */
   user_id?: number;
   /** 直播间id */
   live_room_id?: number;
+  live_room_type?: LiveRoomTypeEnum;
+  area_id?: number;
   /** 直播时长（单位：秒） */
   duration?: number;
   /** 弹幕数 */
@@ -808,7 +806,7 @@ export interface ILiveRecord {
   /** 观看数 */
   view?: number;
   /** 直播开始时间 */
-  start_time?: string;
+  start_time?: string | number;
   /** 直播结束时间 */
   end_time?: string;
   /** 备注 */

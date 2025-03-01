@@ -25,7 +25,6 @@
     "build": "vite build",
     "build:beta": "vite build",
     "build:prod": "vite build",
-    "copy": "ts-node ./deploy/handleGiteeJenkins.mjs",
     "cz": "cz",
     "deploy:beta": "node ./deploy/index.cjs --beta",
     "deploy:prod": "node ./deploy/index.cjs --prod",
@@ -34,7 +33,9 @@
     "lint:fix": "eslint . --config ./eslint.config.js --cache --fix",
     "preview": "vite preview",
     "release": "standard-version",
+    "sync-codeup": "ts-node ./deploy/handleSyncCodeup.mjs",
     "sync-doc": "ts-node ./deploy/handleSyncDoc.mjs",
+    "sync-gitee": "ts-node ./deploy/handleSyncGitee.mjs",
     "sync-repo": "ts-node ./deploy/handleSyncPublic.mjs"
   },
   "config": {},
