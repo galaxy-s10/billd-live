@@ -36,7 +36,7 @@
     "sync-codeup": "ts-node ./deploy/handleSyncCodeup.mjs",
     "sync-doc": "ts-node ./deploy/handleSyncDoc.mjs",
     "sync-gitee": "ts-node ./deploy/handleSyncGitee.mjs",
-    "sync-repo": "ts-node ./deploy/handleSyncPublic.mjs"
+    "sync-public": "ts-node ./deploy/handleSyncPublic.mjs"
   },
   "config": {},
   "dependencies": {},
