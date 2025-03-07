@@ -35,7 +35,7 @@
           ></Avatar>
         </div>
         <div class="info">
-          <div class="top">{{ liveroom?.name }}</div>
+          <div class="top">{{ liveroom?.title }}</div>
           <div class="bottom">
             <div class="username">{{ liveroom?.users?.[0]?.username }}</div>
             <div class="view"></div>

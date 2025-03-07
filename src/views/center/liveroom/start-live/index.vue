@@ -32,7 +32,7 @@
         ></div>
       </div>
       <div class="name-bar">
-        <div class="name">{{ liveRoomInfo.name }}</div>
+        <div class="name">{{ liveRoomInfo.title }}</div>
       </div>
       <div class="info-bar">
         <div class="item id">
@@ -93,7 +93,7 @@
             必须选择分区才能开播</span
           >
         </div>
-        <div class="title">房间标题：</div>
+        <div class="title">直播间标题：</div>
         <div class="ipt-wrap">
           <div class="ipt">
             <n-input
@@ -329,7 +329,7 @@ import { IArea } from '@/interface';
 import router, { routerName } from '@/router';
 import { useUserStore } from '@/store/user';
 import { ILiveRoom, LiveRoomTypeEnum } from '@/types/ILiveRoom';
-import { getLiveRoomPageUrl } from '@/utils';
+import { getLiveRoomPageUrl, handleAreaInfo } from '@/utils';
 
 const { t } = useI18n();
 
@@ -430,7 +430,7 @@ watch(
     const res = newval?.live_rooms?.[0];
     if (res) {
       liveRoomInfo.value = res;
-      title.value = res.name || '';
+      title.value = res.title || '';
       noticeMsg.value = res.notice_msg || '';
       coverImg.value = res.cover_img || '';
       initStartLiveInfo();
@@ -532,8 +532,12 @@ async function handleStartLive() {
   }
   if (currentLiveRoomType.value !== undefined) {
     const res = await fetchLiveStartLive({
-      liveRoomType: currentLiveRoomType.value,
-      areaId: selectArea.value[selectArea.value.length - 1].id,
+      live_room_type: currentLiveRoomType.value,
+      area_id: handleAreaInfo(selectArea.value)?.[selectArea.value.length - 1]
+        ?.id,
+      area_name: handleAreaInfo(selectArea.value)
+        ?.map((v) => v.name)
+        .join(' · '),
     });
     if (res.code === 200 && res.data.code === 0) {
       startLive.value = !startLive.value;
@@ -552,7 +556,7 @@ async function handleUpdateMyLiveRoomTitle() {
     return;
   }
   const res = await fetchUpdateMyLiveRoom({
-    name: title.value,
+    title: title.value,
   });
   if (res.code === 200) {
     window.$message.success('修改成功！');

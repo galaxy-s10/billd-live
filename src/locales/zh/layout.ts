@@ -45,6 +45,7 @@ export default nameSpaceWrap('layout', {
   release: '版本发布',
   author: '作者',
 
+  androidApp: '安卓App直播(Flutter)',
   srsLive: '普通直播(SRS)',
   tencentCssLive: '普通直播(CDN)',
   pkLive: '打PK直播(SRS)',

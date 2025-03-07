@@ -35,5 +35,6 @@
     "config/**/*.ts",
     "components.d.ts"
   ], // 仅仅匹配这些文件，除了src以外的文件都不会被匹配
+  "exclude": ["public/TXLivePusher-2.1.1.min.js"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

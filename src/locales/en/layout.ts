@@ -44,6 +44,7 @@ export default nameSpaceWrap('layout', {
   release: 'Version Release',
   author: 'Author',
 
+  androidApp: 'Android App Live',
   srsLive: 'Standard Live(SRS)',
   tencentCssLive: 'Standard Live(CDN)',
   pkLive: 'PK Live(SRS)',

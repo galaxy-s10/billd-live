@@ -33,6 +33,7 @@
     "lint:fix": "eslint . --config ./eslint.config.js --cache --fix",
     "preview": "vite preview",
     "release": "standard-version",
+    "tsc-check": "tsc --noEmit",
     "sync-codeup": "ts-node ./deploy/handleSyncCodeup.mjs",
     "sync-doc": "ts-node ./deploy/handleSyncDoc.mjs",
     "sync-gitee": "ts-node ./deploy/handleSyncGitee.mjs",

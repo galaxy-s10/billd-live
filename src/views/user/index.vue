@@ -43,7 +43,7 @@
             {{ getLiveRoomPageUrl(userInfo?.live_rooms?.[0]?.id!) }}
           </a>
         </div>
-        <div>直播间名称：{{ userInfo?.live_rooms?.[0]?.name }}</div>
+        <div>直播间标题：{{ userInfo?.live_rooms?.[0]?.title }}</div>
         <div>
           直播间简介：{{ userInfo?.live_rooms?.[0]?.desc || '暂无简介' }}
         </div>

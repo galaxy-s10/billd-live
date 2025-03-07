@@ -9,7 +9,7 @@
           class="item top"
         >
           <div class="start-time">{{ item.start_time }}</div>
-          <div class="area-id">{{ item.area_id }}</div>
+          <div class="area-name">{{ item.area_name }}</div>
           <div class="duration">{{ item.duration }}</div>
           <div class="view">{{ item.view }}</div>
           <div class="danmu">{{ item.danmu }}</div>
@@ -23,7 +23,9 @@
           class="item"
         >
           <div class="start-time">{{ item.start_time }}</div>
-          <div class="area-id">{{ item.area_id }}</div>
+          <div class="area-name">
+            <span v-if="item.area_name">{{ item.area_name }}</span>
+          </div>
           <div class="duration">{{ convertToTime(item.duration || 0) }}</div>
           <div class="view">{{ item.view }}</div>
           <div class="danmu">{{ item.danmu }}</div>
@@ -68,7 +70,7 @@ const pageParams = ref({
 const column = [
   {
     start_time: '开播时间',
-    area_id: '直播分区',
+    area_name: '直播分区',
     end_time: '下播时间',
     duration: '直播时长',
     view: '观看次数',
@@ -81,6 +83,18 @@ const list = ref<ILiveRecord[]>([]);
 onMounted(() => {
   getList();
 });
+
+// function handleAreaName(item) {
+//   const res = findDataById({
+//     rows: appStore.flatAreaList,
+//     targetId: item.area_id,
+//   });
+//   if (res.parent) {
+//     return `${res.parent.name} · ${res.target.name}`;
+//   } else {
+//     return `${res.target.name}`;
+//   }
+// }
 
 async function handleUpdatePage(v) {
   params.value.nowPage = v;
@@ -158,6 +172,11 @@ async function getList() {
 
         .start-time {
           width: 200px;
+          text-align: center;
+        }
+
+        .area-name {
+          width: 180px;
           text-align: center;
         }
         .end-time {

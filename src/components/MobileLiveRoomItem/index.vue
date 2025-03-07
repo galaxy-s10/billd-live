@@ -22,7 +22,7 @@
         <div class="txt">CDN</div>
       </div>
       <div class="txt">
-        {{ liveroom?.name }}
+        {{ liveroom?.title }}
       </div>
     </div>
     <div class="desc">

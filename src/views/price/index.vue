@@ -91,13 +91,20 @@ import { openToTarget } from 'billd-utils';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
+import { COMMON_URL } from '@/constant';
 import { routerName } from '@/router';
 
 const router = useRouter();
 const showContach = ref(false);
-const currentTab = ref<'single' | 'multi' | 'forever' | string>('multi');
+const currentTab = ref<'course' | 'single' | 'multi' | 'forever' | string>(
+  'multi'
+);
 
 const tab = ref([
+  {
+    id: 'course',
+    txt: '直播课程',
+  },
   {
     id: 'single',
     txt: '个人订阅',
@@ -113,6 +120,37 @@ const tab = ref([
 ]);
 
 const detail = ref({
+  course: {
+    slogan: ['billd-live付费课', '火热进行中⚡️'],
+    list: [
+      {
+        color: '#597ef7',
+        name: '视频课程',
+        desc: 'Vue3 + WebRTC + SRS<br />讲解直播核心代码、流程、思路',
+        price: {
+          left: '￥',
+          center: '399',
+          right: '元',
+        },
+        tip: '包含以下代码仓库：',
+        feat: [
+          {
+            status: 'done',
+            txt: 'billd-live-class',
+          },
+          {
+            status: 'done',
+            txt: 'billd-live-server-class',
+          },
+        ],
+        btn: {
+          type: 'link',
+          link: COMMON_URL.payCoursesArticle,
+          txt: '查看详情',
+        },
+      },
+    ],
+  },
   single: {
     slogan: ['一次性源码，适合个人用户', '欢迎订阅🚀'],
     list: [
@@ -163,7 +201,7 @@ const detail = ref({
       {
         color: '#30d1aa',
         name: 'Web直播后端',
-        desc: '基于Node + Koa2 + Ts + Srs',
+        desc: '基于Node + Koa2 + Ts + SRS',
         price: {
           left: '￥',
           center: '2999',
@@ -256,7 +294,7 @@ const detail = ref({
       {
         color: '#30d1aa',
         name: 'Web直播后端',
-        desc: '基于Node + Koa2 + Ts + Srs',
+        desc: '基于Node + Koa2 + Ts + SRS',
         price: {
           left: '￥',
           center: '3999',
@@ -497,7 +535,7 @@ function handleClick(item) {
     justify-content: center;
     margin: 0 auto;
     padding: 8px 0;
-    width: 350px;
+    width: 450px;
     border-radius: 40px;
     background: white;
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);

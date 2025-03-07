@@ -13,7 +13,7 @@
           全部
         </div>
         <span
-          v-for="(item, index) in appStore.areaList.find(
+          v-for="(item, index) in appStore.treeAreaList.find(
             (v) => v.id === pAreaId
           )?.children"
           :key="index"

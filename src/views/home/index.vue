@@ -118,7 +118,7 @@
                 v-if="item.live_room?.id === currentLive?.live_room?.id"
                 class="triangle"
               ></div>
-              <div class="txt">{{ item.live_room?.name }}</div>
+              <div class="txt">{{ item.live_room?.title }}</div>
             </div>
           </div>
           <div
@@ -367,7 +367,7 @@ async function getLiveRoomList() {
     const res = await fetchLiveList({
       // orderName: 'created_at',
       // orderBy: 'desc',
-      childOrderName: 'priority,name',
+      childOrderName: 'priority,title',
       childOrderBy: 'desc,asc',
       // status: 0,
       // is_show: 0,

@@ -23,7 +23,7 @@ import { isIPad, isMobile } from 'billd-utils';
 import { GlobalThemeOverrides, NConfigProvider } from 'naive-ui';
 import { onMounted } from 'vue';
 
-import { fetchAreaGetTreeArea } from '@/api/area';
+import { fetchAreaGetAllArea } from '@/api/area';
 import { fetchGlobalMsgGlobal } from '@/api/globalMsg';
 import NaiveMessage from '@/components/NaiveMessage/index.vue';
 import NaiveModal from '@/components/NaiveModal/index.vue';
@@ -37,7 +37,7 @@ import { getLastBuildDate, setLastBuildDate } from '@/utils/localStorage/app';
 import { getToken } from '@/utils/localStorage/user';
 
 import { GlobalMsgTypeEnum, SwitchEnum } from './interface';
-import { flattenTree } from './utils';
+import { arrayToTree } from './utils';
 
 // const { checkUpdate } = useCheckUpdate();
 const appStore = useAppStore();
@@ -114,17 +114,18 @@ async function handleGlobalMsgMyList() {
 }
 
 async function getAreaList() {
-  const res = await fetchAreaGetTreeArea({
+  const res = await fetchAreaGetAllArea({
     orderName: 'priority',
     orderBy: 'desc',
   });
   if (res.code === 200 && res.data) {
-    appStore.areaList = res.data;
-    const flatdata: any[] = [];
-    res.data.forEach((item) => {
-      flatdata.push(...flattenTree(item, 'children'));
+    appStore.flatAreaList = res.data;
+    appStore.treeAreaList = arrayToTree({
+      arr: res.data,
+      idField: 'id',
+      pidField: 'p_id',
+      childrenField: 'children',
     });
-    appStore.flatAreaList = flatdata;
   }
 }
 

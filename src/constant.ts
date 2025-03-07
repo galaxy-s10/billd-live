@@ -47,7 +47,7 @@ export const COMMON_URL = {
   download: {
     live: {
       flutter: {
-        android: `https://github.com/galaxy-s10/billd-live-flutter/releases/tag/v0.0.4`,
+        android: `https://tencentcos-res.hsslive.cn/billd-live-flutter/app-release.apk`,
         github: 'https://github.com/galaxy-s10/billd-live-flutter',
       },
       reactNative: {

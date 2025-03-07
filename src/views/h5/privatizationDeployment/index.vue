@@ -88,13 +88,21 @@ import { openToTarget } from 'billd-utils';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
+import { COMMON_URL } from '@/constant';
 import { routerName } from '@/router';
 
 const router = useRouter();
 const showContach = ref(false);
-const currentTab = ref<'single' | 'multi' | 'forever' | string>('multi');
+
+const currentTab = ref<'course' | 'single' | 'multi' | 'forever' | string>(
+  'single'
+);
 
 const tab = ref([
+  {
+    id: 'course',
+    txt: '视频课',
+  },
   {
     id: 'single',
     txt: '开源版',
@@ -110,6 +118,37 @@ const tab = ref([
 ]);
 
 const detail = ref({
+  course: {
+    slogan: ['billd-live付费课', '火热进行中⚡️'],
+    list: [
+      {
+        color: '#597ef7',
+        name: '视频课程',
+        desc: 'Vue3 + WebRTC + SRS<br />讲解直播核心代码、流程、思路',
+        price: {
+          left: '￥',
+          center: '399',
+          right: '元',
+        },
+        tip: '包含以下代码仓库：',
+        feat: [
+          {
+            status: 'done',
+            txt: 'billd-live-class',
+          },
+          {
+            status: 'done',
+            txt: 'billd-live-server-class',
+          },
+        ],
+        btn: {
+          type: 'link',
+          link: COMMON_URL.payCoursesArticle,
+          txt: '查看详情',
+        },
+      },
+    ],
+  },
   single: {
     slogan: ['欢迎部署billd直播~'],
     list: [
@@ -270,7 +309,7 @@ const detail = ref({
         desc: '网页开直播、看直播',
         price: {
           left: '￥',
-          center: '7999',
+          center: '8999',
           right: '元',
         },
         tip: '包含以下代码仓库：',
@@ -296,7 +335,7 @@ const detail = ref({
         desc: '手机App开直播、看直播',
         price: {
           left: '￥',
-          center: '7999',
+          center: '8999',
           right: '元',
         },
         tip: '包含以下代码仓库：',
@@ -322,7 +361,7 @@ const detail = ref({
         desc: '网页开直播、看直播；<br />直播后台',
         price: {
           left: '￥',
-          center: '9999',
+          center: '11999',
           right: '元',
         },
         tip: '包含以下代码仓库：',
@@ -352,7 +391,7 @@ const detail = ref({
         desc: '手机App开直播、看直播；<br />直播后台',
         price: {
           left: '￥',
-          center: '9999',
+          center: '11999',
           right: '元',
         },
         tip: '包含以下代码仓库：',
@@ -382,7 +421,7 @@ const detail = ref({
         desc: '网页、App开/看直播；<br />直播后台',
         price: {
           left: '￥',
-          center: '12999',
+          center: '13999',
           right: '元',
         },
         tip: '包含以下代码仓库：',
@@ -443,7 +482,7 @@ const detail = ref({
         desc: '处理技术相关问题服务',
         price: {
           left: '￥',
-          center: '200',
+          center: '300',
           right: '元/小时',
         },
         tip: '',
@@ -488,6 +527,7 @@ const detail = ref({
     ],
   },
 });
+
 function handleClick(item) {
   if (item.type === 'link') {
     openToTarget(item.link);
@@ -514,6 +554,7 @@ function handleClick(item) {
 }
 .privatizationDeployment-wrap {
   background-color: #f4f8ff;
+  min-height: 100vh;
   .title {
     display: flex;
     flex-direction: column;
@@ -538,11 +579,10 @@ function handleClick(item) {
 
     user-select: none;
     .item {
-      padding: 4px 25px;
+      padding: 4px 18px;
       border-radius: 40px;
       color: #686e88;
-      font-weight: 700;
-      font-size: 16px;
+      font-size: 13px;
       cursor: pointer;
       &.active {
         background-color: $theme-color-gold;

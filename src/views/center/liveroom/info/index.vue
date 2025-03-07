@@ -27,10 +27,14 @@
           {{ liveRoomInfo.id }}
         </a>
       </div>
-      <div class="item">直播间名称：{{ liveRoomInfo.name }}</div>
+      <div class="item">直播间标题：{{ liveRoomInfo.title }}</div>
       <div class="item">直播间简介：{{ liveRoomInfo.desc || '暂无简介' }}</div>
       <div class="item">
-        直播间分区：{{ liveRoomInfo.areas?.[0]?.name || '暂无分区' }}
+        直播间分区：{{
+          handleAreaInfo(liveRoomInfo.areas || [])
+            .map((v) => v.name)
+            .join(' · ')
+        }}
       </div>
       <div class="item">开通时间：{{ liveRoomInfo.created_at }}</div>
     </div>
@@ -46,7 +50,7 @@ import { loginTip } from '@/hooks/use-login';
 import router, { routerName } from '@/router';
 import { useUserStore } from '@/store/user';
 import { ILiveRoom, LiveRoomTypeEnum } from '@/types/ILiveRoom';
-import { getLiveRoomPageUrl } from '@/utils';
+import { getLiveRoomPageUrl, handleAreaInfo } from '@/utils';
 
 const userStore = useUserStore();
 const { userInfo } = toRefs(userStore);

@@ -26,7 +26,7 @@
           </a>
 
           <a
-            v-for="(item, index) in appStore.areaList"
+            v-for="(item, index) in appStore.treeAreaList"
             :key="index"
             class="item"
             :class="{
@@ -216,6 +216,14 @@
           </template>
           <template #list>
             <div class="list">
+              <a
+                class="item"
+                @click.prevent="
+                  openToTarget(COMMON_URL.download.live.flutter.android)
+                "
+              >
+                <div class="txt">{{ t('layout.androidApp') }}</div>
+              </a>
               <a
                 class="item"
                 @click.prevent="handleStartLive(LiveRoomTypeEnum.srs)"

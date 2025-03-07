@@ -9,7 +9,7 @@
       <div class="container">
         <div class="p-area-list">
           <div
-            v-for="item in appStore.areaList"
+            v-for="item in appStore.treeAreaList"
             :key="item.id"
             @click="changePAreaId(item.id)"
           >
@@ -22,11 +22,11 @@
           </div>
         </div>
         <div
-          v-if="appStore.areaList.find((v) => v.id === pAreaId)"
+          v-if="appStore.treeAreaList.find((v) => v.id === pAreaId)"
           class="area-list"
         >
           <span
-            v-for="(item, index) in appStore.areaList.find(
+            v-for="(item, index) in appStore.treeAreaList.find(
               (v) => v.id === pAreaId
             )?.children"
             :key="index"
@@ -89,7 +89,7 @@ function handleConfirm() {
 }
 
 onMounted(() => {
-  pAreaId.value = appStore.areaList[0].id!;
+  pAreaId.value = appStore.treeAreaList[0].id!;
 });
 </script>
 

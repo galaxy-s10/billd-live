@@ -21,8 +21,9 @@ export function fetchLiveLiveRoomIsLive(liveRoomId: number) {
 }
 
 export function fetchLiveStartLive(data: {
-  liveRoomType: LiveRoomTypeEnum;
-  areaId?: number;
+  live_room_type: LiveRoomTypeEnum;
+  area_id?: number;
+  area_name?: string;
 }) {
   return request.post(`/live/start_live`, data);
 }
