@@ -848,3 +848,21 @@ export interface IBlacklist {
   updated_at?: string;
   deleted_at?: string;
 }
+
+export enum ClientEnvEnum {
+  android,
+  ios,
+  ipad,
+  web,
+  web_mobile,
+  web_pc,
+  windows,
+  macos,
+}
+
+export enum ClientAppEnum {
+  billd_live_android_app,
+  billd_live_ios_app,
+  billd_live_web,
+  billd_live_admin,
+}

@@ -1,4 +1,4 @@
-import { GoodsTypeEnum, MediaTypeEnum } from '@/interface';
+import { DanmuMsgTypeEnum, GoodsTypeEnum, MediaTypeEnum } from '@/interface';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 
 export const NODE_ENV = process.env.NODE_ENV;
@@ -280,6 +280,15 @@ export const liveRoomTypeEnumMap = {
   [LiveRoomTypeEnum.forward_huya]: '转推虎牙',
   [LiveRoomTypeEnum.forward_kuaishou]: '转推快手',
   [LiveRoomTypeEnum.forward_xiaohongshu]: '转推小红书',
+};
+
+export const msgTypeMap = {
+  [DanmuMsgTypeEnum.danmu]: '弹幕',
+  [DanmuMsgTypeEnum.otherJoin]: '其他人加入房间',
+  [DanmuMsgTypeEnum.redbag]: '红包',
+  [DanmuMsgTypeEnum.reward]: '打赏',
+  [DanmuMsgTypeEnum.system]: '系统消息',
+  [DanmuMsgTypeEnum.userLeaved]: '用户离开房间',
 };
 
 export const sliderList = [

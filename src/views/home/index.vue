@@ -315,7 +315,7 @@ async function handleBilibilData() {
           id: item.roomid,
           live_room: {
             id: item.roomid,
-            name: item.title,
+            title: item.title,
             cover_img: item.cover,
             users: [{ username: item.uname, avatar: item.user_cover }],
             areas: [{ name: item.area_name }],
