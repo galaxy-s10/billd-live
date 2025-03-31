@@ -53,6 +53,7 @@
           }}
         </div>
         <div>开通时间：{{ userInfo?.live_rooms?.[0]?.created_at }}</div>
+        <div>最近直播：{{ recentlyLive?.created_at || '-' }}</div>
       </div>
     </div>
   </div>
@@ -63,9 +64,11 @@ import { openToTarget } from 'billd-utils';
 import { ref, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import { fetchLiveRecordRecentlyLive } from '@/api/liveRecord';
 import { fetchFindUser } from '@/api/user';
 import { URL_QUERY } from '@/constant';
 import { loginTip } from '@/hooks/use-login';
+import { ILiveRecord } from '@/interface';
 import { routerName } from '@/router';
 import { useUserStore } from '@/store/user';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
@@ -79,14 +82,29 @@ const router = useRouter();
 const userId = ref(-1);
 const userInfo = ref<IUser>();
 const getUserLoading = ref(false);
+const recentlyLive = ref<ILiveRecord>();
 
 watchEffect(() => {
   if (route.params.id) {
     userId.value = Number(route.params.id as string);
     handleUserInfo();
+    getLiveRecordRecentlyLive();
   }
 });
 
+async function getLiveRecordRecentlyLive() {
+  try {
+    getUserLoading.value = true;
+    const res = await fetchLiveRecordRecentlyLive(userId.value || -1);
+    if (res.code === 200) {
+      recentlyLive.value = res.data;
+    }
+  } catch (error) {
+    console.error(error);
+  } finally {
+    getUserLoading.value = false;
+  }
+}
 async function handleUserInfo() {
   try {
     getUserLoading.value = true;

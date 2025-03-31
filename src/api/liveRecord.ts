@@ -6,3 +6,7 @@ export function fetchLiveRecordMyList(params) {
     params,
   });
 }
+
+export function fetchLiveRecordRecentlyLive(userId: number) {
+  return request.get<ILiveRecord>(`/live_record/recently_live/${userId}`);
+}

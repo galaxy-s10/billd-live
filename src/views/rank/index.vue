@@ -55,7 +55,7 @@
             class="wallet"
           >
             <span>{{ t('common.wallet') }}: </span>
-            <span>{{ formatMoney(item.balance) }}￥</span>
+            <span>{{ formatBalance(item.balance) }}￥</span>
           </div>
           <div
             v-if="currRankType === RankTypeEnum.signin"
@@ -95,7 +95,7 @@
               class="wallet"
             >
               <span>{{ t('common.wallet') }}: </span>
-              <span>{{ formatMoney(item.balance) }}￥</span>
+              <span>{{ formatBalance(item.balance) }}￥</span>
             </div>
             <div
               v-if="currRankType === RankTypeEnum.signin"
@@ -141,7 +141,7 @@ import { RankTypeEnum, SwitchEnum } from '@/interface';
 import router, { routerName } from '@/router';
 import { useUserStore } from '@/store/user';
 import { ILiveRoom } from '@/types/ILiveRoom';
-import { formatMoney } from '@/utils';
+import { formatBalance } from '@/utils';
 
 const userStore = useUserStore();
 export interface IRankType {
@@ -257,7 +257,7 @@ const rankList = ref(mockRank);
 function handleJump(item) {
   if (userStore.userInfo?.id === item.id) {
     router.push({
-      name: routerName.my,
+      name: routerName.centerUserInfo,
     });
   } else {
     router.push({

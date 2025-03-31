@@ -27,11 +27,6 @@
 
 </div>
 
-## 🎉🎉🎉
-
-- 2025 年起，billd-live-pro 项目的所有仓库将进入 prod 状态！
-- 2025 年起，billd-live 项目的所有仓库将进入 dev 状态！
-
 ## 简介
 
 billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://live.bilibili.com)功能，即你（房主）可以发布直播，别人进入你的直播间后能看到你的直播内容；而你也可以作为观众，进入别人的直播间看别人的直播内容。
@@ -238,3 +233,11 @@ billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://
       alt="Billd-Live logo"
     />
   </a>
+
+## 🎉🎉🎉
+
+- 2025 年起，billd-live-pro 项目的所有仓库将进入 prod 状态！
+
+## 📢📢📢
+
+- 2025 年起，billd-live 项目的所有仓库将进入 dev 状态！

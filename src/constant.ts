@@ -1,4 +1,11 @@
-import { DanmuMsgTypeEnum, GoodsTypeEnum, MediaTypeEnum } from '@/interface';
+import {
+  ClientAppEnum,
+  ClientEnvEnum,
+  DanmuMsgTypeEnum,
+  GoodsTypeEnum,
+  MediaTypeEnum,
+  WalletRecordEnum,
+} from '@/interface';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
 
 export const NODE_ENV = process.env.NODE_ENV;
@@ -73,41 +80,6 @@ export const COMMON_URL = {
   },
 };
 
-export const DEFAULT_ROLE_INFO = {
-  ALL_ROLE: {
-    id: 1,
-    role_value: 'ALL_ROLE',
-  },
-  ADMIN: {
-    id: 2,
-    role_value: 'ADMIN',
-  },
-  SUPER_ADMIN: {
-    id: 3,
-    role_value: 'SUPER_ADMIN',
-  },
-  LIVE_ADMIN: {
-    id: 4,
-    role_value: 'LIVE_ADMIN',
-  },
-  USER: {
-    id: 5,
-    role_value: 'USER',
-  },
-  VIP_USER: {
-    id: 6,
-    role_value: 'VIP_USER',
-  },
-  SVIP_USER: {
-    id: 7,
-    role_value: 'SVIP_USER',
-  },
-  TOURIST_USER: {
-    id: 8,
-    role_value: 'TOURIST_USER',
-  },
-};
-
 export const DEFAULT_AUTH_INFO = {
   ALL_AUTH: {
     id: 1,
@@ -149,41 +121,72 @@ export const DEFAULT_AUTH_INFO = {
     id: 10,
     auth_value: 'LIVE_PUSH',
   },
-  LIVE_PULL: {
-    id: 11,
-    auth_value: 'LIVE_PULL',
-  },
-  LIVE_PULL_SVIP: {
-    id: 12,
-    auth_value: 'LIVE_PULL_SVIP',
-  },
   LIVE_PUSH_CDN: {
-    id: 13,
+    id: 11,
     auth_value: 'LIVE_PUSH_CDN',
   },
+  LIVE_PULL: {
+    id: 12,
+    auth_value: 'LIVE_PULL',
+  },
   LIVE_PUSH_FORWARD_BILIBILI: {
-    id: 14,
+    id: 13,
     auth_value: 'LIVE_PUSH_FORWARD_BILIBILI',
   },
   LIVE_PUSH_FORWARD_HUYA: {
-    id: 15,
+    id: 14,
     auth_value: 'LIVE_PUSH_FORWARD_HUYA',
   },
   LIVE_PUSH_FORWARD_DOUYU: {
-    id: 16,
+    id: 15,
     auth_value: 'LIVE_PUSH_FORWARD_DOUYU',
   },
   LIVE_PUSH_FORWARD_DOUYIN: {
-    id: 17,
+    id: 16,
     auth_value: 'LIVE_PUSH_FORWARD_DOUYIN',
   },
   LIVE_PUSH_FORWARD_KUAISHOU: {
-    id: 18,
+    id: 17,
     auth_value: 'LIVE_PUSH_FORWARD_KUAISHOU',
   },
   LIVE_PUSH_FORWARD_XIAOHONGSHU: {
-    id: 19,
+    id: 18,
     auth_value: 'LIVE_PUSH_FORWARD_XIAOHONGSHU',
+  },
+};
+
+export const DEFAULT_ROLE_INFO = {
+  ALL_ROLE: {
+    id: 1,
+    role_value: 'ALL_ROLE',
+  },
+  ADMIN: {
+    id: 2,
+    role_value: 'ADMIN',
+  },
+  SUPER_ADMIN: {
+    id: 3,
+    role_value: 'SUPER_ADMIN',
+  },
+  LIVE_ADMIN: {
+    id: 4,
+    role_value: 'LIVE_ADMIN',
+  },
+  USER: {
+    id: 5,
+    role_value: 'USER',
+  },
+  VIP_USER: {
+    id: 6,
+    role_value: 'VIP_USER',
+  },
+  SVIP_USER: {
+    id: 7,
+    role_value: 'SVIP_USER',
+  },
+  TOURIST_USER: {
+    id: 8,
+    role_value: 'TOURIST_USER',
   },
 };
 
@@ -291,6 +294,12 @@ export const msgTypeMap = {
   [DanmuMsgTypeEnum.userLeaved]: '用户离开房间',
 };
 
+export const walletRecordTypeMap = {
+  [WalletRecordEnum.recharge]: '充值',
+  [WalletRecordEnum.reward]: '打赏',
+  [WalletRecordEnum.signin]: '签到',
+};
+
 export const sliderList = [
   {
     img: '',
@@ -298,3 +307,21 @@ export const sliderList = [
     link: '',
   },
 ];
+
+export const clientEnvMap = {
+  [ClientEnvEnum.android]: '安卓端',
+  [ClientEnvEnum.ios]: '苹果端',
+  [ClientEnvEnum.ipad]: 'ipad端',
+  [ClientEnvEnum.macos]: 'mac端',
+  [ClientEnvEnum.web]: '网页端',
+  [ClientEnvEnum.web_mobile]: '移动网页端',
+  [ClientEnvEnum.web_pc]: '电脑网页端',
+  [ClientEnvEnum.windows]: 'win端',
+};
+
+export const clientAppMap = {
+  [ClientAppEnum.billd_live]: 'billd直播前台',
+  [ClientAppEnum.billd_live_admin]: 'billd直播后台',
+  [ClientAppEnum.billd_desk]: 'billd远程前台',
+  [ClientAppEnum.billd_desk_admin]: 'billd远程后台',
+};

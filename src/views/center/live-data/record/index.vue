@@ -36,7 +36,7 @@
         <n-pagination
           v-model:page="params.nowPage"
           :page-size="params.pageSize"
-          :item-count="pageParams.total"
+          :item-count="total"
           @update-page="handleUpdatePage"
         />
       </div>
@@ -63,9 +63,7 @@ const params = ref<{
   orderName: 'start_time',
 });
 
-const pageParams = ref({
-  total: 0,
-});
+const total = ref(0);
 
 const column = [
   {
@@ -106,7 +104,7 @@ async function getList() {
     const res = await fetchLiveRecordMyList(params.value);
     if (res.code === 200) {
       list.value = res.data.rows;
-      pageParams.value.total = res.data.total;
+      total.value = res.data.total;
     }
   } catch (error) {
     console.error(error);

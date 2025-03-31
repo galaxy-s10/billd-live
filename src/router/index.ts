@@ -168,11 +168,6 @@ export const defaultRoutes: RouteRecordRaw[] = [
         component: () => import('@/views/shop/index.vue'),
       },
       {
-        name: routerName.my,
-        path: '/my',
-        component: () => import('@/views/my/index.vue'),
-      },
-      {
         name: routerName.hi,
         path: '/hi',
         component: () => import('@/views/hi/index.vue'),
@@ -279,11 +274,6 @@ export const defaultRoutes: RouteRecordRaw[] = [
         name: routerName.order,
         path: '/order',
         component: () => import('@/views/order/index.vue'),
-      },
-      {
-        name: routerName.wallet,
-        path: '/wallet',
-        component: () => import('@/views/wallet/index.vue'),
       },
       {
         name: routerName.videoTools,

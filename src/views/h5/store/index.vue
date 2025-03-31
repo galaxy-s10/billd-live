@@ -44,7 +44,7 @@
             </div>
             <div class="price-wrap">
               <span class="rmb">￥</span>
-              <span class="price">{{ formatMoney(item.price!, true) }}</span>
+              <span class="price">{{ formatBalance(item.price!, true) }}</span>
               <span class="pay-num">
                 {{ formatPayNum(item.pay_nums!) }}人付款
               </span>
@@ -71,7 +71,7 @@ import QrPayCpt from '@/components/QrPay/index.vue';
 import { URL_QUERY } from '@/constant';
 import { GoodsTypeEnum, IGoods } from '@/interface';
 import router, { routerName } from '@/router';
-import { formatMoney, formatPayNum } from '@/utils';
+import { formatBalance, formatPayNum } from '@/utils';
 
 const route = useRoute();
 const list = ref<IGoods[]>([]);

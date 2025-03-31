@@ -47,10 +47,12 @@ export const QINIU_KODO = {
 export const COOKIE_DOMAIN =
   process.env.NODE_ENV === 'development' ? undefined : `.${PROD_DOMAIN}`;
 
-export const WEBSOCKET_URL =
+export const WEBSOCKET_PROTOCOL =
+  process.env.NODE_ENV === 'development' ? `ws` : `wss`;
+export const WEBSOCKET_HOST =
   process.env.NODE_ENV === 'development'
-    ? `ws://localhost:4300` // `ws://localhost:4300`
-    : `wss://srs-pull.${PROD_DOMAIN}`;
+    ? `localhost:4300`
+    : `live-api.${PROD_DOMAIN}`;
 
 export const AXIOS_BASEURL =
   process.env.NODE_ENV === 'development'

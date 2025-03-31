@@ -55,12 +55,12 @@
             </div>
             <div class="price-wrap">
               <span class="rmb">￥</span>
-              <span class="price">{{ formatMoney(item.price!, true) }}</span>
+              <span class="price">{{ formatBalance(item.price!, true) }}</span>
               <span
                 v-if="item.original_price !== item.price"
                 class="original-price"
               >
-                <del>￥{{ formatMoney(item.original_price!, true) }}</del>
+                <del>￥{{ formatBalance(item.original_price!, true) }}</del>
               </span>
               <span class="pay-num">
                 {{ formatPayNum(item.pay_nums!) }}人付款
@@ -93,7 +93,7 @@ import { fetchGoodsList } from '@/api/goods';
 import { URL_QUERY } from '@/constant';
 import { GoodsTypeEnum, IGoods } from '@/interface';
 import router from '@/router';
-import { formatMoney, formatPayNum } from '@/utils';
+import { formatBalance, formatPayNum } from '@/utils';
 
 const route = useRoute();
 const list = ref<IGoods[]>([]);

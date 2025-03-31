@@ -4,7 +4,7 @@
     :class="{ mobile }"
   >
     <div class="money">
-      {{ t('common.payMoney', { money: formatMoney(props.money!) }) }}
+      {{ t('common.payMoney', { money: formatBalance(props.money!) }) }}
     </div>
     <div
       v-loading="loading"
@@ -85,7 +85,7 @@ import { useI18n } from 'vue-i18n';
 import { fetchAliPay, fetchAliPayStatus } from '@/api/order';
 import { PayStatusEnum } from '@/interface';
 import { useUserStore } from '@/store/user';
-import { formatDownTime, formatMoney } from '@/utils';
+import { formatBalance, formatDownTime } from '@/utils';
 
 const userStore = useUserStore();
 const aliPayBase64 = ref('');

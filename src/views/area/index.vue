@@ -1,3 +1,4 @@
+<!-- eslint-disable camelcase -->
 <template>
   <div class="area-wrap">
     <div class="content-wrap">
@@ -86,20 +87,11 @@ const areaId = ref(0);
 const pAreaId = ref(0);
 
 watch(
-  () => route.params.p_area_id,
-  (newVal) => {
-    if (!newVal) return;
-    pAreaId.value = Number(newVal);
-    liveRoomList.value = [];
-    pageParams.nowPage = 0;
-    getData();
-  }
-);
-watch(
-  () => route.query.area_id,
-  (newVal) => {
-    if (!newVal) return;
-    areaId.value = Number(newVal);
+  [() => route.query.area_id, () => route.params.p_area_id],
+  // eslint-disable-next-line camelcase
+  ([area_id, p_area_id]) => {
+    areaId.value = Number(area_id);
+    pAreaId.value = Number(p_area_id);
     liveRoomList.value = [];
     pageParams.nowPage = 0;
     getData();
@@ -189,6 +181,8 @@ async function getData() {
 
 <style lang="scss" scoped>
 .area-wrap {
+  position: relative;
+  z-index: 1;
   overflow: scroll;
   box-sizing: border-box;
   width: 100vw;
@@ -197,7 +191,7 @@ async function getData() {
   @extend %customScrollbar;
   .content-wrap {
     margin: 20px auto 0;
-    width: $w-1300;
+    width: $w-1400;
     .tag-wrap {
       box-sizing: border-box;
       width: 100%;

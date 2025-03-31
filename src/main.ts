@@ -21,7 +21,7 @@ app.use(i18n);
 app.use(store);
 app.use(router);
 app.use(VueLazyLoad, {
-  preLoad: 3,
+  preLoad: 2,
   error: lazyErrorPng,
   loading: lazyLoadingPng,
   attempt: 2,

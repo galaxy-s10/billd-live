@@ -128,7 +128,7 @@ const detail = ref({
       {
         color: '#597ef7',
         name: '视频课程',
-        desc: 'Vue3 + WebRTC + SRS<br />讲解直播核心代码、流程、思路',
+        desc: 'Vue3 + WebRTC + Node + SRS<br />讲解直播核心代码、流程、思路',
         price: {
           left: '￥',
           center: '399',
@@ -313,7 +313,7 @@ const detail = ref({
         desc: '网页开直播、看直播',
         price: {
           left: '￥',
-          center: '8999',
+          center: '5999',
           right: '元',
         },
         tip: '包含以下代码仓库：',
@@ -339,7 +339,7 @@ const detail = ref({
         desc: '手机App开直播、看直播',
         price: {
           left: '￥',
-          center: '8999',
+          center: '5999',
           right: '元',
         },
         tip: '包含以下代码仓库：',
@@ -365,7 +365,7 @@ const detail = ref({
         desc: '网页开直播、看直播；<br />直播后台',
         price: {
           left: '￥',
-          center: '11999',
+          center: '6999',
           right: '元',
         },
         tip: '包含以下代码仓库：',
@@ -395,7 +395,7 @@ const detail = ref({
         desc: '手机App开直播、看直播；<br />直播后台',
         price: {
           left: '￥',
-          center: '11999',
+          center: '6999',
           right: '元',
         },
         tip: '包含以下代码仓库：',
@@ -425,7 +425,7 @@ const detail = ref({
         desc: '网页、App开/看直播；<br />直播后台',
         price: {
           left: '￥',
-          center: '13999',
+          center: '7999',
           right: '元',
         },
         tip: '包含以下代码仓库：',

@@ -191,7 +191,6 @@ export interface IWsMessage {
   user_agent?: string;
   send_msg_time?: number;
   is_show?: WsMessageIsShowEnum;
-  is_verify?: WsMessageIsVerifyEnum;
   is_bilibili?: WsMessageIsBilibiliEnum;
   remark?: string;
 
@@ -503,6 +502,10 @@ export interface IWalletRecord {
   name?: string;
   amount?: number;
   amount_status?: WalletRecordAmountStatusEnum;
+  client_ip?: string;
+  client_env?: ClientEnvEnum;
+  client_app?: ClientAppEnum;
+  client_app_version?: string;
   remark?: string;
 
   created_at?: string;
@@ -850,19 +853,20 @@ export interface IBlacklist {
 }
 
 export enum ClientEnvEnum {
-  android,
-  ios,
-  ipad,
-  web,
-  web_mobile,
-  web_pc,
-  windows,
-  macos,
+  android = 'android',
+  ios = 'ios',
+  ipad = 'ipad',
+  web = 'web',
+  web_mobile = 'web_mobile',
+  web_pc = 'web_pc',
+  windows = 'windows',
+  macos = 'macos',
+  linux = 'linux',
 }
 
 export enum ClientAppEnum {
-  billd_live_android_app,
-  billd_live_ios_app,
-  billd_live_web,
-  billd_live_admin,
+  billd_live = 'billd_live',
+  billd_live_admin = 'billd_live_admin',
+  billd_desk = 'billd_desk',
+  billd_desk_admin = 'billd_desk_admin',
 }

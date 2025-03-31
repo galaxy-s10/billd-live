@@ -99,7 +99,7 @@ const router = useRouter();
 const showContach = ref(false);
 
 const currentTab = ref<'course' | 'single' | 'multi' | 'forever' | string>(
-  'multi'
+  'single'
 );
 
 const tab = ref([
@@ -128,7 +128,7 @@ const detail = ref({
       {
         color: '#597ef7',
         name: '视频课程',
-        desc: 'Vue3 + WebRTC + SRS<br />讲解直播核心代码、流程、思路',
+        desc: 'Vue3 + WebRTC + Node + SRS<br />讲解直播核心代码、流程、思路',
         price: {
           left: '￥',
           center: '399',
@@ -162,7 +162,7 @@ const detail = ref({
         desc: '基于Vue3 + WebRTC + Vite6',
         price: {
           left: '￥',
-          center: '1999',
+          center: '599',
           right: '元',
         },
         tip: '包含以下代码仓库：',
@@ -184,7 +184,7 @@ const detail = ref({
         desc: '基于Vue3 + NaiveUI + Vite6',
         price: {
           left: '￥',
-          center: '1999',
+          center: '599',
           right: '元',
         },
         tip: '包含以下代码仓库：',
@@ -206,7 +206,7 @@ const detail = ref({
         desc: '基于Node + Koa2 + Ts + SRS',
         price: {
           left: '￥',
-          center: '2999',
+          center: '999',
           right: '元',
         },
         tip: '包含以下代码仓库：',
@@ -228,7 +228,7 @@ const detail = ref({
         desc: '基于Flutter3 + Dart3 + WebRTC',
         price: {
           left: '￥',
-          center: '1999',
+          center: '599',
           right: '元',
         },
         tip: '包含以下代码仓库：',
@@ -255,7 +255,7 @@ const detail = ref({
         desc: '基于Vue3 + WebRTC + Vite6',
         price: {
           left: '￥',
-          center: '2999',
+          center: '999',
           right: '元/永久',
         },
         tip: '包含以下代码仓库：',
@@ -277,7 +277,7 @@ const detail = ref({
         desc: '基于Vue3 + NaiveUI + Vite6',
         price: {
           left: '￥',
-          center: '2999',
+          center: '999',
           right: '元/永久',
         },
         tip: '包含以下代码仓库：',
@@ -299,7 +299,7 @@ const detail = ref({
         desc: '基于Node + Koa2 + Ts + SRS',
         price: {
           left: '￥',
-          center: '3999',
+          center: '1999',
           right: '元/永久',
         },
         tip: '包含以下代码仓库：',
@@ -321,7 +321,7 @@ const detail = ref({
         desc: '基于Flutter3 + Dart3 + WebRTC',
         price: {
           left: '￥',
-          center: '2999',
+          center: '999',
           right: '元/永久',
         },
         tip: '包含以下代码仓库：',
@@ -348,7 +348,7 @@ const detail = ref({
         desc: '网页开直播、看直播',
         price: {
           left: '￥',
-          center: '5999',
+          center: '1999',
           right: '元/永久',
         },
         tip: '包含以下代码仓库：',
@@ -374,7 +374,7 @@ const detail = ref({
         desc: '手机App开直播、看直播',
         price: {
           left: '￥',
-          center: '5999',
+          center: '1999',
           right: '元/永久',
         },
         tip: '包含以下代码仓库：',
@@ -400,7 +400,7 @@ const detail = ref({
         desc: '网页开直播、看直播；<br />直播后台',
         price: {
           left: '￥',
-          center: '7999',
+          center: '2499',
           right: '元/永久',
         },
         tip: '包含以下代码仓库：',
@@ -430,7 +430,7 @@ const detail = ref({
         desc: '手机App开直播、看直播；<br />直播后台',
         price: {
           left: '￥',
-          center: '7999',
+          center: '2499',
           right: '元/永久',
         },
         tip: '包含以下代码仓库：',
@@ -460,7 +460,7 @@ const detail = ref({
         desc: '网页、App开/看直播；<br />直播后台',
         price: {
           left: '￥',
-          center: '9999',
+          center: '2999',
           right: '元',
         },
         tip: '包含以下代码仓库：',

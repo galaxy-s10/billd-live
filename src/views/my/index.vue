@@ -130,7 +130,7 @@
               v-if="
                 userStore.userInfo?.auths?.find(
                   (v) =>
-                    v.auth_value === DEFAULT_AUTH_INFO.LIVE_PULL_SVIP.auth_value
+                    v.auth_value === DEFAULT_AUTH_INFO.LIVE_PUSH_CDN.auth_value
                 )
               "
               class="cdn"

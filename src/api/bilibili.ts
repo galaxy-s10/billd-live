@@ -1,16 +1,6 @@
 import request from '@/utils/request';
 
-export function fetchLiveBilibiliGetUserRecommend(params: {
-  page;
-  page_size;
-  platform;
-}) {
-  // return request.get(
-  //   'https://live-api.hsslive.cn/apilivebilibilicom/xlive/web-interface/v1/second/getUserRecommend',
-  //   {
-  //     params,
-  //   }
-  // );
+export function fetchLiveBilibiliGetUserRecommend(params) {
   return request.get('/bilibili/api_live_bilibili_com_get', {
     params: {
       url: 'xlive/web-interface/v1/second/getUserRecommend',
@@ -27,6 +17,7 @@ export function fetchLiveBilibiliPlayUrl(params: { cid; platform }) {
     },
   });
 }
+
 export function fetchLiveBilibiliRoomGetInfo(params: { room_id }) {
   return request.get('/bilibili/api_live_bilibili_com_get', {
     params: {

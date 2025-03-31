@@ -359,13 +359,13 @@
                 class="item"
                 @click.prevent="
                   router.push({
-                    name: routerName.wallet,
+                    name: routerName.centerUserIncome,
                   })
                 "
               >
                 <div class="txt">
                   {{ t('layout.wallet') }}：{{
-                    formatMoney(userStore.userInfo.wallet?.balance || 0)
+                    formatBalance(userStore.userInfo.wallet?.balance || 0)
                   }}元
                 </div>
               </a>
@@ -452,7 +452,7 @@ import { useAppStore } from '@/store/app';
 import { useCacheStore } from '@/store/cache';
 import { useUserStore } from '@/store/user';
 import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
-import { formatMoney, getLiveRoomPageUrl } from '@/utils';
+import { formatBalance, getLiveRoomPageUrl } from '@/utils';
 
 const { t, locale } = useI18n();
 const route = useRoute();
@@ -687,7 +687,7 @@ function handleStartLive(key: LiveRoomTypeEnum) {
   ) {
     if (
       !userStore.userInfo?.auths?.find(
-        (v) => v.auth_value === DEFAULT_AUTH_INFO.LIVE_PULL_SVIP.auth_value
+        (v) => v.auth_value === DEFAULT_AUTH_INFO.LIVE_PUSH_CDN.auth_value
       )
     ) {
       window.$message.info('权限不足，请更换其他开播方式');

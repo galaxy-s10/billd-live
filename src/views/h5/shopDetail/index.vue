@@ -18,12 +18,12 @@
     <div class="info-wrap">
       <div class="price-wrap">
         <span class="rmb">￥</span>
-        <span class="price">{{ formatMoney(goodsInfo?.price!, true) }}</span>
+        <span class="price">{{ formatBalance(goodsInfo?.price!, true) }}</span>
         <span
           v-if="goodsInfo?.original_price !== goodsInfo?.price"
           class="original-price"
         >
-          <del>￥{{ formatMoney(goodsInfo?.original_price!, true) }}</del>
+          <del>￥{{ formatBalance(goodsInfo?.original_price!, true) }}</del>
         </span>
       </div>
       <div class="name-wrap">{{ goodsInfo?.name }}</div>
@@ -58,7 +58,7 @@ import { useRoute } from 'vue-router';
 import { fetchGoodsFind } from '@/api/goods';
 import { IGoods } from '@/interface';
 import router, { routerName } from '@/router';
-import { formatMoney } from '@/utils';
+import { formatBalance } from '@/utils';
 
 const route = useRoute();
 
