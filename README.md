@@ -24,6 +24,8 @@
 ![version](https://img.shields.io/github/package-json/v/galaxy-s10/billd-live)
 ![License](https://img.shields.io/github/license/galaxy-s10/billd-live)
 ![language](https://img.shields.io/github/languages/top/galaxy-s10/billd-live)
+![language](https://img.shields.io/github/languages/top/galaxy-s10/billd-live-server)
+![language](https://img.shields.io/github/languages/top/galaxy-s10/billd-live-flutter)
 
 </div>
 
@@ -206,9 +208,13 @@ billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://
 
 查看 [https://apifox.com/apidoc/shared-c7556b54-17b2-494e-a039-572d83f103ed](https://apifox.com/apidoc/shared-c7556b54-17b2-494e-a039-572d83f103ed)
 
-## 技术支持
+## 问题反馈
 
-查看 [https://live.hsslive.cn/support](https://live.hsslive.cn/support)
+欢迎提 [issue](https://github.com/galaxy-s10/billd-live/issues)
+
+## 参与贡献
+
+欢迎提 [pr](https://github.com/galaxy-s10/billd-live/pulls)
 
 ## 客户端下载
 
@@ -216,7 +222,7 @@ billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://
 
 ## 私有化部署
 
-查看 [https://live.hsslive.cn/privatizationDeployment](https://live.hsslive.cn/privatizationDeployment)
+billd-live完全开源（可商用），欢迎部署！
 
 ## 兼容性
 
@@ -234,10 +240,6 @@ billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://
     />
   </a>
 
-## 🎉🎉🎉
+## 官方交流群
 
-- 2025 年起，billd-live-pro 项目的所有仓库将进入 prod 状态！
-
-## 📢📢📢
-
-- 2025 年起，billd-live 项目的所有仓库将进入 dev 状态！
+![img](https://github.com/galaxy-s10/billd-live/blob/main/src/assets/readme_img/wechat_group.jpg?raw=true)

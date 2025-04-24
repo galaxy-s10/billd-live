@@ -208,7 +208,6 @@ export const goodsTypeEnumMap = {
   [GoodsTypeEnum.gift]: '礼物',
   [GoodsTypeEnum.sponsors]: '赞助',
   [GoodsTypeEnum.support]: '服务',
-  [GoodsTypeEnum.qypShop]: '逸鹏的商品',
 };
 
 export const allMediaTypeList = {

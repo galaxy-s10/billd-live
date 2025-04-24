@@ -283,7 +283,7 @@ npm run dev
 [2025/2/21 13:27:30]  INFO    加载路由: walletRecord.router.ts
 [2025/2/21 13:27:30]  INFO    加载路由: wechatUser.router.ts
 [2025/2/21 13:27:30]  INFO    加载路由: ws.router.ts
-[2025/2/21 13:27:30]  INFO    加载路由: wsMessage.router.ts
+[2025/2/21 13:27:30]  INFO    加载路由: msg.router.ts
 [2025/2/21 13:27:30] SUCCESS  加载所有路由成功！
 [2025/2/21 13:27:30] SUCCESS  初始化websocket成功！
 

@@ -84,13 +84,6 @@ const goodsInfo = reactive({
   liveRoomId: -1,
 });
 
-// const tabList = ref([
-//   { label: '逸鹏的商品', key: GoodsTypeEnum.qypShop },
-//   { label: '礼物', key: GoodsTypeEnum.gift },
-//   { label: '赞助', key: GoodsTypeEnum.sponsors },
-//   { label: '服务', key: GoodsTypeEnum.support },
-// ]);
-
 const height = ref(-1);
 const hasMore = ref(true);
 
@@ -98,7 +91,7 @@ const pageParams = reactive({
   nowPage: 0,
   pageSize: 50,
   // type: tabList.value[0].key,
-  type: GoodsTypeEnum.qypShop,
+  type: GoodsTypeEnum.gift,
   orderName: 'price,created_at',
   orderBy: 'asc,desc',
 });

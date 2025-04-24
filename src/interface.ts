@@ -150,37 +150,37 @@ export interface IQiniuData {
   qiniu_md5?: string;
 }
 
-export enum WsMessageIsFileEnum {
+export enum MsgIsFileEnum {
   yes,
   no,
 }
 
-export enum WsMessageContentTypeEnum {
+export enum MsgContentTypeEnum {
   txt,
   img,
   video,
 }
 
-export enum WsMessageIsShowEnum {
+export enum MsgIsShowEnum {
   yes,
   no,
 }
 
-export enum WsMessageIsVerifyEnum {
+export enum MsgIsVerifyEnum {
   yes,
   no,
 }
 
-export enum WsMessageIsBilibiliEnum {
+export enum MsgIsBilibiliEnum {
   yes,
   no,
 }
 
-export interface IWsMessage {
+export interface IMsg {
   id?: number;
   username?: string;
   origin_username?: string;
-  content_type?: WsMessageContentTypeEnum;
+  content_type?: MsgContentTypeEnum;
   content?: string;
   origin_content?: string;
   redbag_send_id?: number;
@@ -190,8 +190,8 @@ export interface IWsMessage {
   msg_type?: DanmuMsgTypeEnum;
   user_agent?: string;
   send_msg_time?: number;
-  is_show?: WsMessageIsShowEnum;
-  is_bilibili?: WsMessageIsBilibiliEnum;
+  is_show?: MsgIsShowEnum;
+  is_bilibili?: MsgIsBilibiliEnum;
   remark?: string;
 
   user?: IUser;
@@ -564,7 +564,6 @@ export enum GoodsTypeEnum {
   sponsors = 'sponsors',
   gift = 'gift',
   recharge = 'recharge',
-  qypShop = 'qypShop',
 }
 
 export interface IGoods {

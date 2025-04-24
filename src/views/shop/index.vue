@@ -101,7 +101,6 @@ const topRef = ref<HTMLDivElement>();
 const loading = ref(false);
 
 const tabList = ref([
-  // { label: '逸鹏的商品', key: GoodsTypeEnum.qypShop },
   { label: '礼物', key: GoodsTypeEnum.gift },
   { label: '赞助', key: GoodsTypeEnum.sponsors },
   { label: '服务', key: GoodsTypeEnum.support },
