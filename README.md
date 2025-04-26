@@ -242,4 +242,4 @@ billd-live完全开源（可商用），欢迎部署！
 
 ## 官方交流群
 
-![img](https://github.com/galaxy-s10/billd-live/blob/master/src/assets/readme_img/wechat_group.jpg?raw=true)
+![img](https://github.com/galaxy-s10/billd-live/blob/master/src/assets/readme_img/wechat_group.jpg)
