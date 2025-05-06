@@ -33,11 +33,13 @@
     "lint:fix": "eslint . --config ./eslint.config.js --cache --fix",
     "preview": "vite preview",
     "release": "standard-version",
-    "tsc-check": "tsc --noEmit",
+    "sync-all-github": "ts-node ./deploy/handleSyncAllGithub.mjs",
+    "sync-all-github-doc": "ts-node ./deploy/handleSyncAllGithubDoc.mjs",
     "sync-codeup": "ts-node ./deploy/handleSyncCodeup.mjs",
-    "sync-doc": "ts-node ./deploy/handleSyncDoc.mjs",
     "sync-gitee": "ts-node ./deploy/handleSyncGitee.mjs",
-    "sync-public": "ts-node ./deploy/handleSyncPublic.mjs"
+    "sync-github": "ts-node ./deploy/handleSyncGithub.mjs",
+    "sync-pro-doc": "ts-node ./deploy/handleSyncProDoc.mjs",
+    "tsc-check": "tsc --noEmit"
   },
   "config": {},
   "dependencies": {},
