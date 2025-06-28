@@ -186,7 +186,14 @@ billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://
 
 - [x] billd-live-flutter(pro) 查看 [start-app.md](docs/start-app.md)
 
-## 性能测试
+## 直播性能
+
+### 延迟
+
+- webrtc直播：最低300ms左右
+- 其他直播：最低3000ms左右
+
+## 接口性能
 
 查看 [benchmarking.md](docs/benchmarking.md)
 
