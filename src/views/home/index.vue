@@ -1,384 +1,105 @@
 <template>
   <div class="home-wrap">
-    <div class="play-container">
+    <div class="left">
+      <video src=""></video>
       <div
-        v-if="configBg && configBg !== ''"
-        class="bg-img"
-        :style="{
-          backgroundImage: `url(${configBg})`,
-        }"
-      ></div>
-      <video
-        v-if="configVideo && configVideo !== ''"
-        class="bg-video"
-        :src="configVideo"
-        muted
-        autoplay
-        loop
-      ></video>
-      <div class="container">
+        v-if="liveRoomList.length"
+        class="btn"
+        @click="joinRoom()"
+      >
+        进入直播
+      </div>
+    </div>
+    <div class="right">
+      <div
+        v-if="liveRoomList.length"
+        class="list"
+      >
         <div
-          ref="videoWrapTmpRef"
-          v-loading="videoLoading"
-          class="left"
-          @click="showJoinBtn = !showJoinBtn"
+          v-for="(item, index) in liveRoomList"
+          :key="index"
+          :class="{ item: 1, active: item.roomId === currentRoom.roomId }"
+          :style="{ backgroundImage: `url(${item.roomId})` }"
+          @click="currentRoom = item"
         >
-          <div
-            v-if="
-              [
-                LiveRoomTypeEnum.tencentcloud_css,
-                LiveRoomTypeEnum.tencentcloud_css_pk,
-              ].includes(currentLive?.live_room?.type!)
-            "
-            class="cdn-ico"
-          >
-            <div class="txt">CDN</div>
-          </div>
-          <div class="logo-watermark">Billd直播</div>
-          <div
-            class="cover"
-            :style="{
-              backgroundImage: `url(${
-                currentLive?.live_room?.cover_img || currentLive?.user?.avatar
-              })`,
-            }"
-          ></div>
-          <div
-            v-if="currentLive?.live_room"
-            ref="remoteVideoRef"
-          ></div>
-          <template v-if="currentLive?.live_room">
-            <div class="video-controls">
-              <VideoControls
-                :resolution="videoResolution"
-                :control="{
-                  line: true,
-                }"
-                :liveRoom="currentLive?.live_room"
-                :liveLineList="[LiveLineEnum.flv, LiveLineEnum.hls]"
-                @refresh="handleRefresh"
-              ></VideoControls>
-            </div>
-
-            <div
-              class="join-btn"
-              :class="{
-                show: showJoinBtn,
-              }"
-            >
-              <div
-                class="btn"
-                @click="joinRoom(currentLive?.live_room, 'false')"
-              >
-                进入直播
-              </div>
-            </div>
-          </template>
-        </div>
-        <div class="right">
-          <div
-            v-if="topLiveRoomList.length"
-            class="list"
-          >
-            <div
-              v-for="(item, index) in topLiveRoomList"
-              :key="index"
-              :class="{
-                item: 1,
-                active: item.live_room?.id === currentLive?.live_room?.id,
-              }"
-              :style="{
-                backgroundImage: `url(${
-                  item.live_room?.cover_img || item.user?.avatar
-                })`,
-              }"
-              @click="changeLive(item)"
-            >
-              <div class="hidden">
-                <div
-                  v-if="
-                    [
-                      LiveRoomTypeEnum.tencentcloud_css,
-                      LiveRoomTypeEnum.tencentcloud_css_pk,
-                    ].includes(item.live_room?.type!)
-                  "
-                  class="cdn-ico"
-                >
-                  <div class="txt">CDN</div>
-                </div>
-              </div>
-              <div
-                class="border"
-                :style="{
-                  opacity:
-                    item.live_room?.id === currentLive?.live_room?.id ? 1 : 0,
-                }"
-              ></div>
-              <div
-                v-if="item.live_room?.id === currentLive?.live_room?.id"
-                class="triangle"
-              ></div>
-              <div class="txt">{{ item.live_room?.title }}</div>
-            </div>
-          </div>
-          <div
-            v-else
-            class="none"
-          >
-            {{ t('home.noliveRoomTip') }}
-          </div>
+          <div class="txt">{{ item.roomName }}</div>
         </div>
       </div>
-    </div>
-    <div class="area-container">
-      <div class="area-item">
-        <div class="title">{{ t('home.recommendLive') }}</div>
-        <div class="live-room-list">
-          <div
-            v-for="(item, indey) in otherLiveRoomList"
-            :key="indey"
-            @click="joinRoom(item.live_room, 'false')"
-          >
-            <LiveRoomItem
-              :liveroom="{
-                ...item.live_room,
-                users: item.user ? [item.user] : [],
-              }"
-            ></LiveRoomItem>
-          </div>
-          <div
-            v-if="!otherLiveRoomList.length"
-            class="null"
-          >
-            {{ t('common.nonedata') }}
-          </div>
-        </div>
-      </div>
-
-      <div class="area-item">
-        <div class="title">{{ t('home.bilibiliLive') }}</div>
-        <div class="live-room-list">
-          <div
-            v-for="(iten, indey) in bilibiliLiveRoomList"
-            :key="indey"
-            @click="joinRoom(iten.live_room, 'true')"
-          >
-            <LiveRoomItem :liveroom="iten.live_room"></LiveRoomItem>
-          </div>
-          <div
-            v-if="bilibiliLoading"
-            class="null"
-          >
-            {{ t('common.loading') }}
-          </div>
-          <div
-            v-else-if="!bilibiliLiveRoomList.length"
-            class="null"
-          >
-            {{ t('common.nonedata') }}
-          </div>
-        </div>
+      <div
+        v-else
+        class="none"
+      >
+        当前没有在线的直播间
       </div>
     </div>
-
-    <!-- <div
-      style="position: fixed; bottom: 200px; right: 0; background-color: red"
-    >
-      {{ isBottom }}
-    </div>
-     -->
-    <div ref="loadMoreRef"></div>
-    <div class="foot">*{{ t('home.copyrightTip') }}~</div>
-  </div>
-  <div
-    v-if="appStore.useGoogleAd"
-    class="ad-wrap-a"
-  >
-    <!-- live-首页广告位1 -->
-    <ins
-      class="adsbygoogle"
-      style="display: block"
-      data-ad-client="ca-pub-6064454674933772"
-      data-ad-slot="3325489849"
-      data-ad-format="auto"
-      data-full-width-responsive="true"
-    ></ins>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { openToTarget } from 'billd-utils';
-import { onMounted, reactive, ref, watch } from 'vue';
-import { useI18n } from 'vue-i18n';
+import axios from 'axios';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { fetchLiveBilibiliGetUserRecommend } from '@/api/bilibili';
-import { fetchLiveList } from '@/api/live';
-import { sliderList, URL_QUERY } from '@/constant';
-import { usePull } from '@/hooks/use-pull';
-import { ILive, LiveLineEnum } from '@/interface';
-import { routerName } from '@/router';
-import { useAppStore } from '@/store/app';
-import { LiveRoomTypeEnum } from '@/types/ILiveRoom';
-
 const router = useRouter();
-const appStore = useAppStore();
-const canvasRef = ref<Element>();
-const bilibiliLoading = ref(false);
-const showJoinBtn = ref(false);
-const topNums = ref(6);
-const configBg = ref('');
-const configVideo = ref();
-const currentLive = ref<ILive>();
-const topLiveRoomList = ref<ILive[]>([]);
-const otherLiveRoomList = ref<ILive[]>([]);
-const bilibiliLiveRoomList = ref<ILive[]>([]);
-const interactionList = ref<any[]>([]);
-const videoWrapTmpRef = ref<HTMLDivElement>();
-const remoteVideoRef = ref<HTMLDivElement>();
-const loadMoreRef = ref<HTMLElement | null>();
+const liveRoomList = ref<{ roomId: string; roomName: string }[]>([
+  // {
+  //   roomId: '123456',
+  //   txt: '视频聊天',
+  //   // eslint-disable-next-line
+  //   img: require('@/assets/img/CoCo.webp'),
+  // },
+  // {
+  //   roomId: '2323',
+  //   txt: '游戏赛事',
+  //   // eslint-disable-next-line
+  //   img: require('@/assets/img/Hololo.webp'),
+  // },
+  // {
+  //   roomId: '4454',
+  //   txt: '户外直播',
+  //   // eslint-disable-next-line
+  //   img: require('@/assets/img/MoonTIT.webp'),
+  // },
+  // {
+  //   roomId: '43232',
+  //   txt: '鬼畜',
+  //   // eslint-disable-next-line
+  //   img: require('@/assets/img/Nill.webp'),
+  // },
+  // {
+  //   roomId: '4647457',
+  //   txt: '闲聊',
+  //   // eslint-disable-next-line
+  //   img: require('@/assets/img/Ojin.webp'),
+  // },
+]);
 
-const pageParams = reactive({ page: 0, page_size: 30, platform: 'web' });
-const { t } = useI18n();
-const {
-  videoWrapRef,
-  videoLoading,
-  videoResolution,
-  handleStopDrawing,
-  handlePlay,
-  stopPlay,
-} = usePull();
-const isBottom = ref(false);
-const rootMargin = {
-  bottom: 600,
-  top: 0,
-  left: 0,
-  right: 0,
-};
-
-onMounted(() => {
-  initIntersectionObserver();
-  initGetBilibilData();
-  handleSlideList();
-  getLiveRoomList();
-  videoWrapRef.value = videoWrapTmpRef.value;
-});
-
-watch(
-  () => isBottom.value,
-  async (newval) => {
-    if (newval) {
-      const arr = await handleBilibilData();
-      bilibiliLiveRoomList.value.push(...arr);
-    }
-  },
-  {
-    immediate: true,
-  }
-);
-
-function initIntersectionObserver() {
-  const intersectionObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((item) => {
-        if (item.isIntersecting) {
-          isBottom.value = true;
-        } else {
-          isBottom.value = false;
-        }
-      });
-    },
-    {
-      // root: '',
-      rootMargin: `${rootMargin.top}px ${rootMargin.right}px ${rootMargin.bottom}px ${rootMargin.left}px`,
-    }
-  );
-  intersectionObserver.observe(loadMoreRef.value!);
-}
-
-async function initGetBilibilData() {
-  const arr = await handleBilibilData();
-  bilibiliLiveRoomList.value.push(...arr);
-}
-
-async function handleBilibilData() {
-  if (bilibiliLoading.value) return [];
-  bilibiliLoading.value = true;
-  let arr: any = [];
-  try {
-    pageParams.page += 1;
-    const res = await fetchLiveBilibiliGetUserRecommend(pageParams);
-    const list = res?.data?.data?.list;
-    if (list) {
-      arr = list.map((item) => {
-        return {
-          id: item.roomid,
-          live_room: {
-            id: item.roomid,
-            title: item.title,
-            cover_img: item.cover,
-            users: [{ username: item.uname, avatar: item.user_cover }],
-            areas: [{ name: item.area_name }],
-          },
-        };
-      });
-    }
-  } catch (error) {
-    pageParams.page -= 1;
-    console.log(error);
-  }
-  bilibiliLoading.value = false;
-  return arr;
-}
-
-function handleSlideList() {
-  const row = 2;
-  const res: any[] = [];
-  const count = Math.ceil(sliderList.length / row);
-  for (let i = 0, len = sliderList.length; i < len; i += count) {
-    const item = sliderList.slice(i, i + count);
-    res.push([...item]);
-  }
-  interactionList.value = res;
-}
-
-function handleRefresh() {
-  if (currentLive.value) {
-    playLive(currentLive.value);
-  }
-}
-
-function playLive(item: ILive) {
-  handleStopDrawing();
-  canvasRef.value?.childNodes?.forEach((item) => {
-    item.remove();
-  });
-  currentLive.value = item;
-  handlePlay(item.live_room!);
-}
-
-function changeLive(item: ILive) {
-  if (item.id === currentLive.value?.id) return;
-  playLive(item);
-}
+const currentRoom = ref();
 
 async function getLiveRoomList() {
   try {
-    const res = await fetchLiveList({
-      // orderName: 'created_at',
-      // orderBy: 'desc',
-      childOrderName: 'priority,title',
-      childOrderBy: 'desc,asc',
-      // status: 0,
-      // is_show: 0,
-      // is_fake: 0,
-      // live_room_id: 1,
-    });
-    if (res.code === 200) {
-      topLiveRoomList.value = res.data.rows.slice(0, topNums.value);
-      otherLiveRoomList.value = res.data.rows.slice(topNums.value);
-      if (res.data.total) {
-        changeLive(topLiveRoomList.value[0]);
+    const res = await axios.get(
+      process.env.NODE_ENV === 'development'
+        ? 'http://localhost:4300/live/list'
+        : 'https://live.hsslive.cn/api/live/list'
+    );
+    if (res.data.code === 200) {
+      liveRoomList.value = res.data.data.rows.map((item) => {
+        console.log(
+          item,
+          JSON.parse(item.data),
+          JSON.parse(item.data).data.roomName
+        );
+        return {
+          roomId: item.roomId,
+          roomName: JSON.parse(item.data).data.roomName,
+        };
+      });
+      if (res.data.data.rows.length) {
+        currentRoom.value = {
+          roomId: res.data.data.rows[0].roomId,
+          roomName: JSON.parse(res.data.data.rows[0].data).data.roomName,
+        };
       }
     }
   } catch (error) {
@@ -386,436 +107,130 @@ async function getLiveRoomList() {
   }
 }
 
-function joinRoom(data, isBilibili = 'false') {
-  stopPlay();
-  const query = isBilibili === 'true' ? { [URL_QUERY.isBilibili]: 'true' } : {};
-  const url = router.resolve({
-    name: routerName.pull,
-    params: { roomId: data.id },
-    query,
-  });
-  openToTarget(url.href);
+onMounted(() => {
+  getLiveRoomList();
+});
+
+function joinRoom() {
+  router.push({ path: `/${currentRoom.value.roomId}` });
 }
 </script>
 
 <style lang="scss" scoped>
 .home-wrap {
-  height: 100%;
-  overflow: scroll;
-  @extend %customScrollbar;
-  .play-container {
+  padding: 20px 0;
+  min-width: $large-width;
+  height: 610px;
+  background-color: skyblue;
+  text-align: center;
+
+  .left {
     position: relative;
-    z-index: 1;
+    display: inline-block;
     box-sizing: border-box;
-    margin: 0 auto;
-    padding: 20px 10px;
-    padding-bottom: 50px;
-    width: $w-1380;
-
-    .bg-img {
-      position: absolute;
-      top: 0;
-      right: 0;
-      left: 0;
-      z-index: -1;
-      width: 100%;
-      height: 100%;
-
-      @extend %coverBg;
-    }
-    .bg-video {
-      position: absolute;
-      top: 0;
-      right: 0;
-      left: 0;
-      z-index: -1;
-      width: 100%;
-      height: 100%;
-    }
-    .slider-wrap {
-      padding: 4px 0;
-    }
-    .container {
-      display: flex;
-      justify-content: space-between;
-      box-sizing: border-box;
-      margin: 0 auto;
-      height: calc($w-1125 / $video-ratio);
-
-      .left {
-        position: relative;
+    width: $large-left-width;
+    height: 610px;
+    border-radius: 4px;
+    background-color: papayawhip;
+    vertical-align: top;
+    &:hover {
+      .btn {
         display: inline-block;
-        overflow: hidden;
-        flex-shrink: 0;
-        box-sizing: border-box;
-        width: $w-1125;
-        height: calc($w-1125 / $video-ratio);
+      }
+    }
+    .btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      display: none;
+      padding: 10px 20px;
+      border: 1px solid rgba($color: rebeccapurple, $alpha: 0.3);
+      border-radius: 4px;
+      color: rebeccapurple;
+      font-size: 14px;
+      cursor: pointer;
+      transform: translate(-50%, -50%);
+      &:hover {
+        background-color: rgba($color: rebeccapurple, $alpha: 0.3);
+      }
+    }
+  }
+  .right {
+    display: inline-block;
+    box-sizing: border-box;
+    margin-left: 10px;
+    padding: 10px;
+    height: 610px;
+    border-radius: 4px;
+    background-color: rgba($color: #000000, $alpha: 0.3);
+    vertical-align: top;
+
+    .list {
+      .item {
+        position: relative;
+        margin-bottom: 10px;
+        width: 200px;
+        height: 110px;
         border-radius: 4px;
         background-color: rgba($color: #000000, $alpha: 0.3);
-        box-shadow: 0px 0px 15px -3px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
 
         @extend %coverBg;
 
-        .cdn-ico {
-          position: absolute;
-          top: -9px;
-          right: -10px;
-          z-index: 2;
-          width: 70px;
-          height: 32px;
-          background-color: #f87c48;
-          color: white;
-          transform: rotate(45deg);
-          transform-origin: bottom;
-          .txt {
-            margin-top: 11px;
-            margin-left: 20px;
-            background-image: initial !important;
-            font-size: 14px;
+        &:last-child {
+          margin-bottom: 0;
+        }
+        &.active {
+          &::before {
+            background-color: transparent;
           }
         }
-        .logo-watermark {
-          position: absolute;
-          top: 10px;
-          left: 10px;
-          z-index: 2;
-          color: rgba($color: #fff, $alpha: 0.5);
-          font-weight: bold;
-          font-size: 30px;
-          line-height: 1;
-        }
-
-        .cover {
-          position: absolute;
-          filter: blur(5px);
-
-          @extend %coverBg;
-          inset: 0;
-        }
-        :deep(canvas) {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          // min-width: 100%;
-          // min-height: 100%;
-          max-width: $w-1150;
-          max-height: calc($w-1150 / $video-ratio);
-          transform: translate(-50%, -50%);
-
-          user-select: none;
-        }
-        :deep(video) {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          // min-width: 100%;
-          // min-height: 100%;
-          max-width: $w-1150;
-          max-height: calc($w-1150 / $video-ratio);
-          transform: translate(-50%, -50%);
-
-          user-select: none;
-        }
-        .join-btn {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          z-index: 20;
-          display: none;
-          align-items: center;
-          justify-content: center;
-          box-sizing: border-box;
-          // width: 80%;
-          transform: translate(-50%, -50%);
-          &.show {
-            display: inline-flex !important;
-          }
-
-          .btn {
-            padding: 14px 26px;
-            border: 2px solid rgba($color: $theme-color-gold, $alpha: 0.5);
-            border-radius: 6px;
-            background-color: rgba(0, 0, 0, 0.3);
-            color: $theme-color-gold;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            &:hover {
-              background-color: $theme-color-gold;
-              color: white;
-            }
-          }
-        }
-        .video-controls {
-          display: none;
-        }
-
         &:hover {
-          .join-btn {
-            display: block;
-          }
-          .video-controls {
-            display: block;
+          &::before {
+            background-color: transparent;
           }
         }
-      }
-      .right {
-        display: inline-block;
-        overflow: scroll;
-        flex-shrink: 0;
-        box-sizing: border-box;
-        padding: 12px 10px;
-        height: 100%;
-        border-radius: 4px;
-        background-color: rgba($color: #000000, $alpha: 0.3);
-
-        @extend %hideScrollbar;
-
-        .list {
-          .item {
-            position: relative;
-            box-sizing: border-box;
-            margin-bottom: 10px;
-            width: 200px;
-            height: 110px;
-            border-radius: 4px;
-            background-color: rgba($color: #000000, $alpha: 0.3);
-            cursor: pointer;
-
-            @extend %coverBg;
-
-            &:last-child {
-              margin-bottom: 0;
-            }
-            .hidden {
-              position: relative;
-              overflow: hidden;
-              width: 200px;
-              height: 110px;
-              .cdn-ico {
-                position: absolute;
-                top: -9px;
-                right: -9px;
-                z-index: 2;
-                width: 60px;
-                height: 28px;
-                background-color: #f87c48;
-                color: white;
-                transform: rotate(45deg);
-                transform-origin: bottom;
-
-                .txt {
-                  margin-left: 10px;
-                  background-image: initial !important;
-                  font-size: 12px;
-                  line-height: 0.8;
-                }
-              }
-            }
-
-            .border {
-              position: absolute;
-              top: 0;
-              right: 0;
-              bottom: 0;
-              left: 0;
-              z-index: 3;
-              border: 2px solid $theme-color-gold;
-              border-radius: 4px;
-            }
-            .triangle {
-              position: absolute;
-              top: 50%;
-              left: 0;
-              display: inline-block;
-              border: 5px solid transparent;
-              border-right-color: $theme-color-gold;
-              transform: translate(-100%, -50%);
-            }
-            &.active {
-              &::before {
-                background-color: transparent;
-              }
-            }
-            &:hover {
-              &::before {
-                background-color: transparent;
-              }
-            }
-            &::before {
-              position: absolute;
-              display: block;
-              width: 100%;
-              height: 100%;
-              border-radius: 4px;
-              background-color: rgba(0, 0, 0, 0.4);
-              content: '';
-              transition: all cubic-bezier(0.22, 0.58, 0.12, 0.98) 0.4s;
-            }
-            .txt {
-              position: absolute;
-              bottom: 0;
-              left: 0;
-              box-sizing: border-box;
-              padding: 4px 8px;
-              width: 100%;
-              border-radius: 0 0 4px 4px;
-              background-image: linear-gradient(
-                180deg,
-                rgba(0, 0, 0, 0) 0,
-                rgba(0, 0, 0, 0.32) 100%
-              );
-              color: white;
-              text-align: initial;
-              font-size: 13px;
-
-              @extend %singleEllipsis;
-            }
-          }
-        }
-        .none {
-          width: 200px;
-          color: white;
-          text-align: center;
-          font-size: 14px;
-        }
-      }
-    }
-  }
-  .area-container {
-    box-sizing: border-box;
-    margin: 10px auto;
-    width: $w-1380;
-
-    .area-item {
-      .title {
-        padding: 10px;
-        font-size: 26px;
-      }
-      .live-room-list {
-        display: flex;
-        flex-wrap: wrap;
-        margin-top: 20px;
-        .live-room {
-          display: inline-block;
-          margin-right: 32px;
-          margin-bottom: 10px;
-          width: 300px;
-          cursor: pointer;
-
-          .cover {
-            position: relative;
-            overflow: hidden;
-            width: 281px;
-            height: 158px;
-            border-radius: 8px;
-
-            @extend %coverBg;
-
-            .cdn-ico {
-              position: absolute;
-              top: -10px;
-              right: -10px;
-              z-index: 2;
-              width: 70px;
-              height: 28px;
-              background-color: #f87c48;
-              color: white;
-              transform: rotate(45deg);
-              transform-origin: bottom;
-              .txt {
-                margin-left: 18px;
-                background-image: initial !important;
-                font-size: 13px;
-              }
-            }
-
-            .txt {
-              position: absolute;
-              bottom: 0;
-              left: 0;
-              box-sizing: border-box;
-              padding: 4px 8px;
-              width: 100%;
-              border-radius: 0 0 4px 4px;
-              background-image: linear-gradient(
-                180deg,
-                rgba(0, 0, 0, 0) 0,
-                rgba(0, 0, 0, 0.32) 100%
-              );
-              color: white;
-              text-align: initial;
-              font-size: 13px;
-
-              @extend %singleEllipsis;
-            }
-          }
-          .desc {
-            margin-top: 4px;
-            font-size: 14px;
-
-            @extend %singleEllipsis;
-          }
-        }
-        .null {
+        &::before {
+          position: absolute;
+          display: block;
           width: 100%;
-          text-align: center;
+          height: 100%;
+          border-radius: 4px;
+          background-color: rgba(0, 0, 0, 0.4);
+          content: '';
+          transition: all cubic-bezier(0.22, 0.58, 0.12, 0.98) 0.4s;
+        }
+        .txt {
+          position: absolute;
+          bottom: 2px;
+          left: 4px;
+          color: white;
+          font-size: 13px;
         }
       }
     }
-  }
-
-  .foot {
-    margin-top: 10px;
-    text-align: center;
-  }
-}
-
-.ad-wrap-a {
-  position: fixed;
-  top: 300px;
-  left: 10px;
-  // background-color: red;
-  z-index: 999;
-  width: 250px;
-  // height: 150px;
-  border-radius: 10px;
-  ins {
-    width: 100%;
-    height: 100%;
+    .none {
+      color: white;
+      font-size: 14px;
+    }
   }
 }
 
-// 屏幕宽度小于1330的时候
-@media screen and (max-width: 1330px) {
+// 屏幕宽度小于$large-width的时候
+@media screen and (max-width: $large-width) {
   .home-wrap {
-    .play-container {
-      width: $w-1200;
-      .container {
-        height: calc($w-930 / $video-ratio);
-
-        .left {
-          width: $w-930;
-          height: calc($w-930 / $video-ratio);
-
-          :deep(canvas) {
-            max-width: $w-930;
-            max-height: calc($w-930 / $video-ratio);
-          }
-          :deep(video) {
-            max-width: $w-930;
-            max-height: calc($w-930 / $video-ratio);
-          }
-        }
-      }
+    height: 460px;
+    .left {
+      width: $medium-left-width;
+      height: 460px;
     }
-    .area-container {
-      width: $w-1200;
-      .area-item {
-        .live-room-list {
-          .live-room {
-            width: 250px;
-          }
+    .right {
+      height: 460px;
+
+      .list {
+        .item {
+          width: 150px;
+          height: 80px;
         }
       }
     }

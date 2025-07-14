@@ -1,30 +1,22 @@
-// 一定要引入webrtc-adapter（约等于垫片，适配safari等其他浏览器）
-import '@/assets/main.scss';
-import '@/utils/showBilldVersion';
-import 'webrtc-adapter';
-// import 'windi.css'; // windicss-webpack-plugin会解析windi.css这个MODULE_ID
-import { createApp } from 'vue';
-import VueLazyLoad from 'vue-lazyload';
+import '@/assets/js/aa';
 
-import lazyErrorPng from '@/assets/img/lazy_error.png';
-import lazyLoadingPng from '@/assets/img/lazy_loading.png';
-import registerDirectives from '@/directives';
-import { i18n } from '@/hooks/use-i18n';
-import router from '@/router';
-import store from '@/store';
+import './main.scss';
+import './showBilldVersion';
+// import 'windi.css'; // windicss-webpack-plugin会解析windi.css这个MODULE_ID
+
+import { createApp } from 'vue';
+import adapter from 'webrtc-adapter';
+
+import router from '@/router/index';
+import store from '@/store/index';
 
 import App from './App.vue';
 
+console.log('webrtc-adapter', adapter.browserDetails);
+
 const app = createApp(App);
-registerDirectives(app);
-app.use(i18n);
+
 app.use(store);
 app.use(router);
-app.use(VueLazyLoad, {
-  preLoad: 2,
-  error: lazyErrorPng,
-  loading: lazyLoadingPng,
-  attempt: 2,
-});
 
 app.mount('#app');
