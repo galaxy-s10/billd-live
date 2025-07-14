@@ -41,7 +41,7 @@
 > [!WARNING]
 > BilldLivePro 对普通用户不影响，一直免费。
 >
-> BilldLivePro 主要针对开发者。源码并不开源，需付费订阅：[https://live.hsslive.cn/#/price](https://live.hsslive.cn/price)
+> BilldLivePro 主要针对开发者。源码并不开源，需付费订阅：[https://live.hsslive.cn/price](https://live.hsslive.cn/price)
 
 ## 简介
 
