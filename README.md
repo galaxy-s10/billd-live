@@ -192,14 +192,6 @@ billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://
 - 流媒体服务器相关：[SRS](https://ossrs.net)、 [FFmpeg](https://ffmpeg.org)、[Coturn](https://github.com/coturn/coturn)
 - Docker 相关：[Docker](https://www.docker.com)
 
-## 本地启动
-
-- [x] billd-live(pro) 查看 [start-client.md](docs/start-client.md)
-
-- [x] billd-live-server(pro) 查看 [start-server.md](docs/start-server.md)
-
-- [x] billd-live-flutter(pro) 查看 [start-app.md](docs/start-app.md)
-
 ## 直播性能
 
 ### 延迟
