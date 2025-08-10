@@ -95,94 +95,109 @@ billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://
 
 - 首页
 
-<img
-  src="https://github.com/galaxy-s10/billd-live/assets/61055341/95849774-1df0-4a59-b726-8d3bc0795619" 
-  style="width:800px"
-/>
+![img](https://github.com/galaxy-s10/billd-live/blob/main/readme_img/a1.png?raw=true)
+
+- 分区
+
+![img](https://github.com/galaxy-s10/billd-live/blob/main/readme_img/a11.png?raw=true)
 
 - 进入直播间
 
-<img
-  src="https://github.com/galaxy-s10/billd-live/assets/61055341/91ac3f5f-b06d-46b3-84bc-ab6e0add4d5b" 
-  style="width:800px"
-/>
+![img](https://github.com/galaxy-s10/billd-live/blob/main/readme_img/a2.png?raw=true)
 
 - 发起直播
 
-<img
-  src="https://github.com/galaxy-s10/billd-live/assets/61055341/81e2f413-8470-42ab-bee7-699e2f8f0290" 
-  style="width:800px"
-/>
+![img](https://github.com/galaxy-s10/billd-live/blob/main/readme_img/a3.png?raw=true)
 
 - 排行榜
 
-<img
-  src="https://github.com/galaxy-s10/billd-live/assets/61055341/6d7d79b6-e8b9-42ff-9e25-d44c41948579" 
-  style="width:800px"
-/>
+![img](https://github.com/galaxy-s10/billd-live/blob/main/readme_img/a4.png?raw=true)
+
+- 用户中心
+
+> 个人信息
+
+![img](https://github.com/galaxy-s10/billd-live/blob/main/readme_img/a5.png?raw=true)
+
+> 个人收益
+
+![img](https://github.com/galaxy-s10/billd-live/blob/main/readme_img/a6.png?raw=true)
+
+- 直播中心
+
+> 直播间信息
+
+![img](https://github.com/galaxy-s10/billd-live/blob/main/readme_img/a8.png?raw=true)
+
+> 开播设置
+
+![img](https://github.com/galaxy-s10/billd-live/blob/main/readme_img/a9.png?raw=true)
+
+> 直播数据
+
+![img](https://github.com/galaxy-s10/billd-live/blob/main/readme_img/a10.png?raw=true)
 
 ### 移动端（web）
 
 - 首页
 
-<img
-  src="https://github.com/galaxy-s10/billd-live/assets/61055341/9b56e99a-f821-4c9c-b9c3-330c2f61d533" 
-  style="height:500px"
-/>
+![img](https://github.com/galaxy-s10/billd-live/blob/main/readme_img/a12.png?raw=true)
 
 - 进入直播间
 
-<img
-  src="https://github.com/galaxy-s10/billd-live/assets/61055341/db4145a9-517d-45a5-9c74-641892d55a3e" 
-  style="height:500px"
-/>
+![img](https://github.com/galaxy-s10/billd-live/blob/main/readme_img/a13.png?raw=true)
 
 ### 后台（web）
+
+- 控制台
+
+![img](https://github.com/galaxy-s10/billd-live/blob/main/readme_img/a14.png?raw=true)
+
+- 黑名单
+
+![img](https://github.com/galaxy-s10/billd-live/blob/main/readme_img/a15.png?raw=true)
+
+- 直播管理
+
+![img](https://github.com/galaxy-s10/billd-live/blob/main/readme_img/a16.png?raw=true)
+
+- 直播记录
+
+![img](https://github.com/galaxy-s10/billd-live/blob/main/readme_img/a17.png?raw=true)
+
+- 直播间列表
+
+![img](https://github.com/galaxy-s10/billd-live/blob/main/readme_img/a18.png?raw=true)
+
+- 直播间消息列表
+
+![img](https://github.com/galaxy-s10/billd-live/blob/main/readme_img/a19.png?raw=true)
+
+- 订单列表
+
+![img](https://github.com/galaxy-s10/billd-live/blob/main/readme_img/a20.png?raw=true)
+
+- 商品列表
+
+![img](https://github.com/galaxy-s10/billd-live/blob/main/readme_img/a21.png?raw=true)
+
+- 全局消息列表
+
+![img](https://github.com/galaxy-s10/billd-live/blob/main/readme_img/a7.png?raw=true)
 
 ### 安卓端（flutter）
 
 - 首页
 
-<img
-  src="https://resource.hsslive.cn/billd-live/image/38a0fae4c5104913ca0b7617ca58b518.webp" 
-  style="width:300px"
-/><img
-  src="https://resource.hsslive.cn/billd-live/image/8fa5423182476341ade6d74dba9eac0f.webp" 
-  style="width:300px"
-/><img
-  src="https://resource.hsslive.cn/billd-live/image/a6df703d48c3c3e5ec708ebf0b48f345.webp" 
-  style="width:300px"
-/>
+联系作者。
 
 - 直播间详情、分区详情
 
-<img
-  src="https://resource.hsslive.cn/billd-live/image/420a663259487309a51cdc0d44b01246.webp" 
-  style="width:300px"
-/> <img
-  src="https://resource.hsslive.cn/billd-live/image/da8d31cda66f51b95cd8b34f4cbeb680.webp" 
-  style="width:300px"
-/>
-
--
-
-<img
-  src="https://resource.hsslive.cn/billd-live/image/3a777718d31f94e6d25071d29f5e5185.webp" 
-  style="width:300px"
-/> <img
-  src="https://resource.hsslive.cn/billd-live/image/e785bc308c2d24460baf36f65aa39c5e.webp" 
-  style="width:300px"
-/>
+联系作者。
 
 - 直播中心
 
-<img
-  src="https://resource.hsslive.cn/billd-live/image/77b89ccf7a10be1663f7e9d5bc69565d.jpg" 
-  style="width:300px"
-/> <img
-  src="https://resource.hsslive.cn/billd-live/image/90f505de2580b69aed73ea5c5717e669.jpg" 
-  style="width:300px"
-/>
+联系作者。
 
 ## 技术栈
 
