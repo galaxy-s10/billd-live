@@ -189,15 +189,47 @@ billd 直播间，目前实现了类似 [bilibili 的 Web 在线直播](https://
 
 - 首页
 
-联系作者。
+![img](https://github.com/galaxy-s10/billd-live/blob/master/readme_img/a29.png?raw=true)
 
-- 直播间详情、分区详情
+- 分区
 
-联系作者。
+![img](https://github.com/galaxy-s10/billd-live/blob/master/readme_img/a27.png?raw=true)
+
+- 排行榜
+
+![img](https://github.com/galaxy-s10/billd-live/blob/master/readme_img/a32.png?raw=true)
+
+- 我的
+
+![img](https://github.com/galaxy-s10/billd-live/blob/master/readme_img/a33.png?raw=true)
 
 - 直播中心
 
-联系作者。
+录屏直播：
+
+![img](https://github.com/galaxy-s10/billd-live/blob/master/readme_img/a25.png?raw=true)
+
+前置摄像头直播：
+
+![img](https://github.com/galaxy-s10/billd-live/blob/master/readme_img/a31.png?raw=true)
+
+后置摄像头直播：
+
+![img](https://github.com/galaxy-s10/billd-live/blob/master/readme_img/a30.png?raw=true)
+
+- 直播间页面
+
+聊天：
+
+![img](https://github.com/galaxy-s10/billd-live/blob/master/readme_img/a23.png?raw=true)
+
+房间信息：
+
+![img](https://github.com/galaxy-s10/billd-live/blob/master/readme_img/a28.png?raw=true)
+
+在线用户：
+
+![img](https://github.com/galaxy-s10/billd-live/blob/master/readme_img/a24.png?raw=true)
 
 ## 技术栈
 
